@@ -59,6 +59,7 @@ class Database extends _$Database {
   MigrationStrategy get migration {
     return MigrationStrategy(
       onUpgrade: (m, from, to) async {
+        await _repairLegacySchema(m);
         if (from < 2) {
           await m.createTable(proxyGroups);
           await m.createTable(iconRecords);
@@ -96,6 +97,33 @@ class Database extends _$Database {
       },
       beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
     );
+  }
+
+  /// Releases before the schema rebuild wrote user_version 4 with only `profiles` and `icon_records`.
+  Future<void> _repairLegacySchema(Migrator m) async {
+    for (final table in allTables) {
+      if (!await _createTableIfMissing(m, table)) {
+        continue;
+      }
+      for (final index in allSchemaEntities.whereType<Index>()) {
+        final statement = index.createStatementsByDialect[SqlDialect.sqlite];
+        if (statement!.contains(' ON ${table.actualTableName} ')) {
+          await m.createIndex(index);
+        }
+      }
+    }
+    final profileColumns = await customSelect(
+      'PRAGMA table_info(profiles)',
+    ).get();
+    if (profileColumns.every(
+      (row) => row.read<String>('name') != 'overwrite_type',
+    )) {
+      await customStatement(
+        "ALTER TABLE profiles ADD COLUMN overwrite_type TEXT NOT NULL DEFAULT 'standard'",
+      );
+    }
+    await _addColumnIfMissing(m, profiles, profiles.scriptId);
+    await _addColumnIfMissing(m, profiles, profiles.matchTarget);
   }
 
   /// Drift rewinds user_version on downgrade but keeps the tables it added.

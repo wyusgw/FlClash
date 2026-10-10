@@ -386,6 +386,59 @@ void main() {
     expect(await database.customProxiesDao.query(1).get(), isEmpty);
   });
 
+  test('a v4 database from before the rebuilt schema is brought up', () async {
+    raw.execute('PRAGMA foreign_keys = OFF');
+    for (final table in [
+      'profile_rule_mapping',
+      'rules',
+      'proxy_groups',
+      'scripts',
+      'clash_providers',
+      'custom_proxies',
+      'profiles',
+    ]) {
+      raw.execute('DROP TABLE $table');
+    }
+    raw.execute('''
+      CREATE TABLE profiles (
+        id INTEGER NOT NULL, label TEXT NOT NULL,
+        current_group_name TEXT NULL, url TEXT NOT NULL,
+        last_update_date INTEGER NULL,
+        auto_update_duration_millis INTEGER NOT NULL,
+        subscription_info TEXT NULL, auto_update INTEGER NOT NULL,
+        selected_map TEXT NOT NULL, unfold_set TEXT NOT NULL,
+        "order" INTEGER NULL, PRIMARY KEY (id)
+      )
+    ''');
+    raw.execute(
+      'INSERT INTO profiles (id, label, url, auto_update_duration_millis, '
+      "auto_update, selected_map, unfold_set) VALUES (1, 'Kept', '', 0, 1, "
+      "'{}', '[]')",
+    );
+    raw.execute('PRAGMA user_version = 4');
+
+    final database = await openAndMigrate();
+
+    expect(_userVersion(raw), 10);
+    for (final table in [
+      'scripts',
+      'rules',
+      'profile_rule_mapping',
+      'proxy_groups',
+      'clash_providers',
+      'custom_proxies',
+    ]) {
+      expect(_hasTable(raw, table), isTrue, reason: table);
+    }
+    expect(
+      _columnsOf(raw, 'profiles'),
+      containsAll(['overwrite_type', 'script_id', 'match_target']),
+    );
+    final profile = (await database.profilesDao.query().get()).single;
+    expect(profile.label, 'Kept');
+    expect(profile.overwriteType, OverwriteType.standard);
+  });
+
   test('an empty v1 rules table still reaches v2', () async {
     _downgradeToV1(raw);
 

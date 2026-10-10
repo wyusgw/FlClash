@@ -25,7 +25,7 @@ class FlClashHttpOverrides extends HttpOverrides {
     commonPrint.log('find $url proxy: $isStart');
     if (!isStart || suspend) return 'DIRECT';
     final mixedPort = read(
-      patchClashConfigProvider.select((state) => state.mixedPort),
+      coreSettingProvider.select((state) => state.mixedPort),
     );
     final authentication = read(
       networkSettingProvider.select((state) => state.authentication),

@@ -26,19 +26,6 @@ Profile urlProfile(String label) =>
       ),
     );
 
-class _RecordingProfilesAction extends ProfilesAction {
-  final List<Profile> users;
-  final deleted = <int>[];
-
-  _RecordingProfilesAction(this.users);
-
-  @override
-  Future<List<Profile>> providerUsers(Profile profile) async => users;
-
-  @override
-  Future<void> deleteProfile(int id) async => deleted.add(id);
-}
-
 Future<ProviderContainer> pumpProfiles(
   WidgetTester tester, {
   required List<Profile> profiles,
@@ -151,35 +138,5 @@ void main() {
     expect(find.byType(CommonDialog), findsOneWidget);
     expect(find.byType(SubscriptionInfoDetailView), findsOneWidget);
     expect(find.text(currentAppLocalizations.subscriptionInfo), findsOneWidget);
-  });
-
-  testWidgets('a profile another one uses as a provider is not deleted', (
-    tester,
-  ) async {
-    final action = _RecordingProfilesAction([Profile.normal(label: 'Work')]);
-    await pumpProfiles(
-      tester,
-      profiles: [urlProfile('Home')],
-      overrides: [profilesActionProvider.overrideWith(() => action)],
-    );
-
-    final profileItem = find.ancestor(
-      of: find.text('Home'),
-      matching: find.byType(ListItem),
-    );
-    await tester.tap(
-      find.descendant(of: profileItem, matching: find.byGlyph(AppGlyphs.more)),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(currentAppLocalizations.delete));
-    await tester.pumpAndSettle();
-
-    expect(find.textContaining('Home is still used'), findsOneWidget);
-    expect(find.textContaining('of Work'), findsOneWidget);
-    expect(find.text(currentAppLocalizations.cancel), findsNothing);
-    await tester.tap(find.text(currentAppLocalizations.confirm));
-    await tester.pumpAndSettle();
-
-    expect(action.deleted, isEmpty);
   });
 }

@@ -36,21 +36,6 @@ class _NoopSetupAction extends SetupAction {
   void autoApplyProfile() {}
 }
 
-class _RenameConflictProfilesAction extends ProfilesAction {
-  final put = <Profile>[];
-
-  @override
-  Future<({List<Profile> renameIn, List<Profile> conflicts})> providerRename(
-    Profile previous,
-    Profile next,
-  ) async =>
-      (renameIn: const <Profile>[], conflicts: [Profile.normal(label: 'Work')]);
-
-  @override
-  void putProfile(Profile profile, {Iterable<int> renameIn = const []}) =>
-      put.add(profile);
-}
-
 Profile _urlProfile() =>
     Profile.normal(label: 'test', url: 'https://example.com/sub');
 
@@ -175,28 +160,5 @@ void main() {
     expect(_isTextFieldFocused(), isTrue);
     expect(find.byType(FloatingActionButton), findsNothing);
     expect(find.byTooltip('Save'), findsOneWidget);
-  });
-
-  testWidgets('a name a user subscription already has is not saved', (
-    tester,
-  ) async {
-    final action = _RenameConflictProfilesAction();
-    await pumpEditProfile(
-      tester,
-      overrides: [profilesActionProvider.overrideWith(() => action)],
-    );
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, currentAppLocalizations.name),
-      'Taken',
-    );
-    await tester.tap(find.byTooltip(currentAppLocalizations.save));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.textContaining('subscriptions of Work already have Taken'),
-      findsOneWidget,
-    );
-    expect(action.put, isEmpty);
   });
 }

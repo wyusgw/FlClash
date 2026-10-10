@@ -4,6 +4,7 @@ package main
 
 import (
 	"bytes"
+	"core/logx"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
@@ -13,10 +14,6 @@ import (
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/metacubex/mihomo/common/observable"
-	"github.com/metacubex/mihomo/config"
-	"github.com/metacubex/mihomo/log"
 )
 
 type fakeConn struct {
@@ -407,7 +404,7 @@ func TestMethodResponseAnswersExactlyOnce(t *testing.T) {
 
 func TestSendMessageBatchDoesNotDoubleEncodeArguments(t *testing.T) {
 	frame := captureSingleFrame(t, func() {
-		sendMessageBatch([]Message{{Type: LoadedMessage, Data: "provider"}})
+		sendMessageBatch([]Message{{Type: RouteChangedMessage, Data: "provider"}})
 	})
 
 	var envelope struct {
@@ -662,27 +659,33 @@ func TestSafeGoDetachedSurvivesAPanic(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 }
 
-func drainLogStream(t *testing.T, subscriber observable.Subscription[log.Event], window time.Duration, match func(string) bool) bool {
+// captureLogStream turns streaming on and collects every log payload the
+// handler forwards to the host, instead of handing it to a real connection.
+func captureLogStream(t *testing.T) (payloads func() []string) {
 	t.Helper()
-	deadline := time.After(window)
-	for {
-		select {
-		case event, ok := <-subscriber:
-			if !ok {
-				return false
-			}
-			if match(event.Payload) {
-				return true
-			}
-		case <-deadline:
-			return false
-		}
+	var mu sync.Mutex
+	var captured []string
+	previous := logForwarder
+	logForwarder = func(event logEvent) {
+		mu.Lock()
+		defer mu.Unlock()
+		captured = append(captured, event.Payload)
+	}
+	handleStartLog()
+	installLogHandler()
+	t.Cleanup(func() {
+		handleStopLog()
+		logForwarder = previous
+	})
+	return func() []string {
+		mu.Lock()
+		defer mu.Unlock()
+		return append([]string(nil), captured...)
 	}
 }
 
 func TestSendFailureIsNotReportedThroughTheLogStream(t *testing.T) {
-	subscriber := log.Subscribe()
-	defer log.UnSubscribe(subscriber)
+	payloads := captureLogStream(t)
 
 	previous := swapConn(nil)
 	deliveryFailureReported.Store(false)
@@ -695,25 +698,40 @@ func TestSendFailureIsNotReportedThroughTheLogStream(t *testing.T) {
 		send([]byte("{}"))
 	}
 
-	echoed := drainLogStream(t, subscriber, 100*time.Millisecond, func(payload string) bool {
-		return strings.Contains(payload, "conn nil") || strings.Contains(payload, "server write")
-	})
-	if echoed {
-		t.Error("a failed send published a log event, which is batched and handed back to send")
+	for _, payload := range payloads() {
+		if strings.Contains(payload, "conn nil") || strings.Contains(payload, "server write") {
+			t.Errorf("a failed send published a log event, which is batched and handed back to send: %q", payload)
+		}
 	}
 }
 
 func TestLogErrorStillReachesTheLogStream(t *testing.T) {
-	subscriber := log.Subscribe()
-	defer log.UnSubscribe(subscriber)
+	payloads := captureLogStream(t)
 
 	logError("delivery probe %d", 7)
 
-	reached := drainLogStream(t, subscriber, time.Second, func(payload string) bool {
-		return strings.Contains(payload, "delivery probe 7")
-	})
-	if !reached {
-		t.Fatal("logError never reached the log stream, so the send-path assertion above proves nothing")
+	for _, payload := range payloads() {
+		if strings.Contains(payload, "delivery probe 7") {
+			return
+		}
+	}
+	t.Fatal("logError never reached the log stream, so the send-path assertion above proves nothing")
+}
+
+func TestLogStreamHonoursTheConfiguredLevel(t *testing.T) {
+	payloads := captureLogStream(t)
+	setLogLevel("error")
+	t.Cleanup(func() { setLogLevel("info") })
+
+	logx.Infof("chatty line")
+	logx.Errorf("loud line")
+
+	got := strings.Join(payloads(), "|")
+	if strings.Contains(got, "chatty line") {
+		t.Errorf("info line passed an error level: %s", got)
+	}
+	if !strings.Contains(got, "loud line") {
+		t.Errorf("error line missing: %s", got)
 	}
 }
 
@@ -736,35 +754,27 @@ func TestDeliveryFailureIsReportedOncePerConnection(t *testing.T) {
 
 func TestHandleStartLogAndStopLogLifecycle(t *testing.T) {
 	handleStartLog()
-	logMu.Lock()
-	if logSubscriber == nil || logCancel == nil {
-		logMu.Unlock()
-		t.Fatal("handleStartLog did not initialize subscriber or cancel func")
+	if !logStreaming.Load() {
+		t.Fatal("handleStartLog did not turn streaming on")
 	}
-	logMu.Unlock()
-
 	handleStartLog()
 
 	handleStopLog()
-	logMu.Lock()
-	if logSubscriber != nil || logCancel != nil {
-		logMu.Unlock()
-		t.Fatal("handleStopLog did not clear subscriber or cancel func")
+	if logStreaming.Load() {
+		t.Fatal("handleStopLog did not turn streaming off")
 	}
-	logMu.Unlock()
 }
 
 func TestServeReleasesTheCoreWhenTheHostDisconnects(t *testing.T) {
-	withCurrentConfig(t, &config.Config{General: &config.General{}, Controller: &config.Controller{}})
-	isInit.Store(true)
+	startEngine(t, groupedConfig)
 
 	serve(&fakeConn{})
 
 	if isInit.Load() {
 		t.Error("the host went away without a shutdown call and the core kept its state, so a TUN it owned would leave its routes behind")
 	}
-	if currentConfig != nil {
-		t.Error("currentConfig survived the host disconnect")
+	if currentEngine.Load() != nil {
+		t.Error("the engine survived the host disconnect")
 	}
 	connMu.Lock()
 	remaining := conn
@@ -776,15 +786,12 @@ func TestServeReleasesTheCoreWhenTheHostDisconnects(t *testing.T) {
 
 func TestReleaseOnExitIsANoOpBeforeInit(t *testing.T) {
 	isInit.Store(false)
-	logMu.Lock()
-	logSubscriber = make(chan log.Event)
-	logCancel = func() { t.Error("release before init cancelled a log pump it does not own") }
-	logMu.Unlock()
-	t.Cleanup(func() {
-		logMu.Lock()
-		logSubscriber, logCancel = nil, nil
-		logMu.Unlock()
-	})
+	handleStartLog()
+	t.Cleanup(handleStopLog)
 
 	releaseOnExit()
+
+	if !logStreaming.Load() {
+		t.Error("release before init stopped a log stream it does not own")
+	}
 }

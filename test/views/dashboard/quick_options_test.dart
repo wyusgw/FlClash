@@ -25,7 +25,7 @@ final _cardCases = <_CardCase>[
   _CardCase(
     'TUN',
     const TUNButton(),
-    (container) => container.read(patchClashConfigProvider).tun.enable,
+    (container) => container.read(coreSettingProvider).tun.enable,
   ),
   _CardCase(
     'system proxy',
@@ -38,16 +38,6 @@ final _cardCases = <_CardCase>[
     const VpnButton(),
     (container) => container.read(vpnSettingProvider).enable,
     initial: true,
-  ),
-  _CardCase(
-    'DNS override',
-    const OverrideDnsButton(),
-    (container) => container.read(overrideDnsProvider),
-  ),
-  _CardCase(
-    'NTP override',
-    const OverrideNtpButton(),
-    (container) => container.read(overrideNtpProvider),
   ),
 ];
 

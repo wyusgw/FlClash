@@ -1,16 +1,6 @@
 package main
 
-import (
-	"github.com/metacubex/http"
-
-	"github.com/metacubex/mihomo/adapter/provider"
-	P "github.com/metacubex/mihomo/component/process"
-	"github.com/metacubex/mihomo/constant"
-	"github.com/metacubex/mihomo/log"
-	"github.com/metacubex/mihomo/tunnel"
-	"net/netip"
-	"time"
-)
+import "net/http"
 
 type InitParams struct {
 	HomeDir string `json:"home-dir"`
@@ -20,37 +10,7 @@ type InitParams struct {
 type SetupParams struct {
 	SelectedMap map[string]string `json:"selected-map"`
 	TestURL     string            `json:"test-url"`
-}
-
-type UpdateParams struct {
-	Tun                *tunSchema         `json:"tun"`
-	AllowLan           *bool              `json:"allow-lan"`
-	MixedPort          *int               `json:"mixed-port"`
-	FindProcessMode    *P.FindProcessMode `json:"find-process-mode"`
-	Mode               *tunnel.TunnelMode `json:"mode"`
-	LogLevel           *log.LogLevel      `json:"log-level"`
-	IPv6               *bool              `json:"ipv6"`
-	TCPConcurrent      *bool              `json:"tcp-concurrent"`
-	ExternalController *string            `json:"external-controller"`
-	UnifiedDelay       *bool              `json:"unified-delay"`
-	Authentication     *[]string          `json:"authentication"`
-	GeoAutoUpdate      *bool              `json:"geo-auto-update"`
-	GeoUpdateInterval  *int               `json:"geo-update-interval"`
-	GeoXUrl            map[string]string  `json:"geox-url"`
-}
-
-type tunSchema struct {
-	Enable       bool               `yaml:"enable" json:"enable"`
-	Device       *string            `yaml:"device" json:"device"`
-	Stack        *constant.TUNStack `yaml:"stack" json:"stack"`
-	DNSHijack    *[]string          `yaml:"dns-hijack" json:"dns-hijack"`
-	AutoRoute    *bool              `yaml:"auto-route" json:"auto-route"`
-	RouteAddress *[]netip.Prefix    `yaml:"route-address" json:"route-address,omitempty"`
-}
-
-type SideLoadParams struct {
-	ProviderName string `json:"providerName"`
-	Data         string `json:"data"`
+	LogLevel    string            `json:"log-level"`
 }
 
 type ChangeProxyParams struct {
@@ -115,16 +75,6 @@ type MemoryStats struct {
 	RuntimeOther uint64 `json:"runtimeOther"`
 }
 
-type ExternalProvider struct {
-	Name             string                     `json:"name"`
-	Type             string                     `json:"type"`
-	VehicleType      string                     `json:"vehicle-type"`
-	Count            int                        `json:"count"`
-	Path             string                     `json:"path"`
-	UpdateAt         time.Time                  `json:"update-at"`
-	SubscriptionInfo *provider.SubscriptionInfo `json:"subscription-info"`
-}
-
 type ProxiesData struct {
 	Proxies map[string]any `json:"proxies"`
 	All     []string       `json:"all"`
@@ -135,46 +85,39 @@ type nodeView struct {
 	Type string `json:"type"`
 }
 
+type groupView struct {
+	Name string   `json:"name"`
+	Type string   `json:"type"`
+	All  []string `json:"all"`
+	Now  string   `json:"now"`
+}
+
 const (
-	messageMethod                  CoreMethod = "message"
-	initClashMethod                CoreMethod = "initClash"
-	getIsInitMethod                CoreMethod = "getIsInit"
-	forceGcMethod                  CoreMethod = "forceGc"
-	shutdownMethod                 CoreMethod = "shutdown"
-	validateConfigMethod           CoreMethod = "validateConfig"
-	validateProxiesMethod          CoreMethod = "validateProxies"
-	updateConfigMethod             CoreMethod = "updateConfig"
-	getProxiesMethod               CoreMethod = "getProxies"
-	changeProxyMethod              CoreMethod = "changeProxy"
-	getTrafficMethod               CoreMethod = "getTraffic"
-	getTotalTrafficMethod          CoreMethod = "getTotalTraffic"
-	resetTrafficMethod             CoreMethod = "resetTraffic"
-	asyncTestDelayMethod           CoreMethod = "asyncTestDelay"
-	probeMethod                    CoreMethod = "probe"
-	outboundIpMethod               CoreMethod = "outboundIp"
-	serviceCheckMethod             CoreMethod = "serviceCheck"
-	getConnectionsMethod           CoreMethod = "getConnections"
-	getConnectionCountMethod       CoreMethod = "getConnectionCount"
-	closeConnectionsMethod         CoreMethod = "closeConnections"
-	resetConnectionsMethod         CoreMethod = "resetConnections"
-	closeConnectionMethod          CoreMethod = "closeConnection"
-	getExternalProvidersMethod     CoreMethod = "getExternalProviders"
-	getExternalProviderMethod      CoreMethod = "getExternalProvider"
-	getMemoryStatsMethod           CoreMethod = "getMemoryStats"
-	updateGeoDataMethod            CoreMethod = "updateGeoData"
-	updateExternalProviderMethod   CoreMethod = "updateExternalProvider"
-	sideLoadExternalProviderMethod CoreMethod = "sideLoadExternalProvider"
-	startLogMethod                 CoreMethod = "startLog"
-	stopLogMethod                  CoreMethod = "stopLog"
-	startListenerMethod            CoreMethod = "startListener"
-	stopListenerMethod             CoreMethod = "stopListener"
-	updateDnsMethod                CoreMethod = "updateDns"
-	crashMethod                    CoreMethod = "crash"
-	setupConfigMethod              CoreMethod = "setupConfig"
-	getConfigMethod                CoreMethod = "getConfig"
-	dumpRuleSetMethod              CoreMethod = "dumpRuleSet"
-	clearEffectMethod              CoreMethod = "clearEffect"
-	watchRouteMethod               CoreMethod = "watchRoute"
+	messageMethod         CoreMethod = "message"
+	initCoreMethod        CoreMethod = "initCore"
+	getIsInitMethod       CoreMethod = "getIsInit"
+	forceGcMethod         CoreMethod = "forceGc"
+	shutdownMethod        CoreMethod = "shutdown"
+	validateConfigMethod  CoreMethod = "validateConfig"
+	validateProxiesMethod CoreMethod = "validateProxies"
+	setupConfigMethod     CoreMethod = "setupConfig"
+	getProxiesMethod      CoreMethod = "getProxies"
+	changeProxyMethod     CoreMethod = "changeProxy"
+	getTrafficMethod      CoreMethod = "getTraffic"
+	getTotalTrafficMethod CoreMethod = "getTotalTraffic"
+	resetTrafficMethod    CoreMethod = "resetTraffic"
+	asyncTestDelayMethod  CoreMethod = "asyncTestDelay"
+	probeMethod           CoreMethod = "probe"
+	outboundIpMethod      CoreMethod = "outboundIp"
+	serviceCheckMethod    CoreMethod = "serviceCheck"
+	getMemoryStatsMethod  CoreMethod = "getMemoryStats"
+	startLogMethod        CoreMethod = "startLog"
+	stopLogMethod         CoreMethod = "stopLog"
+	startListenerMethod   CoreMethod = "startListener"
+	stopListenerMethod    CoreMethod = "stopListener"
+	updateDnsMethod       CoreMethod = "updateDns"
+	crashMethod           CoreMethod = "crash"
+	watchRouteMethod      CoreMethod = "watchRoute"
 )
 
 type CoreMethod string
@@ -193,19 +136,13 @@ type Message struct {
 }
 
 const (
-	LogMessage       MessageType = "log"
-	DelayMessage     MessageType = "delay"
-	RequestMessage   MessageType = "request"
-	DnsMessage       MessageType = "dns"
-	LoadedMessage    MessageType = "loaded"
-	GeoUpdateMessage MessageType = "geoUpdate"
+	LogMessage   MessageType = "log"
+	DelayMessage MessageType = "delay"
 	// Named after the Dart enum value, which is how CoreEvent.fromJson decodes it.
 	RouteChangedMessage MessageType = "routeChanged"
 )
 
-type GeoUpdateStatus struct {
-	Type     string `json:"type"`
-	Updating bool   `json:"updating"`
-	Skipped  bool   `json:"skipped,omitempty"`
-	Error    string `json:"error,omitempty"`
+type logEvent struct {
+	LogLevel string `json:"LogLevel"`
+	Payload  string `json:"Payload"`
 }

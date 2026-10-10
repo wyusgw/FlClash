@@ -25,10 +25,6 @@ mixin CoreInterface {
 
   Future<List<String>> validateProxies(List<Map<String, dynamic>> proxies);
 
-  Future<Map<String, dynamic>> getConfig(String path);
-
-  Future<String> dumpRuleSet(String path);
-
   Future<Delay?> asyncTestDelay(String url, String proxyName);
 
   Future<ProbeResult?> probe(ProbeParams params);
@@ -36,8 +32,6 @@ mixin CoreInterface {
   Future<OutboundIpResult?> outboundIp(OutboundIpParams params);
 
   Future<List<ServiceCheckItem>> serviceCheck(ServiceCheckParams params);
-
-  Future<String> updateConfig(UpdateParams updateParams);
 
   Future<String> setupConfig(SetupParams setupParams);
 
@@ -50,19 +44,6 @@ mixin CoreInterface {
   Future<bool> startListener();
 
   Future<bool> stopListener();
-
-  Future<List<ExternalProvider>> getExternalProviders();
-
-  Future<ExternalProvider?> getExternalProvider(String externalProviderName);
-
-  Future<String> updateGeoData(String type);
-
-  Future<String> sideLoadExternalProvider({
-    required String providerName,
-    required String data,
-  });
-
-  Future<String> updateExternalProvider(String providerName);
 
   FutureOr<Traffic> getTraffic(bool onlyStatisticsProxy);
 
@@ -77,18 +58,6 @@ mixin CoreInterface {
   FutureOr<void> stopLog();
 
   Future<bool> crash();
-
-  FutureOr<List<TrackerInfo>> getConnections();
-
-  FutureOr<int> getConnectionCount();
-
-  FutureOr<bool> closeConnection(String id);
-
-  FutureOr<String> clearEffect(int profileId);
-
-  FutureOr<bool> closeConnections();
-
-  FutureOr<bool> resetConnections();
 }
 
 abstract class CoreHandlerInterface with CoreInterface {
@@ -146,7 +115,7 @@ abstract class CoreHandlerInterface with CoreInterface {
   @override
   Future<bool> init(InitParams params) async {
     return await _invokeMethod<bool>(
-          method: CoreMethod.initClash,
+          method: CoreMethod.initCore,
           arguments: params.toJson(),
         ) ??
         false;
@@ -185,39 +154,11 @@ abstract class CoreHandlerInterface with CoreInterface {
   }
 
   @override
-  Future<String> updateConfig(UpdateParams updateParams) async {
-    return _invokeMessage(
-      method: CoreMethod.updateConfig,
-      arguments: updateParams.toJson(),
-    );
-  }
-
-  @override
-  Future<Map<String, dynamic>> getConfig(String path) async {
-    final result = await _invokeMethod<Map<String, dynamic>>(
-      method: CoreMethod.getConfig,
-      arguments: path,
-    );
-    if (result == null) {
-      throw const CoreMethodException(
-        code: 'empty_result',
-        message: 'Core returned an empty config result',
-      );
-    }
-    return result;
-  }
-
-  @override
   Future<String> setupConfig(SetupParams setupParams) async {
     return _invokeMessage(
       method: CoreMethod.setupConfig,
       arguments: setupParams.toJson(),
     );
-  }
-
-  @override
-  Future<String> dumpRuleSet(String path) async {
-    return _invokeMessage(method: CoreMethod.dumpRuleSet, arguments: path);
   }
 
   @override
@@ -262,97 +203,6 @@ abstract class CoreHandlerInterface with CoreInterface {
   }
 
   @override
-  Future<List<ExternalProvider>> getExternalProviders() async {
-    final data = await _invokeMethod<List<dynamic>>(
-      method: CoreMethod.getExternalProviders,
-    );
-    return data
-            ?.whereType<Map>()
-            .map(
-              (item) =>
-                  ExternalProvider.fromJson(Map<String, Object?>.from(item)),
-            )
-            .toList() ??
-        [];
-  }
-
-  @override
-  Future<ExternalProvider?> getExternalProvider(
-    String externalProviderName,
-  ) async {
-    final data = await _invokeMethod<Map<String, dynamic>>(
-      method: CoreMethod.getExternalProvider,
-      arguments: externalProviderName,
-    );
-    return data == null ? null : ExternalProvider.fromJson(data);
-  }
-
-  @override
-  Future<String> updateGeoData(String type) async {
-    return _invokeMessage(method: CoreMethod.updateGeoData, arguments: type);
-  }
-
-  @override
-  Future<String> sideLoadExternalProvider({
-    required String providerName,
-    required String data,
-  }) async {
-    return _invokeMessage(
-      method: CoreMethod.sideLoadExternalProvider,
-      arguments: {'providerName': providerName, 'data': data},
-    );
-  }
-
-  @override
-  Future<String> updateExternalProvider(String providerName) async {
-    return _invokeMessage(
-      method: CoreMethod.updateExternalProvider,
-      arguments: providerName,
-    );
-  }
-
-  @override
-  Future<List<TrackerInfo>> getConnections() async {
-    final data = await _invokeMethod<Map<String, dynamic>>(
-      method: CoreMethod.getConnections,
-    );
-    final connections = data?['connections'];
-    if (connections is! List) {
-      return [];
-    }
-    return connections
-        .whereType<Map>()
-        .map((item) => TrackerInfo.fromJson(Map<String, Object?>.from(item)))
-        .toList();
-  }
-
-  @override
-  Future<int> getConnectionCount() async {
-    return await _invokeMethod<int>(method: CoreMethod.getConnectionCount) ?? 0;
-  }
-
-  @override
-  Future<bool> closeConnections() async {
-    return await _invokeMethod<bool>(method: CoreMethod.closeConnections) ??
-        false;
-  }
-
-  @override
-  Future<bool> resetConnections() async {
-    return await _invokeMethod<bool>(method: CoreMethod.resetConnections) ??
-        false;
-  }
-
-  @override
-  Future<bool> closeConnection(String id) async {
-    return await _invokeMethod<bool>(
-          method: CoreMethod.closeConnection,
-          arguments: id,
-        ) ??
-        false;
-  }
-
-  @override
   Future<Traffic> getTotalTraffic(bool onlyStatisticsProxy) async {
     final data = await _invokeMethod<Map<String, dynamic>>(
       method: CoreMethod.getTotalTraffic,
@@ -368,11 +218,6 @@ abstract class CoreHandlerInterface with CoreInterface {
       arguments: onlyStatisticsProxy,
     );
     return data == null ? const Traffic() : Traffic.fromJson(data);
-  }
-
-  @override
-  Future<String> clearEffect(int profileId) async {
-    return _invokeMessage(method: CoreMethod.clearEffect, arguments: profileId);
   }
 
   @override

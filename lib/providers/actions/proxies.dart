@@ -184,9 +184,8 @@ class ProxiesAction extends _$ProxiesAction {
         _pendingSelectedRollback.remove(groupName) ??
         _currentSelectedName(groupName);
     profilesAction.updateCurrentSelectedMap(groupName, proxyName);
-    final ChangeProxyResult result;
     try {
-      result = await _core.changeProxy(
+      final result = await _core.changeProxy(
         ChangeProxyParams(groupName: groupName, proxyName: proxyName),
       );
       if (result.message.isNotEmpty) {
@@ -202,78 +201,6 @@ class ProxiesAction extends _$ProxiesAction {
         currentAppLocalizations.changeProxyFailedTip,
         level: MessageLevel.error,
       );
-      return;
-    }
-    if (!result.changed) {
-      return;
-    }
-    try {
-      if (ref.read(appSettingProvider).closeConnections) {
-        await _core.closeConnections();
-      } else {
-        await _core.resetConnections();
-      }
-    } catch (error) {
-      commonPrint.log(
-        'changeProxy($groupName -> $proxyName) connection reset failed: $error',
-        logLevel: coreFailureLogLevel(error),
-      );
-    }
-  }
-
-  Future<String> updateProvider(
-    ExternalProvider provider, {
-    bool showLoading = false,
-  }) async {
-    final operation = showLoading
-        ? ref
-              .read(updatingKeysProvider.notifier)
-              .start(provider.updatingKey, scope: UpdatingScope.core)
-        : null;
-    try {
-      final message = await _core.updateExternalProvider(
-        providerName: provider.name,
-      );
-      if (message.isNotEmpty) return message;
-      ref
-          .read(providersProvider.notifier)
-          .setProvider(await _core.getExternalProvider(provider.name));
-      return '';
-    } finally {
-      if (operation != null) {
-        ref
-            .read(updatingKeysProvider.notifier)
-            .stop(provider.updatingKey, operation);
-      }
-    }
-  }
-
-  Future<String> sideLoadExternalProvider(
-    ExternalProvider provider,
-    String data, {
-    bool showLoading = false,
-  }) async {
-    final operation = showLoading
-        ? ref
-              .read(updatingKeysProvider.notifier)
-              .start(provider.updatingKey, scope: UpdatingScope.core)
-        : null;
-    try {
-      final message = await _core.sideLoadExternalProvider(
-        providerName: provider.name,
-        data: data,
-      );
-      if (message.isNotEmpty) return message;
-      ref
-          .read(providersProvider.notifier)
-          .setProvider(await _core.getExternalProvider(provider.name));
-      return '';
-    } finally {
-      if (operation != null) {
-        ref
-            .read(updatingKeysProvider.notifier)
-            .stop(provider.updatingKey, operation);
-      }
     }
   }
 

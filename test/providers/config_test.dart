@@ -21,7 +21,6 @@ void main() {
       final value = container.read(appSettingProvider);
       expect(value.onlyStatisticsProxy, false);
       expect(value.autoLaunch, false);
-      expect(value.closeConnections, true);
       expect(value.tabAnimation, TabAnimation.slide);
     });
 
@@ -125,17 +124,6 @@ void main() {
     });
   });
 
-  group('OverrideDns provider', () {
-    test('default is false', () {
-      expect(container.read(overrideDnsProvider), false);
-    });
-
-    test('can toggle on', () {
-      container.read(overrideDnsProvider.notifier).update((_) => true);
-      expect(container.read(overrideDnsProvider), true);
-    });
-  });
-
   group('ExcludeSSIDs provider', () {
     test('reorders with final insertion index semantics', () {
       container
@@ -202,51 +190,38 @@ void main() {
       expect(config.vpnProps.enable, true);
       expect(config.networkProps.systemProxy, true);
       expect(config.currentProfileId, null);
-      expect(config.overrideDns, false);
       expect(config.hotKeyActions, isEmpty);
-      expect(config.patchClashConfig, const PatchClashConfig());
+      expect(config.coreConfig, const CoreConfig());
       expect(config.excludeSSIDs, isEmpty);
     });
 
     test('reflects updated sub-provider values', () {
       container.read(currentProfileIdProvider.notifier).update((_) => 99);
-      container.read(overrideDnsProvider.notifier).update((_) => true);
       container
-          .read(patchClashConfigProvider.notifier)
-          .update((_) => const PatchClashConfig(mixedPort: 7890));
+          .read(coreSettingProvider.notifier)
+          .update((_) => const CoreConfig(mixedPort: 7890));
       container
           .read(excludeSSIDsProvider.notifier)
           .update((_) => ['Office Wi-Fi']);
 
       final config = container.read(configProvider);
       expect(config.currentProfileId, 99);
-      expect(config.overrideDns, true);
-      expect(config.patchClashConfig.mixedPort, 7890);
+      expect(config.coreConfig.mixedPort, 7890);
       expect(config.excludeSSIDs, ['Office Wi-Fi']);
     });
   });
 
   group('buildConfigOverrides', () {
     test('produces correct overrides', () {
-      const config = Config(
-        themeProps: ThemeProps(),
-        currentProfileId: 7,
-        overrideDns: true,
-        overrideNtp: true,
-      );
+      const config = Config(themeProps: ThemeProps(), currentProfileId: 7);
       final overrides = buildConfigOverrides(config);
-      expect(overrides.length, 13);
+      expect(overrides.length, 11);
 
       final overrideContainer = ProviderContainer(overrides: overrides);
       addTearDown(overrideContainer.dispose);
 
       expect(overrideContainer.read(currentProfileIdProvider), 7);
-      expect(overrideContainer.read(overrideDnsProvider), true);
-      expect(overrideContainer.read(overrideNtpProvider), true);
-      expect(
-        overrideContainer.read(patchClashConfigProvider),
-        config.patchClashConfig,
-      );
+      expect(overrideContainer.read(coreSettingProvider), config.coreConfig);
       expect(overrideContainer.read(excludeSSIDsProvider), config.excludeSSIDs);
       expect(
         overrideContainer.read(appSettingProvider).onlyStatisticsProxy,

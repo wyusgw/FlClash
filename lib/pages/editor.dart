@@ -18,7 +18,6 @@ import 'package:code_forge/code_forge.dart'
     show
         CodeForge,
         CodeForgeContextMenuRequest,
-        CodeForgeCompletionSource,
         CodeForgeController,
         CodeForgeKeyboardShortcuts,
         CodeSelectionStyle,
@@ -30,8 +29,6 @@ import 'package:re_highlight/languages/yaml.dart';
 import 'package:re_highlight/styles/atom-one-dark.dart';
 import 'package:re_highlight/styles/atom-one-light.dart';
 import 'package:rust_api/rust_api.dart' show isRustLibInitialized;
-
-export 'package:fl_clash/features/editor/editor.dart' show EditorSchema;
 
 void _requireRustLib() {
   if (!isRustLibInitialized) {
@@ -62,7 +59,6 @@ class EditorPage extends ConsumerStatefulWidget {
   )?
   onPop;
   final bool? readOnly;
-  final EditorSchema schema;
 
   const EditorPage({
     super.key,
@@ -73,8 +69,7 @@ class EditorPage extends ConsumerStatefulWidget {
     this.onSave,
     this.onPop,
     this.readOnly,
-    this.language = Language.yaml,
-    this.schema = EditorSchema.config,
+    this.language = Language.json,
   }) : assert(content == null || load == null);
 
   @override
@@ -335,7 +330,6 @@ class _EditorPageState extends ConsumerState<EditorPage> {
                 key: _editorKey,
                 content: _original,
                 language: widget.language,
-                schema: widget.schema,
                 readOnly: readOnly,
                 undoController: _undoController,
                 onReady: _handleReady,
@@ -354,7 +348,6 @@ class _EditorPageState extends ConsumerState<EditorPage> {
 class EditorView extends ConsumerStatefulWidget {
   final String? content;
   final Language language;
-  final EditorSchema schema;
   final bool readOnly;
   final UndoRedoController? undoController;
   final VoidCallback? onReady;
@@ -362,8 +355,7 @@ class EditorView extends ConsumerStatefulWidget {
   const EditorView({
     super.key,
     required this.content,
-    this.language = Language.yaml,
-    this.schema = EditorSchema.config,
+    this.language = Language.json,
     this.readOnly = false,
     this.undoController,
     this.onReady,
@@ -502,7 +494,6 @@ class EditorViewState extends ConsumerState<EditorView> {
       undoController: _undoController,
       readOnly: widget.readOnly,
       language: widget.language,
-      schema: widget.schema,
       error: _initError,
       isLoading:
           _initError == null && (widget.content == null || controller == null),
@@ -540,7 +531,6 @@ class _EditorBody extends StatelessWidget {
     required this.undoController,
     required this.readOnly,
     required this.language,
-    required this.schema,
     required this.error,
     required this.isLoading,
   });
@@ -550,7 +540,6 @@ class _EditorBody extends StatelessWidget {
   final UndoRedoController undoController;
   final bool readOnly;
   final Language language;
-  final EditorSchema schema;
   final Object? error;
   final bool isLoading;
 
@@ -574,7 +563,6 @@ class _EditorBody extends StatelessWidget {
             undoController: undoController,
             readOnly: readOnly,
             language: language,
-            schema: schema,
           ),
         FadeBox(
           child: isLoading
@@ -600,7 +588,6 @@ class _CodeEditor extends ConsumerStatefulWidget {
     required this.undoController,
     required this.readOnly,
     required this.language,
-    required this.schema,
   });
 
   final CodeForgeController controller;
@@ -608,7 +595,6 @@ class _CodeEditor extends ConsumerStatefulWidget {
   final UndoRedoController undoController;
   final bool readOnly;
   final Language language;
-  final EditorSchema schema;
 
   @override
   ConsumerState<_CodeEditor> createState() => _CodeEditorState();
@@ -624,10 +610,6 @@ class _CodeEditorState extends ConsumerState<_CodeEditor> {
   TextStyle? _lineNumberStyle;
   EdgeInsets _innerPadding = const EdgeInsets.only(right: 16);
   late bool _findActive = widget.findController.isActive;
-  late CodeForgeCompletionSource? _completionSource = editorCompletionSource(
-    widget.language,
-    widget.schema,
-  );
 
   @override
   void initState() {
@@ -642,13 +624,6 @@ class _CodeEditorState extends ConsumerState<_CodeEditor> {
       oldWidget.findController.removeListener(_handleFindChanged);
       widget.findController.addListener(_handleFindChanged);
       _handleFindChanged();
-    }
-    if (oldWidget.language != widget.language ||
-        oldWidget.schema != widget.schema) {
-      _completionSource = editorCompletionSource(
-        widget.language,
-        widget.schema,
-      );
     }
   }
 
@@ -802,7 +777,6 @@ class _CodeEditorState extends ConsumerState<_CodeEditor> {
     );
     widget.controller
       ..enableLocalSuggestions = !widget.readOnly
-      ..completionSource = widget.readOnly ? null : _completionSource
       ..onClipboardWriteFailed = _showClipboardWriteFailed;
     return CodeForge(
       controller: widget.controller,

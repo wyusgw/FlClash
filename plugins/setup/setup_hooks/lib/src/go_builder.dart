@@ -126,12 +126,19 @@ class GoBuilder {
 
   // AGP strips the copy it packages into the APK, and Crashlytics reads the
   // unstripped one from the merged native libs, so Android keeps its symbols.
-  String _ldflags(Target target) => target.isLib
-      ? config.goLdflags
-            .split(' ')
-            .where((flag) => flag != '-s' && flag != '-w')
-            .join(' ')
-      : config.goLdflags;
+  //
+  // Xray's Android dependency anet reaches into net.zoneCache through
+  // go:linkname, which the Go linker refuses since 1.23 unless it is told not
+  // to check.
+  String _ldflags(Target target) {
+    final flags = target.isLib
+        ? config.goLdflags
+              .split(' ')
+              .where((flag) => flag != '-s' && flag != '-w')
+              .toList()
+        : config.goLdflags.split(' ');
+    return [...flags, '-checklinkname=0'].join(' ');
+  }
 
   List<String> _buildArguments(Target target, {String? outFile}) => [
     'build',

@@ -1175,26 +1175,6 @@ class AppLocalizations {
     );
   }
 
-  /// `External controller`
-  String get externalController {
-    return Intl.message(
-      'External controller',
-      name: 'externalController',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `When enabled, the Clash core can be controlled on port 9090`
-  String get externalControllerDesc {
-    return Intl.message(
-      'When enabled, the Clash core can be controlled on port 9090',
-      name: 'externalControllerDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `When enabled, IPv6 traffic can be received`
   String get ipv6Desc {
     return Intl.message(
@@ -1250,59 +1230,9 @@ class AppLocalizations {
     return Intl.message('User-Agent', name: 'userAgent', desc: '', args: []);
   }
 
-  /// `Unified delay`
-  String get unifiedDelay {
-    return Intl.message(
-      'Unified delay',
-      name: 'unifiedDelay',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `TCP concurrent`
-  String get tcpConcurrent {
-    return Intl.message(
-      'TCP concurrent',
-      name: 'tcpConcurrent',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Geo low-memory mode`
-  String get geodataLoader {
-    return Intl.message(
-      'Geo low-memory mode',
-      name: 'geodataLoader',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Requests`
   String get requests {
     return Intl.message('Requests', name: 'requests', desc: '', args: []);
-  }
-
-  /// `Recent requests`
-  String get recentRequests {
-    return Intl.message(
-      'Recent requests',
-      name: 'recentRequests',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Find process`
-  String get findProcessMode {
-    return Intl.message(
-      'Find process',
-      name: 'findProcessMode',
-      desc: '',
-      args: [],
-    );
   }
 
   /// `Init`
@@ -1323,16 +1253,6 @@ class AppLocalizations {
   /// `Connections`
   String get connections {
     return Intl.message('Connections', name: 'connections', desc: '', args: []);
-  }
-
-  /// `Live connections`
-  String get liveConnections {
-    return Intl.message(
-      'Live connections',
-      name: 'liveConnections',
-      desc: '',
-      args: [],
-    );
   }
 
   /// `Inbound`
@@ -1495,26 +1415,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Auto close connections`
-  String get autoCloseConnections {
-    return Intl.message(
-      'Auto close connections',
-      name: 'autoCloseConnections',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Close connections automatically after switching nodes`
-  String get autoCloseConnectionsDesc {
-    return Intl.message(
-      'Close connections automatically after switching nodes',
-      name: 'autoCloseConnectionsDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Only count proxy traffic`
   String get onlyStatisticsProxy {
     return Intl.message(
@@ -1560,16 +1460,6 @@ class AppLocalizations {
     return Intl.message(
       'Show the blurred desktop behind the window through the sidebar',
       name: 'sidebarBlurDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `TCP keep-alive interval`
-  String get keepAliveIntervalDesc {
-    return Intl.message(
-      'TCP keep-alive interval',
-      name: 'keepAliveIntervalDesc',
       desc: '',
       args: [],
     );
@@ -1780,16 +1670,6 @@ class AppLocalizations {
     return Intl.message('Format', name: 'format', desc: '', args: []);
   }
 
-  /// `Only remote providers are supported`
-  String get providerUrlTip {
-    return Intl.message(
-      'Only remote providers are supported',
-      name: 'providerUrlTip',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Subscription info`
   String get subscriptionInfo {
     return Intl.message(
@@ -1800,124 +1680,9 @@ class AppLocalizations {
     );
   }
 
-  /// `Override DNS`
-  String get overrideDns {
-    return Intl.message(
-      'Override DNS',
-      name: 'overrideDns',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Override NTP`
-  String get overrideNtp {
-    return Intl.message(
-      'Override NTP',
-      name: 'overrideNtp',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Take the time from an NTP server instead of the system clock`
-  String get ntpStatusDesc {
-    return Intl.message(
-      'Take the time from an NTP server instead of the system clock',
-      name: 'ntpStatusDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Server`
   String get server {
     return Intl.message('Server', name: 'server', desc: '', args: []);
-  }
-
-  /// `Sync interval (minutes)`
-  String get ntpInterval {
-    return Intl.message(
-      'Sync interval (minutes)',
-      name: 'ntpInterval',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Dialer proxy`
-  String get dialerProxy {
-    return Intl.message(
-      'Dialer proxy',
-      name: 'dialerProxy',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The outbound used to reach the NTP server`
-  String get dialerProxyDesc {
-    return Intl.message(
-      'The outbound used to reach the NTP server',
-      name: 'dialerProxyDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Write to system`
-  String get writeToSystem {
-    return Intl.message(
-      'Write to system',
-      name: 'writeToSystem',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Also set the system clock; Android ignores it`
-  String get writeToSystemDesc {
-    return Intl.message(
-      'Also set the system clock; Android ignores it',
-      name: 'writeToSystemDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Override entries`
-  String get overrideEntries {
-    return Intl.message(
-      'Override entries',
-      name: 'overrideEntries',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Add override entry`
-  String get addOverrideEntry {
-    return Intl.message(
-      'Add override entry',
-      name: 'addOverrideEntry',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Discard the changes?`
-  String get discardChanges {
-    return Intl.message(
-      'Discard the changes?',
-      name: 'discardChanges',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Quick edit`
-  String get quickEdit {
-    return Intl.message('Quick edit', name: 'quickEdit', desc: '', args: []);
   }
 
   /// `Status`
@@ -1925,169 +1690,9 @@ class AppLocalizations {
     return Intl.message('Status', name: 'status', desc: '', args: []);
   }
 
-  /// `When disabled, the system DNS is used`
-  String get statusDesc {
-    return Intl.message(
-      'When disabled, the system DNS is used',
-      name: 'statusDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Respect rules`
-  String get respectRules {
-    return Intl.message(
-      'Respect rules',
-      name: 'respectRules',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `DNS connections follow rules; requires Proxy Server Nameserver`
-  String get respectRulesDesc {
-    return Intl.message(
-      'DNS connections follow rules; requires Proxy Server Nameserver',
-      name: 'respectRulesDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `DNS mode`
-  String get dnsMode {
-    return Intl.message('DNS mode', name: 'dnsMode', desc: '', args: []);
-  }
-
-  /// `Fake-IP range`
-  String get fakeipRange {
-    return Intl.message(
-      'Fake-IP range',
-      name: 'fakeipRange',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Fake-IP filter`
-  String get fakeipFilter {
-    return Intl.message(
-      'Fake-IP filter',
-      name: 'fakeipFilter',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Use hosts`
-  String get useHosts {
-    return Intl.message('Use hosts', name: 'useHosts', desc: '', args: []);
-  }
-
-  /// `Use system hosts`
-  String get useSystemHosts {
-    return Intl.message(
-      'Use system hosts',
-      name: 'useSystemHosts',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Fallback filter`
-  String get fallbackFilter {
-    return Intl.message(
-      'Fallback filter',
-      name: 'fallbackFilter',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Domain`
   String get domain {
     return Intl.message('Domain', name: 'domain', desc: '', args: []);
-  }
-
-  /// `Listen routing mark`
-  String get listenRoutingMark {
-    return Intl.message(
-      'Listen routing mark',
-      name: 'listenRoutingMark',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Linux only`
-  String get listenRoutingMarkDesc {
-    return Intl.message(
-      'Linux only',
-      name: 'listenRoutingMarkDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `IPv6 timeout (ms)`
-  String get ipv6Timeout {
-    return Intl.message(
-      'IPv6 timeout (ms)',
-      name: 'ipv6Timeout',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Cache algorithm`
-  String get cacheAlgorithm {
-    return Intl.message(
-      'Cache algorithm',
-      name: 'cacheAlgorithm',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Cache size`
-  String get cacheMaxSize {
-    return Intl.message('Cache size', name: 'cacheMaxSize', desc: '', args: []);
-  }
-
-  /// `Fake-IP range (IPv6)`
-  String get fakeipRange6 {
-    return Intl.message(
-      'Fake-IP range (IPv6)',
-      name: 'fakeipRange6',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Fake-IP filter mode`
-  String get fakeipFilterMode {
-    return Intl.message(
-      'Fake-IP filter mode',
-      name: 'fakeipFilterMode',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `blacklist excludes matches, whitelist fakes only matches, rule matches as rules`
-  String get fakeipFilterModeDesc {
-    return Intl.message(
-      'blacklist excludes matches, whitelist fakes only matches, rule matches as rules',
-      name: 'fakeipFilterModeDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Fake-IP TTL`
-  String get fakeipTtl {
-    return Intl.message('Fake-IP TTL', name: 'fakeipTtl', desc: '', args: []);
   }
 
   /// `Reset`
@@ -2320,11 +1925,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Stack mode`
-  String get stackMode {
-    return Intl.message('Stack mode', name: 'stackMode', desc: '', args: []);
-  }
-
   /// `Network`
   String get network {
     return Intl.message('Network', name: 'network', desc: '', args: []);
@@ -2415,66 +2015,6 @@ class AppLocalizations {
     return Intl.message(
       'Route addresses',
       name: 'routeAddress',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Outbound interface`
-  String get interfaceNameMode {
-    return Intl.message(
-      'Outbound interface',
-      name: 'interfaceNameMode',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Clear`
-  String get interfaceNameModeClear {
-    return Intl.message(
-      'Clear',
-      name: 'interfaceNameModeClear',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Follow config`
-  String get interfaceNameModeFollow {
-    return Intl.message(
-      'Follow config',
-      name: 'interfaceNameModeFollow',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Custom`
-  String get interfaceNameModeCustom {
-    return Intl.message(
-      'Custom',
-      name: 'interfaceNameModeCustom',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Interface name`
-  String get interfaceName {
-    return Intl.message(
-      'Interface name',
-      name: 'interfaceName',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Network interface used for outbound connections`
-  String get interfaceNameDesc {
-    return Intl.message(
-      'Network interface used for outbound connections',
-      name: 'interfaceNameDesc',
       desc: '',
       args: [],
     );
@@ -2730,26 +2270,6 @@ class AppLocalizations {
     return Intl.message('None', name: 'none', desc: '', args: []);
   }
 
-  /// `Advanced configuration`
-  String get advancedConfig {
-    return Intl.message(
-      'Advanced configuration',
-      name: 'advancedConfig',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Network, DNS, added rules, and scripts`
-  String get advancedConfigDesc {
-    return Intl.message(
-      'Network, DNS, added rules, and scripts',
-      name: 'advancedConfigDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `{count} selected`
   String selectedCountTitle(Object count) {
     return Intl.message(
@@ -2760,16 +2280,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Add rule`
-  String get addRule {
-    return Intl.message('Add rule', name: 'addRule', desc: '', args: []);
-  }
-
-  /// `Rule name`
-  String get ruleName {
-    return Intl.message('Rule name', name: 'ruleName', desc: '', args: []);
-  }
-
   /// `Content`
   String get content {
     return Intl.message('Content', name: 'content', desc: '', args: []);
@@ -2778,46 +2288,6 @@ class AppLocalizations {
   /// `Sub-rule`
   String get subRule {
     return Intl.message('Sub-rule', name: 'subRule', desc: '', args: []);
-  }
-
-  /// `Rule target`
-  String get ruleTarget {
-    return Intl.message('Rule target', name: 'ruleTarget', desc: '', args: []);
-  }
-
-  /// `MATCH-TARGET`
-  String get matchTarget {
-    return Intl.message(
-      'MATCH-TARGET',
-      name: 'matchTarget',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Follow profile`
-  String get followProfile {
-    return Intl.message(
-      'Follow profile',
-      name: 'followProfile',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Source IP`
-  String get sourceIp {
-    return Intl.message('Source IP', name: 'sourceIp', desc: '', args: []);
-  }
-
-  /// `Don't resolve IP`
-  String get noResolve {
-    return Intl.message(
-      'Don\'t resolve IP',
-      name: 'noResolve',
-      desc: '',
-      args: [],
-    );
   }
 
   /// `Save the changes?`
@@ -3240,16 +2710,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Are you sure you want to delete the selected {label}?`
-  String deleteMultipTip(Object label) {
-    return Intl.message(
-      'Are you sure you want to delete the selected $label?',
-      name: 'deleteMultipTip',
-      desc: '',
-      args: [label],
-    );
-  }
-
   /// `No {label} yet`
   String nullTip(Object label) {
     return Intl.message(
@@ -3275,34 +2735,9 @@ class AppLocalizations {
     return Intl.message('Unnamed', name: 'unnamed', desc: '', args: []);
   }
 
-  /// `Please enter a script name`
-  String get pleaseEnterScriptName {
-    return Intl.message(
-      'Please enter a script name',
-      name: 'pleaseEnterScriptName',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Mixed port`
   String get mixedPort {
     return Intl.message('Mixed port', name: 'mixedPort', desc: '', args: []);
-  }
-
-  /// `SOCKS port`
-  String get socksPort {
-    return Intl.message('SOCKS port', name: 'socksPort', desc: '', args: []);
-  }
-
-  /// `Redir port`
-  String get redirPort {
-    return Intl.message('Redir port', name: 'redirPort', desc: '', args: []);
-  }
-
-  /// `TProxy port`
-  String get tproxyPort {
-    return Intl.message('TProxy port', name: 'tproxyPort', desc: '', args: []);
   }
 
   /// `{label} must be between 1024 and 49151`
@@ -3312,16 +2747,6 @@ class AppLocalizations {
       name: 'portTip',
       desc: '',
       args: [label],
-    );
-  }
-
-  /// `Please enter a different port`
-  String get portConflictTip {
-    return Intl.message(
-      'Please enter a different port',
-      name: 'portConflictTip',
-      desc: '',
-      args: [],
     );
   }
 
@@ -3335,26 +2760,6 @@ class AppLocalizations {
     return Intl.message(
       'Import from file',
       name: 'importFile',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Import from URL`
-  String get importUrl {
-    return Intl.message(
-      'Import from URL',
-      name: 'importUrl',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Start from scratch`
-  String get startFromScratch {
-    return Intl.message(
-      'Start from scratch',
-      name: 'startFromScratch',
       desc: '',
       args: [],
     );
@@ -3380,16 +2785,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Creation time`
-  String get creationTime {
-    return Intl.message(
-      'Creation time',
-      name: 'creationTime',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Process`
   String get process {
     return Intl.message('Process', name: 'process', desc: '', args: []);
@@ -3405,56 +2800,6 @@ class AppLocalizations {
     return Intl.message('Destination', name: 'destination', desc: '', args: []);
   }
 
-  /// `Destination GeoIP`
-  String get destinationGeoIP {
-    return Intl.message(
-      'Destination GeoIP',
-      name: 'destinationGeoIP',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Destination IP ASN`
-  String get destinationIPASN {
-    return Intl.message(
-      'Destination IP ASN',
-      name: 'destinationIPASN',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Special proxy`
-  String get specialProxy {
-    return Intl.message(
-      'Special proxy',
-      name: 'specialProxy',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Special rules`
-  String get specialRules {
-    return Intl.message(
-      'Special rules',
-      name: 'specialRules',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Remote destination`
-  String get remoteDestination {
-    return Intl.message(
-      'Remote destination',
-      name: 'remoteDestination',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Network type`
   String get networkType {
     return Intl.message(
@@ -3463,11 +2808,6 @@ class AppLocalizations {
       desc: '',
       args: [],
     );
-  }
-
-  /// `Proxy chain`
-  String get proxyChains {
-    return Intl.message('Proxy chain', name: 'proxyChains', desc: '', args: []);
   }
 
   /// `Log`
@@ -3575,161 +2915,6 @@ class AppLocalizations {
     return Intl.message(
       'When enabled, crash logs without sensitive information are uploaded automatically when the app crashes',
       name: 'crashlyticsTip',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Append system DNS`
-  String get appendSystemDns {
-    return Intl.message(
-      'Append system DNS',
-      name: 'appendSystemDns',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit rule`
-  String get editRule {
-    return Intl.message('Edit rule', name: 'editRule', desc: '', args: []);
-  }
-
-  /// `Override mode`
-  String get overrideMode {
-    return Intl.message(
-      'Override mode',
-      name: 'overrideMode',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Standard mode: overrides the basic configuration and offers simple rule additions`
-  String get standardModeDesc {
-    return Intl.message(
-      'Standard mode: overrides the basic configuration and offers simple rule additions',
-      name: 'standardModeDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Script mode: uses external extension scripts to override the configuration in one click`
-  String get scriptModeDesc {
-    return Intl.message(
-      'Script mode: uses external extension scripts to override the configuration in one click',
-      name: 'scriptModeDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Added rules`
-  String get addedRules {
-    return Intl.message('Added rules', name: 'addedRules', desc: '', args: []);
-  }
-
-  /// `Control global added rules`
-  String get controlGlobalAddedRules {
-    return Intl.message(
-      'Control global added rules',
-      name: 'controlGlobalAddedRules',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Quick add`
-  String get quickAdd {
-    return Intl.message('Quick add', name: 'quickAdd', desc: '', args: []);
-  }
-
-  /// `Block QUIC`
-  String get rulePresetBlockQuic {
-    return Intl.message(
-      'Block QUIC',
-      name: 'rulePresetBlockQuic',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Block STUN`
-  String get rulePresetBlockStun {
-    return Intl.message(
-      'Block STUN',
-      name: 'rulePresetBlockStun',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Block DNS over TLS`
-  String get rulePresetBlockDot {
-    return Intl.message(
-      'Block DNS over TLS',
-      name: 'rulePresetBlockDot',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Apple and Microsoft direct`
-  String get rulePresetSystemServicesDirect {
-    return Intl.message(
-      'Apple and Microsoft direct',
-      name: 'rulePresetSystemServicesDirect',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `BitTorrent direct`
-  String get rulePresetBittorrentDirect {
-    return Intl.message(
-      'BitTorrent direct',
-      name: 'rulePresetBittorrentDirect',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `LAN direct`
-  String get rulePresetLanDirect {
-    return Intl.message(
-      'LAN direct',
-      name: 'rulePresetLanDirect',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Override script`
-  String get overrideScript {
-    return Intl.message(
-      'Override script',
-      name: 'overrideScript',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Go to script configuration`
-  String get goToConfigureScript {
-    return Intl.message(
-      'Go to script configuration',
-      name: 'goToConfigureScript',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit global rules`
-  String get editGlobalRules {
-    return Intl.message(
-      'Edit global rules',
-      name: 'editGlobalRules',
       desc: '',
       args: [],
     );
@@ -3885,26 +3070,6 @@ class AppLocalizations {
     return Intl.message(
       'This page has changes. Are you sure you want to reset?',
       name: 'resetPageChangesTip',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Custom`
-  String get overwriteTypeCustom {
-    return Intl.message(
-      'Custom',
-      name: 'overwriteTypeCustom',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Custom mode: fully customize proxies, proxy groups and rules`
-  String get overwriteTypeCustomDesc {
-    return Intl.message(
-      'Custom mode: fully customize proxies, proxy groups and rules',
-      name: 'overwriteTypeCustomDesc',
       desc: '',
       args: [],
     );
@@ -4120,119 +3285,9 @@ class AppLocalizations {
     return Intl.message('Delay test', name: 'delayTest', desc: '', args: []);
   }
 
-  /// `Proxy group is empty`
-  String get proxyGroupEmpty {
-    return Intl.message(
-      'Proxy group is empty',
-      name: 'proxyGroupEmpty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Duplicate proxy group name`
-  String get proxyGroupNameDuplicate {
-    return Intl.message(
-      'Duplicate proxy group name',
-      name: 'proxyGroupNameDuplicate',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Are you sure you want to exit the current window?`
-  String get confirmExitWindow {
-    return Intl.message(
-      'Are you sure you want to exit the current window?',
-      name: 'confirmExitWindow',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Data changes detected. Save them?`
-  String get dataChangedSave {
-    return Intl.message(
-      'Data changes detected. Save them?',
-      name: 'dataChangedSave',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Select proxy providers`
-  String get selectProxyProviders {
-    return Intl.message(
-      'Select proxy providers',
-      name: 'selectProxyProviders',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Proxy filter`
-  String get proxyFilter {
-    return Intl.message(
-      'Proxy filter',
-      name: 'proxyFilter',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Optional`
   String get optional {
     return Intl.message('Optional', name: 'optional', desc: '', args: []);
-  }
-
-  /// `Max failures`
-  String get maxFailedTimes {
-    return Intl.message(
-      'Max failures',
-      name: 'maxFailedTimes',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Test interval`
-  String get testInterval {
-    return Intl.message(
-      'Test interval',
-      name: 'testInterval',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Exclude proxy filter`
-  String get excludeProxyFilter {
-    return Intl.message(
-      'Exclude proxy filter',
-      name: 'excludeProxyFilter',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Exclude type`
-  String get excludeType {
-    return Intl.message(
-      'Exclude type',
-      name: 'excludeType',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Expected status`
-  String get expectedStatus {
-    return Intl.message(
-      'Expected status',
-      name: 'expectedStatus',
-      desc: '',
-      args: [],
-    );
   }
 
   /// `Strategy`
@@ -4243,26 +3298,6 @@ class AppLocalizations {
   /// `Tolerance`
   String get tolerance {
     return Intl.message('Tolerance', name: 'tolerance', desc: '', args: []);
-  }
-
-  /// `Select proxies`
-  String get selectProxies {
-    return Intl.message(
-      'Select proxies',
-      name: 'selectProxies',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Enter the proxy group name`
-  String get inputProxyGroupName {
-    return Intl.message(
-      'Enter the proxy group name',
-      name: 'inputProxyGroupName',
-      desc: '',
-      args: [],
-    );
   }
 
   /// `Helper service unavailable; TUN mode cannot be enabled. Reinstall FlClash to restore it.`
@@ -4295,264 +3330,9 @@ class AppLocalizations {
     );
   }
 
-  /// `Hide from list`
-  String get hideFromList {
-    return Intl.message(
-      'Hide from list',
-      name: 'hideFromList',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Test when used`
-  String get testWhenUsed {
-    return Intl.message(
-      'Test when used',
-      name: 'testWhenUsed',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Disable UDP`
-  String get disableUDP {
-    return Intl.message('Disable UDP', name: 'disableUDP', desc: '', args: []);
-  }
-
-  /// `Are you sure you want to delete this proxy group?`
-  String get confirmDeleteProxyGroup {
-    return Intl.message(
-      'Are you sure you want to delete this proxy group?',
-      name: 'confirmDeleteProxyGroup',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Rule is empty`
-  String get ruleEmpty {
-    return Intl.message('Rule is empty', name: 'ruleEmpty', desc: '', args: []);
-  }
-
-  /// `Enter the rule content`
-  String get inputRuleContent {
-    return Intl.message(
-      'Enter the rule content',
-      name: 'inputRuleContent',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Rule set`
-  String get ruleSet {
-    return Intl.message('Rule set', name: 'ruleSet', desc: '', args: []);
-  }
-
-  /// `Please select a rule set`
-  String get selectRuleSet {
-    return Intl.message(
-      'Please select a rule set',
-      name: 'selectRuleSet',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Split strategy`
-  String get splitStrategy {
-    return Intl.message(
-      'Split strategy',
-      name: 'splitStrategy',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Please select a split strategy`
-  String get selectSplitStrategy {
-    return Intl.message(
-      'Please select a split strategy',
-      name: 'selectSplitStrategy',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Please select a sub-rule`
-  String get selectSubRule {
-    return Intl.message(
-      'Please select a sub-rule',
-      name: 'selectSubRule',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Don't resolve hostname`
-  String get noResolveHostname {
-    return Intl.message(
-      'Don\'t resolve hostname',
-      name: 'noResolveHostname',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match source IP`
-  String get matchSourceIp {
-    return Intl.message(
-      'Match source IP',
-      name: 'matchSourceIp',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Basic info`
   String get basicInfo {
     return Intl.message('Basic info', name: 'basicInfo', desc: '', args: []);
-  }
-
-  /// `Additional parameters`
-  String get additionalParameters {
-    return Intl.message(
-      'Additional parameters',
-      name: 'additionalParameters',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Proxy type`
-  String get proxyType {
-    return Intl.message('Proxy type', name: 'proxyType', desc: '', args: []);
-  }
-
-  /// `Basic strategies`
-  String get basicStrategy {
-    return Intl.message(
-      'Basic strategies',
-      name: 'basicStrategy',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit proxy`
-  String get editProxy {
-    return Intl.message('Edit proxy', name: 'editProxy', desc: '', args: []);
-  }
-
-  /// `Include all proxy providers`
-  String get includeAllProxyProviders {
-    return Intl.message(
-      'Include all proxy providers',
-      name: 'includeAllProxyProviders',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `When enabled, the group takes every proxy provider of this profile: the subscription's own, plus the profiles and app proxy providers any proxy group uses`
-  String get includeAllProxyProvidersTip {
-    return Intl.message(
-      'When enabled, the group takes every proxy provider of this profile: the subscription\'s own, plus the profiles and app proxy providers any proxy group uses',
-      name: 'includeAllProxyProvidersTip',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Add proxy providers`
-  String get addProxyProviders {
-    return Intl.message(
-      'Add proxy providers',
-      name: 'addProxyProviders',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Include all proxies`
-  String get includeAllProxies {
-    return Intl.message(
-      'Include all proxies',
-      name: 'includeAllProxies',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Imports all proxies outside proxy groups; extra proxy groups can be added below`
-  String get includeAllProxiesTip {
-    return Intl.message(
-      'Imports all proxies outside proxy groups; extra proxy groups can be added below',
-      name: 'includeAllProxiesTip',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Proxies are empty`
-  String get proxiesEmpty {
-    return Intl.message(
-      'Proxies are empty',
-      name: 'proxiesEmpty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Add proxies`
-  String get addProxies {
-    return Intl.message('Add proxies', name: 'addProxies', desc: '', args: []);
-  }
-
-  /// `Add proxy group`
-  String get addProxyGroup {
-    return Intl.message(
-      'Add proxy group',
-      name: 'addProxyGroup',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit proxy group`
-  String get editProxyGroup {
-    return Intl.message(
-      'Edit proxy group',
-      name: 'editProxyGroup',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Confirming will overwrite existing data`
-  String get confirmOverwriteTip {
-    return Intl.message(
-      'Confirming will overwrite existing data',
-      name: 'confirmOverwriteTip',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Data detected in the configuration`
-  String get configDataDetected {
-    return Intl.message(
-      'Data detected in the configuration',
-      name: 'configDataDetected',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Quick fill`
-  String get quickFill {
-    return Intl.message('Quick fill', name: 'quickFill', desc: '', args: []);
   }
 
   /// `Icon URL`
@@ -4570,529 +3350,14 @@ class AppLocalizations {
     );
   }
 
-  /// `No records`
-  String get noRecords {
-    return Intl.message('No records', name: 'noRecords', desc: '', args: []);
-  }
-
   /// `Custom`
   String get custom {
     return Intl.message('Custom', name: 'custom', desc: '', args: []);
   }
 
-  /// `Match the full domain`
-  String get ruleActionDomainDesc {
-    return Intl.message(
-      'Match the full domain',
-      name: 'ruleActionDomainDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match a domain suffix`
-  String get ruleActionDomainSuffixDesc {
-    return Intl.message(
-      'Match a domain suffix',
-      name: 'ruleActionDomainSuffixDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match a domain keyword`
-  String get ruleActionDomainKeywordDesc {
-    return Intl.message(
-      'Match a domain keyword',
-      name: 'ruleActionDomainKeywordDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match a domain regex`
-  String get ruleActionDomainRegexDesc {
-    return Intl.message(
-      'Match a domain regex',
-      name: 'ruleActionDomainRegexDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Wildcard match; only * and ? are supported`
-  String get ruleActionDomainWildcardDesc {
-    return Intl.message(
-      'Wildcard match; only * and ? are supported',
-      name: 'ruleActionDomainWildcardDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match domains in Geosite`
-  String get ruleActionGeositeDesc {
-    return Intl.message(
-      'Match domains in Geosite',
-      name: 'ruleActionGeositeDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match an IP address range`
-  String get ruleActionIpCidrDesc {
-    return Intl.message(
-      'Match an IP address range',
-      name: 'ruleActionIpCidrDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match an IP address range; IP-CIDR6 is just an alias`
-  String get ruleActionIpCidr6Desc {
-    return Intl.message(
-      'Match an IP address range; IP-CIDR6 is just an alias',
-      name: 'ruleActionIpCidr6Desc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match an IP suffix range`
-  String get ruleActionIpSuffixDesc {
-    return Intl.message(
-      'Match an IP suffix range',
-      name: 'ruleActionIpSuffixDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match the IP's ASN`
-  String get ruleActionIpAsnDesc {
-    return Intl.message(
-      'Match the IP\'s ASN',
-      name: 'ruleActionIpAsnDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match the IP's country code`
-  String get ruleActionGeoipDesc {
-    return Intl.message(
-      'Match the IP\'s country code',
-      name: 'ruleActionGeoipDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match the source IP's country code`
-  String get ruleActionSrcGeoipDesc {
-    return Intl.message(
-      'Match the source IP\'s country code',
-      name: 'ruleActionSrcGeoipDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match the source IP's ASN`
-  String get ruleActionSrcIpAsnDesc {
-    return Intl.message(
-      'Match the source IP\'s ASN',
-      name: 'ruleActionSrcIpAsnDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match a source IP address range`
-  String get ruleActionSrcIpCidrDesc {
-    return Intl.message(
-      'Match a source IP address range',
-      name: 'ruleActionSrcIpCidrDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match a source IP suffix range`
-  String get ruleActionSrcIpSuffixDesc {
-    return Intl.message(
-      'Match a source IP suffix range',
-      name: 'ruleActionSrcIpSuffixDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match the destination port range`
-  String get ruleActionDstPortDesc {
-    return Intl.message(
-      'Match the destination port range',
-      name: 'ruleActionDstPortDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match the source port range`
-  String get ruleActionSrcPortDesc {
-    return Intl.message(
-      'Match the source port range',
-      name: 'ruleActionSrcPortDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match the inbound port`
-  String get ruleActionInPortDesc {
-    return Intl.message(
-      'Match the inbound port',
-      name: 'ruleActionInPortDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match the inbound type`
-  String get ruleActionInTypeDesc {
-    return Intl.message(
-      'Match the inbound type',
-      name: 'ruleActionInTypeDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match the inbound username; separate multiple usernames with /`
-  String get ruleActionInUserDesc {
-    return Intl.message(
-      'Match the inbound username; separate multiple usernames with /',
-      name: 'ruleActionInUserDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match the inbound name`
-  String get ruleActionInNameDesc {
-    return Intl.message(
-      'Match the inbound name',
-      name: 'ruleActionInNameDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match the rematch name; separate multiple names with /`
-  String get ruleActionRematchNameDesc {
-    return Intl.message(
-      'Match the rematch name; separate multiple names with /',
-      name: 'ruleActionRematchNameDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match by the full process path`
-  String get ruleActionProcessPathDesc {
-    return Intl.message(
-      'Match by the full process path',
-      name: 'ruleActionProcessPathDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match by process path regex`
-  String get ruleActionProcessPathRegexDesc {
-    return Intl.message(
-      'Match by process path regex',
-      name: 'ruleActionProcessPathRegexDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match by process path wildcard; only * and ? are supported`
-  String get ruleActionProcessPathWildcardDesc {
-    return Intl.message(
-      'Match by process path wildcard; only * and ? are supported',
-      name: 'ruleActionProcessPathWildcardDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match by process name; matches the package name on Android`
-  String get ruleActionProcessNameDesc {
-    return Intl.message(
-      'Match by process name; matches the package name on Android',
-      name: 'ruleActionProcessNameDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match by process name regex; matches the package name on Android`
-  String get ruleActionProcessNameRegexDesc {
-    return Intl.message(
-      'Match by process name regex; matches the package name on Android',
-      name: 'ruleActionProcessNameRegexDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match by process name wildcard; only * and ? are supported`
-  String get ruleActionProcessNameWildcardDesc {
-    return Intl.message(
-      'Match by process name wildcard; only * and ? are supported',
-      name: 'ruleActionProcessNameWildcardDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match the Linux user ID`
-  String get ruleActionUidDesc {
-    return Intl.message(
-      'Match the Linux user ID',
-      name: 'ruleActionUidDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match TCP or UDP`
-  String get ruleActionNetworkDesc {
-    return Intl.message(
-      'Match TCP or UDP',
-      name: 'ruleActionNetworkDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match the DSCP mark (tproxy UDP inbound only)`
-  String get ruleActionDscpDesc {
-    return Intl.message(
-      'Match the DSCP mark (tproxy UDP inbound only)',
-      name: 'ruleActionDscpDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Reference a rule set; requires rule-providers`
-  String get ruleActionRuleSetDesc {
-    return Intl.message(
-      'Reference a rule set; requires rule-providers',
-      name: 'ruleActionRuleSetDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Logical rule AND`
-  String get ruleActionAndDesc {
-    return Intl.message(
-      'Logical rule AND',
-      name: 'ruleActionAndDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Logical rule OR`
-  String get ruleActionOrDesc {
-    return Intl.message(
-      'Logical rule OR',
-      name: 'ruleActionOrDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Logical rule NOT`
-  String get ruleActionNotDesc {
-    return Intl.message(
-      'Logical rule NOT',
-      name: 'ruleActionNotDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match into a sub-rule; mind the parentheses`
-  String get ruleActionSubRuleDesc {
-    return Intl.message(
-      'Match into a sub-rule; mind the parentheses',
-      name: 'ruleActionSubRuleDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Match all requests, no conditions needed`
-  String get ruleActionMatchDesc {
-    return Intl.message(
-      'Match all requests, no conditions needed',
-      name: 'ruleActionMatchDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Sub-rule is empty`
-  String get subRuleEmpty {
-    return Intl.message(
-      'Sub-rule is empty',
-      name: 'subRuleEmpty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Proxy providers cannot be empty`
-  String get proxyProvidersNotEmpty {
-    return Intl.message(
-      'Proxy providers cannot be empty',
-      name: 'proxyProvidersNotEmpty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Content cannot be empty`
-  String get contentNotEmpty {
-    return Intl.message(
-      'Content cannot be empty',
-      name: 'contentNotEmpty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Sub-rule cannot be empty`
-  String get subRuleNotEmpty {
-    return Intl.message(
-      'Sub-rule cannot be empty',
-      name: 'subRuleNotEmpty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Split strategy cannot be empty`
-  String get splitStrategyNotEmpty {
-    return Intl.message(
-      'Split strategy cannot be empty',
-      name: 'splitStrategyNotEmpty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Proxy providers are empty`
-  String get proxyProvidersEmpty {
-    return Intl.message(
-      'Proxy providers are empty',
-      name: 'proxyProvidersEmpty',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Timeout`
   String get timeout {
     return Intl.message('Timeout', name: 'timeout', desc: '', args: []);
-  }
-
-  /// `{subRule} is an invalid SUB_RULE`
-  String invalidSubRule(Object subRule) {
-    return Intl.message(
-      '$subRule is an invalid SUB_RULE',
-      name: 'invalidSubRule',
-      desc: '',
-      args: [subRule],
-    );
-  }
-
-  /// `{target} is an invalid policy`
-  String invalidPolicy(Object target) {
-    return Intl.message(
-      '$target is an invalid policy',
-      name: 'invalidPolicy',
-      desc: '',
-      args: [target],
-    );
-  }
-
-  /// `{providerName} is an invalid proxy provider`
-  String invalidProxyProvider(Object providerName) {
-    return Intl.message(
-      '$providerName is an invalid proxy provider',
-      name: 'invalidProxyProvider',
-      desc: '',
-      args: [providerName],
-    );
-  }
-
-  /// `{ruleSet} is an invalid rule set`
-  String invalidRuleSet(Object ruleSet) {
-    return Intl.message(
-      '$ruleSet is an invalid rule set',
-      name: 'invalidRuleSet',
-      desc: '',
-      args: [ruleSet],
-    );
-  }
-
-  /// `Only tcp or udp is supported`
-  String get invalidNetworkContent {
-    return Intl.message(
-      'Only tcp or udp is supported',
-      name: 'invalidNetworkContent',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Enter numbers or ranges such as 80 or 8000-9000, separated by /`
-  String get invalidRangeContent {
-    return Intl.message(
-      'Enter numbers or ranges such as 80 or 8000-9000, separated by /',
-      name: 'invalidRangeContent',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `A DSCP mark cannot exceed 63`
-  String get invalidDscpContent {
-    return Intl.message(
-      'A DSCP mark cannot exceed 63',
-      name: 'invalidDscpContent',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `{proxyName} is an invalid proxy`
-  String invalidProxy(Object proxyName) {
-    return Intl.message(
-      '$proxyName is an invalid proxy',
-      name: 'invalidProxy',
-      desc: '',
-      args: [proxyName],
-    );
   }
 
   /// `Location permission required`
@@ -5260,122 +3525,9 @@ class AppLocalizations {
     return Intl.message('Suspended…', name: 'suspended', desc: '', args: []);
   }
 
-  /// `Geo options`
-  String get geoOptions {
-    return Intl.message('Geo options', name: 'geoOptions', desc: '', args: []);
-  }
-
-  /// `Auto update`
-  String get geoAutoUpdate {
-    return Intl.message(
-      'Auto update',
-      name: 'geoAutoUpdate',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Auto-update interval`
-  String get geoAutoUpdateInterval {
-    return Intl.message(
-      'Auto-update interval',
-      name: 'geoAutoUpdateInterval',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The auto-update interval must be greater than 0`
-  String get geoAutoUpdateIntervalTip {
-    return Intl.message(
-      'The auto-update interval must be greater than 0',
-      name: 'geoAutoUpdateIntervalTip',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `hours`
   String get hours {
     return Intl.message('hours', name: 'hours', desc: '', args: []);
-  }
-
-  /// `{count, plural, =1{1 hour} other{{count} hours}}`
-  String hoursCount(num count) {
-    return Intl.plural(
-      count,
-      one: '1 hour',
-      other: '$count hours',
-      name: 'hoursCount',
-      desc: '',
-      args: [count],
-    );
-  }
-
-  /// `Geo resources`
-  String get geoResources {
-    return Intl.message(
-      'Geo resources',
-      name: 'geoResources',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `{name} is already up to date`
-  String geoSkipped(Object name) {
-    return Intl.message(
-      '$name is already up to date',
-      name: 'geoSkipped',
-      desc: '',
-      args: [name],
-    );
-  }
-
-  /// `{name} updated`
-  String geoUpdated(Object name) {
-    return Intl.message(
-      '$name updated',
-      name: 'geoUpdated',
-      desc: '',
-      args: [name],
-    );
-  }
-
-  /// `{count, plural, =1{1 second} other{{count} seconds}}`
-  String secondsCount(num count) {
-    return Intl.plural(
-      count,
-      one: '1 second',
-      other: '$count seconds',
-      name: 'secondsCount',
-      desc: '',
-      args: [count],
-    );
-  }
-
-  /// `{count, plural, =1{1 proxy} other{{count} proxies}}`
-  String proxiesCount(num count) {
-    return Intl.plural(
-      count,
-      one: '1 proxy',
-      other: '$count proxies',
-      name: 'proxiesCount',
-      desc: '',
-      args: [count],
-    );
-  }
-
-  /// `{count, plural, =1{1 rule} other{{count} rules}}`
-  String rulesCount(num count) {
-    return Intl.plural(
-      count,
-      one: '1 rule',
-      other: '$count rules',
-      name: 'rulesCount',
-      desc: '',
-      args: [count],
-    );
   }
 
   /// `Breaking changes`
@@ -5488,26 +3640,6 @@ class AppLocalizations {
     return Intl.message(
       'Choose from album',
       name: 'pickFromAlbum',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Block connection`
-  String get blockConnection {
-    return Intl.message(
-      'Block connection',
-      name: 'blockConnection',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Close connections`
-  String get closeConnections {
-    return Intl.message(
-      'Close connections',
-      name: 'closeConnections',
       desc: '',
       args: [],
     );
@@ -5883,34 +4015,14 @@ class AppLocalizations {
     return Intl.message('DNS queries', name: 'dnsQueries', desc: '', args: []);
   }
 
-  /// `Record type`
-  String get recordType {
-    return Intl.message('Record type', name: 'recordType', desc: '', args: []);
-  }
-
   /// `Answers`
   String get answers {
     return Intl.message('Answers', name: 'answers', desc: '', args: []);
   }
 
-  /// `Response code`
-  String get responseCode {
-    return Intl.message(
-      'Response code',
-      name: 'responseCode',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Error`
   String get error {
     return Intl.message('Error', name: 'error', desc: '', args: []);
-  }
-
-  /// `Initiator`
-  String get initiator {
-    return Intl.message('Initiator', name: 'initiator', desc: '', args: []);
   }
 
   /// `Cache`
@@ -5923,194 +4035,9 @@ class AppLocalizations {
     return Intl.message('Proxy node', name: 'proxyNode', desc: '', args: []);
   }
 
-  /// `Yes`
-  String get yes {
-    return Intl.message('Yes', name: 'yes', desc: '', args: []);
-  }
-
   /// `No`
   String get no {
     return Intl.message('No', name: 'no', desc: '', args: []);
-  }
-
-  /// `This external resource is not a text file`
-  String get nonTextProviderFile {
-    return Intl.message(
-      'This external resource is not a text file',
-      name: 'nonTextProviderFile',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Add proxy`
-  String get addCustomProxy {
-    return Intl.message(
-      'Add proxy',
-      name: 'addCustomProxy',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Full configuration`
-  String get proxyDefinition {
-    return Intl.message(
-      'Full configuration',
-      name: 'proxyDefinition',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The configuration must be a YAML mapping with a name and a type`
-  String get proxyDefinitionNotMap {
-    return Intl.message(
-      'The configuration must be a YAML mapping with a name and a type',
-      name: 'proxyDefinitionNotMap',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `No custom proxies, so the profile's own proxies are used`
-  String get customProxiesEmpty {
-    return Intl.message(
-      'No custom proxies, so the profile\'s own proxies are used',
-      name: 'customProxiesEmpty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The name is empty`
-  String get overwriteIssueEmptyName {
-    return Intl.message(
-      'The name is empty',
-      name: 'overwriteIssueEmptyName',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `{name} is a built-in policy name and cannot be used here`
-  String overwriteIssueReservedName(Object name) {
-    return Intl.message(
-      '$name is a built-in policy name and cannot be used here',
-      name: 'overwriteIssueReservedName',
-      desc: '',
-      args: [name],
-    );
-  }
-
-  /// `The name {name} is already used by another proxy or proxy group`
-  String overwriteIssueDuplicateName(Object name) {
-    return Intl.message(
-      'The name $name is already used by another proxy or proxy group',
-      name: 'overwriteIssueDuplicateName',
-      desc: '',
-      args: [name],
-    );
-  }
-
-  /// `The core cannot parse this proxy: {message}`
-  String overwriteIssueCoreRejected(Object message) {
-    return Intl.message(
-      'The core cannot parse this proxy: $message',
-      name: 'overwriteIssueCoreRejected',
-      desc: '',
-      args: [message],
-    );
-  }
-
-  /// `These proxies or policies do not exist: {names}`
-  String overwriteIssueMissingProxies(Object names) {
-    return Intl.message(
-      'These proxies or policies do not exist: $names',
-      name: 'overwriteIssueMissingProxies',
-      desc: '',
-      args: [names],
-    );
-  }
-
-  /// `These proxy providers do not exist: {names}`
-  String overwriteIssueMissingProviders(Object names) {
-    return Intl.message(
-      'These proxy providers do not exist: $names',
-      name: 'overwriteIssueMissingProviders',
-      desc: '',
-      args: [names],
-    );
-  }
-
-  /// `No proxies or proxy providers are selected, so the core rejects this group`
-  String get overwriteIssueNoProxySource {
-    return Intl.message(
-      'No proxies or proxy providers are selected, so the core rejects this group',
-      name: 'overwriteIssueNoProxySource',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Proxy groups reference each other in a loop: {path}`
-  String overwriteIssueGroupLoop(Object path) {
-    return Intl.message(
-      'Proxy groups reference each other in a loop: $path',
-      name: 'overwriteIssueGroupLoop',
-      desc: '',
-      args: [path],
-    );
-  }
-
-  /// `{count} items have problems, and applying this override may fail`
-  String overwriteIssuesSummary(Object count) {
-    return Intl.message(
-      '$count items have problems, and applying this override may fail',
-      name: 'overwriteIssuesSummary',
-      desc: '',
-      args: [count],
-    );
-  }
-
-  /// `The profile's own proxy groups name proxies that the custom proxies no longer include: {names}`
-  String overwriteIssueSubscriptionGroupMissingProxies(Object names) {
-    return Intl.message(
-      'The profile\'s own proxy groups name proxies that the custom proxies no longer include: $names',
-      name: 'overwriteIssueSubscriptionGroupMissingProxies',
-      desc: '',
-      args: [names],
-    );
-  }
-
-  /// `{label} is still used by the custom proxy groups or rules of {profiles}. Remove it there first`
-  String providerInUse(Object label, Object profiles) {
-    return Intl.message(
-      '$label is still used by the custom proxy groups or rules of $profiles. Remove it there first',
-      name: 'providerInUse',
-      desc: '',
-      args: [label, profiles],
-    );
-  }
-
-  /// `Subscription`
-  String get providerSourceSubscription {
-    return Intl.message(
-      'Subscription',
-      name: 'providerSourceSubscription',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The subscriptions of {profiles} already have {label}, so those profiles would switch to theirs. Choose another name`
-  String providerRenameShadowed(Object profiles, Object label) {
-    return Intl.message(
-      'The subscriptions of $profiles already have $label, so those profiles would switch to theirs. Choose another name',
-      name: 'providerRenameShadowed',
-      desc: '',
-      args: [profiles, label],
-    );
   }
 
   /// `Size`

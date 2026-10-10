@@ -124,7 +124,7 @@ class SystemAction extends _$SystemAction {
 
   void updateTun() {
     ref
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update((state) => state.copyWith.tun(enable: !state.tun.enable));
   }
 
@@ -136,7 +136,7 @@ class SystemAction extends _$SystemAction {
 
   Future<void> copyProxyEnv() async {
     final port = ref.read(
-      patchClashConfigProvider.select((state) => state.mixedPort),
+      coreSettingProvider.select((state) => state.mixedPort),
     );
     await Clipboard.setData(
       ClipboardData(text: proxyEnvCommand(port, isWindows: system.isWindows)),

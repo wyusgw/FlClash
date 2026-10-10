@@ -99,7 +99,7 @@ judgment, and it lives in the rules below and in review. Whether comments are to
 diffs under 20 added lines so small edits are never caught. The number is calibrated on this repository's own history:
 healthy changes sit at or under 3.6%, while the core fix that prompted the gate ran 22.4%.
 
-It is a ceiling on frequency, not a target to fill. Do not read `core/`'s inherited mihomo density as a quota either —
+It is a ceiling on frequency, not a target to fill. Do not read `core/Xray-core`'s inherited density as a quota either —
 it is forked upstream code, not a house style.
 
 Three gates run the same script, and they do not have equal force. The `PostToolUse` hooks in `.claude/settings.json`
@@ -131,11 +131,10 @@ leaving a repo-wide policy as a comment reaches only the reader of that one file
 
 ## Core API Safety
 
-- `core/Clash.Meta` is a fork of mihomo, and changes to it are budgeted for features, not repairs. Fixing a bug there is
-  low priority even when the bug is real and the fix is small: every patch is one more thing to carry across an upstream
-  rebase. Solve it on the FlClash side of the boundary and note the mihomo behaviour you are working around. Reach into
-  the submodule only for a feature that has nowhere else to live, or when the problem is one the FlClash patches
-  themselves introduced — and say which of the two it is in the commit message.
+- `core/Xray-core` is a fork of Xray-core. Changes to it are budgeted for features, not repairs: every patch is one
+  more thing to carry across an upstream rebase, and MPL-2.0 obliges the fork to publish what changes. Solve a problem
+  on the FlClash side of the boundary and note the Xray behaviour you are working around. Reach into the submodule only
+  for a feature that has nowhere else to live, and say so in the commit message.
 - Do not expose direct filesystem deletion APIs through Core or helper IPC; use
   a scope-specific cleanup API instead.
 - The desktop IPC socket in `plugins/rust_api` admits a Unix peer only when its effective uid is the app's own or root:
@@ -144,13 +143,12 @@ leaving a repo-wide policy as a comment reaches only the reader of that one file
   keeps its identity check on the Dart side, which compares the named-pipe peer PID with the Core it launched.
 - Keep the shared `CoreMethodCall`/`CoreMethodResponse` JSON envelope structurally identical across Dart, Go, JNI, and
   desktop IPC. Do not double-encode `arguments`, `result`, or event batches.
-- `core/message.go` carries three event queues, and the split is load-bearing: state (loaded, geo-update,
-  route-changed), priority (every other event), and bulk (log, request, DNS). Priority and bulk evict their own oldest
-  entry under backpressure, except DNS, which enters the bulk queue through `enqueueState` so a lookup burst cannot push
-  out the request events the connection list is built from; state uses `enqueueState`, which never evicts, because a dropped `geoUpdate{updating:false}` leaves `isUpdatingProvider` stuck at true in the UI until
-  `UpdatingAction` sweeps it as stale minutes later. Do not merge the tiers or give state eviction semantics. `enqueueState` drops silently on a full
-  queue and must stay that way: reaching it means the host stopped reading, which `logDeliveryError` already reports,
-  and reporting it from the message layer feeds the same batcher.
+- `core/message.go` carries three event queues, and the split is load-bearing: state (route-changed), priority (delay)
+  and bulk (log). Priority and bulk evict their own oldest entry under backpressure; state uses `enqueueState`, which
+  never evicts, because a dropped route snapshot leaves the host judging probe answers against counters it made up.
+  Do not merge the tiers or give state eviction semantics. `enqueueState` drops silently on a full queue and must stay
+  that way: reaching it means the host stopped reading, which `logDeliveryError` already reports, and reporting it from
+  the message layer feeds the same batcher.
 - `jni_get_string` in `android/core/src/main/cpp/jni_helper.cpp` `malloc`s and hands ownership to Go, which frees through
   `free_string_func`. `quickSetup` relies on that: it reads its `*C.char` arguments inside a goroutine, after the JNI
   wrapper has already returned. Switching the wrapper to `GetStringUTFChars`/`ReleaseStringUTFChars`, or freeing on the
@@ -159,13 +157,10 @@ leaving a repo-wide policy as a comment reaches only the reader of that one file
   from a `pthread_key` destructor at thread death. Do not restore a detach-per-call: `protect` runs once per outbound
   socket and `onResult` once per event batch, and attach/detach takes ART's thread-list lock each time.
 - Every JNI call into Kotlin must be followed by `jni_clear_exception`. A pending exception left in place aborts the
-  process on the next JNI call on that thread, so a throw in `protect`/`resolveUid`/`resolvePackage`/`onResult` becomes a
+  process on the next JNI call on that thread, so a throw in `protect`/`onResult` becomes a
   crash in unrelated code. For the same reason every one of those wrappers checks its `tun_interface`/`invoke_interface`
   for `nullptr` first: ART aborts on a call through a null object, and a callback released by `TunHandler.clear` while a
   connection is still resolving is exactly that.
-- The Android bridge resolves an owner in two steps — `resolve_uid` then `resolve_package` — because mihomo fills
-  `metadata.Uid` from a procfs lookup that Android Q closed off. Collapsing them back into one call that returns only a
-  package name is what left every connection reporting uid 0, so `UID` rules matched nothing.
 - The desktop delivery path in `core/server.go` must not report failures through `logError`. A log event is published to
   the log subscriber, batched, and handed back to `send`, so a send failure reported that way feeds itself; use
   `logDeliveryError`, which writes to stderr and latches until a frame gets through or the next connection is installed.
@@ -186,24 +181,19 @@ leaving a repo-wide policy as a comment reaches only the reader of that one file
   `safeGo`/`safeGoDetached` in `core/method.go`, which recover; a bare `go` in a handler puts a panic outside every
   recovery and kills the process, which on Android is the whole application. The `//export` entry points in
   `core/lib.go` do not reach `handleMethodCall`, so each one carries its own recovery.
-- `dialer.DefaultSocketHook` and `process.DefaultPackageNameResolver` are installed exactly once, by `installHooks` in
-  `core/lib.go`, and never cleared. mihomo checks `DefaultSocketHook` for nil once and dereferences it again when the
-  socket is created (`component/dialer/socket_hook.go`), so clearing it while a dial is in flight calls a nil func
-  value. Stopping the TUN swaps `activeTunHandler` instead.
-- `tunnel.AllProxies()` returns a shared, cached map — never modify it. The cache is invalidated by
-  `invalidateAllProxies` on `tunnel.UpdateProxies` and validated against each provider's `Version()`, so a rebuild
-  costs one read per provider rather than one per proxy. Anything else added to `tunnel/patch.go` that derives from the
-  proxy set needs both signals: the external controller can reload the config through `hub/route/configs.go` without
-  going through FlClash's `applyConfig`, so a hook on the FlClash side alone would miss a profile switch.
-- Core state that mirrors mihomo state goes stale at the next `applyConfig`, which replaces every proxy, provider and
-  rule. Read the tunnel instead of caching a snapshot of it: `lookupExternalProvider` kept one that was rebuilt only
-  when the host asked for the provider list, and the host asks after a successful setup and not after a failed one, so
-  an update ran against a provider the tunnel no longer held — downloading, writing to disk and reporting success
-  against nothing.
-- Selection writes take `selectMu`, not `configMu`. mihomo's `Selector.Set` has no lock of its own, so the writes need
-  mutual exclusion against each other and against `patchSelectGroup` — but not against a whole config apply, which is
-  what `configMu` made a proxy switch wait for, provider downloads included. `patchSelectGroup` takes `selectMu` under
-  `configMu`, fixing the order as `configMu` → `selectMu`.
+- The socket-protection controller is registered exactly once, by `installHooks` in `core/lib.go`
+  (`internet.RegisterDialerController`), and never removed: Xray appends controllers to a list that outlives the
+  instance. Stopping the TUN swaps `activeTunHandler` instead, and the controller returns early while none is active.
+- The engine is rebuilt from the config the host wrote, never patched: Xray cannot change its inbounds, routing or DNS
+  on a running instance, so every host setting reaches it as a new `config.json` and a `setupConfig`. Only the
+  selection survives a restart, because the Go side replays `selected` onto each new instance (`replaySelections`).
+  Read `currentEngine` rather than holding an instance across a call: a restart replaces it.
+- A balancer's `fallbackTag` is resolved through the observatory, so a config that sets it without one fails with
+  "not all dependencies are resolved". `buildXrayConfig` sets it only together with `observatory`.
+- Selection writes take `selectMu`, not `configMu`. `SetOverrideTarget` and the `selected` map need mutual exclusion
+  against each other and against `replaySelections` — but not against a whole config apply, which is what `configMu`
+  would make a proxy switch wait for. `replaySelections` takes `selectMu` under `configMu`, fixing the order as
+  `configMu` → `selectMu`.
 - Queueing for the delay-test semaphore and probing the node each get the full timeout in `handleTestDelay`. With one
   shared deadline, a node that waited behind a saturated semaphore reached `URLTest` with almost nothing left, so a bulk
   test of a large subscription reported whatever sat at the back of the queue as unreachable.
@@ -215,16 +205,11 @@ leaving a repo-wide policy as a comment reaches only the reader of that one file
   used to mean "testing", which let a result and the state of a test overwrite each other and left cards spinning
   forever when the Core restarted. The run owns its keys and releases them in a `finally`, so nothing depends on a
   reply arriving; core status leaving `connected` cancels every run in flight.
-- Anything on the mihomo side that is reached from both a user-triggered core method and mihomo's own background
-  scheduler needs its in-flight guard on the FlClash side. `updater.UpdateMMDB` and its siblings have none — only the
-  batch `UpdateGeoDatabases` does — and two concurrent runs close the mmap'd database twice, so `handleUpdateGeoData`
-  claims per resource and `updater.GeoUpdateHook` releases.
-- A failed `applyConfig` rolls the tunnel back to the default config, and that rollback is the whole recovery:
-  `handleSetupConfig` returns the error and stops there. Do not add a teardown on top of it — stopping the listeners
-  takes the app offline over a profile the user can still switch away from, and the error already reaches the host,
-  which is what surfaces the failure (`MessageException` on the Flutter side, the config-error toast on Android). Keep
-  an empty `config.yaml` out of the failure path — it is how the app says "no profile selected", and `loadConfig`
-  resolves it to the defaults.
+- A failed `setupConfig` leaves the running engine alone: the new config is parsed and validated before the old
+  instance is closed, and `handleSetupConfig` returns the error and stops there. Do not add a teardown on top of it —
+  stopping the listeners takes the app offline over a profile the user can still switch away from, and the error already
+  reaches the host, which is what surfaces the failure (`MessageException` on the Flutter side, the config-error toast
+  on Android).
 - Package `init` in the Android library runs while the `.so` is being loaded, so a panic there takes the application
   down before it can report anything. `platform/limit.go` arms an fd-pressure probe and degrades to never blocking when
   it cannot; keep that shape for anything else `init` sets up that correctness does not depend on.
@@ -340,7 +325,7 @@ under `kDebugMode`, which is always true beneath `flutter test`, so its remainin
 at all; `test/common/launch_test.dart` pins the early return instead.
 
 `pumpAndSettle` never returns on a page holding `EditorView` (what `EditorPage` embeds): the code editor blinks its
-caret forever, so frames keep being scheduled. Pump explicitly instead. `encodeYamlTask` and its neighbours in
+caret forever, so frames keep being scheduled. Pump explicitly instead. `makeRealProfileTask` and its neighbours in
 `common/task.dart` hand work to a real isolate through `compute`, which only runs outside the fake-async zone, so a test
 awaiting one needs `tester.runAsync(...)` between the pumps.
 
@@ -375,12 +360,10 @@ shape on a developer machine and the Linux one on CI. `WindowHeaderContainer` bu
 non-macOS host, so a test mounting it needs `TestApp` for `AppLocalizations` and a `window` channel mock that
 answers `isMaximized`/`isAlwaysOnTop` with a bool.
 
-Auto-dispose providers need a container-level hold before a test reads them back. `proxyGroupProvider`, `ruleProvider`,
-`itemsProvider` and friends mix in `AutoDisposeNotifierMixin`, so a `container.read` that no widget is currently watching
-rebuilds the provider from its override and silently discards whatever the code under test wrote. Add
-`container.listen(theProvider, (_, _) {})` in the harness, as `overwrite_stage_flow_test.dart` does. The staging flow also
-re-arms its debounce when it clears the stage, so drain it (`pump` past the duration, then unmount) or the binding fails
-the test on a pending timer.
+Auto-dispose providers need a container-level hold before a test reads them back. Settings providers such as
+`appSettingProvider` and `coreSettingProvider` mix in `AutoDisposeNotifierMixin`, so a `container.read` that no widget
+is currently watching rebuilds the provider from its override and silently discards whatever the code under test
+wrote. Add `container.listen(theProvider, (_, _) {})` in the harness.
 
 A field that constructs its own `ValueNotifier`, `TextEditingController`, `ScrollController`, `FocusNode`, `TabController`,
 `PageController`, `AnimationController` or `StreamController` must be released in the same file.

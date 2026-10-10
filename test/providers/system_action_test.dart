@@ -316,11 +316,11 @@ void main() {
     tearDown(() => container.dispose());
 
     test('updateTun flips the patched Core tun flag', () {
-      final before = container.read(patchClashConfigProvider).tun.enable;
+      final before = container.read(coreSettingProvider).tun.enable;
 
       container.read(systemActionProvider.notifier).updateTun();
 
-      expect(container.read(patchClashConfigProvider).tun.enable, !before);
+      expect(container.read(coreSettingProvider).tun.enable, !before);
     });
 
     test('updateSystemProxy flips the system proxy flag', () {

@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/metacubex/http"
+	"net/http"
 )
 
 // disneyAuthHeader is the public browser client token Disney+ hands to any web

@@ -38,37 +38,83 @@ void main() {
     } catch (_) {}
   });
 
+  const link = 'trojan://pass@tj.example.com:443?security=tls#node-a';
+
   group('Profile.saveFile', () {
     // EditProfileView relies on this throwing rather than silently
     // succeeding, so a caller-level try/catch can surface the failure.
-    test('rejects an invalid config without touching the saved file', () async {
+    test(
+      'rejects a config the Core refuses without touching the file',
+      () async {
+        final profile = Profile.normal(label: 'p');
+        final bytes = Uint8List.fromList(utf8.encode(link));
+
+        await expectLater(
+          profile.saveFile(bytes, validate: (_) async => 'invalid config'),
+          throwsA(
+            isA<MessageException>().having(
+              (e) => e.message,
+              'message',
+              'invalid config',
+            ),
+          ),
+        );
+
+        final savedFile = await profile.file;
+        expect(await savedFile.length(), 0);
+      },
+    );
+
+    test('rejects a subscription without a usable node', () async {
       final profile = Profile.normal(label: 'p');
-      final bytes = Uint8List.fromList(utf8.encode('bad: ['));
+      var validated = false;
 
       await expectLater(
-        profile.saveFile(bytes, validate: (_) async => 'invalid config'),
-        throwsA(
-          isA<MessageException>().having(
-            (e) => e.message,
-            'message',
-            'invalid config',
-          ),
+        profile.saveFile(
+          Uint8List.fromList(utf8.encode('proxies:\n  - name: a')),
+          validate: (_) async {
+            validated = true;
+            return '';
+          },
         ),
+        throwsA(isA<MessageException>()),
       );
 
-      final savedFile = await profile.file;
-      expect(await savedFile.length(), 0);
+      expect(validated, isFalse);
     });
 
-    test('copies validated bytes and stamps the update time', () async {
+    test('stores the nodes as an Xray config of outbounds', () async {
       final profile = Profile.normal(label: 'p');
-      final bytes = Uint8List.fromList(utf8.encode('proxies: []'));
+      String? validatedContent;
 
-      final saved = await profile.saveFile(bytes, validate: (_) async => '');
+      final saved = await profile.saveFile(
+        Uint8List.fromList(utf8.encode(link)),
+        validate: (path) async {
+          validatedContent = await File(path).readAsString();
+          return '';
+        },
+      );
 
       expect(saved.lastUpdateDate, isNotNull);
       final savedFile = await profile.file;
-      expect(await savedFile.readAsString(), 'proxies: []');
+      final stored = json.decode(await savedFile.readAsString()) as Map;
+      expect((stored['outbounds'] as List).single['tag'], 'node-a');
+      expect(validatedContent, await savedFile.readAsString());
+    });
+
+    test('a stored profile reads back as the same nodes', () async {
+      final profile = Profile.normal(label: 'p');
+      await profile.saveFile(
+        Uint8List.fromList(utf8.encode(link)),
+        validate: (_) async => '',
+      );
+
+      final savedFile = await profile.file;
+
+      expect(
+        parseSubscription(await savedFile.readAsString()).single['tag'],
+        'node-a',
+      );
     });
   });
 }

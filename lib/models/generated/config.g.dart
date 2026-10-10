@@ -20,7 +20,6 @@ _AppSettingProps _$AppSettingPropsFromJson(
   silentLaunch: json['silentLaunch'] as bool? ?? false,
   autoRun: json['autoRun'] as bool? ?? false,
   openLogs: json['openLogs'] as bool? ?? false,
-  closeConnections: json['closeConnections'] as bool? ?? true,
   testUrl: json['testUrl'] as String? ?? defaultTestUrl,
   tabAnimation:
       $enumDecodeNullable(
@@ -47,6 +46,7 @@ _AppSettingProps _$AppSettingPropsFromJson(
           ?.map((e) => e as String)
           .toList() ??
       defaultUserAgents,
+  globalUa: json['globalUa'] as String?,
   hideIp: json['hideIp'] as bool? ?? false,
   editorLineWrap: json['editorLineWrap'] as bool? ?? false,
   editorFontSize:
@@ -77,7 +77,6 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'silentLaunch': instance.silentLaunch,
       'autoRun': instance.autoRun,
       'openLogs': instance.openLogs,
-      'closeConnections': instance.closeConnections,
       'testUrl': instance.testUrl,
       'tabAnimation': _$TabAnimationEnumMap[instance.tabAnimation]!,
       'floatingNavigationBar': instance.floatingNavigationBar,
@@ -92,6 +91,7 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'showTrayTitle': instance.showTrayTitle,
       'checkCertificate': instance.checkCertificate,
       'userAgents': instance.userAgents,
+      'globalUa': instance.globalUa,
       'hideIp': instance.hideIp,
       'editorLineWrap': instance.editorLineWrap,
       'editorFontSize': _$EditorFontSizeEnumMap[instance.editorFontSize]!,
@@ -127,11 +127,6 @@ const _$DashboardWidgetEnumMap = {
   DashboardWidget.intranetIp: 'intranetIp',
   DashboardWidget.memoryInfo: 'memoryInfo',
   DashboardWidget.serviceStatus: 'serviceStatus',
-  DashboardWidget.dnsQueries: 'dnsQueries',
-  DashboardWidget.requests: 'requests',
-  DashboardWidget.connections: 'connections',
-  DashboardWidget.overrideDnsButton: 'overrideDnsButton',
-  DashboardWidget.overrideNtpButton: 'overrideNtpButton',
   DashboardWidget.runTime: 'runTime',
   DashboardWidget.proxyGroups: 'proxyGroups',
   DashboardWidget.profiles: 'profiles',
@@ -246,7 +241,6 @@ _NetworkProps _$NetworkPropsFromJson(Map<String, dynamic> json) =>
           $enumDecodeNullable(_$RouteModeEnumMap, json['routeMode']) ??
           RouteMode.config,
       autoSetSystemDns: json['autoSetSystemDns'] as bool? ?? true,
-      appendSystemDns: json['appendSystemDns'] as bool? ?? false,
       authentication: json['authentication'] == null
           ? defaultAuthenticationProps
           : AuthenticationProps.fromJson(
@@ -260,7 +254,6 @@ Map<String, dynamic> _$NetworkPropsToJson(_NetworkProps instance) =>
       'bypassDomain': instance.bypassDomain,
       'routeMode': _$RouteModeEnumMap[instance.routeMode]!,
       'autoSetSystemDns': instance.autoSetSystemDns,
-      'appendSystemDns': instance.appendSystemDns,
       'authentication': instance.authentication,
     };
 
@@ -387,8 +380,6 @@ const _$DynamicSchemeVariantEnumMap = {
 
 _Config _$ConfigFromJson(Map<String, dynamic> json) => _Config(
   currentProfileId: (json['currentProfileId'] as num?)?.toInt(),
-  overrideDns: json['overrideDns'] as bool? ?? false,
-  overrideNtp: json['overrideNtp'] as bool? ?? false,
   hotKeyActions:
       (json['hotKeyActions'] as List<dynamic>?)
           ?.map((e) => HotKeyAction.fromJson(e as Map<String, dynamic>))
@@ -419,10 +410,10 @@ _Config _$ConfigFromJson(Map<String, dynamic> json) => _Config(
   windowProps: json['windowProps'] == null
       ? defaultWindowProps
       : WindowProps.fromJson(json['windowProps'] as Map<String, dynamic>?),
-  patchClashConfig: json['patchClashConfig'] == null
-      ? defaultClashConfig
-      : PatchClashConfig.fromJson(
-          json['patchClashConfig'] as Map<String, dynamic>,
+  coreConfig: _readCoreConfig(json, 'coreConfig') == null
+      ? defaultCoreConfig
+      : CoreConfig.safeFormJson(
+          _readCoreConfig(json, 'coreConfig') as Map<String, Object?>?,
         ),
   excludeSSIDs:
       (json['excludeSSIDs'] as List<dynamic>?)
@@ -433,8 +424,6 @@ _Config _$ConfigFromJson(Map<String, dynamic> json) => _Config(
 
 Map<String, dynamic> _$ConfigToJson(_Config instance) => <String, dynamic>{
   'currentProfileId': instance.currentProfileId,
-  'overrideDns': instance.overrideDns,
-  'overrideNtp': instance.overrideNtp,
   'hotKeyActions': instance.hotKeyActions,
   'appSettingProps': instance.appSettingProps,
   'davProps': instance.davProps,
@@ -443,6 +432,6 @@ Map<String, dynamic> _$ConfigToJson(_Config instance) => <String, dynamic>{
   'themeProps': instance.themeProps,
   'proxiesStyleProps': instance.proxiesStyleProps,
   'windowProps': instance.windowProps,
-  'patchClashConfig': instance.patchClashConfig,
+  'coreConfig': instance.coreConfig,
   'excludeSSIDs': instance.excludeSSIDs,
 };

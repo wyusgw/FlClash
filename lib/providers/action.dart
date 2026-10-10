@@ -16,7 +16,7 @@ import 'package:fl_clash/state.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart' show basename, join;
+import 'package:path/path.dart' show join;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -29,8 +29,5 @@ part 'actions/store.dart';
 part 'actions/theme.dart';
 part 'actions/proxies.dart';
 part 'actions/profiles.dart';
-part 'actions/scripts.dart';
-part 'actions/clash_providers.dart';
-part 'actions/geo_resource.dart';
 part 'actions/updating.dart';
 part 'generated/action.g.dart';

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -115,29 +114,6 @@ void main() {
     });
   });
 
-  group('TrackerInfoExt', () {
-    test('builds destination title and process text', () {
-      final trackerInfo = TrackerInfo(
-        id: '1',
-        start: DateTime(2026),
-        metadata: const Metadata(
-          network: 'tcp',
-          host: 'example.com',
-          destinationIP: '1.1.1.1',
-          destinationPort: '443',
-          process: 'Browser',
-          uid: 501,
-        ),
-        chains: const ['Proxy'],
-        rule: 'MATCH',
-        rulePayload: '',
-      );
-
-      expect(trackerInfo.title, 'example.com');
-      expect(trackerInfo.progressText, 'Browser(501)');
-    });
-  });
-
   group('TrafficExt', () {
     test('formats speed, tray title, and total speed', () {
       const traffic = Traffic(up: 1024, down: 2048);
@@ -164,39 +140,6 @@ void main() {
         'Proxy C',
       );
       expect(groups.getGroup('Missing'), isNull);
-    });
-  });
-
-  group('ScriptsExt naming', () {
-    Script script(int id, String label) =>
-        Script(id: id, label: label, lastUpdateTime: DateTime(2026));
-
-    test('hasLabel ignores the script being renamed', () {
-      final scripts = [script(1, 'a'), script(2, 'b')];
-      expect(scripts.hasLabel('a'), isTrue);
-      expect(scripts.hasLabel('a', except: scripts[0]), isFalse);
-      expect(scripts.hasLabel('a', except: scripts[1]), isTrue);
-      expect(scripts.hasLabel('c'), isFalse);
-    });
-
-    test('uniqueLabel trims, falls back and numbers duplicates', () {
-      final scripts = [script(1, 'remote'), script(2, 'remote(1)')];
-      expect(scripts.uniqueLabel(' local ', fallback: 'Script'), 'local');
-      expect(scripts.uniqueLabel('remote', fallback: 'Script'), 'remote(2)');
-      expect(scripts.uniqueLabel('   ', fallback: 'Script'), 'Script');
-      expect(
-        [script(3, 'Script')].uniqueLabel('', fallback: 'Script'),
-        'Script(1)',
-      );
-    });
-
-    test('uniqueLabel keeps the numbered label within the name limit', () {
-      final long = 'x' * 100;
-      final scripts = [script(1, 'x' * TextInputLimits.name)];
-      final label = scripts.uniqueLabel(long, fallback: 'Script');
-      expect(label.length, lessThanOrEqualTo(TextInputLimits.name));
-      expect(label, endsWith('(1)'));
-      expect(scripts.hasLabel(label), isFalse);
     });
   });
 

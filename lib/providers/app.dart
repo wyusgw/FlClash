@@ -6,7 +6,6 @@ import 'dart:ui' show Locale;
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/core.dart';
 import 'package:flutter/services.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:wifi_ssid/wifi_ssid.dart';
@@ -47,72 +46,6 @@ class Logs extends _$Logs with AutoDisposeNotifierMixin {
     bool res = false;
     res = await picker.saveFileWithPath(logFileName, tempFilePath) != null;
     return res;
-  }
-}
-
-@Riverpod(keepAlive: true)
-class Requests extends _$Requests with AutoDisposeNotifierMixin {
-  @override
-  FixedList<TrackerInfo> build() {
-    return FixedList(maxRequestsLength);
-  }
-
-  void addRequest(TrackerInfo value) {
-    if (!ref.mounted) {
-      return;
-    }
-    this.value = state.append(value);
-  }
-}
-
-@Riverpod(keepAlive: true)
-class DnsQueries extends _$DnsQueries with AutoDisposeNotifierMixin {
-  @override
-  FixedList<DnsQuery> build() {
-    return FixedList(maxDnsQueriesLength);
-  }
-
-  void addQuery(DnsQuery value) {
-    if (!ref.mounted) {
-      return;
-    }
-    this.value = state.append(value);
-  }
-}
-
-@Riverpod(keepAlive: true)
-class DnsQueryCount extends _$DnsQueryCount with AutoDisposeNotifierMixin {
-  @override
-  int build() {
-    return 0;
-  }
-}
-
-@Riverpod(keepAlive: true)
-class RequestCount extends _$RequestCount with AutoDisposeNotifierMixin {
-  @override
-  int build() {
-    return 0;
-  }
-}
-
-@Riverpod(keepAlive: true)
-class Providers extends _$Providers with AutoDisposeNotifierMixin {
-  @override
-  List<ExternalProvider> build() {
-    return [];
-  }
-
-  void setProvider(ExternalProvider? provider) {
-    if (provider == null) return;
-    final index = value.indexWhere((item) => item.name == provider.name);
-    if (index == -1) return;
-    final newState = List<ExternalProvider>.from(value)..[index] = provider;
-    value = newState;
-  }
-
-  Future<void> syncProviders() async {
-    value = await ref.read(coreHandlerProvider).getExternalProviders();
   }
 }
 
@@ -651,9 +584,7 @@ List<Override> buildAppStateOverrides(AppState appState) {
     groupsProvider.overrideWithBuild((_, _) => appState.groups),
     systemBrightnessProvider.overrideWithBuild((_, _) => appState.brightness),
     runTimeProvider.overrideWithBuild((_, _) => appState.runTime),
-    providersProvider.overrideWithBuild((_, _) => appState.providers),
     localIpProvider.overrideWithBuild((_, _) => appState.localIp),
-    requestsProvider.overrideWithBuild((_, _) => appState.requests),
     versionProvider.overrideWithBuild((_, _) => appState.version),
     logsProvider.overrideWithBuild((_, _) => appState.logs),
     trafficsProvider.overrideWithBuild((_, _) => appState.traffics),

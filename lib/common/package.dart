@@ -1,15 +1,11 @@
-import 'dart:io';
-
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'common.dart';
 
 extension PackageInfoExtension on PackageInfo {
-  String get ua => [
-    '$appName/v$version',
-    'clash-verge',
-    'Platform/${Platform.operatingSystem}',
-  ].join(' ');
+  /// Subscription servers pick the format by the client name in the agent, and
+  /// any name containing "clash" gets a Clash profile this app does not read.
+  String get ua => subscriptionUserAgent;
 }
 
 int compareVersions(String version1, String version2) {

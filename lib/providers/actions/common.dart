@@ -29,7 +29,7 @@ class CommonAction extends _$CommonAction {
   }
 
   void updateMode() {
-    ref.read(patchClashConfigProvider.notifier).update((state) {
+    ref.read(coreSettingProvider.notifier).update((state) {
       final index = Mode.values.indexWhere((item) => item == state.mode);
       if (index == -1) return state;
       final nextIndex = index + 1 > Mode.values.length - 1 ? 0 : index + 1;

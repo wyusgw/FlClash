@@ -64,11 +64,10 @@ class BackupAction extends _$BackupAction {
   Future<String> _createArchive(String workDir) async {
     final databaseSnapshotPath = join(workDir, backupDatabaseName);
     await database.customStatement('VACUUM INTO ?', [databaseSnapshotPath]);
-    final (profileIds, scriptIds, providers) = await (
-      database.profilesDao.query().map((item) => item.id).get(),
-      database.scriptsDao.query().map((item) => item.id).get(),
-      database.clashProvidersDao.queryAll().get(),
-    ).wait;
+    final profileIds = await database.profilesDao
+        .query()
+        .map((item) => item.id)
+        .get();
     final configMap = ref.read(configProvider).toJson();
     configMap['version'] = await preferences.getVersion();
     final archivePath = join(workDir, 'backup.zip');
@@ -77,11 +76,7 @@ class BackupAction extends _$BackupAction {
       configMap: configMap,
       databaseSnapshotPath: databaseSnapshotPath,
       homeDirPath: await appPath.homeDirPath,
-      entries: BackupEntries.of(
-        profileIds: profileIds,
-        scriptIds: scriptIds,
-        providers: providers,
-      ),
+      entries: BackupEntries.of(profileIds: profileIds),
     ));
     return archivePath;
   }
@@ -99,26 +94,15 @@ class BackupAction extends _$BackupAction {
     final isOverride =
         ref.read(appSettingProvider).restoreStrategy ==
         RestoreStrategy.override;
-    final previousProviders = await database.clashProvidersDao.queryAll().get();
     final putBack = stagingDirPath == null
         ? null
         : await _copyStagedFiles(data, stagingDirPath);
     try {
-      await database.restore(
-        data.profiles,
-        data.scripts,
-        data.rules,
-        data.links,
-        data.proxyGroups,
-        clashProviders: data.clashProviders,
-        customProxies: data.customProxies,
-        isOverride: isOverride,
-      );
+      await database.restore(data.profiles, isOverride: isOverride);
     } catch (_) {
       await putBack?.call();
       rethrow;
     }
-    await _clearReplacedProviderCaches(previousProviders);
     if (config == null) {
       return;
     }
@@ -171,17 +155,5 @@ class BackupAction extends _$BackupAction {
       rethrow;
     }
     return putBack;
-  }
-
-  Future<void> _clearReplacedProviderCaches(
-    List<ClashProvider> previousProviders,
-  ) async {
-    final kept = (await database.clashProvidersDao.fileNames().get()).toSet();
-    for (final provider in previousProviders) {
-      if (kept.contains(provider.fileName)) {
-        continue;
-      }
-      await File(await provider.path).safeDelete();
-    }
   }
 }

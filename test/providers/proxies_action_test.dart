@@ -45,14 +45,6 @@ ProviderContainer _delayContainer(ProviderContainer Function() build) {
   return container;
 }
 
-ExternalProvider _provider(String name, {int count = 1}) => ExternalProvider(
-  name: name,
-  type: 'Proxy',
-  count: count,
-  vehicleType: 'HTTP',
-  updateAt: DateTime.utc(2026),
-);
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -196,15 +188,10 @@ void main() {
       when(
         () => core.changeProxy(any()),
       ).thenAnswer((_) async => const ChangeProxyResult(changed: true));
-      when(core.closeConnections).thenAnswer((_) async => true);
-      when(core.resetConnections).thenAnswer((_) async => true);
     });
 
-    test('closes connections when enabled', () async {
+    test('hands the selection to the Core', () async {
       final container = runningContainer();
-      container.read(appSettingProvider.notifier).value = const AppSettingProps(
-        closeConnections: true,
-      );
 
       await actionOf(
         container,
@@ -215,74 +202,7 @@ void main() {
           const ChangeProxyParams(groupName: 'Proxy', proxyName: 'HK-01'),
         ),
       ).called(1);
-      verify(core.closeConnections).called(1);
-      verifyNever(core.resetConnections);
     });
-
-    test('resets connections instead when the setting is off', () async {
-      final container = buildContainer();
-      container.read(appSettingProvider.notifier).value = const AppSettingProps(
-        closeConnections: false,
-      );
-
-      await actionOf(
-        container,
-      ).changeProxy(groupName: 'Proxy', proxyName: 'HK-01');
-
-      verify(core.resetConnections).called(1);
-      verifyNever(core.closeConnections);
-    });
-
-    test('a failing connection reset does not fail the switch', () async {
-      when(core.closeConnections).thenThrow(
-        const CoreMethodException(
-          code: 'transport_disconnected',
-          message: 'Core RPC client is closed',
-        ),
-      );
-      final container = buildContainer(profile: _selectedProfile('HK-00'));
-      container.read(appSettingProvider.notifier).value = const AppSettingProps(
-        closeConnections: true,
-      );
-
-      await actionOf(
-        container,
-      ).changeProxy(groupName: 'Proxy', proxyName: 'HK-01');
-
-      verify(core.closeConnections).called(1);
-      expect(container.read(currentProfileProvider)?.selectedMap, {
-        'Proxy': 'HK-01',
-      });
-    });
-
-    test('skips the connection reset when the switch itself fails', () async {
-      when(() => core.changeProxy(any())).thenThrow(StateError('core down'));
-      final container = runningContainer();
-
-      await actionOf(
-        container,
-      ).changeProxy(groupName: 'Proxy', proxyName: 'HK-01');
-
-      verifyNever(core.closeConnections);
-      verifyNever(core.resetConnections);
-    });
-
-    test(
-      'skips the connection reset when the Core reports no change',
-      () async {
-        when(
-          () => core.changeProxy(any()),
-        ).thenAnswer((_) async => const ChangeProxyResult(changed: false));
-        final container = runningContainer();
-
-        await actionOf(
-          container,
-        ).changeProxy(groupName: 'Proxy', proxyName: 'HK-01');
-
-        verifyNever(core.closeConnections);
-        verifyNever(core.resetConnections);
-      },
-    );
 
     test('rolls the selection back when the Core answers a message', () async {
       when(() => core.changeProxy(any())).thenAnswer(
@@ -294,7 +214,6 @@ void main() {
         container,
       ).changeProxy(groupName: 'Proxy', proxyName: 'HK-01');
 
-      verifyNever(core.closeConnections);
       expect(container.read(currentProfileProvider)?.selectedMap, {
         'Proxy': 'HK-00',
       });
@@ -709,175 +628,6 @@ void main() {
 
       expect(container.read(delayDataSourceProvider), isEmpty);
       expect(container.read(pendingDelayTestsProvider), isEmpty);
-    });
-  });
-
-  group('updateProvider', () {
-    test(
-      'stores the refreshed provider and clears the updating flag',
-      () async {
-        final refreshed = _provider('geo', count: 5);
-        final release = Completer<String>();
-        when(
-          () => core.updateExternalProvider('geo'),
-        ).thenAnswer((_) => release.future);
-        when(
-          () => core.getExternalProvider('geo'),
-        ).thenAnswer((_) async => refreshed);
-        final container = buildContainer();
-        container.read(providersProvider.notifier).value = [_provider('geo')];
-
-        final update = actionOf(
-          container,
-        ).updateProvider(_provider('geo'), showLoading: true);
-
-        expect(container.read(isUpdatingProvider('provider_geo')), isTrue);
-
-        release.complete('');
-        final message = await update;
-
-        expect(message, isEmpty);
-        expect(container.read(providersProvider), [refreshed]);
-        expect(container.read(isUpdatingProvider('provider_geo')), isFalse);
-      },
-    );
-
-    testWidgets('the stale sweep does not interrupt the provider update', (
-      tester,
-    ) async {
-      final refreshed = _provider('geo', count: 8);
-      final release = Completer<String>();
-      when(
-        () => core.updateExternalProvider('geo'),
-      ).thenAnswer((_) => release.future);
-      when(
-        () => core.getExternalProvider('geo'),
-      ).thenAnswer((_) async => refreshed);
-      final container = buildContainer();
-      container.read(updatingActionProvider.notifier);
-      container.read(providersProvider.notifier).value = [_provider('geo')];
-
-      final update = actionOf(
-        container,
-      ).updateProvider(_provider('geo'), showLoading: true);
-
-      await tester.pump(updatingStaleTimeout + updatingSweepInterval);
-
-      expect(container.read(isUpdatingProvider('provider_geo')), isFalse);
-
-      release.complete('');
-
-      expect(await update, isEmpty);
-      expect(container.read(providersProvider), [refreshed]);
-
-      await tester.pump(Duration.zero);
-    });
-
-    testWidgets('a core disconnect clears the provider updating state', (
-      tester,
-    ) async {
-      final release = Completer<String>();
-      when(
-        () => core.updateExternalProvider('geo'),
-      ).thenAnswer((_) => release.future);
-      when(
-        () => core.getExternalProvider('geo'),
-      ).thenAnswer((_) async => _provider('geo'));
-      final container = buildContainer();
-      container.read(coreStatusProvider.notifier).value = CoreStatus.connected;
-
-      final update = actionOf(
-        container,
-      ).updateProvider(_provider('geo'), showLoading: true);
-
-      expect(container.read(isUpdatingProvider('provider_geo')), isTrue);
-
-      container.read(coreStatusProvider.notifier).value =
-          CoreStatus.disconnected;
-      await tester.pump();
-
-      expect(container.read(isUpdatingProvider('provider_geo')), isFalse);
-
-      release.complete('');
-      await update;
-      await tester.pump(Duration.zero);
-    });
-
-    test('returns the core message without storing a provider', () async {
-      when(
-        () => core.updateExternalProvider('geo'),
-      ).thenAnswer((_) async => 'update failed');
-      final container = buildContainer();
-
-      final message = await actionOf(
-        container,
-      ).updateProvider(_provider('geo'), showLoading: true);
-
-      expect(message, 'update failed');
-      expect(container.read(providersProvider), isEmpty);
-      expect(container.read(isUpdatingProvider('provider_geo')), isFalse);
-      verifyNever(() => core.getExternalProvider(any()));
-    });
-
-    test('clears the updating flag when core throws', () async {
-      when(
-        () => core.updateExternalProvider('geo'),
-      ).thenThrow(StateError('boom'));
-      final container = buildContainer();
-
-      await expectLater(
-        actionOf(container).updateProvider(_provider('geo'), showLoading: true),
-        throwsStateError,
-      );
-
-      expect(container.read(isUpdatingProvider('provider_geo')), isFalse);
-    });
-  });
-
-  group('sideLoadExternalProvider', () {
-    test('stores the provider after a successful side load', () async {
-      final refreshed = _provider('rules', count: 3);
-      final release = Completer<String>();
-      when(
-        () => core.sideLoadExternalProvider(
-          providerName: 'rules',
-          data: 'payload',
-        ),
-      ).thenAnswer((_) => release.future);
-      when(
-        () => core.getExternalProvider('rules'),
-      ).thenAnswer((_) async => refreshed);
-      final container = buildContainer();
-      container.read(providersProvider.notifier).value = [_provider('rules')];
-
-      final sideLoad = actionOf(container).sideLoadExternalProvider(
-        _provider('rules'),
-        'payload',
-        showLoading: true,
-      );
-
-      expect(container.read(isUpdatingProvider('provider_rules')), isTrue);
-
-      release.complete('');
-      final message = await sideLoad;
-
-      expect(message, isEmpty);
-      expect(container.read(providersProvider), [refreshed]);
-      expect(container.read(isUpdatingProvider('provider_rules')), isFalse);
-    });
-
-    test('surfaces the core message and skips the refresh', () async {
-      when(
-        () => core.sideLoadExternalProvider(providerName: 'rules', data: 'bad'),
-      ).thenAnswer((_) async => 'invalid payload');
-      final container = buildContainer();
-
-      final message = await actionOf(
-        container,
-      ).sideLoadExternalProvider(_provider('rules'), 'bad');
-
-      expect(message, 'invalid payload');
-      verifyNever(() => core.getExternalProvider(any()));
     });
   });
 

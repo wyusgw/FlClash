@@ -60,7 +60,7 @@ class CoreController {
 
   static Future<void> initGeo() async {
     final homePath = await appPath.homeDirPath;
-    const geoFileNameList = [MMDB, GEOIP, GEOSITE, ASN];
+    const geoFileNameList = [geoIpFileName, geoSiteFileName];
     try {
       for (final geoFileName in geoFileNameList) {
         final geoFile = File(join(homePath, geoFileName));
@@ -111,10 +111,6 @@ class CoreController {
     return res;
   }
 
-  Future<String> updateConfig(UpdateParams updateParams) async {
-    return _interface.updateConfig(updateParams);
-  }
-
   Future<String> setupConfig({
     required SetupParams params,
     Future<void> Function()? preloadInvoke,
@@ -155,58 +151,6 @@ class CoreController {
     return _interface.watchRoute(watch);
   }
 
-  Future<List<TrackerInfo>> getConnections() async {
-    return _interface.getConnections();
-  }
-
-  Future<int> getConnectionCount() async {
-    return _interface.getConnectionCount();
-  }
-
-  Future<void> closeConnection(String id) async {
-    await _interface.closeConnection(id);
-  }
-
-  Future<void> closeConnections() async {
-    await _interface.closeConnections();
-  }
-
-  Future<void> resetConnections() async {
-    await _interface.resetConnections();
-  }
-
-  Future<List<ExternalProvider>> getExternalProviders() async {
-    return _interface.getExternalProviders();
-  }
-
-  Future<ExternalProvider?> getExternalProvider(
-    String externalProviderName,
-  ) async {
-    return _interface.getExternalProvider(externalProviderName);
-  }
-
-  Future<String> updateGeoData(String type) {
-    return _interface.updateGeoData(type);
-  }
-
-  Future<String> sideLoadExternalProvider({
-    required String providerName,
-    required String data,
-  }) {
-    return _interface.sideLoadExternalProvider(
-      providerName: providerName,
-      data: data,
-    );
-  }
-
-  Future<String> dumpRuleSet(String path) {
-    return _interface.dumpRuleSet(path);
-  }
-
-  Future<String> updateExternalProvider({required String providerName}) async {
-    return _interface.updateExternalProvider(providerName);
-  }
-
   Future<bool> startListener() async {
     return _interface.startListener();
   }
@@ -226,21 +170,6 @@ class CoreController {
 
   Future<List<ServiceCheckItem>> serviceCheck(ServiceCheckParams params) =>
       _interface.serviceCheck(params);
-
-  Future<Map<String, dynamic>> getConfig(int id) async {
-    return _readConfig(await appPath.getProfilePath(id.toString()));
-  }
-
-  Future<Map<String, dynamic>> getAppliedConfig() async {
-    return _readConfig(await appPath.configFilePath);
-  }
-
-  Future<Map<String, dynamic>> _readConfig(String path) async {
-    final data = Map<String, dynamic>.from(await _interface.getConfig(path));
-    data['rules'] = data['rule'];
-    data.remove('rule');
-    return data;
-  }
 
   Future<Traffic> getTraffic(bool onlyStatisticsProxy) async {
     return _interface.getTraffic(onlyStatisticsProxy);
@@ -272,10 +201,6 @@ class CoreController {
 
   Future<void> crash() async {
     await _interface.crash();
-  }
-
-  Future<String> clearEffect(int profileId) async {
-    return _interface.clearEffect(profileId);
   }
 }
 

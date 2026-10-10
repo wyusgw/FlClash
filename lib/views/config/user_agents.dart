@@ -20,7 +20,7 @@ class UserAgentsView extends ConsumerStatefulWidget {
 }
 
 class _UserAgentsViewState extends ConsumerState<UserAgentsView> {
-  String? get _selected => ref.read(patchClashConfigProvider).globalUa;
+  String? get _selected => ref.read(appSettingProvider).globalUa;
 
   List<String> get _entries =>
       _visibleUserAgents(ref.read(appSettingProvider).userAgents, _selected);
@@ -33,7 +33,7 @@ class _UserAgentsViewState extends ConsumerState<UserAgentsView> {
 
   void _select(String? userAgent) {
     ref
-        .read(patchClashConfigProvider.notifier)
+        .read(appSettingProvider.notifier)
         .update((state) => state.copyWith(globalUa: userAgent));
   }
 
@@ -143,7 +143,7 @@ class _UserAgentsViewState extends ConsumerState<UserAgentsView> {
       appSettingProvider.select((state) => state.userAgents),
     );
     final selected = ref.watch(
-      patchClashConfigProvider.select((state) => state.globalUa),
+      appSettingProvider.select((state) => state.globalUa),
     );
     final entries = _visibleUserAgents(userAgents, selected);
     return BaseScaffold(

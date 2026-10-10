@@ -23,19 +23,10 @@ void main() {
       expect(parsed.entries, ['geosite:cn', '+.lan', 'plain']);
     });
 
-    test('keeps a rule line whole', () {
-      final parsed = parseListInput(
-        "DOMAIN-SUFFIX,lan,real-ip\n- 'rule-set,cn,fake-ip'\nMATCH,fake-ip\n"
-        'a.com, b.com',
-      );
+    test('strips list markers and quotes and splits on commas', () {
+      final parsed = parseListInput("- 'a.com'\n- \"b.com\",\nc.com, d.com");
 
-      expect(parsed.entries, [
-        'DOMAIN-SUFFIX,lan,real-ip',
-        'rule-set,cn,fake-ip',
-        'MATCH,fake-ip',
-        'a.com',
-        'b.com',
-      ]);
+      expect(parsed.entries, ['a.com', 'b.com', 'c.com', 'd.com']);
     });
 
     test('merges duplicates and skips existing values', () {

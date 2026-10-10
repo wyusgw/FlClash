@@ -15,12 +15,6 @@ class Profiles extends Table {
 
   DateTimeColumn get lastUpdateDate => dateTime().nullable()();
 
-  TextColumn get overwriteType => textEnum<OverwriteType>()();
-
-  IntColumn get scriptId => integer().nullable()();
-
-  TextColumn get matchTarget => text().nullable()();
-
   IntColumn get autoUpdateDurationMillis => integer()();
 
   TextColumn get subscriptionInfo =>
@@ -91,7 +85,7 @@ class ProfilesDao extends DatabaseAccessor<Database> with _$ProfilesDaoMixin {
 
   Selectable<String> fileNames() {
     final query = profiles.selectOnly()..addColumns([profiles.id]);
-    return query.map((row) => '${row.read(profiles.id)}.yaml');
+    return query.map((row) => '${row.read(profiles.id)}.json');
   }
 
   void setAllWithBatch(Batch batch, Iterable<Profile> profiles) {
@@ -119,9 +113,6 @@ extension RawProfilExt on RawProfile {
       autoUpdate: autoUpdate,
       selectedMap: selectedMap,
       unfoldSet: unfoldSet,
-      overwriteType: overwriteType,
-      scriptId: scriptId,
-      matchTarget: matchTarget,
       order: order,
     );
   }
@@ -140,9 +131,6 @@ extension ProfilesCompanionExt on Profile {
       autoUpdate: autoUpdate,
       selectedMap: selectedMap,
       unfoldSet: unfoldSet,
-      overwriteType: overwriteType,
-      scriptId: Value(scriptId),
-      matchTarget: Value(matchTarget),
       order: Value(order ?? this.order),
     );
   }

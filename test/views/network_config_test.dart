@@ -30,7 +30,7 @@ final _toggleCases = <_ToggleCase>[
   _ToggleCase(
     'TUN',
     const TUNItem(),
-    (c) => c.read(patchClashConfigProvider).tun.enable,
+    (c) => c.read(coreSettingProvider).tun.enable,
   ),
   _ToggleCase(
     'allow bypass',
@@ -115,19 +115,6 @@ void main() {
   });
 
   group('option pickers', () {
-    testWidgets('the stack picker writes the chosen tun stack', (tester) async {
-      await pumpItem(tester, const TunStackItem());
-      final initial = container.read(patchClashConfigProvider).tun.stack;
-      final target = TunStack.values.firstWhere((item) => item != initial);
-
-      await tester.tap(find.byType(ListTile).first);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(target.name).last);
-      await tester.pumpAndSettle();
-
-      expect(container.read(patchClashConfigProvider).tun.stack, target);
-    });
-
     testWidgets('the route mode picker writes the chosen mode', (tester) async {
       await pumpItem(tester, const RouteModeItem());
       final initial = container.read(networkSettingProvider).routeMode;
@@ -140,59 +127,23 @@ void main() {
 
       expect(container.read(networkSettingProvider).routeMode, target);
     });
-
-    testWidgets('the interface name mode picker writes the chosen mode', (
-      tester,
-    ) async {
-      await pumpItem(tester, const InterfaceNameModeItem());
-      final initial = container
-          .read(patchClashConfigProvider)
-          .interfaceNameMode;
-      final target = InterfaceNameMode.values.firstWhere(
-        (item) => item != initial,
-      );
-
-      await tester.tap(find.byType(ListTile).first);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(_interfaceNameModeLabel(target)).last);
-      await tester.pumpAndSettle();
-
-      expect(
-        container.read(patchClashConfigProvider).interfaceNameMode,
-        target,
-      );
-    });
   });
 
   group('network options items', () {
     List<Type> types({
       required bool isDesktop,
-      bool isCustomInterfaceName = true,
       bool isBypassPrivateRoute = false,
     }) {
       return networkOptionsItems(
         isDesktop: isDesktop,
         isMacOS: false,
-        isCustomInterfaceName: isCustomInterfaceName,
         isBypassPrivateRoute: isBypassPrivateRoute,
       ).map((item) => item.runtimeType).toList();
     }
 
-    test('interface name rows appear only on desktop', () {
-      final desktopTypes = types(isDesktop: true);
-      expect(desktopTypes, contains(InterfaceNameModeItem));
-      expect(desktopTypes, contains(InterfaceNameItem));
-
-      final androidTypes = types(isDesktop: false);
-      expect(androidTypes, isNot(contains(InterfaceNameModeItem)));
-      expect(androidTypes, isNot(contains(InterfaceNameItem)));
-    });
-
-    test('the interface name row is listed only for the custom mode', () {
-      expect(
-        types(isDesktop: true, isCustomInterfaceName: false),
-        isNot(contains(InterfaceNameItem)),
-      );
+    test('the tun switch is a desktop row', () {
+      expect(types(isDesktop: true), contains(TUNItem));
+      expect(types(isDesktop: false), isNot(contains(TUNItem)));
     });
 
     test('the route address row is listed unless private routes bypass', () {
@@ -209,13 +160,5 @@ String _routeModeLabel(RouteMode mode) {
   return switch (mode) {
     RouteMode.config => 'Use config',
     RouteMode.bypassPrivate => 'Bypass private addresses',
-  };
-}
-
-String _interfaceNameModeLabel(InterfaceNameMode mode) {
-  return switch (mode) {
-    InterfaceNameMode.clear => 'Clear',
-    InterfaceNameMode.follow => 'Follow config',
-    InterfaceNameMode.custom => 'Custom',
   };
 }

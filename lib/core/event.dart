@@ -26,20 +26,7 @@ abstract mixin class CoreEventListener {
 
   void onDelay(Delay delay) {}
 
-  void onRequest(TrackerInfo connection) {}
-
-  void onDns(DnsQuery dnsQuery) {}
-
-  void onLoaded(String providerName) {}
-
   void onCrash(String message) {}
-
-  void onGeoUpdate(
-    String geoType,
-    bool updating,
-    bool skipped,
-    String? error,
-  ) {}
 
   void onRouteChanged(RouteSnapshot snapshot) {}
 }
@@ -58,26 +45,8 @@ class CoreEventManager {
             case CoreEventType.delay:
               listener.onDelay(Delay.fromJson(event.data));
               break;
-            case CoreEventType.request:
-              listener.onRequest(TrackerInfo.fromJson(event.data));
-              break;
-            case CoreEventType.dns:
-              listener.onDns(DnsQuery.fromJson(event.data));
-              break;
-            case CoreEventType.loaded:
-              listener.onLoaded(event.data);
-              break;
             case CoreEventType.crash:
               listener.onCrash(event.data);
-              break;
-            case CoreEventType.geoUpdate:
-              final data = event.data as Map<String, dynamic>;
-              listener.onGeoUpdate(
-                data['type'] as String,
-                data['updating'] as bool,
-                data['skipped'] as bool? ?? false,
-                data['error'] as String?,
-              );
               break;
             case CoreEventType.routeChanged:
               listener.onRouteChanged(

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/desktop/model.dart';
 import 'package:fl_clash/core/interface.dart';
-import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -20,24 +19,7 @@ void main() {
     );
     registerFallbackValue(const InitParams(homeDir: '.', version: 1));
     registerFallbackValue(
-      const UpdateParams(
-        tun: Tun(),
-        mixedPort: 7890,
-        allowLan: true,
-        findProcessMode: FindProcessMode.off,
-        mode: Mode.rule,
-        logLevel: LogLevel.info,
-        ipv6: false,
-        tcpConcurrent: false,
-        externalController: ExternalControllerStatus.close,
-        unifiedDelay: false,
-      ),
-    );
-    registerFallbackValue(
       const ChangeProxyParams(groupName: 'G', proxyName: 'P'),
-    );
-    registerFallbackValue(
-      const UpdateGeoDataParams(geoType: 't', geoName: 'n'),
     );
   });
 
@@ -108,24 +90,6 @@ void main() {
       verify(() => mock.validateConfig('/path')).called(1);
     });
 
-    test('updateConfig delegates to interface', () async {
-      const params = UpdateParams(
-        tun: Tun(enable: false),
-        mixedPort: 7890,
-        allowLan: true,
-        findProcessMode: FindProcessMode.off,
-        mode: Mode.rule,
-        logLevel: LogLevel.info,
-        ipv6: false,
-        tcpConcurrent: false,
-        externalController: ExternalControllerStatus.close,
-        unifiedDelay: false,
-      );
-      when(() => mock.updateConfig(params)).thenAnswer((_) async => 'ok');
-      final result = await controller.updateConfig(params);
-      expect(result, 'ok');
-    });
-
     test('setupConfig waits for asynchronous preload', () async {
       const params = SetupParams(selectedMap: {}, testUrl: 'http://x.com');
       final preloadCompleter = Completer<void>();
@@ -170,67 +134,6 @@ void main() {
       );
       when(() => mock.watchRoute(true)).thenAnswer((_) async => snapshot);
       expect(await controller.watchRoute(true), snapshot);
-    });
-  });
-
-  group('connection methods', () {
-    test('getConnections delegates structured connections', () async {
-      final connection = TrackerInfo.fromJson({
-        'id': '1',
-        'metadata': {'network': 'tcp'},
-        'upload': 0,
-        'download': 0,
-        'start': '2024-01-01',
-        'chains': ['Proxy'],
-        'rule': 'DIRECT',
-        'rulePayload': '',
-      });
-      when(() => mock.getConnections()).thenAnswer((_) async => [connection]);
-      final result = await controller.getConnections();
-      expect(result.length, 1);
-      expect(result.first.id, '1');
-    });
-
-    test('getConnections handles empty connections', () async {
-      when(() => mock.getConnections()).thenAnswer((_) async => []);
-      final result = await controller.getConnections();
-      expect(result, isEmpty);
-    });
-
-    test('closeConnection delegates', () async {
-      when(() => mock.closeConnection('id1')).thenAnswer((_) async => true);
-      await controller.closeConnection('id1');
-      verify(() => mock.closeConnection('id1')).called(1);
-    });
-  });
-
-  group('external providers', () {
-    test('getExternalProviders delegates structured providers', () async {
-      final provider = ExternalProvider(
-        name: 'provider1',
-        type: 'Proxy',
-        count: 5,
-        vehicleType: 'HTTP',
-        updateAt: DateTime.now(),
-      );
-      when(
-        () => mock.getExternalProviders(),
-      ).thenAnswer((_) async => [provider]);
-      final result = await controller.getExternalProviders();
-      expect(result.length, 1);
-      expect(result.first.name, 'provider1');
-    });
-
-    test('getExternalProviders handles empty list', () async {
-      when(() => mock.getExternalProviders()).thenAnswer((_) async => []);
-      final result = await controller.getExternalProviders();
-      expect(result, isEmpty);
-    });
-
-    test('getExternalProvider returns null when missing', () async {
-      when(() => mock.getExternalProvider(any())).thenAnswer((_) async => null);
-      final result = await controller.getExternalProvider('test');
-      expect(result, isNull);
     });
   });
 
@@ -284,22 +187,10 @@ void main() {
       expect(result, false);
     });
 
-    test('updateGeoData delegates', () async {
-      when(() => mock.updateGeoData('MMDB')).thenAnswer((_) async => 'ok');
-      final result = await controller.updateGeoData('MMDB');
-      expect(result, 'ok');
-    });
-
     test('requestGc delegates to forceGc', () async {
       when(() => mock.forceGc()).thenAnswer((_) async => true);
       await controller.requestGc();
       verify(() => mock.forceGc()).called(1);
-    });
-
-    test('clearEffect delegates', () async {
-      when(() => mock.clearEffect(42)).thenAnswer((_) async => 'ok');
-      final result = await controller.clearEffect(42);
-      expect(result, 'ok');
     });
   });
 }

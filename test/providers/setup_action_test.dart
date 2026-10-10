@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/controller.dart';
@@ -20,7 +22,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:riverpod/riverpod.dart';
-import 'package:yaml/yaml.dart';
 
 import '../helpers/test_profiles.dart';
 
@@ -125,20 +126,6 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() {
     registerFallbackValue(const SetupParams(selectedMap: {}, testUrl: ''));
-    registerFallbackValue(
-      const UpdateParams(
-        tun: Tun(),
-        mixedPort: 7890,
-        allowLan: false,
-        findProcessMode: FindProcessMode.off,
-        mode: Mode.rule,
-        logLevel: LogLevel.info,
-        ipv6: false,
-        tcpConcurrent: false,
-        externalController: ExternalControllerStatus.close,
-        unifiedDelay: false,
-      ),
-    );
   });
 
   late TestSetupAction action;
@@ -562,71 +549,26 @@ void main() {
     });
   });
 
-  group('updateConfig', () {
-    test('safe mode pushes tun disabled even once authorized', () async {
-      final core = _MockCoreHandlerInterface();
-      when(() => core.updateConfig(any())).thenAnswer((_) async => '');
-      final scopedAction = TestSetupAction();
-      final scoped = ProviderContainer(
-        overrides: [
-          profilesProvider.overrideWith(TestProfiles.new),
-          setupActionProvider.overrideWith(() => scopedAction),
-          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
-          safeModeProvider.overrideWithValue(true),
-        ],
-      );
-      addTearDown(scoped.dispose);
-      scoped.read(setupActionProvider.notifier);
-      scoped
-          .read(patchClashConfigProvider.notifier)
-          .update(
-            (state) => state.copyWith(tun: state.tun.copyWith(enable: true)),
-          );
-      scoped.read(authorizedTunEnableProvider.notifier).value =
-          TunAuthorizationState.authorized;
+  group('updateConfigDebounce', () {
+    test(
+      'builds the config again instead of patching the running Core',
+      () async {
+        final scopedAction = TestSetupAction();
+        final scoped = ProviderContainer(
+          overrides: [
+            profilesProvider.overrideWith(TestProfiles.new),
+            setupActionProvider.overrideWith(() => scopedAction),
+          ],
+        );
+        addTearDown(scoped.dispose);
+        scoped.read(setupActionProvider.notifier);
 
-      await scopedAction.updateConfig();
+        await scopedAction.updateConfigDebounce();
+        await Future<void>.delayed(const Duration(milliseconds: 700));
 
-      final params =
-          verify(() => core.updateConfig(captureAny())).captured.single
-              as UpdateParams;
-      expect(params.tun.enable, isFalse);
-      expect(scopedAction.authorizeCalls, 0);
-    });
-
-    test('safe mode closes the external controller', () async {
-      final core = _MockCoreHandlerInterface();
-      when(() => core.updateConfig(any())).thenAnswer((_) async => '');
-      final scopedAction = TestSetupAction();
-      final scoped = ProviderContainer(
-        overrides: [
-          profilesProvider.overrideWith(TestProfiles.new),
-          setupActionProvider.overrideWith(() => scopedAction),
-          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
-          safeModeProvider.overrideWithValue(true),
-        ],
-      );
-      addTearDown(scoped.dispose);
-      scoped.read(setupActionProvider.notifier);
-      scoped
-          .read(patchClashConfigProvider.notifier)
-          .update(
-            (state) => state.copyWith(
-              externalController: ExternalControllerStatus.open,
-            ),
-          );
-
-      await scopedAction.updateConfig();
-
-      final params =
-          verify(() => core.updateConfig(captureAny())).captured.single
-              as UpdateParams;
-      expect(params.externalController, ExternalControllerStatus.close);
-      expect(
-        scoped.read(patchClashConfigProvider).externalController,
-        ExternalControllerStatus.open,
-      );
-    });
+        expect(scopedAction.applyProfileCalls, 1);
+      },
+    );
   });
 
   group('recoverMissingProfile', () {
@@ -680,7 +622,7 @@ void main() {
     test('records the requested mode', () {
       container.read(setupActionProvider.notifier).changeMode(Mode.direct);
 
-      expect(container.read(patchClashConfigProvider).mode, Mode.direct);
+      expect(container.read(coreSettingProvider).mode, Mode.direct);
     });
 
     test('leaving global alone keeps the selected group', () {
@@ -701,7 +643,7 @@ void main() {
       expect(scoped.read(currentProfileProvider)?.currentGroupName, 'Manual');
     });
 
-    test('global mode also selects the global group', () {
+    test('global mode leaves the selected group alone', () {
       final profile = Profile.normal(
         label: 'p',
       ).copyWith(id: 1, currentGroupName: 'Manual');
@@ -716,11 +658,8 @@ void main() {
 
       scoped.read(setupActionProvider.notifier).changeMode(Mode.global);
 
-      expect(scoped.read(patchClashConfigProvider).mode, Mode.global);
-      expect(
-        scoped.read(currentProfileProvider)?.currentGroupName,
-        GroupName.GLOBAL.name,
-      );
+      expect(scoped.read(coreSettingProvider).mode, Mode.global);
+      expect(scoped.read(currentProfileProvider)?.currentGroupName, 'Manual');
     });
   });
 
@@ -776,19 +715,11 @@ void main() {
       globalState.lastConfigMd5 = originalLastConfigMd5;
     });
 
-    // profileId: null routes getProfile/setupState around the database and
-    // Core.getConfig, isolating the behavior under test.
+    // profileId: null routes getProfile around the profile file, isolating the
+    // behavior under test.
     const nullProfileSetupState = SetupState(
       profileId: null,
       profileLastUpdateDate: null,
-      overwriteType: OverwriteType.standard,
-      rules: [],
-      proxyGroups: [],
-      addedRules: [],
-      script: null,
-      overrideDns: false,
-      dns: Dns(),
-      dnsOverrideKeys: {},
     );
 
     test(
@@ -828,7 +759,6 @@ void main() {
       () async {
         final profile = Profile.normal(label: 'p');
         final core = _MockCoreHandlerInterface();
-        when(() => core.getConfig(any())).thenThrow(Exception('broken yaml'));
         String? pushedConfig;
         when(() => core.setupConfig(any())).thenAnswer((_) async {
           pushedConfig = await File(
@@ -841,8 +771,7 @@ void main() {
             profilesProvider.overrideWith(() => TestProfiles([profile])),
             currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
             setupStateProvider.overrideWith(
-              (_, profileId) =>
-                  nullProfileSetupState.copyWith(profileId: profileId),
+              (_, _) => throw Exception('broken profile'),
             ),
             coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
             setupActionProvider.overrideWith(SetupAction.new),
@@ -855,7 +784,10 @@ void main() {
             .applyProfile(force: true);
 
         expect(succeeded, isFalse);
-        expect(pushedConfig, isEmpty);
+        expect(
+          pushedConfig,
+          '{"outbounds":[{"tag":"$directOutboundTag","protocol":"freedom"}]}',
+        );
         expect(scoped.read(currentProfileIdProvider), profile.id);
       },
     );
@@ -896,157 +828,80 @@ void main() {
       },
     );
 
-    test(
-      'safe mode writes a closed external controller into the profile',
-      () async {
-        final profile = Profile.normal(label: 'p');
-        final core = _MockCoreHandlerInterface();
-        when(() => core.getConfig(any())).thenAnswer((_) async => {});
-        String? pushedConfig;
-        when(() => core.setupConfig(any())).thenAnswer((_) async {
-          pushedConfig = await File(
-            await appPath.configFilePath,
-          ).readAsString();
-          return '';
-        });
-        final scoped = ProviderContainer(
-          overrides: [
-            profilesProvider.overrideWith(() => TestProfiles([profile])),
-            currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
-            setupStateProvider.overrideWith(
-              (_, profileId) =>
-                  nullProfileSetupState.copyWith(profileId: profileId),
-            ),
-            coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
-            setupActionProvider.overrideWith(SetupAction.new),
-            safeModeProvider.overrideWithValue(true),
-          ],
-        );
-        addTearDown(scoped.dispose);
-        scoped
-            .read(patchClashConfigProvider.notifier)
-            .update(
-              (state) => state.copyWith(
-                externalController: ExternalControllerStatus.open,
-              ),
-            );
-
-        final succeeded = await scoped
-            .read(setupActionProvider.notifier)
-            .applyProfile(force: true);
-
-        expect(succeeded, isTrue);
-        expect(pushedConfig, contains('external-controller: ""'));
-        expect(pushedConfig, isNot(contains('9090')));
-      },
-    );
-
-    test('a custom overwrite injects only the providers it names', () async {
+    test('safe mode never writes a tun inbound into the config', () async {
       final profile = Profile.normal(label: 'p');
       final core = _MockCoreHandlerInterface();
-      when(() => core.getConfig(any())).thenAnswer(
-        (_) async => {
-          'proxy-providers': {
-            'bundled': {'type': 'http', 'url': 'https://example.com/b.yaml'},
-          },
-        },
-      );
-      const appProxy = ClashProvider(
-        id: 11,
-        kind: ProviderKind.proxy,
-        label: 'appProxies',
-        url: 'https://example.com/p.yaml',
-      );
-      const appRule = ClashProvider(
-        id: 12,
-        kind: ProviderKind.rule,
-        label: 'appRules',
-        url: 'https://example.com/r.yaml',
-        behavior: RuleProviderBehavior.domain,
-        format: RuleProviderFormat.mrs,
-      );
-      const unusedProxy = ClashProvider(
-        id: 13,
-        kind: ProviderKind.proxy,
-        label: 'unused',
-        url: 'https://example.com/u.yaml',
-      );
-      const localRule = ClashProvider(
-        id: 14,
-        kind: ProviderKind.rule,
-        label: 'localRules',
-        behavior: RuleProviderBehavior.classical,
-        format: RuleProviderFormat.yaml,
-      );
-      final setupState = nullProfileSetupState.copyWith(
-        profileId: profile.id,
-        overwriteType: OverwriteType.custom,
-        proxyGroups: [
-          const ProxyGroup(
-            id: 1,
-            name: 'g',
-            type: GroupType.Selector,
-            use: ['appProxies', 'sub'],
-          ),
-        ],
-        rules: [
-          Rule.parse('RULE-SET,appRules,DIRECT', id: 2),
-          Rule.parse('RULE-SET,localRules,DIRECT', id: 3),
-        ],
-        clashProviders: const [appProxy, appRule, unusedProxy, localRule],
-        profileProviders: const {'sub': 42},
-      );
+      String? pushedConfig;
+      when(() => core.setupConfig(any())).thenAnswer((_) async {
+        pushedConfig = await File(await appPath.configFilePath).readAsString();
+        return '';
+      });
       final scoped = ProviderContainer(
         overrides: [
+          profilesProvider.overrideWith(() => TestProfiles([profile])),
+          currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
+          setupStateProvider.overrideWith(
+            (_, profileId) =>
+                nullProfileSetupState.copyWith(profileId: profileId),
+          ),
+          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+          setupActionProvider.overrideWith(SetupAction.new),
+          safeModeProvider.overrideWithValue(true),
+        ],
+      );
+      addTearDown(scoped.dispose);
+      scoped
+          .read(coreSettingProvider.notifier)
+          .update(
+            (state) => state.copyWith(tun: state.tun.copyWith(enable: true)),
+          );
+
+      final succeeded = await scoped
+          .read(setupActionProvider.notifier)
+          .applyProfile(force: true);
+
+      expect(succeeded, isTrue);
+      expect(pushedConfig, contains('"protocol":"mixed"'));
+      expect(pushedConfig, isNot(contains('"protocol":"tun"')));
+    });
+
+    test('the config written for the Core holds the profile nodes', () async {
+      final profile = Profile.normal(label: 'p');
+      await profile.saveFile(
+        Uint8List.fromList(
+          utf8.encode('trojan://pass@tj.example.com:443?security=tls#node-a'),
+        ),
+        validate: (_) async => '',
+      );
+      final core = _MockCoreHandlerInterface();
+      String? pushedConfig;
+      when(() => core.setupConfig(any())).thenAnswer((_) async {
+        pushedConfig = await File(await appPath.configFilePath).readAsString();
+        return '';
+      });
+      final scoped = ProviderContainer(
+        overrides: [
+          profilesProvider.overrideWith(() => TestProfiles([profile])),
+          currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
+          setupStateProvider.overrideWith(
+            (_, profileId) =>
+                nullProfileSetupState.copyWith(profileId: profileId),
+          ),
           coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
           setupActionProvider.overrideWith(SetupAction.new),
         ],
       );
       addTearDown(scoped.dispose);
 
-      final res = await scoped
+      final succeeded = await scoped
           .read(setupActionProvider.notifier)
-          .getProfile(
-            setupState: setupState,
-            patchConfig: const PatchClashConfig(),
-          );
-      final config = loadYaml(res.yaml) as YamlMap;
-      final proxyProviders = config['proxy-providers'] as YamlMap;
+          .applyProfile(force: true);
 
+      expect(succeeded, isTrue);
+      final config = json.decode(pushedConfig!) as Map<String, dynamic>;
       expect(
-        proxyProviders['appProxies']['path'],
-        await appPath.getProviderCachePath(
-          ProviderKind.proxy,
-          appProxy.fileName,
-        ),
-      );
-      expect(proxyProviders['sub']['type'], 'file');
-      expect(proxyProviders['sub']['path'], await appPath.getProfilePath('42'));
-      expect(proxyProviders.containsKey('unused'), isFalse);
-      expect(
-        proxyProviders['bundled']['path'],
-        startsWith(
-          await appPath.getProviderDirPath(
-            profile.id,
-            proxiesProviderDirectoryName,
-          ),
-        ),
-      );
-      expect(config['rule-providers']['appRules']['behavior'], 'domain');
-      expect(config['rule-providers']['appRules']['format'], 'mrs');
-      expect(
-        config['rule-providers']['appRules']['path'],
-        await appPath.getProviderCachePath(ProviderKind.rule, appRule.fileName),
-      );
-      final local = config['rule-providers']['localRules'] as YamlMap;
-      expect(local['type'], 'file');
-      expect(local.containsKey('url'), isFalse);
-      expect(
-        local['path'],
-        await appPath.getProviderCachePath(
-          ProviderKind.rule,
-          localRule.fileName,
-        ),
+        (config['outbounds'] as List).map((item) => (item as Map)['tag']),
+        contains('node-a'),
       );
     });
 

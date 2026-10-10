@@ -35,7 +35,7 @@ void main() {
 
   void setGlobalUa(String value) {
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(appSettingProvider.notifier)
         .update((state) => state.copyWith(globalUa: value));
   }
 

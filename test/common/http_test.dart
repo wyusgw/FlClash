@@ -48,8 +48,8 @@ void main() {
     addTearDown(container.dispose);
     container.read(runTimeProvider.notifier).value = running ? 1 : null;
     container.read(currentSSIDProvider.notifier).value = currentSsid;
-    container.read(patchClashConfigProvider.notifier).value =
-        const PatchClashConfig().copyWith(mixedPort: mixedPort);
+    container.read(coreSettingProvider.notifier).value = const CoreConfig()
+        .copyWith(mixedPort: mixedPort);
     container.read(appSettingProvider.notifier).value = const AppSettingProps()
         .copyWith(checkCertificate: checkCertificate);
     return container;

@@ -32,8 +32,8 @@ const (
 
 var deliveryFailureReported atomic.Bool
 
-// logDeliveryError must not reach the mihomo logger: a log event is published
-// to the log subscriber, batched, and handed back to send, so reporting a send
+// logDeliveryError must not reach the core logger: a log event is forwarded to
+// the log stream, batched, and handed back to send, so reporting a send
 // failure through it feeds the failure straight back into itself.
 func logDeliveryError(format string, args ...any) {
 	if deliveryFailureReported.Swap(true) {

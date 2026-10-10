@@ -1,11 +1,12 @@
 import 'dart:convert';
 
 import 'package:fl_clash/common/constant.dart';
+import 'package:fl_clash/common/xray_config.dart';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:flutter/foundation.dart';
 
-const directOutbound = 'DIRECT';
+const directOutbound = directOutboundTag;
 const routedOutbound = '';
 
 /// [id] must match the checker name registered in core/service_check.go.

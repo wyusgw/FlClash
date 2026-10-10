@@ -1,0 +1,97 @@
+{
+  "log": {
+    "loglevel": "error",
+    "access": "none"
+  },
+  "inbounds": [
+    {
+      "tag": "mixed-in",
+      "protocol": "mixed",
+      "listen": "127.0.0.1",
+      "port": 7890,
+      "settings": {
+        "udp": true,
+        "auth": "noauth"
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ],
+        "routeOnly": true
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "@direct",
+      "protocol": "freedom"
+    },
+    {
+      "tag": "@block",
+      "protocol": "blackhole"
+    },
+    {
+      "tag": "@dns",
+      "protocol": "dns"
+    }
+  ],
+  "routing": {
+    "domainStrategy": "IpIfNonMatch",
+    "rules": [
+      {
+        "inboundTag": [
+          "tun-in"
+        ],
+        "port": "53",
+        "outboundTag": "@dns"
+      },
+      {
+        "ip": [
+          "geoip:private"
+        ],
+        "outboundTag": "@direct"
+      },
+      {
+        "domain": [
+          "geosite:cn"
+        ],
+        "outboundTag": "@direct"
+      },
+      {
+        "ip": [
+          "geoip:cn"
+        ],
+        "outboundTag": "@direct"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "@direct"
+      }
+    ]
+  },
+  "dns": {
+    "servers": [
+      {
+        "address": "223.5.5.5",
+        "domains": [
+          "geosite:cn"
+        ],
+        "skipFallback": true
+      },
+      {
+        "address": "119.29.29.29",
+        "domains": [
+          "geosite:cn"
+        ],
+        "skipFallback": true
+      },
+      "1.1.1.1",
+      "8.8.8.8",
+      "localhost"
+    ],
+    "queryStrategy": "UseIPv4"
+  }
+}

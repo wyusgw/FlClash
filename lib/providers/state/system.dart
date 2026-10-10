@@ -1,21 +1,17 @@
 part of '../state.dart';
 
+/// Everything the generated config is built from besides the profile itself.
 @riverpod
-UpdateParams updateParams(Ref ref) {
+({CoreConfig config, RouteMode routeMode, List<String> authentication})
+configInputs(Ref ref) {
   final routeMode = ref.watch(
     networkSettingProvider.select((state) => state.routeMode),
   );
   final authentication = ref.watch(
-    networkSettingProvider.select((state) => state.authentication),
+    networkSettingProvider.select((state) => state.authentication.credentials),
   );
-  return ref.watch(
-    patchClashConfigProvider.select(
-      (state) => state.toUpdateParams(
-        routeMode: routeMode,
-        authentication: authentication.credentials,
-      ),
-    ),
-  );
+  final config = ref.watch(coreSettingProvider);
+  return (config: config, routeMode: routeMode, authentication: authentication);
 }
 
 @riverpod
@@ -24,8 +20,8 @@ TrayState trayState(Ref ref) {
   final systemProxy = ref.watch(
     networkSettingProvider.select((state) => state.systemProxy),
   );
-  final clashConfig = ref.watch(
-    patchClashConfigProvider.select(
+  final coreConfig = ref.watch(
+    coreSettingProvider.select(
       (state) => (
         mode: state.mode,
         mixedPort: state.mixedPort,
@@ -45,11 +41,11 @@ TrayState trayState(Ref ref) {
   final hotKeys = _trayHotKeys(ref);
 
   return TrayState(
-    mode: clashConfig.mode,
-    port: clashConfig.mixedPort,
+    mode: coreConfig.mode,
+    port: coreConfig.mixedPort,
     autoLaunch: appSetting.autoLaunch,
     systemProxy: systemProxy,
-    tunEnable: clashConfig.tunEnable,
+    tunEnable: coreConfig.tunEnable,
     isStart: isStart,
     groups: groups,
     selectedMap: selectedMap,
@@ -121,7 +117,7 @@ TrayTitleState trayTitleState(Ref ref) {
 VpnState vpnState(Ref ref) {
   final vpnProps = ref.watch(vpnSettingProvider);
   final stack = ref.watch(
-    patchClashConfigProvider.select((state) => state.tun.stack),
+    coreSettingProvider.select((state) => state.tun.stack),
   );
   return VpnState(stack: stack, vpnProps: vpnProps);
 }
@@ -158,7 +154,7 @@ bool shouldPatchSystemDns(Ref ref) {
   }
   final isStart = ref.watch(runTimeProvider.select((state) => state != null));
   final tunEnable = ref.watch(
-    patchClashConfigProvider.select((state) => state.tun.enable),
+    coreSettingProvider.select((state) => state.tun.enable),
   );
   final authorizationState = ref.watch(authorizedTunEnableProvider);
   return isStart &&
@@ -196,8 +192,8 @@ SharedState sharedState(Ref ref) {
       ),
     ),
   );
-  final clashConfig = ref.watch(
-    patchClashConfigProvider.select(
+  final coreConfig = ref.watch(
+    coreSettingProvider.select(
       (state) => (
         stack: state.tun.stack.name,
         mixedPort: state.mixedPort,
@@ -212,8 +208,8 @@ SharedState sharedState(Ref ref) {
   final onlyStatisticsProxy = appSetting.onlyStatisticsProxy;
   final crashlytics = appSetting.crashlytics;
   final testUrl = appSetting.testUrl;
-  final stack = clashConfig.stack;
-  final port = clashConfig.mixedPort;
+  final stack = coreConfig.stack;
+  final port = coreConfig.mixedPort;
   return SharedState(
     currentProfileName: currentProfileName,
     onlyStatisticsProxy: onlyStatisticsProxy,
@@ -238,7 +234,7 @@ SharedState sharedState(Ref ref) {
       accessControlProps: vpnSetting.accessControlProps,
       allowBypass: vpnSetting.allowBypass,
       bypassDomain: networkSetting.bypassDomain,
-      routeAddress: clashConfig.routeAddress,
+      routeAddress: coreConfig.routeAddress,
     ),
   );
 }

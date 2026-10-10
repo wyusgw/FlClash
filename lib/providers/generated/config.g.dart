@@ -372,108 +372,6 @@ abstract class _$DavSetting extends $Notifier<DAVProps?> {
   }
 }
 
-@ProviderFor(OverrideDns)
-final overrideDnsProvider = OverrideDnsProvider._();
-
-final class OverrideDnsProvider extends $NotifierProvider<OverrideDns, bool> {
-  OverrideDnsProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'overrideDnsProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$overrideDnsHash();
-
-  @$internal
-  @override
-  OverrideDns create() => OverrideDns();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(bool value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<bool>(value),
-    );
-  }
-}
-
-String _$overrideDnsHash() => r'3d49994fa23389530643e8c80e588a58f14eec92';
-
-abstract class _$OverrideDns extends $Notifier<bool> {
-  bool build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<bool, bool>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<bool, bool>,
-              bool,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
-@ProviderFor(OverrideNtp)
-final overrideNtpProvider = OverrideNtpProvider._();
-
-final class OverrideNtpProvider extends $NotifierProvider<OverrideNtp, bool> {
-  OverrideNtpProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'overrideNtpProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$overrideNtpHash();
-
-  @$internal
-  @override
-  OverrideNtp create() => OverrideNtp();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(bool value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<bool>(value),
-    );
-  }
-}
-
-String _$overrideNtpHash() => r'9ff34d39ed6adf60ce1a059edad8784f15fe5591';
-
-abstract class _$OverrideNtp extends $Notifier<bool> {
-  bool build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<bool, bool>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<bool, bool>,
-              bool,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
 @ProviderFor(HotKeyActions)
 final hotKeyActionsProvider = HotKeyActionsProvider._();
 
@@ -579,51 +477,51 @@ abstract class _$ProxiesStyleSetting extends $Notifier<ProxiesStyleProps> {
   }
 }
 
-@ProviderFor(_PatchClashConfig)
-final patchClashConfigProvider = _PatchClashConfigProvider._();
+@ProviderFor(CoreSetting)
+final coreSettingProvider = CoreSettingProvider._();
 
-final class _PatchClashConfigProvider
-    extends $NotifierProvider<_PatchClashConfig, PatchClashConfig> {
-  _PatchClashConfigProvider._()
+final class CoreSettingProvider
+    extends $NotifierProvider<CoreSetting, CoreConfig> {
+  CoreSettingProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'patchClashConfigProvider',
+        name: r'coreSettingProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$_patchClashConfigHash();
+  String debugGetCreateSourceHash() => _$coreSettingHash();
 
   @$internal
   @override
-  _PatchClashConfig create() => _PatchClashConfig();
+  CoreSetting create() => CoreSetting();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(PatchClashConfig value) {
+  Override overrideWithValue(CoreConfig value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<PatchClashConfig>(value),
+      providerOverride: $SyncValueProvider<CoreConfig>(value),
     );
   }
 }
 
-String _$_patchClashConfigHash() => r'2a02c8f1ff5746c6c0b2248343bd729d4f2a5886';
+String _$coreSettingHash() => r'66965637cbf0d551c20625d2f13f73867b1d5780';
 
-abstract class _$PatchClashConfig extends $Notifier<PatchClashConfig> {
-  PatchClashConfig build();
+abstract class _$CoreSetting extends $Notifier<CoreConfig> {
+  CoreConfig build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<PatchClashConfig, PatchClashConfig>;
+    final ref = this.ref as $Ref<CoreConfig, CoreConfig>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<PatchClashConfig, PatchClashConfig>,
-              PatchClashConfig,
+              AnyNotifier<CoreConfig, CoreConfig>,
+              CoreConfig,
               Object?,
               Object?
             >;
@@ -721,4 +619,4 @@ final class _ConfigProvider extends $FunctionalProvider<Config, Config, Config>
   }
 }
 
-String _$_configHash() => r'654d23a6e5572e1368724378204e2b14087dad71';
+String _$_configHash() => r'bd7f0afe31002151cdb55f3a14b9f7a7bf5c8a4d';

@@ -167,7 +167,7 @@ void main() {
     _RecordingSystemAction.updateTrayCount = 0;
 
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update((state) => state.copyWith(mixedPort: state.mixedPort + 1));
     await tester.pumpAndSettle();
 
@@ -181,7 +181,7 @@ void main() {
     _RecordingSystemAction.updateTrayCount = 0;
 
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update((state) => state.copyWith(mixedPort: state.mixedPort));
     await tester.pumpAndSettle();
 
@@ -194,7 +194,7 @@ void main() {
     await pumpTrayManager(tester, systemAction: _FailingSystemAction.new);
 
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update((state) => state.copyWith(mixedPort: state.mixedPort + 1));
     await tester.pumpAndSettle();
 
@@ -213,7 +213,7 @@ void main() {
 
     for (var i = 0; i < 2; i++) {
       container
-          .read(patchClashConfigProvider.notifier)
+          .read(coreSettingProvider.notifier)
           .update((state) => state.copyWith(mixedPort: state.mixedPort + 1));
       await tester.pump();
     }

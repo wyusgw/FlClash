@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/metacubex/http"
+	"net/http"
 )
 
 const (

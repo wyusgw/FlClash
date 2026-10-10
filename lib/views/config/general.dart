@@ -20,9 +20,9 @@ class LogLevelItem extends ConsumerWidget {
       title: (l) => l.logLevel,
       options: LogLevel.values,
       textBuilder: (logLevel) => logLevel.name,
-      selector: patchClashConfigProvider.select((state) => state.logLevel),
+      selector: coreSettingProvider.select((state) => state.logLevel),
       onChanged: (ref, value) => ref
-          .read(patchClashConfigProvider.notifier)
+          .read(coreSettingProvider.notifier)
           .update((state) => state.copyWith(logLevel: value)),
     );
   }
@@ -35,52 +35,12 @@ class UaItem extends ConsumerWidget {
   Widget build(BuildContext context, ref) {
     final appLocalizations = context.appLocalizations;
     final globalUa = ref.watch(
-      patchClashConfigProvider.select((state) => state.globalUa),
+      appSettingProvider.select((state) => state.globalUa),
     );
     return ListItem.open(
       title: Text(appLocalizations.userAgent),
       subtitle: Text(globalUa ?? appLocalizations.defaultText),
       widget: const UserAgentsView(),
-    );
-  }
-}
-
-class KeepAliveIntervalItem extends ConsumerWidget {
-  const KeepAliveIntervalItem({super.key});
-
-  @override
-  Widget build(BuildContext context, ref) {
-    final appLocalizations = context.appLocalizations;
-    final keepAliveInterval = ref.watch(
-      patchClashConfigProvider.select((state) => state.keepAliveInterval),
-    );
-    return ListItem.input(
-      title: Text(appLocalizations.keepAliveIntervalDesc),
-      subtitle: Text(appLocalizations.secondsCount(keepAliveInterval)),
-      dialogTitle: appLocalizations.keepAliveIntervalDesc,
-      suffixText: appLocalizations.seconds,
-      resetValue: '$defaultKeepAliveInterval',
-      value: '$keepAliveInterval',
-      maxLength: TextInputLimits.interval,
-      validator: (String? value) {
-        if (value == null || value.isEmpty) {
-          return appLocalizations.emptyTip(appLocalizations.interval);
-        }
-        final intValue = int.tryParse(value);
-        if (intValue == null) {
-          return appLocalizations.numberTip(appLocalizations.interval);
-        }
-        return null;
-      },
-      onChanged: (String? value) {
-        if (value == null) {
-          return;
-        }
-        final intValue = int.parse(value);
-        ref
-            .read(patchClashConfigProvider.notifier)
-            .update((state) => state.copyWith(keepAliveInterval: intValue));
-      },
     );
   }
 }
@@ -133,40 +93,13 @@ class PortItem extends ConsumerWidget {
   Widget build(BuildContext context, ref) {
     final appLocalizations = context.appLocalizations;
     final mixedPort = ref.watch(
-      patchClashConfigProvider.select((state) => state.mixedPort),
+      coreSettingProvider.select((state) => state.mixedPort),
     );
     return ListItem(
       title: Text(appLocalizations.port),
       subtitle: Text('$mixedPort'),
       onTap: () {
         handleShowPortDialog();
-      },
-    );
-  }
-}
-
-class HostsItem extends ConsumerWidget {
-  const HostsItem({super.key});
-
-  @override
-  Widget build(BuildContext context, ref) {
-    final hosts = ref.watch(
-      patchClashConfigProvider.select((state) => state.hosts),
-    );
-    return ListItem.open(
-      title: const Text('Hosts'),
-      widget: MapEditView(
-        title: 'Hosts',
-        entries: hosts,
-        keyMaxLength: TextInputLimits.domain,
-        valueMaxLength: TextInputLimits.hostValue,
-        titleBuilder: (item) => Text(item.key),
-        subtitleBuilder: (item) => Text(item.value),
-      ),
-      onChanged: (value) {
-        ref
-            .read(patchClashConfigProvider.notifier)
-            .update((state) => state.copyWith(hosts: value));
       },
     );
   }
@@ -241,15 +174,15 @@ class AuthenticationPasswordItem extends ConsumerWidget {
 ConfigToggleItem _clashToggle({
   required ConfigLabel title,
   ConfigLabel? subtitle,
-  required bool Function(PatchClashConfig state) select,
-  required PatchClashConfig Function(PatchClashConfig state, bool value) update,
+  required bool Function(CoreConfig state) select,
+  required CoreConfig Function(CoreConfig state, bool value) update,
 }) {
   return ConfigToggleItem(
     title: title,
     subtitle: subtitle,
-    selector: patchClashConfigProvider.select(select),
+    selector: coreSettingProvider.select(select),
     onChanged: (ref, value) => ref
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update((state) => update(state, value)),
   );
 }
@@ -330,17 +263,6 @@ class GeneralView extends ConsumerWidget {
         select: (state) => state.allowLan,
         update: (state, value) => state.copyWith(allowLan: value),
       ),
-      _clashToggle(
-        title: (l) => l.externalController,
-        subtitle: (l) => l.externalControllerDesc,
-        select: (state) =>
-            state.externalController == ExternalControllerStatus.open,
-        update: (state, value) => state.copyWith(
-          externalController: value
-              ? ExternalControllerStatus.open
-              : ExternalControllerStatus.close,
-        ),
-      ),
       const AuthenticationItem(),
       if (authentication) ...const [
         AuthenticationAccountItem(),
@@ -352,30 +274,6 @@ class GeneralView extends ConsumerWidget {
   List<Widget> _connectionItems() {
     return [
       const TestUrlItem(),
-      _clashToggle(
-        title: (l) => l.unifiedDelay,
-        select: (state) => state.unifiedDelay,
-        update: (state, value) => state.copyWith(unifiedDelay: value),
-      ),
-      _clashToggle(
-        title: (l) => l.tcpConcurrent,
-        select: (state) => state.tcpConcurrent,
-        update: (state, value) => state.copyWith(tcpConcurrent: value),
-      ),
-      if (system.isDesktop) const KeepAliveIntervalItem(),
-      _clashToggle(
-        title: (l) => l.findProcessMode,
-        select: (state) => state.findProcessMode == FindProcessMode.always,
-        update: (state, value) => state.copyWith(
-          findProcessMode: value ? FindProcessMode.always : FindProcessMode.off,
-        ),
-      ),
-      _appSettingToggle(
-        title: (l) => l.autoCloseConnections,
-        subtitle: (l) => l.autoCloseConnectionsDesc,
-        select: (state) => state.closeConnections,
-        update: (state, value) => state.copyWith(closeConnections: value),
-      ),
       _appSettingToggle(
         title: (l) => l.onlyStatisticsProxy,
         select: (state) => state.onlyStatisticsProxy,
@@ -408,25 +306,6 @@ class GeneralView extends ConsumerWidget {
         subtitle: (l) => l.ipv6Desc,
         select: (state) => state.ipv6,
         update: (state, value) => state.copyWith(ipv6: value),
-      ),
-      const HostsItem(),
-      ConfigToggleItem(
-        title: (l) => l.appendSystemDns,
-        selector: networkSettingProvider.select(
-          (state) => state.appendSystemDns,
-        ),
-        onChanged: (ref, value) => ref
-            .read(networkSettingProvider.notifier)
-            .update((state) => state.copyWith(appendSystemDns: value)),
-      ),
-      _clashToggle(
-        title: (l) => l.geodataLoader,
-        select: (state) => state.geodataLoader == GeodataLoader.memconservative,
-        update: (state, value) => state.copyWith(
-          geodataLoader: value
-              ? GeodataLoader.memconservative
-              : GeodataLoader.standard,
-        ),
       ),
     ];
   }

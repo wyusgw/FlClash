@@ -10,42 +10,32 @@ void main() {
       final json = {
         'selected-map': {'G1': 'P1'},
         'test-url': 'http://test.com',
+        'log-level': 'debug',
       };
       final params = SetupParams.fromJson(json);
       expect(params.selectedMap, {'G1': 'P1'});
       expect(params.testUrl, 'http://test.com');
+      expect(params.logLevel, LogLevel.debug);
+    });
+
+    test('the log level defaults to error', () {
+      final params = SetupParams.fromJson({
+        'selected-map': <String, String>{},
+        'test-url': 'http://test.com',
+      });
+      expect(params.logLevel, LogLevel.error);
     });
 
     test('toJson uses snake-case keys', () {
       const params = SetupParams(
         selectedMap: {'G1': 'P1'},
         testUrl: 'http://t.com',
+        logLevel: LogLevel.warning,
       );
       final json = params.toJson();
       expect(json['selected-map'], {'G1': 'P1'});
       expect(json['test-url'], 'http://t.com');
-    });
-  });
-
-  group('UpdateParams', () {
-    test('fromJson with all fields', () {
-      final json = {
-        'tun': {'enable': true},
-        'mixed-port': 7890,
-        'allow-lan': true,
-        'find-process-mode': 'off',
-        'mode': 'rule',
-        'log-level': 'info',
-        'ipv6': false,
-        'tcp-concurrent': false,
-        'external-controller': '',
-        'unified-delay': false,
-      };
-      final params = UpdateParams.fromJson(json);
-      expect(params.mixedPort, 7890);
-      expect(params.allowLan, true);
-      expect(params.mode, Mode.rule);
-      expect(params.logLevel, LogLevel.info);
+      expect(json['log-level'], 'warning');
     });
   });
 
@@ -70,15 +60,6 @@ void main() {
       final out = params.toJson();
       expect(out['group-name'], 'Proxy');
       expect(out['proxy-name'], 'auto');
-    });
-  });
-
-  group('UpdateGeoDataParams', () {
-    test('fromJson with snake-case keys', () {
-      final json = {'geo-type': 'mmdb', 'geo-name': 'Country'};
-      final params = UpdateGeoDataParams.fromJson(json);
-      expect(params.geoType, 'mmdb');
-      expect(params.geoName, 'Country');
     });
   });
 
@@ -122,42 +103,6 @@ void main() {
       final data = ProxiesData.fromJson(json);
       expect(data.all, ['G1']);
       expect(data.proxies['G1'], isA<Map>());
-    });
-  });
-
-  group('ExternalProvider', () {
-    test('fromJson with subscription info', () {
-      final json = {
-        'name': 'TestProvider',
-        'type': 'Proxy',
-        'count': 10,
-        'vehicle-type': 'HTTP',
-        'update-at': '2024-01-01T00:00:00.000Z',
-        'subscription-info': {
-          'Upload': 100,
-          'Download': 200,
-          'Total': 1000,
-          'Expire': 1700000000,
-        },
-      };
-      final provider = ExternalProvider.fromJson(json);
-      expect(provider.name, 'TestProvider');
-      expect(provider.count, 10);
-      expect(provider.subscriptionInfo!.upload, 100);
-      expect(provider.subscriptionInfo!.download, 200);
-      expect(provider.subscriptionInfo!.total, 1000);
-      expect(provider.subscriptionInfo!.expire, 1700000000);
-    });
-
-    test('updatingKey uses provider_ prefix', () {
-      final provider = ExternalProvider(
-        name: 'MyProvider',
-        type: 'Proxy',
-        count: 5,
-        vehicleType: 'HTTP',
-        updateAt: DateTime.now(),
-      );
-      expect(provider.updatingKey, 'provider_MyProvider');
     });
   });
 

@@ -2,16 +2,12 @@ part of '../state.dart';
 
 @riverpod
 GroupsState currentGroupsState(Ref ref) {
-  final mode = ref.watch(
-    patchClashConfigProvider.select((state) => state.mode),
-  );
+  final mode = ref.watch(coreSettingProvider.select((state) => state.mode));
   final groups = ref.watch(groupsProvider);
   final shown = switch (mode) {
     Mode.direct => const <Group>[],
     Mode.global => groups,
-    Mode.rule => groups.where(
-      (item) => item.hidden == false && item.name != GroupName.GLOBAL.name,
-    ),
+    Mode.rule => groups.where((item) => item.hidden == false),
   };
   return GroupsState(value: shown.map(_withoutSelection).toList());
 }
@@ -41,7 +37,7 @@ ProxyState proxyState(Ref ref) {
     ),
   );
   final mixedPort = ref.watch(
-    patchClashConfigProvider.select((state) => state.mixedPort),
+    coreSettingProvider.select((state) => state.mixedPort),
   );
   return ProxyState(
     isStart: suspend ? false : isStart,
@@ -54,17 +50,10 @@ ProxyState proxyState(Ref ref) {
 @riverpod
 ProxiesActionsState proxiesActionsState(Ref ref) {
   final pageLabel = ref.watch(currentPageLabelProvider);
-  final hasProviders = ref.watch(
-    providersProvider.select((state) => state.isNotEmpty),
-  );
   final type = ref.watch(
     proxiesStyleSettingProvider.select((state) => state.type),
   );
-  return ProxiesActionsState(
-    pageLabel: pageLabel,
-    hasProviders: hasProviders,
-    type: type,
-  );
+  return ProxiesActionsState(pageLabel: pageLabel, type: type);
 }
 
 /// Watching the delay map instead would drop nodes one probe at a time, and

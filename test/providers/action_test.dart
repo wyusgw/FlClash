@@ -1,23 +1,17 @@
 import 'dart:async';
 
-import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/desktop/model.dart';
-import 'package:fl_clash/core/interface.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/core.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/providers/state.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/riverpod.dart';
 
 import '../helpers/test_profiles.dart';
-
-class _MockCoreHandlerInterface extends Mock implements CoreHandlerInterface {}
 
 void main() {
   group('ProfilesAction', () {
@@ -125,159 +119,6 @@ void main() {
 
       expect(container.read(profilesProvider), [current, other]);
       expect(container.read(currentProfileIdProvider), current.id);
-    });
-  });
-
-  group('ScriptsAction', () {
-    ProviderContainer scriptsContainer(
-      Profile profile,
-      _ApplyRecordingSetupAction setupAction,
-    ) {
-      final container = ProviderContainer(
-        overrides: [
-          currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
-          profilesProvider.overrideWith(() => TestProfiles([profile])),
-          scriptsProvider.overrideWith(_MemoryScripts.new),
-          setupActionProvider.overrideWith(() => setupAction),
-        ],
-      );
-      addTearDown(container.dispose);
-      container.listen(scriptsProvider, (_, _) {});
-      return container;
-    }
-
-    Script script(int id, {String? url}) => Script(
-      id: id,
-      label: 'Script $id',
-      lastUpdateTime: DateTime(2026),
-      url: url,
-    );
-
-    test('putScript re-applies only a current profile running that script', () {
-      final profile = Profile.normal().copyWith(
-        overwriteType: OverwriteType.script,
-        scriptId: 1,
-      );
-      final setupAction = _ApplyRecordingSetupAction();
-      final container = scriptsContainer(profile, setupAction);
-      final action = container.read(scriptsActionProvider.notifier);
-
-      action.putScript(script(2));
-      expect(setupAction.applyCount, 0);
-
-      action.putScript(script(1));
-      expect(setupAction.applyCount, 1);
-      expect(container.read(scriptsProvider).value?.map((item) => item.id), [
-        2,
-        1,
-      ]);
-
-      container
-          .read(profilesProvider.notifier)
-          .put(profile.copyWith(overwriteType: OverwriteType.standard));
-      action.putScript(script(1));
-      expect(setupAction.applyCount, 1);
-    });
-
-    test(
-      'updateScript releases the updating key when the download fails',
-      () async {
-        final profile = Profile.normal().copyWith(
-          overwriteType: OverwriteType.script,
-          scriptId: 1,
-        );
-        final setupAction = _ApplyRecordingSetupAction();
-        final container = scriptsContainer(profile, setupAction);
-        final remote = script(1, url: 'bad-url');
-
-        await expectLater(
-          container.read(scriptsActionProvider.notifier).updateScript(remote),
-          throwsA(anything),
-        );
-
-        expect(container.read(isUpdatingProvider(remote.updatingKey)), isFalse);
-        expect(container.read(scriptsProvider).value, isEmpty);
-        expect(setupAction.applyCount, 0);
-      },
-    );
-  });
-
-  group('GeoResourceAction', () {
-    test('GeoResource has correct updatingKey', () {
-      expect(GeoResource.MMDB.updatingKey, 'geo_resource_MMDB');
-      expect(GeoResource.ASN.updatingKey, 'geo_resource_ASN');
-      expect(GeoResource.GEOIP.updatingKey, 'geo_resource_GEOIP');
-      expect(GeoResource.GEOSITE.updatingKey, 'geo_resource_GEOSITE');
-    });
-
-    test('IsUpdating provider works with geo resource key', () async {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-
-      final key = GeoResource.MMDB.updatingKey;
-      expect(container.read(isUpdatingProvider(key)), false);
-
-      final operation = container
-          .read(updatingKeysProvider.notifier)
-          .start(key);
-      expect(container.read(isUpdatingProvider(key)), true);
-
-      container.read(updatingKeysProvider.notifier).stop(key, operation);
-      expect(container.read(isUpdatingProvider(key)), false);
-    });
-
-    test('forwards a manual resource update to Core', () async {
-      final core = _MockCoreHandlerInterface();
-      when(() => core.updateGeoData('MMDB')).thenAnswer((_) async => '');
-      final container = ProviderContainer(
-        overrides: [
-          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
-        ],
-      );
-      addTearDown(container.dispose);
-      final action = container.read(geoResourceActionProvider.notifier);
-
-      await action.updateGeoResource(GeoResource.MMDB);
-
-      verify(() => core.updateGeoData('MMDB')).called(1);
-    });
-
-    test('propagates a failed manual Core request', () async {
-      final core = _MockCoreHandlerInterface();
-      when(
-        () => core.updateGeoData('MMDB'),
-      ).thenThrow(StateError('disconnected'));
-      final container = ProviderContainer(
-        overrides: [
-          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
-        ],
-      );
-      addTearDown(container.dispose);
-      final action = container.read(geoResourceActionProvider.notifier);
-
-      await expectLater(
-        action.updateGeoResource(GeoResource.MMDB),
-        throwsStateError,
-      );
-      verify(() => core.updateGeoData('MMDB')).called(1);
-    });
-
-    test('updates valid resource URLs and rejects malformed URLs', () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-      final action = container.read(geoResourceActionProvider.notifier);
-
-      expect(
-        () => action.updateGeoResourceUrl(GeoResource.MMDB, 'not-a-url'),
-        throwsA(isA<ArgumentError>()),
-      );
-
-      const url = 'https://example.com/Country.mmdb';
-      action.updateGeoResourceUrl(GeoResource.MMDB, url);
-      expect(
-        container.read(patchClashConfigProvider).geoXUrl[GeoResource.MMDB],
-        url,
-      );
     });
   });
 
@@ -718,41 +559,6 @@ void main() {
     });
 
     test(
-      'restarts core after newly granting admin during config update',
-      () async {
-        late _AuthorizationSetupAction setupAction;
-        late _RestartRecordingCoreAction coreAction;
-        final container = ProviderContainer(
-          overrides: [
-            setupActionProvider.overrideWith(() {
-              setupAction = _AuthorizationSetupAction([AuthorizeCode.success]);
-              return setupAction;
-            }),
-            coreActionProvider.overrideWith(() {
-              coreAction = _RestartRecordingCoreAction();
-              return coreAction;
-            }),
-          ],
-        );
-        addTearDown(container.dispose);
-        container
-            .read(patchClashConfigProvider.notifier)
-            .update((state) => state.copyWith.tun(enable: true));
-        container.read(setupActionProvider);
-        container.read(coreActionProvider);
-
-        await setupAction.updateConfig();
-
-        expect(setupAction.authorizationRequestCount, 1);
-        expect(
-          container.read(authorizedTunEnableProvider),
-          TunAuthorizationState.authorized,
-        );
-        expect(coreAction.restartCount, 1);
-      },
-    );
-
-    test(
       'a config Core rejects on the handoff path reports failure, not success',
       () async {
         late _AuthorizationSetupAction setupAction;
@@ -772,7 +578,7 @@ void main() {
         );
         addTearDown(container.dispose);
         container
-            .read(patchClashConfigProvider.notifier)
+            .read(coreSettingProvider.notifier)
             .update((state) => state.copyWith.tun(enable: true));
         container.read(setupActionProvider);
         container.read(coreActionProvider);
@@ -798,7 +604,7 @@ void main() {
       );
       addTearDown(container.dispose);
       container
-          .read(patchClashConfigProvider.notifier)
+          .read(coreSettingProvider.notifier)
           .update((state) => state.copyWith.tun(enable: true));
       container.read(setupActionProvider);
       container.read(coreActionProvider);
@@ -856,7 +662,7 @@ void main() {
       );
       addTearDown(container.dispose);
       container
-          .read(patchClashConfigProvider.notifier)
+          .read(coreSettingProvider.notifier)
           .update((state) => state.copyWith.tun(enable: true));
       container.read(setupActionProvider);
 
@@ -888,25 +694,6 @@ class _TestCoreAction extends CoreAction {
   Future<CoreLifecycleResult> restartLifecycle() {
     lifecycleRestartCount++;
     return restartCompleter?.future ?? Future.value(_restartResult);
-  }
-}
-
-class _ApplyRecordingSetupAction extends SetupAction {
-  int applyCount = 0;
-
-  @override
-  void applyProfileDebounce({bool silence = false, bool force = false}) {
-    applyCount++;
-  }
-}
-
-class _MemoryScripts extends Scripts {
-  @override
-  Stream<List<Script>> build() => Stream.value(const []);
-
-  @override
-  void put(Script script) {
-    state = AsyncData([...value.where((item) => item.id != script.id), script]);
   }
 }
 

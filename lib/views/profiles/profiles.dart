@@ -6,7 +6,6 @@ import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/profiles/overwrite/overwrite.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:material_ui/material_ui.dart';
@@ -198,20 +197,6 @@ class ProfileItem extends ConsumerWidget {
   Future<void> _handleDeleteProfile(BuildContext context, WidgetRef ref) async {
     final profilesAction = ref.read(profilesActionProvider.notifier);
     final appLocalizations = context.appLocalizations;
-    final users = await profilesAction.providerUsers(profile);
-    if (users.isNotEmpty) {
-      await dialogs.showMessage(
-        title: appLocalizations.tip,
-        message: TextSpan(
-          text: appLocalizations.providerInUse(
-            profile.realLabel,
-            users.map((item) => item.realLabel).join(', '),
-          ),
-        ),
-        cancelable: false,
-      );
-      return;
-    }
     final res = await dialogs.showMessage(
       title: appLocalizations.tip,
       message: TextSpan(
@@ -326,10 +311,6 @@ class ProfileItem extends ConsumerWidget {
     }
   }
 
-  void _handlePushGenProfilePage(BuildContext context, int id) {
-    BaseNavigator.push(context, OverwriteView(profileId: id));
-  }
-
   List<CommonPopupMenuItem> _menuItems(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
     final isUrl = profile.type == ProfileType.url;
@@ -363,13 +344,6 @@ class ProfileItem extends ConsumerWidget {
         glyph: AppGlyphs.moreCircle,
         label: appLocalizations.more,
         subItems: [
-          CommonPopupMenuItem(
-            glyph: AppGlyphs.puzzle,
-            label: appLocalizations.override,
-            onPressed: () {
-              _handlePushGenProfilePage(context, profile.id);
-            },
-          ),
           if (hasSubscriptionInfo)
             CommonPopupMenuItem(
               glyph: AppGlyphs.dataUsage,

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive_io.dart';
-import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/common/migration.dart';
@@ -25,33 +24,14 @@ final class BackupException implements Exception {
 /// Archive entries mirror the data directory, so an entry name is also the
 /// file's path relative to the home directory.
 abstract final class BackupEntries {
-  static String profile(Object id) => '$profilesDirectoryName/$id.yaml';
+  static String profile(Object id) => '$profilesDirectoryName/$id.json';
 
-  static String script(Object id) => 'scripts/$id.js';
-
-  static String provider(ClashProvider provider) =>
-      '$providersDirectoryName/${providerCacheDirectoryName(provider.kind)}/'
-      '${provider.fileName}';
-
-  /// A remote provider's cache belongs to the Core and downloads again.
-  static List<String> of({
-    required Iterable<int> profileIds,
-    required Iterable<int> scriptIds,
-    required Iterable<ClashProvider> providers,
-  }) {
-    return [
-      ...profileIds.map(profile),
-      ...scriptIds.map(script),
-      ...providers.where((item) => !item.isRemote).map(provider),
-    ];
+  static List<String> of({required Iterable<int> profileIds}) {
+    return profileIds.map(profile).toList();
   }
 
   static List<String> ofData(MigrationData data) {
-    return of(
-      profileIds: data.profiles.map((item) => item.id),
-      scriptIds: data.scripts.map((item) => item.id),
-      providers: data.clashProviders,
-    );
+    return of(profileIds: data.profiles.map((item) => item.id));
   }
 
   static String resolve(String root, String entry) {
@@ -139,13 +119,6 @@ Future<MigrationData> readBackupArchive({
   if (version > Migration.currentVersion) {
     throw const BackupException(BackupFailure.newerVersion);
   }
-  if (version == 0) {
-    return migrateLegacyConfig(
-      configMap: configMap,
-      sourcePath: stagingDirPath,
-      targetPath: stagingDirPath,
-    );
-  }
   final databaseFile = File(join(stagingDirPath, backupDatabaseName));
   if (!await databaseFile.exists()) {
     return MigrationData(configMap: configMap);
@@ -166,36 +139,9 @@ Future<MigrationData> readBackupArchive({
     if (schemaVersion > database.schemaVersion) {
       throw const BackupException(BackupFailure.newerVersion);
     }
-    final results = await Future.wait([
-      database.profilesDao.query().get(),
-      database.scriptsDao.query().get(),
-      database.rules.all().map((item) => item.toRule()).get(),
-      (database.select(database.profileRuleLinks)..orderBy([
-            (t) => OrderingTerm(expression: t.order, nulls: NullsOrder.last),
-          ]))
-          .map((item) => item.toLink())
-          .get(),
-      (database.select(database.proxyGroups)..orderBy([
-            (t) => OrderingTerm(expression: t.order, nulls: NullsOrder.last),
-          ]))
-          .map((item) => item.toProxyGroup())
-          .get(),
-      database.clashProvidersDao.queryAll().get(),
-      (database.select(database.customProxies)..orderBy([
-            (t) => OrderingTerm(expression: t.order, nulls: NullsOrder.last),
-          ]))
-          .map((item) => item.toCustomProxy())
-          .get(),
-    ]);
     return MigrationData(
       configMap: configMap,
-      profiles: results[0].cast<Profile>(),
-      scripts: results[1].cast<Script>(),
-      rules: results[2].cast<Rule>(),
-      links: results[3].cast<ProfileRuleLink>(),
-      proxyGroups: results[4].cast<ProxyGroup>(),
-      clashProviders: results[5].cast<ClashProvider>(),
-      customProxies: results[6].cast<CustomProxy>(),
+      profiles: await database.profilesDao.query().get(),
     );
   } finally {
     await database.close();

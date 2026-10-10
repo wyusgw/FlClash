@@ -28,7 +28,7 @@ class BuildConfig {
   final String helperName;
 
   static const _defaults = BuildConfig(
-    tags: 'with_gvisor',
+    tags: '',
     goLdflags: '-w -s',
     coreDir: 'core',
     coreName: 'FlClashCore',

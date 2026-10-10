@@ -13,7 +13,7 @@ import '../helpers/test_profiles.dart';
 void main() {
   late ProviderContainer container;
 
-  String? selected() => container.read(patchClashConfigProvider).globalUa;
+  String? selected() => container.read(appSettingProvider).globalUa;
 
   List<String> saved() => container.read(appSettingProvider).userAgents;
 
@@ -40,7 +40,7 @@ void main() {
         .read(viewSizeProvider.notifier)
         .update((_) => const Size(1000, 1600));
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(appSettingProvider.notifier)
         .update((state) => state.copyWith(globalUa: globalUa));
 
     await tester.pumpWidget(

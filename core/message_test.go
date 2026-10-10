@@ -55,13 +55,9 @@ func runBatcherUntilDrained(t *testing.T, state, priority, bulk chan Message) *b
 
 func TestClassOfMessageRoutesEachTier(t *testing.T) {
 	for messageType, want := range map[MessageType]messageClass{
-		LoadedMessage:       stateMessageClass,
-		GeoUpdateMessage:    stateMessageClass,
 		RouteChangedMessage: stateMessageClass,
 		DelayMessage:        priorityMessageClass,
 		LogMessage:          bulkMessageClass,
-		RequestMessage:      bulkMessageClass,
-		DnsMessage:          yieldingBulkMessageClass,
 	} {
 		if got := classOfMessage(Message{Type: messageType}); got != want {
 			t.Errorf("classOfMessage(%s) = %d, want %d", messageType, got, want)
@@ -72,7 +68,7 @@ func TestClassOfMessageRoutesEachTier(t *testing.T) {
 func TestEnqueueStateNeverEvictsAQueuedEvent(t *testing.T) {
 	queue := make(chan Message, 2)
 	for i := 0; i < 5; i++ {
-		enqueueState(queue, Message{Type: GeoUpdateMessage, Data: i})
+		enqueueState(queue, Message{Type: RouteChangedMessage, Data: i})
 	}
 
 	if len(queue) != 2 {
@@ -91,7 +87,7 @@ func TestEnqueueStateNeverBlocks(t *testing.T) {
 	go func() {
 		defer close(done)
 		for i := 0; i < 1000; i++ {
-			enqueueState(queue, Message{Type: LoadedMessage, Data: i})
+			enqueueState(queue, Message{Type: RouteChangedMessage, Data: i})
 		}
 	}()
 
@@ -108,7 +104,7 @@ func TestRunMessageBatcherDrainsStateAheadOfADelayBacklog(t *testing.T) {
 	for i := 0; i < messageBatchSize*2; i++ {
 		priority <- Message{Type: DelayMessage, Data: i}
 	}
-	state <- Message{Type: GeoUpdateMessage, Data: "finished"}
+	state <- Message{Type: RouteChangedMessage, Data: "finished"}
 	close(state)
 	close(priority)
 
@@ -118,7 +114,7 @@ func TestRunMessageBatcherDrainsStateAheadOfADelayBacklog(t *testing.T) {
 		t.Fatal("the batcher delivered nothing")
 	}
 	first := batches[0]
-	if len(first) == 0 || first[0].Type != GeoUpdateMessage {
+	if len(first) == 0 || first[0].Type != RouteChangedMessage {
 		t.Fatalf("first delivered message = %+v, want the geo update ahead of the delay backlog", first)
 	}
 }
@@ -263,7 +259,7 @@ func TestRunMessageBatcherDrainsBulkAfterPriorityCloses(t *testing.T) {
 	priority := make(chan Message)
 	bulk := make(chan Message, 4)
 	for i := 0; i < 4; i++ {
-		bulk <- Message{Type: RequestMessage, Data: i}
+		bulk <- Message{Type: LogMessage, Data: i}
 	}
 	close(priority)
 	close(bulk)
@@ -274,7 +270,7 @@ func TestRunMessageBatcherDrainsBulkAfterPriorityCloses(t *testing.T) {
 		t.Fatalf("delivered %d bulk messages, want 4", len(got))
 	}
 	for i, message := range got {
-		if message.Type != RequestMessage || message.Data != i {
+		if message.Type != LogMessage || message.Data != i {
 			t.Errorf("message %d = {%s %v}, want {request %d}", i, message.Type, message.Data, i)
 		}
 	}

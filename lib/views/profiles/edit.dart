@@ -9,7 +9,6 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/pages/editor.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/core.dart';
-import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -74,21 +73,6 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
     );
     final profilesAction = ref.read(profilesActionProvider.notifier);
     final appLocalizations = context.appLocalizations;
-    final rename = await profilesAction.providerRename(widget.profile, profile);
-    if (rename.conflicts.isNotEmpty) {
-      await dialogs.showMessage(
-        title: appLocalizations.tip,
-        message: TextSpan(
-          text: appLocalizations.providerRenameShadowed(
-            rename.conflicts.map((item) => item.realLabel).join(', '),
-            profile.realLabel,
-          ),
-        ),
-        cancelable: false,
-      );
-      return;
-    }
-    final renameIn = [for (final item in rename.renameIn) item.id];
     final hasUpdate = widget.profile.url != profile.url;
     if (_fileData != null) {
       if (profile.type == ProfileType.url && _autoUpdate) {
@@ -110,15 +94,15 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
       if (savedProfile == null) {
         return;
       }
-      profilesAction.putProfile(savedProfile, renameIn: renameIn);
+      profilesAction.putProfile(savedProfile);
     } else if (!hasUpdate) {
-      profilesAction.putProfile(profile, renameIn: renameIn);
+      profilesAction.putProfile(profile);
     } else {
       unawaited(
         globalState.safeRun(() async {
           await Future.delayed(commonDuration);
           if (hasUpdate) {
-            await profilesAction.updateProfile(profile, renameIn: renameIn);
+            await profilesAction.updateProfile(profile);
           }
         }),
       );
@@ -238,12 +222,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     final items = <Widget>[
-      _ProfileNameField(
-        controller: _labelController,
-        reservedLabels: ref.watch(
-          appProviderLabelsProvider(ProviderKind.proxy),
-        ),
-      ),
+      _ProfileNameField(controller: _labelController),
       if (widget.profile.type == ProfileType.url) ...[
         _ProfileUrlField(controller: _urlController),
         ListItem.toggle(
@@ -306,13 +285,9 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
 }
 
 class _ProfileNameField extends StatelessWidget {
-  const _ProfileNameField({
-    required this.controller,
-    required this.reservedLabels,
-  });
+  const _ProfileNameField({required this.controller});
 
   final TextEditingController controller;
-  final Set<String> reservedLabels;
 
   @override
   Widget build(BuildContext context) {
@@ -326,9 +301,6 @@ class _ProfileNameField extends StatelessWidget {
         validator: (String? value) {
           if (value == null || value.isEmpty) {
             return appLocalizations.profileNameNullValidationDesc;
-          }
-          if (reservedLabels.contains(value.trim())) {
-            return appLocalizations.existsTip(appLocalizations.name);
           }
           return null;
         },

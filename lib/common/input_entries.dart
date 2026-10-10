@@ -1,5 +1,3 @@
-import 'package:fl_clash/enum/enum.dart';
-
 enum InputIssueKind { keyTooLong, valueTooLong, missingValue }
 
 class InputIssue {
@@ -40,15 +38,6 @@ class ParsedInput<T> {
 final _lineSeparator = RegExp(r'\r?\n');
 final _listSeparator = RegExp(r'[,，]');
 final _whitespace = RegExp(r'\s');
-final _ruleTypes = {for (final action in RuleAction.values) action.value};
-
-/// fake-ip-filter in rule mode takes whole rules such as
-/// `DOMAIN-SUFFIX,lan,real-ip`, so their commas never split a line.
-bool _isRule(String value) {
-  final comma = value.indexOf(',');
-  return comma > 0 &&
-      _ruleTypes.contains(value.substring(0, comma).trim().toUpperCase());
-}
 
 /// Lines copied out of a YAML sequence keep their `- ` marker and quotes.
 String _stripLineMarkup(String line) {
@@ -85,8 +74,7 @@ ParsedInput<String> parseListInput(
   final lines = text.split(_lineSeparator);
   for (var index = 0; index < lines.length; index++) {
     final line = _stripLineMarkup(lines[index]);
-    final whole = _unquote(line);
-    final values = _isRule(whole) ? [whole] : line.split(_listSeparator);
+    final values = line.split(_listSeparator);
     for (final raw in values) {
       final value = _unquote(raw.trim());
       if (value.isEmpty) {

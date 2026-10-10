@@ -258,15 +258,15 @@ void main() {
   test('forwards Core message events', () async {
     final transport = FakeDesktopCoreTransport.connected();
     final client = CoreRpcClient(transport);
-    final listener = _LoadedListener();
+    final listener = _CrashListener();
     coreEventManager.addListener(listener);
 
     transport.addJson({
       'method': CoreMethod.message.name,
-      'arguments': {'type': 'loaded', 'data': 'provider-a'},
+      'arguments': {'type': 'crash', 'data': 'core-a'},
     });
 
-    expect(await listener.loaded.future, 'provider-a');
+    expect(await listener.crashed.future, 'core-a');
     coreEventManager.removeListener(listener);
     await client.close();
     await transport.close();
@@ -319,11 +319,11 @@ void main() {
   });
 }
 
-final class _LoadedListener with CoreEventListener {
-  final Completer<String> loaded = Completer<String>();
+final class _CrashListener with CoreEventListener {
+  final Completer<String> crashed = Completer<String>();
 
   @override
-  void onLoaded(String providerName) {
-    loaded.complete(providerName);
+  void onCrash(String message) {
+    crashed.complete(message);
   }
 }

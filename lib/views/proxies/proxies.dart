@@ -4,7 +4,6 @@ import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/views/proxies/list.dart';
-import 'package:fl_clash/views/proxies/providers.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,7 +20,6 @@ class ProxiesView extends ConsumerStatefulWidget {
 
 class _ProxiesViewState extends ConsumerState<ProxiesView> {
   final GlobalKey<ProxiesTabViewState> _proxiesTabKey = GlobalKey();
-  bool _hasProviders = false;
   bool _isTab = false;
 
   List<CommonPopupMenuItem> _buildMenuItems(BuildContext context) {
@@ -43,19 +41,6 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
           );
         },
       ),
-      if (_hasProviders)
-        CommonPopupMenuItem(
-          glyph: AppGlyphs.layers,
-          label: appLocalizations.providers,
-          onPressed: () {
-            showExtend(
-              context,
-              builder: (_) {
-                return const ProvidersView();
-              },
-            );
-          },
-        ),
     ];
   }
 
@@ -90,16 +75,6 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
   @override
   void initState() {
     super.initState();
-    ref.listenManual(providersProvider.select((state) => state.isNotEmpty), (
-      prev,
-      next,
-    ) {
-      if (prev != next) {
-        setState(() {
-          _hasProviders = next;
-        });
-      }
-    }, fireImmediately: true);
     ref.listenManual(
       proxiesStyleSettingProvider.select(
         (state) => state.type == ProxiesType.tab,

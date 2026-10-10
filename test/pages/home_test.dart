@@ -349,8 +349,8 @@ void main() {
                   builder: (_) => const SizedBox.shrink(),
                 ),
                 NavigationItem(
-                  glyph: AppGlyphs.connections,
-                  label: PageLabel.connections,
+                  glyph: AppGlyphs.profiles,
+                  label: PageLabel.profiles,
                   modes: const [
                     NavigationItemMode.desktop,
                     NavigationItemMode.more,

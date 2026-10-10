@@ -1,21 +1,24 @@
 {
   "methodCall": {
-    "id": "updateConfig#contract",
-    "method": "updateConfig",
+    "id": "setupConfig#contract",
+    "method": "setupConfig",
     "arguments": {
-      "mixed-port": 7890,
-      "allow-lan": true,
-      "ipv6": false,
-      "geo-auto-update": true,
-      "geo-update-interval": 24
+      "selected-map": {
+        "PROXY": "node-a"
+      },
+      "test-url": "https://www.gstatic.com/generate_204",
+      "log-level": "error"
     }
   },
   "eventCall": {
     "method": "message",
     "arguments": [
       {
-        "type": "loaded",
-        "data": "provider-a"
+        "type": "log",
+        "data": {
+          "LogLevel": "warning",
+          "Payload": "started"
+        }
       },
       {
         "type": "delay",
@@ -28,7 +31,7 @@
     ]
   },
   "successResponse": {
-    "id": "updateConfig#contract",
+    "id": "setupConfig#contract",
     "result": ""
   },
   "structuredResponse": {
@@ -39,7 +42,7 @@
     }
   },
   "errorResponse": {
-    "id": "getConfig#contract",
+    "id": "setupConfig#contract",
     "result": null,
     "error": {
       "code": "core_error",

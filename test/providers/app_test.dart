@@ -59,42 +59,6 @@ void main() {
     });
   });
 
-  group('Providers provider', () {
-    test('setProvider replaces provider with matching name', () {
-      final oldProvider = ExternalProvider(
-        name: 'Proxy',
-        type: 'Proxy',
-        count: 1,
-        vehicleType: 'HTTP',
-        updateAt: DateTime(2026),
-      );
-      final newProvider = oldProvider.copyWith(count: 2);
-      container.read(providersProvider.notifier).update((_) => [oldProvider]);
-
-      container.read(providersProvider.notifier).setProvider(newProvider);
-
-      expect(container.read(providersProvider).single.count, 2);
-    });
-
-    test('setProvider ignores null and missing provider names', () {
-      final provider = ExternalProvider(
-        name: 'Proxy',
-        type: 'Proxy',
-        count: 1,
-        vehicleType: 'HTTP',
-        updateAt: DateTime(2026),
-      );
-      container.read(providersProvider.notifier).update((_) => [provider]);
-
-      container.read(providersProvider.notifier).setProvider(null);
-      container
-          .read(providersProvider.notifier)
-          .setProvider(provider.copyWith(name: 'Other', count: 9));
-
-      expect(container.read(providersProvider).single, provider);
-    });
-  });
-
   group('SystemBrightness provider', () {
     test('default is dark', () {
       expect(container.read(systemBrightnessProvider), Brightness.dark);
@@ -267,32 +231,6 @@ void main() {
         'a',
         'b',
       ]);
-    });
-
-    test('Requests.addRequest reaches listeners', () {
-      container.read(requestsProvider.notifier).value = FixedList(3);
-      var notifications = 0;
-      final subscription = container.listen(
-        requestsProvider.select((state) => state.revision),
-        (_, _) => notifications++,
-      );
-      addTearDown(subscription.close);
-
-      container
-          .read(requestsProvider.notifier)
-          .addRequest(
-            TrackerInfo(
-              id: '1',
-              start: DateTime.utc(2026),
-              metadata: const Metadata(network: 'tcp', host: 'example.com'),
-              chains: const ['Proxy'],
-              rule: 'DOMAIN',
-              rulePayload: 'example.com',
-            ),
-          );
-
-      expect(notifications, 1);
-      expect(container.read(requestsProvider).length, 1);
     });
 
     test('Traffics.addTraffic reaches listeners and clear resets', () {

@@ -18,94 +18,6 @@ T roundTrip<T>(
 }
 
 void main() {
-  group('GeoResource JSON', () {
-    test('exposes mihomo raw config keys', () {
-      expect(GeoResource.MMDB.configKey, 'mmdb');
-      expect(GeoResource.ASN.configKey, 'asn');
-      expect(GeoResource.GEOIP.configKey, 'geoip');
-      expect(GeoResource.GEOSITE.configKey, 'geosite');
-    });
-
-    test('parses canonical GeoResource keys from config JSON', () {
-      final config = PatchClashConfig.fromJson({
-        'geox-url': {
-          'mmdb': 'https://example.com/mmdb',
-          'asn': 'https://example.com/asn.mmdb',
-          'geoip': 'https://example.com/geoip.dat',
-          'geosite': 'https://example.com/geosite.dat',
-        },
-      });
-
-      expect(config.geoXUrl, {
-        GeoResource.MMDB: 'https://example.com/mmdb',
-        GeoResource.ASN: 'https://example.com/asn.mmdb',
-        GeoResource.GEOIP: 'https://example.com/geoip.dat',
-        GeoResource.GEOSITE: 'https://example.com/geosite.dat',
-      });
-    });
-
-    test('parses hyphenated GeoResource keys from config JSON', () {
-      final config = PatchClashConfig.fromJson({
-        'geox-url': {
-          'geo-ip': 'https://example.com/legacy-geoip.dat',
-          'geo-site': 'https://example.com/legacy-geosite.dat',
-        },
-      });
-
-      expect(config.geoXUrl, {
-        GeoResource.GEOIP: 'https://example.com/legacy-geoip.dat',
-        GeoResource.GEOSITE: 'https://example.com/legacy-geosite.dat',
-      });
-    });
-
-    test('GeoXUrl defaults use GeoResource keys', () {
-      expect(defaultGeoXUrl.keys, GeoResource.values);
-    });
-
-    test('PatchClashConfig serializes geoXUrl map with lowercase keys', () {
-      final json = const PatchClashConfig(
-        geoXUrl: {GeoResource.GEOIP: 'https://example.com/geoip.dat'},
-      ).toJson();
-
-      expect(json['geox-url'], {'geoip': 'https://example.com/geoip.dat'});
-    });
-
-    test('converts geoXUrl map to raw config map', () {
-      const geoXUrl = {
-        GeoResource.MMDB: 'https://example.com/mmdb',
-        GeoResource.GEOSITE: 'https://example.com/geosite.dat',
-      };
-
-      expect(geoXUrl.raw, {
-        'mmdb': 'https://example.com/mmdb',
-        'geosite': 'https://example.com/geosite.dat',
-      });
-    });
-
-    test('PatchClashConfig parses geoXUrl map with GeoResource keys', () {
-      final config = PatchClashConfig.fromJson({
-        'geox-url': {'mmdb': 'https://example.com/mmdb'},
-      });
-
-      expect(config.geoXUrl, {GeoResource.MMDB: 'https://example.com/mmdb'});
-    });
-
-    test('toUpdateParams sends geoXUrl to the Core under geox-url', () {
-      final params = const PatchClashConfig(
-        geoXUrl: {
-          GeoResource.MMDB: 'https://example.com/geoip.metadb',
-          GeoResource.GEOSITE: 'https://example.com/geosite.dat',
-        },
-      ).toUpdateParams(routeMode: RouteMode.config, authentication: const []);
-
-      final json = jsonDecode(jsonEncode(params)) as Map<String, Object?>;
-      expect(json['geox-url'], {
-        'mmdb': 'https://example.com/geoip.metadb',
-        'geosite': 'https://example.com/geosite.dat',
-      });
-    });
-  });
-
   group('AppSettingProps JSON round-trip', () {
     test('default values survive round-trip', () {
       const props = AppSettingProps();
@@ -118,7 +30,6 @@ void main() {
       expect(restored.silentLaunch, false);
       expect(restored.autoRun, false);
       expect(restored.openLogs, false);
-      expect(restored.closeConnections, true);
       expect(restored.tabAnimation, TabAnimation.slide);
       expect(restored.autoCheckUpdate, true);
       expect(restored.sidebarExpanded, true);
@@ -157,7 +68,6 @@ void main() {
         locale: 'zh_CN',
         onlyStatisticsProxy: true,
         autoLaunch: true,
-        closeConnections: false,
         testUrl: 'https://custom.test',
         userAgents: ['CustomUA/1.0'],
       );
@@ -168,7 +78,6 @@ void main() {
       expect(restored.locale, 'zh_CN');
       expect(restored.onlyStatisticsProxy, true);
       expect(restored.autoLaunch, true);
-      expect(restored.closeConnections, false);
       expect(restored.testUrl, 'https://custom.test');
       expect(restored.userAgents, ['CustomUA/1.0']);
     });
@@ -315,7 +224,6 @@ void main() {
       expect(props.bypassDomain, defaultBypassDomain);
       expect(props.routeMode, RouteMode.config);
       expect(props.autoSetSystemDns, true);
-      expect(props.appendSystemDns, false);
     });
 
     test('round-trip with custom values', () {
@@ -331,52 +239,65 @@ void main() {
     });
   });
 
-  group('PatchClashConfig JSON round-trip', () {
-    test('defaults match Clash patch defaults', () {
-      const config = PatchClashConfig();
+  group('CoreConfig JSON round-trip', () {
+    test('defaults', () {
+      const config = CoreConfig();
 
       expect(config.mixedPort, defaultMixedPort);
       expect(config.allowLan, false);
       expect(config.mode, Mode.rule);
-      expect(config.externalController, ExternalControllerStatus.close);
-      expect(config.geodataLoader, GeodataLoader.memconservative);
-      expect(config.interfaceNameMode, InterfaceNameMode.clear);
-      expect(config.interfaceName, '');
+      expect(config.autoSelect, false);
+      expect(config.proxyDns, defaultProxyDnsServers);
+      expect(config.directDns, defaultDirectDnsServers);
     });
 
     test('custom values survive round-trip', () {
-      const config = PatchClashConfig(
-        mixedPort: 7890,
+      const config = CoreConfig(
+        mixedPort: 7891,
         allowLan: true,
-        mode: Mode.rule,
+        mode: Mode.global,
         logLevel: LogLevel.debug,
-        externalController: ExternalControllerStatus.open,
-        geodataLoader: GeodataLoader.memconservative,
-        interfaceNameMode: InterfaceNameMode.custom,
-        interfaceName: 'eth0',
+        ipv6: true,
+        autoSelect: true,
+        proxyDns: ['9.9.9.9'],
+        directDns: ['114.114.114.114'],
       );
 
-      final restored = roundTrip(
-        () => config.toJson(),
-        PatchClashConfig.fromJson,
-      );
+      final restored = roundTrip(() => config.toJson(), CoreConfig.fromJson);
 
-      expect(restored.mixedPort, 7890);
-      expect(restored.allowLan, true);
-      expect(restored.mode, Mode.rule);
-      expect(restored.logLevel, LogLevel.debug);
-      expect(restored.externalController, ExternalControllerStatus.open);
-      expect(restored.geodataLoader, GeodataLoader.memconservative);
-      expect(restored.interfaceNameMode, InterfaceNameMode.custom);
-      expect(restored.interfaceName, 'eth0');
+      expect(restored, config);
     });
 
-    test('unknown interface-name-mode falls back to clear', () {
-      final restored = PatchClashConfig.fromJson({
-        'interface-name-mode': 'unknown',
+    test('an empty dns list falls back to the defaults', () {
+      final restored = CoreConfig.fromJson({
+        'proxy-dns': <String>[],
+        'direct-dns': [' '],
       });
 
-      expect(restored.interfaceNameMode, InterfaceNameMode.clear);
+      expect(restored.proxyDns, defaultProxyDnsServers);
+      expect(restored.directDns, defaultDirectDnsServers);
+    });
+
+    test('settings an earlier release saved still load', () {
+      final restored = CoreConfig.fromJson({
+        'mixed-port': 7893,
+        'allow-lan': true,
+        'mode': 'global',
+        'log-level': 'info',
+        'unified-delay': true,
+        'tcp-concurrent': true,
+        'external-controller': 'open',
+      });
+
+      expect(restored.mixedPort, 7893);
+      expect(restored.allowLan, true);
+      expect(restored.mode, Mode.global);
+      expect(restored.logLevel, LogLevel.info);
+    });
+
+    test('a damaged value restores the defaults', () {
+      expect(CoreConfig.safeFormJson({'mixed-port': 'x'}), defaultCoreConfig);
+      expect(CoreConfig.safeFormJson(null), defaultCoreConfig);
     });
   });
 
@@ -540,7 +461,6 @@ void main() {
       const config = Config(themeProps: ThemeProps());
       final restored = roundTrip(() => config.toJson(), Config.fromJson);
       expect(restored.currentProfileId, null);
-      expect(restored.overrideDns, false);
       expect(restored.networkProps.systemProxy, true);
       expect(restored.vpnProps.enable, true);
       expect(restored.hotKeyActions, isEmpty);
@@ -582,7 +502,6 @@ void main() {
     test('full config round-trip', () {
       const config = Config(
         currentProfileId: 42,
-        overrideDns: true,
         hotKeyActions: [],
         appSettingProps: AppSettingProps(locale: 'en', autoLaunch: true),
         networkProps: NetworkProps(systemProxy: false),
@@ -595,59 +514,12 @@ void main() {
       );
       final restored = roundTrip(() => config.toJson(), Config.fromJson);
       expect(restored.currentProfileId, 42);
-      expect(restored.overrideDns, true);
       expect(restored.appSettingProps.locale, 'en');
       expect(restored.appSettingProps.autoLaunch, true);
       expect(restored.networkProps.systemProxy, false);
       expect(restored.vpnProps.enable, false);
       expect(restored.windowProps.width, 1280);
       expect(restored.windowProps.height, 720);
-    });
-  });
-
-  group('ProxyGroup definition', () {
-    const group = ProxyGroup(
-      profileId: 7,
-      id: 99,
-      name: 'Auto',
-      type: GroupType.URLTest,
-      proxies: ['A'],
-      use: [],
-      url: 'https://cp.cloudflare.com/generate_204',
-      interval: 300,
-      timeout: 5000,
-      lazy: false,
-      filter: '',
-      tolerance: 50,
-      strategy: LoadBalanceStrategy.roundRobin,
-      order: 'a0',
-    );
-
-    test('emits only what the core reads', () {
-      final definition = group.definition;
-
-      expect(definition['name'], 'Auto');
-      expect(definition['type'], 'url-test');
-      expect(definition['proxies'], ['A']);
-      expect(definition['interval'], 300);
-      expect(definition['timeout'], 5000);
-      expect(definition['lazy'], false);
-      expect(definition.containsKey('profileId'), isFalse);
-      expect(definition.containsKey('id'), isFalse);
-      expect(definition.containsKey('order'), isFalse);
-      expect(definition.containsKey('use'), isFalse);
-      expect(definition.containsKey('filter'), isFalse);
-      expect(definition.containsKey('max-failed-times'), isFalse);
-    });
-
-    test('scopes tolerance and strategy to the types that read them', () {
-      expect(group.definition['tolerance'], 50);
-      expect(group.definition.containsKey('strategy'), isFalse);
-
-      final balanced = group.copyWith(type: GroupType.LoadBalance).definition;
-
-      expect(balanced['strategy'], 'round-robin');
-      expect(balanced.containsKey('tolerance'), isFalse);
     });
   });
 }

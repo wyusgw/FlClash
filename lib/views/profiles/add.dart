@@ -1,11 +1,9 @@
 import 'dart:async';
 
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/pages/scan.dart';
 import 'package:fl_clash/providers/action.dart';
-import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -48,17 +46,8 @@ class AddProfileView extends ConsumerWidget {
   Future<void> _toAdd(WidgetRef ref) async {
     final profilesAction = ref.read(profilesActionProvider.notifier);
     final appLocalizations = context.appLocalizations;
-    final reservedLabels = ref.read(
-      appProviderLabelsProvider(ProviderKind.proxy),
-    );
     final res = await dialogs.showNamedUrlInput(
       title: appLocalizations.importFromURL,
-      labelValidator: (value) {
-        if (reservedLabels.contains(value?.trim())) {
-          return appLocalizations.existsTip(appLocalizations.name);
-        }
-        return null;
-      },
       urlValidator: (value) {
         if (value == null || value.isEmpty) {
           return appLocalizations.emptyTip('').trim();

@@ -259,13 +259,16 @@ void main() {
 
       await emitFromPlatform([
         {'type': CoreEventType.crash.name, 'data': 'boom'},
-        {'type': CoreEventType.loaded.name, 'data': 'provider'},
+        {
+          'type': CoreEventType.delay.name,
+          'data': {'name': 'a', 'url': 'u', 'value': 1},
+        },
       ]);
 
       for (final listener in [first, second]) {
         expect(listener.events.map((event) => event.type), [
           CoreEventType.crash,
-          CoreEventType.loaded,
+          CoreEventType.delay,
         ]);
         expect(listener.events.first.data, 'boom');
       }

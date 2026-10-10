@@ -27,9 +27,7 @@ class OutboundMode extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mode = ref.watch(
-      patchClashConfigProvider.select((state) => state.mode),
-    );
+    final mode = ref.watch(coreSettingProvider.select((state) => state.mode));
     final inset = DashboardWidgetMetrics.insetOf(context);
     final radius = DashboardWidgetMetrics.radiusOf(context);
     final pillInset = min(_pillInset.mAp, inset);

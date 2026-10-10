@@ -4,7 +4,7 @@
 
 # FlClash
 
-基于 ClashMeta 的多平台代理客户端，简单易用，开源无广告。
+基于 Xray-core 的多平台代理客户端，简单易用，开源无广告。
 
 [English](README.md) · **简体中文**
 
@@ -27,9 +27,9 @@
 ## 功能
 
 - **一个应用覆盖 Android、Windows、macOS 和 Linux**，桌面端同时提供 x64 与 ARM64 版本。
-- **mihomo（Clash.Meta）内核**：规则分流、代理组、延迟测试、系统代理与 TUN 模式。
-- **配置管理**：通过订阅链接或文件导入配置，内置编辑器，支持覆写脚本以及自定义规则、代理和代理组。
-- **实时查看**连接、请求、DNS 查询和日志。
+- **Xray-core 内核**：规则分流、节点组、延迟测试、系统代理与 TUN 模式。
+- **配置管理**：通过订阅链接或文件导入配置（分享链接、base64 列表或 Xray 配置，支持 VLESS、VMess、Trojan、Shadowsocks、Hysteria2、TUIC 与 AnyTLS），内置编辑器。
+- **实时查看**流量、延迟和日志。
 - **Material You 设计**：支持动态取色、浅色与深色主题，布局随屏幕从手机到桌面自适应。
 - **备份与恢复**：通过 WebDAV 或本地文件。
 - **平台细节**：Android 上有快捷设置磁贴、分应用代理和 Android TV 支持；桌面端有托盘菜单和全局快捷键。
@@ -92,7 +92,7 @@ adb shell am start -a com.follow.clash.action.TOGGLE
 
 ## 从源码构建
 
-需要 [Flutter](https://docs.flutter.dev/get-started/install) 3.47（正式版构建使用 3.47.4）、[Go](https://go.dev/dl/) 1.26，
+需要 [Flutter](https://docs.flutter.dev/get-started/install) 3.47（正式版构建使用 3.47.4）、[Go](https://go.dev/dl/) 1.27，
 以及通过 rustup 安装的 [Rust](https://rustup.rs/)。桌面端需要在对应系统上构建，Android 在任意系统上都能构建。
 
 ```bash

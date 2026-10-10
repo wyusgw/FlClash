@@ -2,7 +2,6 @@
 
 import 'dart:io';
 
-import 'package:fl_clash/common/context.dart';
 import 'package:fl_clash/common/system.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:material_ui/material_ui.dart';
@@ -34,8 +33,6 @@ const desktopPlatforms = [
   SupportPlatform.MacOS,
   SupportPlatform.Windows,
 ];
-
-enum GroupName { GLOBAL }
 
 enum GroupType {
   @JsonValue('select')
@@ -69,28 +66,6 @@ enum GroupType {
       values.where((item) => item != Relay).toList();
 }
 
-enum LoadBalanceStrategy {
-  @JsonValue('consistent-hashing')
-  consistentHashing('consistent-hashing'),
-  @JsonValue('round-robin')
-  roundRobin('round-robin'),
-  @JsonValue('sticky-sessions')
-  stickySessions('sticky-sessions');
-
-  final String value;
-
-  const LoadBalanceStrategy(this.value);
-
-  static LoadBalanceStrategy? parse(String? value) {
-    for (final item in values) {
-      if (item.value == value) {
-        return item;
-      }
-    }
-    return null;
-  }
-}
-
 extension GroupTypeExtension on GroupType {
   static List<String> get valueList =>
       GroupType.values.map((e) => e.toString().split('.').last).toList();
@@ -106,16 +81,7 @@ extension GroupTypeExtension on GroupType {
   }
 }
 
-enum UsedProxy { GLOBAL, DIRECT, REJECT }
-
 enum DelayTestPhase { queued, running }
-
-extension UsedProxyExtension on UsedProxy {
-  static List<String> get valueList =>
-      UsedProxy.values.map((e) => e.toString().split('.').last).toList();
-
-  String get value => UsedProxyExtension.valueList[index];
-}
 
 enum Mode { rule, global, direct }
 
@@ -237,22 +203,9 @@ enum ResultType {
   error,
 }
 
-enum CoreEventType {
-  log,
-  delay,
-  request,
-  dns,
-  loaded,
-  crash,
-  geoUpdate,
-  routeChanged,
-}
+enum CoreEventType { log, delay, crash, routeChanged }
 
 enum InvokeMessageType { protect, process }
-
-enum FindProcessMode { always, off }
-
-enum InterfaceNameMode { clear, follow, custom }
 
 enum RestoreOption { all, onlyProfiles }
 
@@ -263,91 +216,6 @@ enum ProxiesType { tab, list }
 enum ProxiesLayout { loose, standard, tight }
 
 enum ProxyCardType { expand, shrink, min }
-
-enum DnsMode {
-  normal,
-  @JsonValue('fake-ip')
-  fakeIp,
-  @JsonValue('redir-host')
-  redirHost,
-  hosts,
-}
-
-enum DnsCacheAlgorithm { lru, arc }
-
-enum FakeIpFilterMode { blacklist, whitelist, rule }
-
-@JsonEnum(valueField: 'path')
-enum DnsOverrideKey {
-  enable('enable'),
-  listen('listen'),
-  listenRoutingMark('listen-routing-mark'),
-  useHosts('use-hosts'),
-  useSystemHosts('use-system-hosts'),
-  ipv6('ipv6'),
-  ipv6Timeout('ipv6-timeout'),
-  respectRules('respect-rules'),
-  preferH3('prefer-h3'),
-  cacheAlgorithm('cache-algorithm'),
-  cacheMaxSize('cache-max-size'),
-  enhancedMode('enhanced-mode'),
-  fakeIpRange('fake-ip-range'),
-  fakeIpRange6('fake-ip-range6'),
-  fakeIpFilter('fake-ip-filter'),
-  fakeIpFilterMode('fake-ip-filter-mode'),
-  fakeIpTtl('fake-ip-ttl'),
-  defaultNameserver('default-nameserver'),
-  nameserverPolicy('nameserver-policy'),
-  nameserver('nameserver'),
-  fallback('fallback'),
-  fallbackLazyQuery('fallback-lazy-query'),
-  proxyServerNameserver('proxy-server-nameserver'),
-  proxyServerNameserverPolicy('proxy-server-nameserver-policy'),
-  directNameserver('direct-nameserver'),
-  directNameserverFollowPolicy('direct-nameserver-follow-policy'),
-  fallbackFilterGeoip('fallback-filter.geoip'),
-  fallbackFilterGeoipCode('fallback-filter.geoip-code'),
-  fallbackFilterGeosite('fallback-filter.geosite'),
-  fallbackFilterIpcidr('fallback-filter.ipcidr'),
-  fallbackFilterDomain('fallback-filter.domain');
-
-  const DnsOverrideKey(this.path);
-
-  final String path;
-
-  static const fallbackFilterSection = 'fallback-filter';
-
-  bool get isFallbackFilter => path.startsWith('$fallbackFilterSection.');
-
-  String get jsonKey => isFallbackFilter
-      ? path.substring(fallbackFilterSection.length + 1)
-      : path;
-}
-
-@JsonEnum(valueField: 'path')
-enum NtpOverrideKey {
-  enable('enable'),
-  server('server'),
-  port('port'),
-  interval('interval'),
-  dialerProxy('dialer-proxy'),
-  writeToSystem('write-to-system');
-
-  const NtpOverrideKey(this.path);
-
-  final String path;
-}
-
-enum ExternalControllerStatus {
-  @JsonValue('')
-  close(''),
-  @JsonValue('127.0.0.1:9090')
-  open('127.0.0.1:9090');
-
-  final String value;
-
-  const ExternalControllerStatus(this.value);
-}
 
 enum KeyboardModifier {
   alt([PhysicalKeyboardKey.altLeft, PhysicalKeyboardKey.altRight]),
@@ -441,11 +309,6 @@ enum DashboardWidget {
   intranetIp,
   memoryInfo,
   serviceStatus,
-  dnsQueries,
-  requests,
-  connections,
-  overrideDnsButton,
-  overrideNtpButton,
   runTime,
   proxyGroups,
   profiles;
@@ -454,8 +317,6 @@ enum DashboardWidget {
 
   const DashboardWidget({this.platforms = SupportPlatform.values});
 }
-
-enum DnsQueryInitiator { app, rule, direct, proxy, other }
 
 enum IpType { residential, mobile, business, hosting }
 
@@ -476,225 +337,7 @@ enum IpQualitySource {
 
 enum IpQualitySourceStatus { noType, timeout, rateLimited, failed, ipMismatch }
 
-enum GeodataLoader { standard, memconservative }
-
-enum GeoResource {
-  @JsonValue('mmdb')
-  MMDB,
-  @JsonValue('asn')
-  ASN,
-  @JsonValue('geoip')
-  GEOIP,
-  @JsonValue('geosite')
-  GEOSITE;
-
-  static GeoResource fromJson(String value) {
-    return switch (value) {
-      'mmdb' => GeoResource.MMDB,
-      'asn' => GeoResource.ASN,
-      'geo-ip' || 'geoip' => GeoResource.GEOIP,
-      'geo-site' || 'geosite' => GeoResource.GEOSITE,
-      _ => throw ArgumentError.value(value, 'value', 'Invalid geo resource'),
-    };
-  }
-}
-
-extension GeoResourceExt on GeoResource {
-  String get configKey {
-    return switch (this) {
-      GeoResource.MMDB => 'mmdb',
-      GeoResource.ASN => 'asn',
-      GeoResource.GEOIP => 'geoip',
-      GeoResource.GEOSITE => 'geosite',
-    };
-  }
-
-  String get updatingKey => 'geo_resource_$name';
-}
-
-enum PageLabel {
-  dashboard,
-  proxies,
-  profiles,
-  tools,
-  logs,
-  requests,
-  resources,
-  connections,
-  dns,
-}
-
-enum RuleAction {
-  DOMAIN('DOMAIN'),
-  DOMAIN_SUFFIX('DOMAIN-SUFFIX'),
-  DOMAIN_KEYWORD('DOMAIN-KEYWORD'),
-  DOMAIN_REGEX('DOMAIN-REGEX'),
-  DOMAIN_WILDCARD('DOMAIN-WILDCARD'),
-  GEOSITE('GEOSITE'),
-  IP_CIDR('IP-CIDR'),
-  IP_CIDR6('IP-CIDR6'),
-  IP_SUFFIX('IP-SUFFIX'),
-  IP_ASN('IP-ASN'),
-  GEOIP('GEOIP'),
-  SRC_GEOIP('SRC-GEOIP'),
-  SRC_IP_ASN('SRC-IP-ASN'),
-  SRC_IP_CIDR('SRC-IP-CIDR'),
-  SRC_IP_SUFFIX('SRC-IP-SUFFIX'),
-  DST_PORT('DST-PORT'),
-  SRC_PORT('SRC-PORT'),
-  IN_PORT('IN-PORT'),
-  IN_TYPE('IN-TYPE'),
-  IN_USER('IN-USER'),
-  IN_NAME('IN-NAME'),
-  REMATCH_NAME('REMATCH-NAME'),
-  PROCESS_PATH('PROCESS-PATH'),
-  PROCESS_PATH_REGEX('PROCESS-PATH-REGEX'),
-  PROCESS_PATH_WILDCARD('PROCESS-PATH-WILDCARD'),
-  PROCESS_NAME('PROCESS-NAME'),
-  PROCESS_NAME_REGEX('PROCESS-NAME-REGEX'),
-  PROCESS_NAME_WILDCARD('PROCESS-NAME-WILDCARD'),
-  UID('UID'),
-  NETWORK('NETWORK'),
-  DSCP('DSCP'),
-  RULE_SET('RULE-SET'),
-  AND('AND'),
-  OR('OR'),
-  NOT('NOT'),
-  SUB_RULE('SUB-RULE'),
-  MATCH('MATCH');
-
-  final String value;
-
-  const RuleAction(this.value);
-
-  static List<RuleAction> get addedRuleActions {
-    return RuleAction.values
-        .where(
-          (item) => ![
-            RuleAction.MATCH,
-            RuleAction.RULE_SET,
-            RuleAction.SUB_RULE,
-          ].contains(item),
-        )
-        .toList();
-  }
-}
-
-extension RuleActionExt on RuleAction {
-  bool get hasParams => [
-    RuleAction.GEOIP,
-    RuleAction.IP_ASN,
-    RuleAction.IP_CIDR,
-    RuleAction.IP_CIDR6,
-    RuleAction.IP_SUFFIX,
-    RuleAction.RULE_SET,
-  ].contains(this);
-
-  bool get hasCommaPayload => [
-    RuleAction.AND,
-    RuleAction.OR,
-    RuleAction.NOT,
-    RuleAction.SUB_RULE,
-    RuleAction.DOMAIN_REGEX,
-    RuleAction.PROCESS_NAME_REGEX,
-    RuleAction.PROCESS_PATH_REGEX,
-  ].contains(this);
-
-  String getDesc(BuildContext context) {
-    final appLocalizations = context.appLocalizations;
-    return switch (this) {
-      RuleAction.DOMAIN => appLocalizations.ruleActionDomainDesc,
-      RuleAction.DOMAIN_SUFFIX => appLocalizations.ruleActionDomainSuffixDesc,
-      RuleAction.DOMAIN_KEYWORD => appLocalizations.ruleActionDomainKeywordDesc,
-      RuleAction.DOMAIN_REGEX => appLocalizations.ruleActionDomainRegexDesc,
-      RuleAction.DOMAIN_WILDCARD =>
-        appLocalizations.ruleActionDomainWildcardDesc,
-      RuleAction.GEOSITE => appLocalizations.ruleActionGeositeDesc,
-      RuleAction.IP_CIDR => appLocalizations.ruleActionIpCidrDesc,
-      RuleAction.IP_CIDR6 => appLocalizations.ruleActionIpCidr6Desc,
-      RuleAction.IP_SUFFIX => appLocalizations.ruleActionIpSuffixDesc,
-      RuleAction.IP_ASN => appLocalizations.ruleActionIpAsnDesc,
-      RuleAction.GEOIP => appLocalizations.ruleActionGeoipDesc,
-      RuleAction.SRC_GEOIP => appLocalizations.ruleActionSrcGeoipDesc,
-      RuleAction.SRC_IP_ASN => appLocalizations.ruleActionSrcIpAsnDesc,
-      RuleAction.SRC_IP_CIDR => appLocalizations.ruleActionSrcIpCidrDesc,
-      RuleAction.SRC_IP_SUFFIX => appLocalizations.ruleActionSrcIpSuffixDesc,
-      RuleAction.DST_PORT => appLocalizations.ruleActionDstPortDesc,
-      RuleAction.SRC_PORT => appLocalizations.ruleActionSrcPortDesc,
-      RuleAction.IN_PORT => appLocalizations.ruleActionInPortDesc,
-      RuleAction.IN_TYPE => appLocalizations.ruleActionInTypeDesc,
-      RuleAction.IN_USER => appLocalizations.ruleActionInUserDesc,
-      RuleAction.IN_NAME => appLocalizations.ruleActionInNameDesc,
-      RuleAction.REMATCH_NAME => appLocalizations.ruleActionRematchNameDesc,
-      RuleAction.PROCESS_PATH => appLocalizations.ruleActionProcessPathDesc,
-      RuleAction.PROCESS_PATH_REGEX =>
-        appLocalizations.ruleActionProcessPathRegexDesc,
-      RuleAction.PROCESS_PATH_WILDCARD =>
-        appLocalizations.ruleActionProcessPathWildcardDesc,
-      RuleAction.PROCESS_NAME => appLocalizations.ruleActionProcessNameDesc,
-      RuleAction.PROCESS_NAME_REGEX =>
-        appLocalizations.ruleActionProcessNameRegexDesc,
-      RuleAction.PROCESS_NAME_WILDCARD =>
-        appLocalizations.ruleActionProcessNameWildcardDesc,
-      RuleAction.UID => appLocalizations.ruleActionUidDesc,
-      RuleAction.NETWORK => appLocalizations.ruleActionNetworkDesc,
-      RuleAction.DSCP => appLocalizations.ruleActionDscpDesc,
-      RuleAction.RULE_SET => appLocalizations.ruleActionRuleSetDesc,
-      RuleAction.AND => appLocalizations.ruleActionAndDesc,
-      RuleAction.OR => appLocalizations.ruleActionOrDesc,
-      RuleAction.NOT => appLocalizations.ruleActionNotDesc,
-      RuleAction.SUB_RULE => appLocalizations.ruleActionSubRuleDesc,
-      RuleAction.MATCH => appLocalizations.ruleActionMatchDesc,
-    };
-  }
-}
-
-enum RulePayloadError { network, numberRange, dscpRange }
-
-extension RulePayloadErrorExt on RulePayloadError {
-  String getMessage(BuildContext context) {
-    final appLocalizations = context.appLocalizations;
-    return switch (this) {
-      RulePayloadError.network => appLocalizations.invalidNetworkContent,
-      RulePayloadError.numberRange => appLocalizations.invalidRangeContent,
-      RulePayloadError.dscpRange => appLocalizations.invalidDscpContent,
-    };
-  }
-}
-
-enum OverwriteType { standard, script, custom }
-
-enum RuleTarget {
-  DIRECT('DIRECT'),
-  REJECT('REJECT'),
-  REJECT_DROP('REJECT-DROP');
-
-  final String value;
-
-  const RuleTarget(this.value);
-
-  static final List<String> baseTargetNames = List.unmodifiable(
-    RuleTarget.values.map((item) => item.value),
-  );
-
-  static final Set<String> baseTargets = Set.unmodifiable(baseTargetNames);
-}
-
-enum ProviderKind { proxy, rule }
-
-/// Where a provider name a custom overwrite uses resolves, in lookup order.
-enum ProviderSource { subscription, profile, app }
-
-enum RuleProviderBehavior { domain, ipcidr, classical }
-
-enum RuleProviderFormat { yaml, text, mrs }
-
-extension RuleProviderFormatExt on RuleProviderFormat? {
-  /// The core reads an mrs set only as a domain or an ipcidr one.
-  List<RuleProviderBehavior> get behaviors => this == RuleProviderFormat.mrs
-      ? const [RuleProviderBehavior.domain, RuleProviderBehavior.ipcidr]
-      : RuleProviderBehavior.values;
-}
+enum PageLabel { dashboard, proxies, profiles, tools, logs }
 
 enum RestoreStrategy { compatible, override }
 
@@ -719,8 +362,6 @@ enum LoadingTag {
 enum CoreStatus { connecting, connected, disconnected }
 
 enum UpdatingScope { core, local }
-
-enum RuleScene { added, disabled, custom }
 
 enum ItemPosition {
   start,

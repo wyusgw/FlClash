@@ -49,7 +49,6 @@ void main() {
       const config = Config(
         themeProps: defaultThemeProps,
         currentProfileId: 42,
-        overrideDns: true,
         excludeSSIDs: ['home'],
       );
 
@@ -58,7 +57,6 @@ void main() {
 
       expect(restored, isNotNull);
       expect(restored!.currentProfileId, 42);
-      expect(restored.overrideDns, isTrue);
       expect(restored.excludeSSIDs, ['home']);
     });
 
@@ -72,34 +70,6 @@ void main() {
       await store.setString(configKey, '123');
 
       expect(await preferences.getConfigMap(), isNull);
-    });
-  });
-
-  group('clash config', () {
-    test('getClashConfigMap returns null when nothing is stored', () async {
-      expect(await preferences.getClashConfigMap(), isNull);
-    });
-
-    test('getClashConfigMap decodes a stored map', () async {
-      await store.setString(clashConfigKey, json.encode({'mode': 'rule'}));
-
-      expect(await preferences.getClashConfigMap(), {'mode': 'rule'});
-    });
-
-    test('getClashConfigMap returns null for malformed JSON', () async {
-      await store.setString(clashConfigKey, '{oops');
-
-      expect(await preferences.getClashConfigMap(), isNull);
-    });
-
-    test('clearClashConfig removes only the clash config entry', () async {
-      await store.setString(clashConfigKey, json.encode({'mode': 'rule'}));
-      await preferences.setVersion(3);
-
-      await preferences.clearClashConfig();
-
-      expect(await preferences.getClashConfigMap(), isNull);
-      expect(await preferences.getVersion(), 3);
     });
   });
 

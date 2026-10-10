@@ -1,6 +1,6 @@
 export 'app.dart';
 export 'changelog.dart';
-export 'clash_config.dart';
+export 'core_config.dart';
 export 'common.dart';
 export 'config.dart';
 export 'core.dart';

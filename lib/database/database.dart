@@ -6,47 +6,32 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 
-part 'clash_providers.dart';
 part 'converter.dart';
-part 'custom_proxies.dart';
 part 'generated/database.g.dart';
-part 'groups.dart';
 part 'icons.dart';
-part 'links.dart';
 part 'profiles.dart';
-part 'rules.dart';
-part 'scripts.dart';
+
+const _legacyTables = [
+  'rules',
+  'profile_rule_mapping',
+  'proxy_groups',
+  'custom_proxies',
+  'clash_providers',
+  'scripts',
+];
 
 @DriftDatabase(
-  tables: [
-    Profiles,
-    Scripts,
-    Rules,
-    ProfileRuleLinks,
-    ProxyGroups,
-    IconRecords,
-    ClashProviders,
-    CustomProxies,
-  ],
-  daos: [
-    ProfilesDao,
-    ScriptsDao,
-    RulesDao,
-    ProxyGroupsDao,
-    IconRecordsDao,
-    ClashProvidersDao,
-    CustomProxiesDao,
-  ],
+  tables: [Profiles, IconRecords],
+  daos: [ProfilesDao, IconRecordsDao],
 )
 class Database extends _$Database {
   Database([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   static LazyDatabase _openConnection() {
     return LazyDatabase(() async {
@@ -59,237 +44,57 @@ class Database extends _$Database {
   MigrationStrategy get migration {
     return MigrationStrategy(
       onUpgrade: (m, from, to) async {
-        await _repairLegacySchema(m);
-        if (from < 2) {
-          await m.createTable(proxyGroups);
-          await m.createTable(iconRecords);
-          await _resetOrders();
-          await _migrateRules(m);
-        }
-        if (from < 3) {
-          await _addColumnIfMissing(m, profiles, profiles.matchTarget);
-        }
-        if (from < 4) {
-          await _addColumnIfMissing(m, scripts, scripts.url);
-        }
-        if (from < 5) {
-          await _addColumnIfMissing(m, scripts, scripts.order);
-        }
-        if (from < 6) {
-          await _createTableIfMissing(m, clashProviders);
-        }
-        if (from < 7) {
-          await _addColumnIfMissing(m, proxyGroups, proxyGroups.tolerance);
-          await _addColumnIfMissing(m, proxyGroups, proxyGroups.strategy);
-        }
-        if (from < 8) {
-          await m.alterTable(TableMigration(clashProviders));
-        }
-        // Ahead of the version 9 step, whose purge reaches every table.
-        if (from < 10) {
-          if (await _createTableIfMissing(m, customProxies)) {
-            await m.createIndex(idxCustomProxiesProfileOrder);
-          }
-        }
-        if (from < 9) {
-          await _purgeOrphans();
+        if (from < 11) {
+          await _dropLegacyTables();
+          await _createIconRecordsIfMissing(m);
+          await m.alterTable(TableMigration(profiles));
         }
       },
       beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
     );
   }
 
-  /// Releases before the schema rebuild wrote user_version 4 with only `profiles` and `icon_records`.
-  Future<void> _repairLegacySchema(Migrator m) async {
-    for (final table in allTables) {
-      if (!await _createTableIfMissing(m, table)) {
-        continue;
-      }
-      for (final index in allSchemaEntities.whereType<Index>()) {
-        final statement = index.createStatementsByDialect[SqlDialect.sqlite];
-        if (statement!.contains(' ON ${table.actualTableName} ')) {
-          await m.createIndex(index);
-        }
-      }
+  /// Releases that still spoke Clash kept rules, groups, providers and scripts
+  /// here; none of them has a meaning for the Xray engine.
+  Future<void> _dropLegacyTables() async {
+    for (final table in _legacyTables) {
+      await customStatement('DROP TABLE IF EXISTS $table');
     }
-    final profileColumns = await customSelect(
-      'PRAGMA table_info(profiles)',
-    ).get();
-    if (profileColumns.every(
-      (row) => row.read<String>('name') != 'overwrite_type',
-    )) {
-      await customStatement(
-        "ALTER TABLE profiles ADD COLUMN overwrite_type TEXT NOT NULL DEFAULT 'standard'",
-      );
-    }
-    await _addColumnIfMissing(m, profiles, profiles.scriptId);
-    await _addColumnIfMissing(m, profiles, profiles.matchTarget);
   }
 
-  /// Drift rewinds user_version on downgrade but keeps the tables it added.
-  Future<bool> _createTableIfMissing(Migrator m, TableInfo table) async {
+  Future<void> _createIconRecordsIfMissing(Migrator m) async {
     final tableInfo = await customSelect(
-      'PRAGMA table_info(${table.actualTableName})',
+      'PRAGMA table_info(icon_records)',
     ).get();
-    if (tableInfo.isNotEmpty) {
-      return false;
+    if (tableInfo.isEmpty) {
+      await m.createTable(iconRecords);
+      await m.createIndex(lastAccessedUrl);
     }
-    await m.createTable(table);
-    return true;
-  }
-
-  /// Drift rewinds user_version on downgrade but keeps the columns it added.
-  Future<void> _addColumnIfMissing(
-    Migrator m,
-    TableInfo table,
-    GeneratedColumn column,
-  ) async {
-    final tableInfo = await customSelect(
-      'PRAGMA table_info(${table.actualTableName})',
-    ).get();
-    final exists = tableInfo.any(
-      (row) => row.read<String>('name') == column.name,
-    );
-    if (exists) {
-      return;
-    }
-    await m.addColumn(table, column);
-  }
-
-  Future<void> _migrateRules(Migrator m) async {
-    final tableInfo = await customSelect('PRAGMA table_info(rules)').get();
-    final columnNames = tableInfo
-        .map((row) => row.read<String>('name'))
-        .toList();
-    if (columnNames.isEmpty) {
-      await m.createTable(rules);
-      return;
-    } else if (columnNames.contains('rule_action')) {
-      return;
-    }
-    await customStatement(
-      'ALTER TABLE rules ADD COLUMN rule_action TEXT NOT NULL DEFAULT ""',
-    );
-    await customStatement('ALTER TABLE rules ADD COLUMN content TEXT');
-    await customStatement('ALTER TABLE rules ADD COLUMN rule_target TEXT');
-    await customStatement('ALTER TABLE rules ADD COLUMN rule_provider TEXT');
-    await customStatement('ALTER TABLE rules ADD COLUMN sub_rule TEXT');
-    await customStatement(
-      'ALTER TABLE rules ADD COLUMN no_resolve INTEGER NOT NULL DEFAULT 0',
-    );
-    await customStatement(
-      'ALTER TABLE rules ADD COLUMN src INTEGER NOT NULL DEFAULT 0',
-    );
-    final oldRows = await customSelect('SELECT id, value FROM rules').get();
-    for (final row in oldRows) {
-      final id = row.read<int>('id');
-      final value = row.read<String>('value');
-      final parsed = Rule.parse(value, id: id);
-      await customStatement(
-        'UPDATE rules SET rule_action = ?, content = ?, rule_target = ?, rule_provider = ?, sub_rule = ?, no_resolve = ?, src = ? WHERE id = ?',
-        [
-          parsed.ruleAction.name,
-          parsed.content,
-          parsed.ruleTarget,
-          parsed.ruleProvider,
-          parsed.subRule,
-          parsed.noResolve ? 1 : 0,
-          parsed.src ? 1 : 0,
-          id,
-        ],
-      );
-    }
-    await customStatement('ALTER TABLE rules DROP COLUMN value');
-    await m.createIndex(idxRuleTarget);
-  }
-
-  Future<void> _resetOrders() async {
-    await rulesDao.resetOrders();
   }
 
   Future<void> restore(
-    List<Profile> profiles,
-    List<Script> scripts,
-    List<Rule> rules,
-    List<ProfileRuleLink> links,
-    List<ProxyGroup> proxyGroups, {
-    List<ClashProvider> clashProviders = const [],
-    List<CustomProxy> customProxies = const [],
+    List<Profile> profiles, {
     bool isOverride = false,
   }) async {
-    if (profiles.isEmpty &&
-        scripts.isEmpty &&
-        rules.isEmpty &&
-        links.isEmpty &&
-        proxyGroups.isEmpty &&
-        clashProviders.isEmpty &&
-        customProxies.isEmpty) {
+    if (profiles.isEmpty) {
       return;
     }
     await transaction(() async {
-      // Backups taken while foreign keys were off may carry orphaned rows.
-      await customStatement('PRAGMA defer_foreign_keys = ON');
       await batch((b) {
         if (isOverride) {
           profilesDao.setAllWithBatch(b, profiles);
-          scriptsDao.setAllWithBatch(b, scripts);
-          rulesDao.restoreWithBatch(b, rules, links);
-          proxyGroupsDao.setAllWithBatch(null, b, proxyGroups);
-          customProxiesDao.setAllWithBatch(null, b, customProxies);
-          clashProvidersDao.setAllWithBatch(b, clashProviders);
           return;
         }
         profilesDao.putAllWithBatch(
           b,
           profiles.map((item) => item.toCompanion()),
         );
-        scriptsDao.putAllWithBatch(b, scripts);
-        rulesDao.mergeWithBatch(b, rules, links);
-        proxyGroupsDao.putAllWithBatch(b, proxyGroups);
-        customProxiesDao.putAllWithBatch(b, customProxies);
-        clashProvidersDao.putAllWithBatch(b, clashProviders);
       });
-      await _purgeOrphans();
     });
   }
 
   Future<void> deleteProfile(int profileId) {
-    return transaction(() async {
-      await profiles.remove((t) => t.id.equals(profileId));
-      await rulesDao.delUnlinkedRules();
-    });
-  }
-
-  Future<void> _purgeOrphans() async {
-    final profileIds = selectOnly(profiles)..addColumns([profiles.id]);
-    final ruleIds = selectOnly(rules)..addColumns([rules.id]);
-    await profileRuleLinks.remove(
-      (t) =>
-          t.ruleId.isNotInQuery(ruleIds) |
-          (t.profileId.isNotNull() & t.profileId.isNotInQuery(profileIds)),
-    );
-    await proxyGroups.remove(
-      (t) => t.profileId.isNotNull() & t.profileId.isNotInQuery(profileIds),
-    );
-    await customProxies.remove(
-      (t) => t.profileId.isNotNull() & t.profileId.isNotInQuery(profileIds),
-    );
-    await rulesDao.delUnlinkedRules();
-  }
-
-  Future<void> setProfileCustomData(
-    int profileId,
-    List<CustomProxy>? proxies,
-    List<ProxyGroup> groups,
-    List<Rule> rules,
-  ) async {
-    await batch((b) {
-      if (proxies != null) {
-        customProxiesDao.setAllWithBatch(profileId, b, proxies);
-      }
-      proxyGroupsDao.setAllWithBatch(profileId, b, groups);
-      rulesDao.setCustomRulesWithBatch(profileId, b, rules);
-    });
+    return profiles.remove((t) => t.id.equals(profileId));
   }
 }
 

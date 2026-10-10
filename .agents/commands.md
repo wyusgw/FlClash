@@ -2,7 +2,7 @@
 
 ## Building
 
-Update submodules first. The ClashMeta Go core lives in `core/Clash.Meta/`.
+Update submodules first. The Xray-core sources live in `core/Xray-core/`.
 
 ```bash
 git submodule update --init --recursive

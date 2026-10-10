@@ -56,39 +56,10 @@ class ProfilesAction extends _$ProfilesAction {
     }
   }
 
-  void putProfile(Profile profile, {Iterable<int> renameIn = const []}) {
-    ref.read(profilesProvider.notifier).put(profile, renameIn: renameIn);
+  void putProfile(Profile profile) {
+    ref.read(profilesProvider.notifier).put(profile);
     if (ref.read(currentProfileIdProvider) != null) return;
     ref.read(currentProfileIdProvider.notifier).value = profile.id;
-  }
-
-  Future<List<Profile>> providerUsers(Profile profile) async {
-    if (!feature.customProviders) {
-      return const [];
-    }
-    final users = await ref
-        .read(clashProvidersActionProvider.notifier)
-        .profilesReferencing(ProviderKind.proxy, profile.realLabel);
-    return [
-      for (final user in users)
-        if (user.id != profile.id) user,
-    ];
-  }
-
-  /// [conflicts] would move to their subscription's provider of the new name.
-  Future<({List<Profile> renameIn, List<Profile> conflicts})> providerRename(
-    Profile previous,
-    Profile next,
-  ) async {
-    final label = ref.read(profilesProvider.notifier).labeled(next).realLabel;
-    if (!feature.customProviders || label == previous.realLabel) {
-      return (renameIn: const <Profile>[], conflicts: const <Profile>[]);
-    }
-    final renameIn = await providerUsers(previous);
-    final conflicts = await ref
-        .read(clashProvidersActionProvider.notifier)
-        .profilesDefining(ProviderKind.proxy, label, renameIn);
-    return (renameIn: renameIn, conflicts: conflicts);
   }
 
   Future<void> updateProfiles() async {
@@ -101,13 +72,12 @@ class ProfilesAction extends _$ProfilesAction {
   Future<void> updateProfile(
     Profile profile, {
     bool showLoading = false,
-    Iterable<int> renameIn = const [],
   }) async {
     final operation = showLoading
         ? ref.read(updatingKeysProvider.notifier).start(profile.updatingKey)
         : null;
     try {
-      ref.read(profilesProvider.notifier).put(profile, renameIn: renameIn);
+      ref.read(profilesProvider.notifier).put(profile);
       final newProfile = await profile.update(
         validate: (path) => _core.validateConfig(path),
       );
@@ -189,17 +159,6 @@ class ProfilesAction extends _$ProfilesAction {
     final isExists = await profileFile.exists();
     if (isExists) {
       await profileFile.safeDelete(recursive: true);
-    }
-    try {
-      final error = await _core.clearEffect(profileId);
-      if (error.isNotEmpty) {
-        commonPrint.log(error, logLevel: LogLevel.warning);
-      }
-    } catch (error) {
-      commonPrint.log(
-        'clearEffect($profileId) failed: $error',
-        logLevel: coreFailureLogLevel(error),
-      );
     }
   }
 }

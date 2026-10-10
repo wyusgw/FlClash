@@ -44,7 +44,7 @@ class GlobalState {
   }
 
   String get ua => container
-      .read(patchClashConfigProvider.select((state) => state.globalUa))
+      .read(appSettingProvider.select((state) => state.globalUa))
       .takeFirstValid([packageInfo.ua]);
 
   Future<T?> loadingRun<T>(

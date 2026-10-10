@@ -4,15 +4,15 @@ import 'package:fl_clash/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _RecordingListener with CoreEventListener {
-  _RecordingListener({this.onLoadedCallback});
+  _RecordingListener({this.onCrashCallback});
 
-  final void Function()? onLoadedCallback;
-  final List<String> loaded = [];
+  final void Function()? onCrashCallback;
+  final List<String> crashes = [];
 
   @override
-  void onLoaded(String providerName) {
-    loaded.add(providerName);
-    onLoadedCallback?.call();
+  void onCrash(String message) {
+    crashes.add(message);
+    onCrashCallback?.call();
   }
 }
 
@@ -23,7 +23,7 @@ void main() {
       late _RecordingListener first;
       final second = _RecordingListener();
       first = _RecordingListener(
-        onLoadedCallback: () => coreEventManager.removeListener(first),
+        onCrashCallback: () => coreEventManager.removeListener(first),
       );
 
       coreEventManager.addListener(first);
@@ -34,20 +34,20 @@ void main() {
       });
 
       coreEventManager.sendEvent(
-        const CoreEvent(type: CoreEventType.loaded, data: 'provider-a'),
+        const CoreEvent(type: CoreEventType.crash, data: 'core-a'),
       );
       await pumpEventQueue();
 
-      expect(first.loaded, ['provider-a']);
-      expect(second.loaded, ['provider-a']);
+      expect(first.crashes, ['core-a']);
+      expect(second.crashes, ['core-a']);
 
       coreEventManager.sendEvent(
-        const CoreEvent(type: CoreEventType.loaded, data: 'provider-b'),
+        const CoreEvent(type: CoreEventType.crash, data: 'core-b'),
       );
       await pumpEventQueue();
 
-      expect(first.loaded, ['provider-a']);
-      expect(second.loaded, ['provider-a', 'provider-b']);
+      expect(first.crashes, ['core-a']);
+      expect(second.crashes, ['core-a', 'core-b']);
     },
   );
 }

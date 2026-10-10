@@ -55,91 +55,49 @@ void main() {
       },
     );
 
-    test(
-      'commits v0 cleanup and version only after migrated data is saved',
-      () async {
-        final configMap = <String, Object?>{
-          'proxiesStyle': <String, Object?>{},
-          'dav': <String, Object?>{
-            'uri': 'https://example.com/dav',
-            'user': 'user',
-            'password': 'secret',
-          },
-        };
-        final store = _FakeMigrationStore(
-          configMap: configMap,
-          version: 0,
-          clashConfigMap: <String, Object?>{'mixed-port': 7890},
-        );
-        final migration = Migration(
-          store: store,
-          migrateV0: (configMap) async {
-            store.events.add('migrateV0');
-            expect(configMap['patchClashConfig'], store.clashConfigMap);
-            return MigrationData(
-              configMap: _createConfigMap(
-                davProps: const DAVProps(
-                  uri: 'https://example.com/dav',
-                  user: 'user',
-                  password: 'secret',
-                ),
-              ),
-            );
-          },
-        );
+    test('data saved before versioning is kept and then versioned', () async {
+      final configMap = _createConfigMap(
+        davProps: const DAVProps(
+          uri: 'https://example.com/dav',
+          user: 'user',
+          password: 'secret',
+        ),
+      );
+      final store = _FakeMigrationStore(configMap: configMap, version: 0);
 
-        await migration.run();
+      final config = await Migration(store: store).run();
 
-        expect(store.events, [
-          'getConfigMap',
-          'getVersion',
-          'getClashConfigMap',
-          'migrateV0',
-          'restore',
-          'saveConfig',
-          'clearClashConfig',
-          'setVersion',
-        ]);
-        expect(store.savedConfig?.davProps?.password, 'secret');
-        expect(store.didClearClashConfig, isTrue);
-        expect(store.version, Migration.currentVersion);
-      },
-    );
+      expect(config.davProps?.password, 'secret');
+      expect(store.savedConfig, config);
+      expect(store.version, Migration.currentVersion);
+      expect(store.events, [
+        'getConfigMap',
+        'getVersion',
+        'restore',
+        'saveConfig',
+        'setVersion',
+      ]);
+    });
 
-    test(
-      'preserves legacy clash config when current-shaped data has version zero',
-      () async {
-        final configMap = _createConfigMap()..remove('patchClashConfig');
-        final clashConfigMap = _createClashConfigMap(mixedPort: 1234);
-        final store = _FakeMigrationStore(
-          configMap: configMap,
-          version: 0,
-          clashConfigMap: clashConfigMap,
-        );
-
-        final config = await Migration(store: store).run();
-
-        expect(config.patchClashConfig.mixedPort, 1234);
-        expect(store.savedConfig?.patchClashConfig.mixedPort, 1234);
-        expect(store.didClearClashConfig, isTrue);
-        expect(store.events, [
-          'getConfigMap',
-          'getVersion',
-          'getClashConfigMap',
-          'restore',
-          'saveConfig',
-          'clearClashConfig',
-          'setVersion',
-        ]);
-      },
-    );
-
-    test('does not clear legacy clash config when saving fails', () async {
-      final configMap = _createConfigMap()..remove('patchClashConfig');
+    test('settings saved under the earlier engine name carry over', () async {
+      final configMap = _createConfigMap();
+      configMap['patchClashConfig'] = configMap.remove('coreConfig');
+      (configMap['patchClashConfig']! as Map<String, Object?>)['mixed-port'] =
+          1234;
       final store = _FakeMigrationStore(
         configMap: configMap,
+        version: Migration.currentVersion,
+      );
+
+      final config = await Migration(store: store).run();
+
+      expect(config.coreConfig.mixedPort, 1234);
+    });
+
+    test('does not set the version when saving fails', () async {
+      final store = _FakeMigrationStore(
+        configMap: _createConfigMap(),
         version: 0,
-        clashConfigMap: _createClashConfigMap(mixedPort: 1234),
         configSaveResult: false,
       );
 
@@ -148,12 +106,10 @@ void main() {
         throwsA(isA<StateError>()),
       );
 
-      expect(store.didClearClashConfig, isFalse);
       expect(store.version, 0);
       expect(store.events, [
         'getConfigMap',
         'getVersion',
-        'getClashConfigMap',
         'restore',
         'saveConfig',
         'isAvailable',
@@ -171,16 +127,27 @@ void main() {
       final config = await Migration(store: store).run();
 
       expect(config, isNotNull);
-      expect(store.didClearClashConfig, isFalse);
       expect(store.version, 0);
       expect(store.events, [
         'getConfigMap',
         'getVersion',
-        'getClashConfigMap',
         'restore',
         'saveConfig',
         'isAvailable',
       ]);
+    });
+
+    test('refuses data from a newer version', () async {
+      final store = _FakeMigrationStore(
+        configMap: _createConfigMap(),
+        version: Migration.currentVersion + 1,
+      );
+
+      await expectLater(
+        Migration(store: store).run(),
+        throwsA(isA<StateError>()),
+      );
+      expect(store.events, ['getConfigMap', 'getVersion']);
     });
 
     test('keeps the current version when password obfuscation fails', () async {
@@ -213,14 +180,8 @@ Map<String, Object?> _createConfigMap({DAVProps? davProps}) {
       as Map<String, Object?>;
 }
 
-Map<String, Object?> _createClashConfigMap({required int mixedPort}) {
-  return jsonDecode(jsonEncode(PatchClashConfig(mixedPort: mixedPort)))
-      as Map<String, Object?>;
-}
-
 class _FakeMigrationStore implements MigrationStore {
   final Map<String, Object?>? configMap;
-  final Map<String, Object?>? clashConfigMap;
   final bool configSaveResult;
   final bool available;
   final List<String> events = [];
@@ -228,12 +189,10 @@ class _FakeMigrationStore implements MigrationStore {
   int version;
   Config? savedConfig;
   MigrationData? restoredData;
-  bool didClearClashConfig = false;
 
   _FakeMigrationStore({
     required this.configMap,
     required this.version,
-    this.clashConfigMap,
     this.configSaveResult = true,
     this.available = true,
   });
@@ -242,18 +201,6 @@ class _FakeMigrationStore implements MigrationStore {
   Future<bool> get isAvailable async {
     events.add('isAvailable');
     return available;
-  }
-
-  @override
-  Future<void> clearClashConfig() async {
-    events.add('clearClashConfig');
-    didClearClashConfig = true;
-  }
-
-  @override
-  Future<Map<String, Object?>?> getClashConfigMap() async {
-    events.add('getClashConfigMap');
-    return clashConfigMap;
   }
 
   @override

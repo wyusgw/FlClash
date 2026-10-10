@@ -29,7 +29,7 @@ const defaultBypassDomain = [
   '192.168.*',
 ];
 
-const defaultUserAgents = ['clash-verge/v2.4.2', 'ClashforWindows/0.19.23'];
+const defaultUserAgents = [subscriptionUserAgent, 'v2rayNG/1.9.40'];
 
 const defaultAppSettingProps = AppSettingProps();
 const defaultVpnProps = VpnProps();
@@ -131,7 +131,6 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(false) bool silentLaunch,
     @Default(false) bool autoRun,
     @Default(false) bool openLogs,
-    @Default(true) bool closeConnections,
     @Default(defaultTestUrl) String testUrl,
     @Default(TabAnimation.slide)
     @JsonKey(readValue: _readTabAnimation)
@@ -152,6 +151,7 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(defaultUserAgents)
     @JsonKey(readValue: _readUserAgents)
     List<String> userAgents,
+    String? globalUa,
     @Default(false) bool hideIp,
     @Default(false) bool editorLineWrap,
     @Default(EditorFontSize.standard) EditorFontSize editorFontSize,
@@ -263,7 +263,6 @@ abstract class NetworkProps with _$NetworkProps {
     @Default(defaultBypassDomain) List<String> bypassDomain,
     @Default(RouteMode.config) RouteMode routeMode,
     @Default(true) bool autoSetSystemDns,
-    @Default(false) bool appendSystemDns,
     @Default(defaultAuthenticationProps) AuthenticationProps authentication,
   }) = _NetworkProps;
 
@@ -339,12 +338,14 @@ abstract class ThemeProps with _$ThemeProps {
   }
 }
 
+/// Settings saved before the engine change lived under `patchClashConfig`.
+Object? _readCoreConfig(Map<dynamic, dynamic> json, String key) =>
+    json[key] ?? json['patchClashConfig'];
+
 @freezed
 abstract class Config with _$Config {
   const factory Config({
     int? currentProfileId,
-    @Default(false) bool overrideDns,
-    @Default(false) bool overrideNtp,
     @Default([]) List<HotKeyAction> hotKeyActions,
     @JsonKey(fromJson: AppSettingProps.safeFromJson)
     @Default(defaultAppSettingProps)
@@ -355,7 +356,9 @@ abstract class Config with _$Config {
     @JsonKey(fromJson: ThemeProps.safeFromJson) required ThemeProps themeProps,
     @Default(defaultProxiesStyleProps) ProxiesStyleProps proxiesStyleProps,
     @Default(defaultWindowProps) WindowProps windowProps,
-    @Default(defaultClashConfig) PatchClashConfig patchClashConfig,
+    @Default(defaultCoreConfig)
+    @JsonKey(readValue: _readCoreConfig, fromJson: CoreConfig.safeFormJson)
+    CoreConfig coreConfig,
     @Default([]) List<String> excludeSSIDs,
   }) = _Config;
 

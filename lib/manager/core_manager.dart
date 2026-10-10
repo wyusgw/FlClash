@@ -44,7 +44,7 @@ class _CoreContainerState extends ConsumerState<CoreManager>
         unawaited(ref.read(setupActionProvider.notifier).fullSetup());
       });
     });
-    ref.listenManual(updateParamsProvider, (prev, next) {
+    ref.listenManual(configInputsProvider, (prev, next) {
       if (prev != next) {
         ref.read(setupActionProvider.notifier).updateConfigDebounce();
       }
@@ -92,36 +92,6 @@ class _CoreContainerState extends ConsumerState<CoreManager>
   }
 
   @override
-  void onRequest(TrackerInfo trackerInfo) async {
-    ref.read(requestsProvider.notifier).addRequest(trackerInfo);
-    ref.read(requestCountProvider.notifier).update((count) => count + 1);
-    super.onRequest(trackerInfo);
-  }
-
-  @override
-  void onDns(DnsQuery dnsQuery) {
-    ref.read(dnsQueriesProvider.notifier).addQuery(dnsQuery);
-    ref.read(dnsQueryCountProvider.notifier).update((count) => count + 1);
-    super.onDns(dnsQuery);
-  }
-
-  @override
-  Future<void> onLoaded(String providerName) async {
-    final provider = await _core.getExternalProvider(providerName);
-    if (!mounted) {
-      return;
-    }
-    ref.read(providersProvider.notifier).setProvider(provider);
-    debouncer.call(FunctionTag.loadedProvider, () async {
-      if (!mounted) {
-        return;
-      }
-      ref.read(proxiesActionProvider.notifier).updateGroupsDebounce();
-    }, duration: const Duration(milliseconds: 5000));
-    super.onLoaded(providerName);
-  }
-
-  @override
   Future<void> onCrash(String message) async {
     if (ref.read(coreStatusProvider) != CoreStatus.connected) {
       return;
@@ -131,14 +101,6 @@ class _CoreContainerState extends ConsumerState<CoreManager>
       context.showNotifier(message, level: MessageLevel.error);
     }
     super.onCrash(message);
-  }
-
-  @override
-  void onGeoUpdate(String geoType, bool updating, bool skipped, String? error) {
-    ref
-        .read(geoResourceActionProvider.notifier)
-        .handleCoreUpdate(geoType, updating, skipped, error);
-    super.onGeoUpdate(geoType, updating, skipped, error);
   }
 
   @override

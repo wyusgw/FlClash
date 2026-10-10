@@ -163,7 +163,7 @@ void main() {
     ]) {
       await tester.sendKeyEvent(key);
       await tester.pump();
-      modes.add(container.read(patchClashConfigProvider).mode);
+      modes.add(container.read(coreSettingProvider).mode);
     }
 
     expect(
@@ -186,6 +186,6 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.select);
     await tester.pumpAndSettle();
 
-    expect(container.read(patchClashConfigProvider).mode, Mode.global);
+    expect(container.read(coreSettingProvider).mode, Mode.global);
   });
 }

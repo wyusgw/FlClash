@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/core/controller.dart';
-import 'package:fl_clash/core/interface.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -13,7 +11,6 @@ import 'package:fl_clash/views/dashboard/widgets/profiles.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart' show Override;
 
@@ -21,8 +18,6 @@ import '../../helpers/test_app.dart';
 import '../../helpers/test_profiles.dart';
 
 const _gib = 1024 * 1024 * 1024;
-
-class _MockCore extends Mock implements CoreHandlerInterface {}
 
 class _FakePathProvider extends PathProviderPlatform {
   @override
@@ -35,15 +30,6 @@ class _FakePathProvider extends PathProviderPlatform {
   @override
   Future<String?> getApplicationCachePath() async => Directory.systemTemp.path;
 }
-
-ExternalProvider _provider(String name, String type, int count) =>
-    ExternalProvider(
-      name: name,
-      type: type,
-      count: count,
-      vehicleType: 'HTTP',
-      updateAt: DateTime(2026),
-    );
 
 Profile _profile(int id, {SubscriptionInfo? info}) => Profile(
   id: id,
@@ -180,67 +166,26 @@ void main() {
     expect(label('P3'), findsOneWidget);
   });
 
-  _MockCore appliedConfigCore() {
-    final core = _MockCore();
-    when(() => core.getConfig(any())).thenAnswer(
-      (_) async => {
-        'proxies': [{}, {}],
-        'proxy-groups': [{}],
-        'rule': ['MATCH,DIRECT', 'DOMAIN,a.com,DIRECT', 'GEOIP,CN,DIRECT'],
-      },
-    );
-    return core;
-  }
-
   Future<void> openDetail(WidgetTester tester) async {
     await tester.tap(label('P1'));
     await tester.pumpAndSettle();
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 50)),
-    );
-    await tester.pumpAndSettle();
   }
 
-  testWidgets('reopening on the same config skips the read', (tester) async {
-    final core = appliedConfigCore();
-    globalState.lastConfigMd5 = 'applied';
-    addTearDown(() => globalState.lastConfigMd5 = null);
-    setUpProfiles(
-      [_profile(1)],
-      overrides: [
-        coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
-      ],
-    );
-    container.listen(groupsProvider, (_, _) {});
-    await pumpCard(tester);
-
-    await openDetail(tester);
-    container.read(groupsProvider.notifier).value = [
-      const Group(type: GroupType.Selector, name: 'G1'),
-    ];
-    await tester.pumpAndSettle();
-    globalState.navigatorKey.currentState!.pop();
-    await tester.pumpAndSettle();
-    await openDetail(tester);
-
-    expect(find.text('3'), findsOneWidget);
-    verify(() => core.getConfig(any())).called(1);
-  });
-
-  testWidgets('tapping the card shows what the Core was handed', (
+  testWidgets('tapping the card shows how many nodes the Core lists', (
     tester,
   ) async {
-    final core = appliedConfigCore();
-    setUpProfiles(
-      [_profile(1), _profile(2)],
-      overrides: [
-        coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
-        providersProvider.overrideWithBuild(
-          (_, _) => [_provider('nodes', 'Proxy', 5)],
-        ),
-      ],
-    );
-    container.read(currentProfileIdProvider.notifier).value = 1;
+    setUpProfiles([_profile(1), _profile(2)]);
+    container.listen(groupsProvider, (_, _) {});
+    container.read(groupsProvider.notifier).value = [
+      const Group(
+        type: GroupType.Selector,
+        name: 'PROXY',
+        all: [
+          Proxy(name: 'a', type: 'vless'),
+          Proxy(name: 'b', type: 'trojan'),
+        ],
+      ),
+    ];
     await pumpCard(tester);
 
     await openDetail(tester);
@@ -248,33 +193,17 @@ void main() {
     expect(find.byType(ProfileDetailSheet), findsOneWidget);
     expect(find.byTooltip('Preview'), findsOneWidget);
     expect(find.byTooltip('Edit'), findsNothing);
-    for (final (title, value) in [
-      ('Proxy group', '1'),
-      ('Proxy node', '7'),
-      ('Rules', '3'),
-    ]) {
-      expect(
-        find.descendant(
-          of: find
-              .ancestor(of: find.text(title), matching: find.byType(Column))
-              .first,
-          matching: find.text(value),
-        ),
-        findsOneWidget,
-      );
-    }
-  });
-
-  test('counts provider proxies but not provider rules', () {
-    final stats = profileStatsOf(
-      configCountsOf({
-        'proxies': [{}],
-        'proxy-groups': [{}, {}],
-        'rules': ['MATCH,DIRECT'],
-      }),
-      [_provider('nodes', 'Proxy', 4), _provider('ads', 'Rule', 900)],
+    expect(
+      find.descendant(
+        of: find
+            .ancestor(
+              of: find.text('Proxy node'),
+              matching: find.byType(Column),
+            )
+            .first,
+        matching: find.text('2'),
+      ),
+      findsOneWidget,
     );
-
-    expect(stats, (groups: 2, proxies: 5, rules: 1, providers: 2));
   });
 }

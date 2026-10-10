@@ -15,12 +15,8 @@ import 'package:path/path.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Profile _profile(int id, String label) => Profile(
-  id: id,
-  label: label,
-  autoUpdateDuration: Duration.zero,
-  overwriteType: OverwriteType.standard,
-);
+Profile _profile(int id, String label) =>
+    Profile(id: id, label: label, autoUpdateDuration: Duration.zero);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -232,40 +228,6 @@ void main() {
       });
     });
 
-    test('a restore drops the cache of a provider it replaced', () async {
-      const dropped = ClashProvider(
-        id: 5,
-        kind: ProviderKind.rule,
-        label: 'Dropped',
-        url: 'https://example.com/dropped.yaml',
-      );
-      const kept = ClashProvider(
-        id: 6,
-        kind: ProviderKind.proxy,
-        label: 'Kept',
-      );
-      await testDatabase.clashProvidersDao.putAll(
-        [dropped, kept].map((item) => item.toCompanion()),
-      );
-      await dropped.saveContent('payload: []'.codeUnits);
-      await kept.saveContent('proxies: []'.codeUnits);
-      final container = buildContainer();
-      container
-          .read(appSettingProvider.notifier)
-          .update(
-            (state) =>
-                state.copyWith(restoreStrategy: RestoreStrategy.override),
-          );
-
-      await actionOf(container).applyRestore(
-        const MigrationData(clashProviders: [kept]),
-        RestoreOption.onlyProfiles,
-      );
-
-      expect(File(await dropped.path).existsSync(), isFalse);
-      expect(File(await kept.path).existsSync(), isTrue);
-    });
-
     test('rows that fail to restore take their files back out', () async {
       final replaced = File(await appPath.getProfilePath('41'))
         ..createSync(recursive: true)
@@ -295,36 +257,6 @@ void main() {
       expect(replaced.readAsStringSync(), 'current');
       expect(added.existsSync(), isFalse);
     });
-
-    test('a backup carrying only proxy groups still writes them', () async {
-      await testDatabase.profiles.put(
-        const Profile(id: 7, autoUpdateDuration: Duration.zero).toCompanion(),
-      );
-      final container = buildContainer();
-
-      await actionOf(container).applyRestore(
-        const MigrationData(
-          proxyGroups: [
-            ProxyGroup(
-              id: 1,
-              profileId: 7,
-              name: 'Selector',
-              type: GroupType.Selector,
-            ),
-          ],
-        ),
-        RestoreOption.onlyProfiles,
-      );
-
-      final stored = await testDatabase.proxyGroupsDao.query(7).get();
-      expect(
-        stored.map((item) => item.name),
-        ['Selector'],
-        reason:
-            'proxyGroups belongs in the guard that decides whether the batch '
-            'runs, not only in the batch body',
-      );
-    });
   });
 
   group('applyRestore writes the settings providers', () {
@@ -335,10 +267,8 @@ void main() {
           .update((state) => state.copyWith(autoLaunch: true));
       source.read(currentProfileIdProvider.notifier).value = 42;
       source
-          .read(patchClashConfigProvider.notifier)
+          .read(coreSettingProvider.notifier)
           .update((state) => state.copyWith(mixedPort: 7899));
-      source.read(overrideDnsProvider.notifier).value = true;
-      source.read(overrideNtpProvider.notifier).value = true;
       final configMap = configMapOf(source);
 
       final target = buildContainer();
@@ -348,9 +278,7 @@ void main() {
 
       expect(target.read(currentProfileIdProvider), 42);
       expect(target.read(appSettingProvider).autoLaunch, isTrue);
-      expect(target.read(patchClashConfigProvider).mixedPort, 7899);
-      expect(target.read(overrideDnsProvider), isTrue);
-      expect(target.read(overrideNtpProvider), isTrue);
+      expect(target.read(coreSettingProvider).mixedPort, 7899);
     });
 
     test('keeps the bound WebDAV account when the backup has none', () async {

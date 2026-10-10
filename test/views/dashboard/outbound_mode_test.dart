@@ -198,7 +198,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 120));
 
-    expect(container.read(patchClashConfigProvider).mode, Mode.direct);
+    expect(container.read(coreSettingProvider).mode, Mode.direct);
     final midway = tester.getRect(highlight);
     expect(midway.height, closeTo(from.height, 0.01));
     expect(midway.top, greaterThan(from.top));

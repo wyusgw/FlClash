@@ -1,6 +1,6 @@
 # Project Context
 
-FlClash is a multi-platform proxy client based on ClashMeta (mihomo), built with Flutter. It supports Android, Windows, macOS, and Linux, using a Material You design with Surfboard-like UI.
+FlClash is a multi-platform proxy client based on Xray-core, built with Flutter. It supports Android, Windows, macOS, and Linux, using a Material You design with Surfboard-like UI.
 
 ## Version Notes
 
@@ -16,50 +16,25 @@ FlClash is a multi-platform proxy client based on ClashMeta (mihomo), built with
 
 ## Forked Dependencies
 
-Two `pubspec.yaml` dependencies are pinned to a fork by commit SHA. Both forks
-live under `chen08209`, the same account that owns this repository, so they are
-maintained in-house rather than tracked from a third party: advancing a pin is a
-local decision, and there is no external maintainer to wait on for the patch
-itself. What each fork still waits on is the *upstream* fix that would let the pin
-be dropped entirely, recorded below.
+One `pubspec.yaml` dependency is pinned to a fork by commit SHA, and the Core's source is a submodule of a fork. Both
+live under `wyusgw`, the account that owns this repository, so advancing a pin is a local decision.
 
-Each entry records what the fork changes and what has to be true before it can go
-back to the published package, so a future upgrade does not have to rediscover it.
-Re-verify a fork by diffing its pub cache checkout against the published version
-of the same number:
+- `launch_at_startup` — `wyusgw/launch_at_startup`, version 0.5.1. It migrates `win32_registry` from `^2.0.0` to
+  `^3.0.3`, a breaking rename across the whole Windows implementation (`Registry.openPath` → `CURRENT_USER.open`,
+  `createValue` → `setValue`, `getStringValue` → `getString`). FlClash depends on `win32_registry: ^3.0.3` directly and
+  upstream's `^2.0.0` constraint cannot co-resolve with it. Drop the fork when upstream publishes a release that
+  accepts `win32_registry` 3.x.
+- `core/Xray-core` — `wyusgw/Xray-core`, tracking `main`. Its `go.mod` asks for Go 1.27, which sets the Go version
+  of the whole build. The submodule is pinned to a commit that is not a release tag; move the pin to a release tag
+  once one covers the features the Core uses (the `tun` inbound and the balancer overrides).
 
-```bash
-diff -ru ~/.pub-cache/hosted/pub.dev/<name>-<version> ~/.pub-cache/git/<name>-<sha>
-```
+The `window_manager` fork was replaced by the in-repo `plugins/window` package; the behaviors it carried (work-area
+maximize with a hidden title bar on Windows, geometry restore on re-map on Linux, corner preference, terminate and
+activate events) live there now, see the window plugin section of `architecture.md`.
 
-The `window_manager` fork (`chen08209/window_manager`, tag `v0.5.1-flclash.3`)
-was replaced by the in-repo `plugins/window` package; the behaviors it carried
-(work-area maximize with a hidden title bar on Windows, geometry restore on
-re-map on Linux, corner preference, terminate and activate events) live there
-now, see the window plugin section of `architecture.md`.
-
-`launch_at_startup` — `chen08209/launch_at_startup`, version 0.5.1.
-
-- Migrates `win32_registry` from `^2.0.0` to `^3.0.3`, which is a breaking rename
-  across the whole Windows implementation (`Registry.openPath` → `CURRENT_USER.open`,
-  `createValue` → `setValue`, `getStringValue` → `getString`).
-- This one is not optional while it lasts: FlClash depends on `win32_registry: ^3.0.3`
-  directly, and upstream's `^2.0.0` constraint cannot co-resolve with it.
-- Drop the fork when upstream publishes a release that accepts `win32_registry` 3.x.
-
-`yaml_writer` — `chen08209/yaml_writer`, version 2.1.0.
-
-- Adds `StringNode.quoteKey()` and applies it to map keys in `lib/src/node.dart`.
-  Upstream quotes values but emits keys verbatim, so a profile key needing quotes
-  is written as invalid YAML.
-- Drop the fork once upstream quotes map keys by the same
-  `isValidUnquotedString` rule it already applies to values.
-
-The `code_forge` fork (`chen08209/code_forge`) is frozen: its Dart code now lives
-in the in-repo `plugins/code_forge` package and its Rust code in the `editor/`
-module of `plugins/rust_api`, both trimmed to what FlClash uses.
-`plugins/code_forge/README.md` records what was kept and what was removed;
-upstream's MIT notice stays in `plugins/code_forge/LICENSE`.
+The `code_forge` fork is frozen: its Dart code now lives in the in-repo `plugins/code_forge` package and its Rust code
+in the `editor/` module of `plugins/rust_api`, both trimmed to what FlClash uses. `plugins/code_forge/README.md`
+records what was kept and what was removed; upstream's MIT notice stays in `plugins/code_forge/LICENSE`.
 
 ## Dependency Ceilings
 

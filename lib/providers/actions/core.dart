@@ -63,14 +63,6 @@ class CoreAction extends _$CoreAction {
     return true;
   }
 
-  Future<void> closeConnection(String id) async {
-    await _core.closeConnection(id);
-  }
-
-  Future<void> closeConnections() async {
-    await _core.closeConnections();
-  }
-
   Future<void> requestGc() async {
     await _core.requestGc();
   }

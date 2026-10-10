@@ -50,13 +50,13 @@ void main() {
       final container = buildContainer();
       final action = container.read(commonActionProvider.notifier);
       container
-          .read(patchClashConfigProvider.notifier)
+          .read(coreSettingProvider.notifier)
           .update((state) => state.copyWith(mode: Mode.values.first));
 
-      final seen = <Mode>[container.read(patchClashConfigProvider).mode];
+      final seen = <Mode>[container.read(coreSettingProvider).mode];
       for (var i = 0; i < Mode.values.length; i++) {
         action.updateMode();
-        seen.add(container.read(patchClashConfigProvider).mode);
+        seen.add(container.read(coreSettingProvider).mode);
       }
 
       expect(seen.sublist(0, Mode.values.length), Mode.values);

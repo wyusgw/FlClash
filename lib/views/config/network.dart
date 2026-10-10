@@ -13,8 +13,7 @@ typedef _VpnUpdate<T> = VpnProps Function(VpnProps state, T value);
 
 typedef _NetworkUpdate<T> = NetworkProps Function(NetworkProps state, T value);
 
-typedef _TunUpdate<T> =
-    PatchClashConfig Function(PatchClashConfig state, T value);
+typedef _TunUpdate<T> = CoreConfig Function(CoreConfig state, T value);
 
 ConfigWriter<T> _vpnWriter<T>(_VpnUpdate<T> update) {
   return (ref, value) => ref
@@ -30,7 +29,7 @@ ConfigWriter<T> _networkWriter<T>(_NetworkUpdate<T> update) {
 
 ConfigWriter<T> _tunWriter<T>(_TunUpdate<T> update) {
   return (ref, value) => ref
-      .read(patchClashConfigProvider.notifier)
+      .read(coreSettingProvider.notifier)
       .update((state) => update(state, value));
 }
 
@@ -84,7 +83,7 @@ class TUNItem extends ConsumerWidget {
     return ConfigToggleItem(
       title: (l) => l.tun,
       subtitle: (l) => l.tunDesc,
-      selector: patchClashConfigProvider.select((state) => state.tun.enable),
+      selector: coreSettingProvider.select((state) => state.tun.enable),
       onChanged: _tunWriter(
         (state, value) => state.copyWith.tun(enable: value),
       ),
@@ -177,62 +176,6 @@ class DNSHijackingItem extends ConsumerWidget {
   }
 }
 
-class TunStackItem extends ConsumerWidget {
-  const TunStackItem({super.key});
-
-  @override
-  Widget build(BuildContext context, ref) {
-    return ConfigOptionsItem<TunStack>(
-      title: (l) => l.stackMode,
-      options: TunStack.values,
-      textBuilder: (stack) => stack.name,
-      selector: patchClashConfigProvider.select((state) => state.tun.stack),
-      onChanged: _tunWriter((state, value) => state.copyWith.tun(stack: value)),
-    );
-  }
-}
-
-class InterfaceNameModeItem extends ConsumerWidget {
-  const InterfaceNameModeItem({super.key});
-
-  @override
-  Widget build(BuildContext context, ref) {
-    final appLocalizations = context.appLocalizations;
-    return ConfigOptionsItem<InterfaceNameMode>(
-      title: (l) => l.interfaceNameMode,
-      options: InterfaceNameMode.values,
-      textBuilder: (mode) => switch (mode) {
-        InterfaceNameMode.clear => appLocalizations.interfaceNameModeClear,
-        InterfaceNameMode.follow => appLocalizations.interfaceNameModeFollow,
-        InterfaceNameMode.custom => appLocalizations.interfaceNameModeCustom,
-      },
-      selector: patchClashConfigProvider.select(
-        (state) => state.interfaceNameMode,
-      ),
-      onChanged: _tunWriter(
-        (state, value) => state.copyWith(interfaceNameMode: value),
-      ),
-    );
-  }
-}
-
-class InterfaceNameItem extends ConsumerWidget {
-  const InterfaceNameItem({super.key});
-
-  @override
-  Widget build(BuildContext context, ref) {
-    return ConfigTextItem(
-      title: (l) => l.interfaceName,
-      subtitle: (l) => l.interfaceNameDesc,
-      maxLength: TextInputLimits.name,
-      selector: patchClashConfigProvider.select((state) => state.interfaceName),
-      onChanged: _tunWriter(
-        (state, value) => state.copyWith(interfaceName: value.trim()),
-      ),
-    );
-  }
-}
-
 class RouteModeItem extends ConsumerWidget {
   const RouteModeItem({super.key});
 
@@ -275,9 +218,7 @@ class RouteAddressItem extends ConsumerWidget {
     return ConfigListEditItem(
       title: (l) => l.routeAddress,
       itemMaxLength: TextInputLimits.cidr,
-      selector: patchClashConfigProvider.select(
-        (state) => state.tun.routeAddress,
-      ),
+      selector: coreSettingProvider.select((state) => state.tun.routeAddress),
       onChanged: _tunWriter(
         (state, value) => state.copyWith.tun(routeAddress: value),
       ),
@@ -305,20 +246,11 @@ class LoopbackItem extends StatelessWidget {
 List<Widget> networkOptionsItems({
   required bool isDesktop,
   required bool isMacOS,
-  required bool isCustomInterfaceName,
   required bool isBypassPrivateRoute,
 }) {
   return [
     if (isDesktop) const TUNItem(),
     if (isMacOS) const AutoSetSystemDnsItem(),
-    const TunStackItem(),
-    // mihomo's DefaultSocketHook ignores interface-name on Android
-    // (core/lib.go installHooks, vendored dialer.go), so these rows only
-    // apply on desktop.
-    if (isDesktop) ...[
-      const InterfaceNameModeItem(),
-      if (isCustomInterfaceName) const InterfaceNameItem(),
-    ],
     if (!isDesktop) ...[
       const RouteModeItem(),
       if (!isBypassPrivateRoute) const RouteAddressItem(),
@@ -370,11 +302,6 @@ class NetworkOptionsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isCustomInterfaceName = ref.watch(
-      patchClashConfigProvider.select(
-        (state) => state.interfaceNameMode == InterfaceNameMode.custom,
-      ),
-    );
     final isBypassPrivateRoute = ref.watch(
       networkSettingProvider.select(
         (state) => state.routeMode == RouteMode.bypassPrivate,
@@ -385,7 +312,6 @@ class NetworkOptionsSection extends ConsumerWidget {
       items: networkOptionsItems(
         isDesktop: system.isDesktop,
         isMacOS: system.isMacOS,
-        isCustomInterfaceName: isCustomInterfaceName,
         isBypassPrivateRoute: isBypassPrivateRoute,
       ),
     );

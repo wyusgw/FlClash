@@ -1,4 +1,4 @@
-[submodule "core/Clash.Meta"]
-	path = core/Clash.Meta
-	url = git@github.com:wyusgw/Clash.Meta.git
-	branch = FlClash
+[submodule "core/Xray-core"]
+	path = core/Xray-core
+	url = git@github.com:wyusgw/Xray-core.git
+	branch = main

@@ -1,7 +1,6 @@
 import 'package:fl_clash/core/desktop/model.dart';
 import 'package:fl_clash/core/interface.dart';
 import 'package:fl_clash/core/method.dart';
-import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:test/test.dart';
 
@@ -38,19 +37,6 @@ const _unused = CoreLifecycleResult(
 
 const _setupParams = SetupParams(selectedMap: {}, testUrl: 'http://x.com');
 
-const _updateParams = UpdateParams(
-  tun: Tun(),
-  mixedPort: 7890,
-  allowLan: true,
-  findProcessMode: FindProcessMode.off,
-  mode: Mode.rule,
-  logLevel: LogLevel.info,
-  ipv6: false,
-  tcpConcurrent: false,
-  externalController: ExternalControllerStatus.close,
-  unifiedDelay: false,
-);
-
 void main() {
   late _SilentCore core;
 
@@ -58,13 +44,7 @@ void main() {
 
   final cases = <String, Future<String> Function()>{
     'setupConfig': () => core.setupConfig(_setupParams),
-    'updateConfig': () => core.updateConfig(_updateParams),
-    'validateConfig': () => core.validateConfig('/tmp/config.yaml'),
-    'updateGeoData': () => core.updateGeoData('geoip'),
-    'updateExternalProvider': () => core.updateExternalProvider('provider'),
-    'sideLoadExternalProvider': () =>
-        core.sideLoadExternalProvider(providerName: 'p', data: 'd'),
-    'clearEffect': () => core.clearEffect(1),
+    'validateConfig': () => core.validateConfig('/tmp/config.json'),
   };
 
   group('an unanswered call is not reported as an applied change', () {
@@ -101,7 +81,7 @@ void main() {
     final core = _AnsweringCore('nameserver is empty');
     expect(await core.setupConfig(_setupParams), 'nameserver is empty');
     expect(
-      await core.validateConfig('/tmp/config.yaml'),
+      await core.validateConfig('/tmp/config.json'),
       'nameserver is empty',
     );
   });
@@ -115,8 +95,6 @@ void main() {
     expect(await core.isInit, isFalse);
     expect(await core.forceGc(), isFalse);
     expect(await core.getMemoryStats(), isNull);
-    expect(await core.getExternalProviders(), isEmpty);
-    expect(await core.getExternalProvider('p'), isNull);
     expect(await core.watchRoute(true), isNull);
   });
 }

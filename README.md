@@ -4,7 +4,7 @@
 
 # FlClash
 
-A multi-platform proxy client based on ClashMeta. Simple to use, open source and ad-free.
+A multi-platform proxy client based on Xray-core. Simple to use, open source and ad-free.
 
 **English** · [简体中文](README_zh_CN.md)
 
@@ -27,10 +27,10 @@ A multi-platform proxy client based on ClashMeta. Simple to use, open source and
 ## Features
 
 - **One app for Android, Windows, macOS and Linux**, with x64 and ARM64 builds on the desktop.
-- **mihomo (Clash.Meta) core** with rule routing, proxy groups, latency tests, system proxy and TUN mode.
-- **Profiles** from a subscription link or a file, with a built-in editor, override scripts, and custom rules,
-  proxies and proxy groups.
-- **Live views** of connections, requests, DNS queries and logs.
+- **Xray-core** with rule routing, node groups, latency tests, system proxy and TUN mode.
+- **Profiles** from a subscription link or a file (share links, base64 lists or an Xray config for VLESS, VMess,
+  Trojan, Shadowsocks, Hysteria2, TUIC and AnyTLS), with a built-in editor.
+- **Live views** of traffic, latency and logs.
 - **Material You design** with dynamic color, light and dark themes, and layouts that adapt from phones to desktops.
 - **Backup and restore** through WebDAV or a local file.
 - **Platform touches**: a Quick Settings tile, per-app proxy and Android TV support on Android; a tray menu and
@@ -98,7 +98,7 @@ adb shell am start -a com.follow.clash.action.TOGGLE
 ## Build from source
 
 You need [Flutter](https://docs.flutter.dev/get-started/install) 3.47 (release builds use 3.47.4),
-[Go](https://go.dev/dl/) 1.26 and [Rust](https://rustup.rs/) installed through rustup. Each platform builds on its own
+[Go](https://go.dev/dl/) 1.27 and [Rust](https://rustup.rs/) installed through rustup. Each platform builds on its own
 host, except Android, which builds anywhere.
 
 ```bash

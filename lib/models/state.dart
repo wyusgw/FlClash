@@ -4,9 +4,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'app.dart';
-import 'clash_config.dart';
 import 'common.dart';
 import 'config.dart';
+import 'core_config.dart';
 import 'core.dart';
 import 'profile.dart';
 
@@ -236,7 +236,6 @@ abstract class ProxiesActionsState with _$ProxiesActionsState {
   const factory ProxiesActionsState({
     required PageLabel pageLabel,
     required ProxiesType type,
-    required bool hasProviders,
   }) = _ProxiesActionsState;
 }
 
@@ -337,22 +336,12 @@ abstract class ComputeGroupsState with _$ComputeGroupsState {
 @freezed
 abstract class MakeRealProfileState with _$MakeRealProfileState {
   const factory MakeRealProfileState({
-    required String profilesPath,
-    required int profileId,
-    required Map<String, dynamic> rawConfig,
-    required PatchClashConfig realPatchConfig,
-    required bool overrideDns,
-    required bool overrideNtp,
-    required bool appendSystemDns,
-    required List<ProxyGroup> proxyGroups,
-    required List<Rule> rules,
-    required List<Rule> addedRules,
-    required String defaultUA,
-    @Default([]) List<CustomProxy> proxies,
+    required List<Map<String, dynamic>> outbounds,
+    required CoreConfig coreConfig,
+    required RouteMode routeMode,
+    required String testUrl,
     @Default([]) List<String> authentication,
-    @Default({}) Map<String, dynamic> injectedProxyProviders,
-    @Default({}) Map<String, dynamic> injectedRuleProviders,
-    String? matchTarget,
+    @Default(false) bool tunInbound,
     @Default(false) bool safeMode,
   }) = _MakeRealProfileState;
 }
@@ -361,13 +350,7 @@ abstract class MakeRealProfileState with _$MakeRealProfileState {
 abstract class MigrationData with _$MigrationData {
   const factory MigrationData({
     Map<String, Object?>? configMap,
-    @Default([]) List<Rule> rules,
-    @Default([]) List<Script> scripts,
     @Default([]) List<Profile> profiles,
-    @Default([]) List<ProfileRuleLink> links,
-    @Default([]) List<ProxyGroup> proxyGroups,
-    @Default([]) List<ClashProvider> clashProviders,
-    @Default([]) List<CustomProxy> customProxies,
   }) = _MigrationData;
 }
 
@@ -376,17 +359,5 @@ abstract class SetupState with _$SetupState {
   const factory SetupState({
     required int? profileId,
     required int? profileLastUpdateDate,
-    required OverwriteType overwriteType,
-    required List<Rule> rules,
-    required List<ProxyGroup> proxyGroups,
-    required List<Rule> addedRules,
-    required Script? script,
-    @Default([]) List<CustomProxy> customProxies,
-    required bool overrideDns,
-    required Dns dns,
-    required Set<DnsOverrideKey> dnsOverrideKeys,
-    @Default([]) List<ClashProvider> clashProviders,
-    @Default({}) Map<String, int> profileProviders,
-    String? matchTarget,
   }) = _SetupState;
 }

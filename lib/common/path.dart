@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -93,7 +92,7 @@ class AppPath {
 
   Future<String> get configFilePath async {
     final mHomeDirPath = await homeDirPath;
-    return join(mHomeDirPath, 'config.yaml');
+    return join(mHomeDirPath, 'config.json');
   }
 
   Future<String> get sharedPreferencesPath async {
@@ -107,56 +106,7 @@ class AppPath {
   }
 
   Future<String> getProfilePath(String fileName) async {
-    return join(await profilesPath, '$fileName.yaml');
-  }
-
-  Future<String> get scriptsDirPath async {
-    final path = await homeDirPath;
-    return join(path, 'scripts');
-  }
-
-  Future<String> getScriptPath(String fileName) async {
-    final path = await scriptsDirPath;
-    return join(path, '$fileName.js');
-  }
-
-  Future<String> get providerCacheRootPath async {
-    final directory = await homeDirPath;
-    return join(directory, providersDirectoryName);
-  }
-
-  Future<String> getProviderCachePath(
-    ProviderKind kind,
-    String fileName,
-  ) async {
-    return join(
-      await providerCacheRootPath,
-      providerCacheDirectoryName(kind),
-      fileName,
-    );
-  }
-
-  Future<String> getProvidersRootPath() async {
-    final directory = await profilesPath;
-    return join(directory, providersDirectoryName);
-  }
-
-  Future<String> getProviderDirPath(int profileId, String type) async {
-    final directory = await getProvidersRootPath();
-    return join(directory, profileId.toString(), type);
-  }
-
-  Future<void> ensureProviderDirs(int profileId) async {
-    for (final type in const [
-      proxiesProviderDirectoryName,
-      rulesProviderDirectoryName,
-    ]) {
-      final directory = Directory(await getProviderDirPath(profileId, type));
-      if (await directory.exists()) {
-        continue;
-      }
-      await directory.create(recursive: true);
-    }
+    return join(await profilesPath, '$fileName.json');
   }
 
   Future<String> get tempPath async {

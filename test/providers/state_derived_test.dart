@@ -39,11 +39,10 @@ void main() {
         all: [Proxy(name: 'Selected', type: 'Direct', now: 'runtime')],
       ),
       const Group(name: 'Hidden', type: GroupType.Selector, hidden: true),
-      Group(name: GroupName.GLOBAL.name, type: GroupType.Selector),
     ];
     container.read(groupsProvider.notifier).update((_) => groups);
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update((state) => state.copyWith(mode: Mode.rule));
 
     final ruleGroups = container.read(currentGroupsStateProvider).value;
@@ -52,12 +51,12 @@ void main() {
     expect(ruleGroups.single.all.single.now, isEmpty);
 
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update((state) => state.copyWith(mode: Mode.global));
-    expect(container.read(currentGroupsStateProvider).value, hasLength(3));
+    expect(container.read(currentGroupsStateProvider).value, hasLength(2));
 
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update((state) => state.copyWith(mode: Mode.direct));
     expect(container.read(currentGroupsStateProvider).value, isEmpty);
   });
@@ -74,7 +73,7 @@ void main() {
       ],
     );
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update((state) => state.copyWith(mode: Mode.rule));
     container.read(groupsProvider.notifier).update((_) => [group('Node', 'a')]);
     var notified = 0;
@@ -104,7 +103,7 @@ void main() {
           ],
         );
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update((state) => state.copyWith(mode: Mode.rule));
     container
         .read(appSettingProvider.notifier)
@@ -135,7 +134,7 @@ void main() {
   test('hidden timed-out nodes follow test batches and cleared delays', () {
     const testUrl = 'https://default.test';
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update((state) => state.copyWith(mode: Mode.rule));
     container
         .read(appSettingProvider.notifier)
@@ -215,7 +214,7 @@ void main() {
           ],
         );
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update((state) => state.copyWith(mode: Mode.rule));
     container
         .read(appSettingProvider.notifier)
@@ -243,28 +242,21 @@ void main() {
       mobile.map((item) => item.label),
       containsAll([PageLabel.dashboard, PageLabel.profiles, PageLabel.tools]),
     );
-    expect(
-      mobile.map((item) => item.label),
-      isNot(contains(PageLabel.connections)),
-    );
+    expect(mobile.map((item) => item.label), isNot(contains(PageLabel.logs)));
 
     container
         .read(viewSizeProvider.notifier)
         .update((_) => const Size(1200, 800));
     container
-        .read(currentPageLabelProvider.notifier)
-        .toPage(PageLabel.connections);
+        .read(appSettingProvider.notifier)
+        .update((state) => state.copyWith(openLogs: true));
+    container.read(currentPageLabelProvider.notifier).toPage(PageLabel.logs);
     final desktop = container.read(navigationStateProvider);
     expect(desktop.viewMode, ViewMode.desktop);
     expect(desktop.currentIndex, greaterThan(0));
-    expect(
-      desktop.navigationItems[desktop.currentIndex].label,
-      PageLabel.connections,
-    );
+    expect(desktop.navigationItems[desktop.currentIndex].label, PageLabel.logs);
 
-    container
-        .read(currentPageLabelProvider.notifier)
-        .toPage(PageLabel.resources);
+    container.read(currentPageLabelProvider.notifier).toPage(PageLabel.proxies);
     expect(container.read(navigationStateProvider).currentIndex, 0);
   });
 
@@ -286,7 +278,6 @@ void main() {
 
     final actions = container.read(proxiesActionsStateProvider);
     expect(actions.pageLabel, PageLabel.dashboard);
-    expect(actions.hasProviders, isFalse);
     expect(actions.type, ProxiesType.tab);
   });
 
@@ -321,7 +312,7 @@ void main() {
           .update((_) => profile.id);
       container.read(groupsProvider.notifier).update((_) => groups);
       container
-          .read(patchClashConfigProvider.notifier)
+          .read(coreSettingProvider.notifier)
           .update((state) => state.copyWith(mode: Mode.rule));
       container
           .read(viewSizeProvider.notifier)
@@ -378,7 +369,7 @@ void main() {
           ],
         );
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update((state) => state.copyWith(mode: Mode.rule));
 
     List<String> names(String query) => [
@@ -406,7 +397,7 @@ void main() {
           ),
         );
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update(
           (state) => state.copyWith(
             mixedPort: 8899,
@@ -434,7 +425,7 @@ void main() {
     expect(tray.isStart, isTrue);
 
     final vpn = container.read(vpnStateProvider);
-    expect(vpn.stack, container.read(patchClashConfigProvider).tun.stack);
+    expect(vpn.stack, container.read(coreSettingProvider).tun.stack);
     expect(vpn.vpnProps, container.read(vpnSettingProvider));
 
     expect(container.read(shouldPatchSystemDnsProvider), isTrue);
@@ -475,7 +466,7 @@ void main() {
           (state) => state.copyWith(systemProxy: true, autoSetSystemDns: true),
         );
     scoped
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update(
           (state) => state.copyWith(tun: state.tun.copyWith(enable: true)),
         );
@@ -688,16 +679,10 @@ void main() {
       HotAction.tun,
     );
 
-    final profile = Profile.normal().copyWith(
-      overwriteType: OverwriteType.custom,
-    );
+    final profile = Profile.normal();
     _profiles(container).replace([profile]);
     expect(container.read(profileProvider(profile.id)), profile);
-    expect(
-      container.read(overwriteTypeProvider(profile.id)),
-      OverwriteType.custom,
-    );
-    expect(container.read(overwriteTypeProvider(-1)), OverwriteType.standard);
+    expect(container.read(profileProvider(-1)), isNull);
 
     expect(
       container.read(accessControlStateProvider),
@@ -709,7 +694,7 @@ void main() {
     await AppLocalizations.load(const Locale('en'));
     container.listen(sharedStateProvider, (_, _) {});
     container
-        .read(patchClashConfigProvider.notifier)
+        .read(coreSettingProvider.notifier)
         .update(
           (state) => state.copyWith(
             tun: state.tun.copyWith(routeAddress: const ['10.0.0.0/8']),
@@ -749,7 +734,7 @@ void main() {
           ),
         );
     expect(container.read(sharedStateProvider).vpnOptions?.systemProxy, false);
-    expect(container.read(updateParamsProvider).authentication, ['user:pass']);
+    expect(container.read(configInputsProvider).authentication, ['user:pass']);
 
     container
         .read(networkSettingProvider.notifier)
@@ -759,7 +744,7 @@ void main() {
           ),
         );
     expect(container.read(sharedStateProvider).vpnOptions?.systemProxy, true);
-    expect(container.read(updateParamsProvider).authentication, isEmpty);
+    expect(container.read(configInputsProvider).authentication, isEmpty);
   });
 
   test('shared state carries the notification stop action switch', () async {

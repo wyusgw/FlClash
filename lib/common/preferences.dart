@@ -57,35 +57,6 @@ class Preferences {
     }
   }
 
-  Future<Map<String, Object?>?> getClashConfigMap() async {
-    try {
-      final preferences = await sharedPreferencesCompleter.future;
-      final clashConfigString = preferences?.getString(clashConfigKey);
-      if (clashConfigString == null) return null;
-      return json.decode(clashConfigString);
-    } catch (e) {
-      commonPrint.log(
-        'getClashConfigMap error ${e.toString()}',
-        logLevel: LogLevel.warning,
-      );
-      return null;
-    }
-  }
-
-  Future<void> clearClashConfig() async {
-    try {
-      final preferences = await sharedPreferencesCompleter.future;
-      await preferences?.remove(clashConfigKey);
-      return;
-    } catch (e) {
-      commonPrint.log(
-        'clearClashConfig error ${e.toString()}',
-        logLevel: LogLevel.warning,
-      );
-      return;
-    }
-  }
-
   Future<Config?> getConfig() async {
     final configMap = await getConfigMap();
     if (configMap == null) {

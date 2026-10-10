@@ -45,33 +45,9 @@ class _FakePathProvider extends PathProviderPlatform {
 const _nullProfileSetupState = SetupState(
   profileId: null,
   profileLastUpdateDate: null,
-  overwriteType: OverwriteType.standard,
-  rules: [],
-  proxyGroups: [],
-  addedRules: [],
-  script: null,
-  dnsOverrideKeys: {},
-  overrideDns: false,
-  dns: Dns(),
 );
 
 const _crash = CoreEvent(type: CoreEventType.crash, data: 'boom');
-
-CoreEvent _geoUpdate({
-  bool updating = false,
-  bool skipped = false,
-  String? error,
-}) {
-  return CoreEvent(
-    type: CoreEventType.geoUpdate,
-    data: <String, dynamic>{
-      'type': 'MMDB',
-      'updating': updating,
-      'skipped': skipped,
-      'error': error,
-    },
-  );
-}
 
 _MockCoreHandlerInterface _coreInterface() {
   final coreInterface = _MockCoreHandlerInterface();
@@ -282,61 +258,6 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('core dns queries are recorded and counted', (tester) async {
-    final coreInterface = _coreInterface();
-    final container = await _pumpCoreManager(tester, coreInterface);
-
-    for (final domain in ['alpha.test', 'beta.test']) {
-      coreEventManager.sendEvent(
-        CoreEvent(
-          type: CoreEventType.dns,
-          data: {
-            'domain': domain,
-            'type': 'A',
-            'answers': ['1.1.1.1'],
-            'delay': 3,
-            'time': '2026-09-18T04:30:01Z',
-          },
-        ),
-      );
-    }
-    await tester.pump();
-
-    expect(
-      container.read(dnsQueriesProvider).list.map((query) => query.domain),
-      ['alpha.test', 'beta.test'],
-    );
-    expect(container.read(dnsQueryCountProvider), 2);
-
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
-
-  testWidgets('geo events are forwarded to the geo resource action', (
-    tester,
-  ) async {
-    final coreInterface = _coreInterface();
-    final container = await _pumpCoreManager(tester, coreInterface);
-    final key = GeoResource.MMDB.updatingKey;
-    final subscription = container.listen<bool>(
-      isUpdatingProvider(key),
-      (_, _) {},
-    );
-    addTearDown(subscription.close);
-
-    coreEventManager.sendEvent(_geoUpdate(updating: true));
-    await tester.pump();
-
-    expect(container.read(isUpdatingProvider(key)), isTrue);
-
-    coreEventManager.sendEvent(_geoUpdate(error: 'background failure'));
-    await tester.pump();
-
-    expect(container.read(isUpdatingProvider(key)), isFalse);
-    expect(find.text('background failure'), findsNothing);
-
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
-
   testWidgets('route events reach the route tracker', (tester) async {
     final coreInterface = _coreInterface();
     final container = await _pumpCoreManager(tester, coreInterface);
@@ -362,9 +283,7 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('non-geo Core errors retain global notifications', (
-    tester,
-  ) async {
+  testWidgets('a Core error log raises a global notification', (tester) async {
     final coreInterface = _coreInterface();
     await _pumpCoreManager(tester, coreInterface);
 

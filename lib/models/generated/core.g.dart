@@ -9,75 +9,17 @@ part of '../core.dart';
 _SetupParams _$SetupParamsFromJson(Map<String, dynamic> json) => _SetupParams(
   selectedMap: Map<String, String>.from(json['selected-map'] as Map),
   testUrl: json['test-url'] as String,
+  logLevel:
+      $enumDecodeNullable(_$LogLevelEnumMap, json['log-level']) ??
+      LogLevel.error,
 );
 
 Map<String, dynamic> _$SetupParamsToJson(_SetupParams instance) =>
     <String, dynamic>{
       'selected-map': instance.selectedMap,
       'test-url': instance.testUrl,
-    };
-
-_UpdateParams _$UpdateParamsFromJson(Map<String, dynamic> json) =>
-    _UpdateParams(
-      tun: Tun.fromJson(json['tun'] as Map<String, dynamic>),
-      mixedPort: (json['mixed-port'] as num).toInt(),
-      allowLan: json['allow-lan'] as bool,
-      findProcessMode: $enumDecode(
-        _$FindProcessModeEnumMap,
-        json['find-process-mode'],
-      ),
-      mode: $enumDecode(_$ModeEnumMap, json['mode']),
-      logLevel: $enumDecode(_$LogLevelEnumMap, json['log-level']),
-      ipv6: json['ipv6'] as bool,
-      tcpConcurrent: json['tcp-concurrent'] as bool,
-      externalController: $enumDecode(
-        _$ExternalControllerStatusEnumMap,
-        json['external-controller'],
-      ),
-      unifiedDelay: json['unified-delay'] as bool,
-      authentication:
-          (json['authentication'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          const [],
-      geoAutoUpdate: json['geo-auto-update'] as bool? ?? false,
-      geoUpdateInterval: (json['geo-update-interval'] as num?)?.toInt() ?? 24,
-      geoXUrl:
-          (json['geox-url'] as Map<String, dynamic>?)?.map(
-            (k, e) => MapEntry(k, e as String),
-          ) ??
-          const {},
-    );
-
-Map<String, dynamic> _$UpdateParamsToJson(_UpdateParams instance) =>
-    <String, dynamic>{
-      'tun': instance.tun,
-      'mixed-port': instance.mixedPort,
-      'allow-lan': instance.allowLan,
-      'find-process-mode': _$FindProcessModeEnumMap[instance.findProcessMode]!,
-      'mode': _$ModeEnumMap[instance.mode]!,
       'log-level': _$LogLevelEnumMap[instance.logLevel]!,
-      'ipv6': instance.ipv6,
-      'tcp-concurrent': instance.tcpConcurrent,
-      'external-controller':
-          _$ExternalControllerStatusEnumMap[instance.externalController]!,
-      'unified-delay': instance.unifiedDelay,
-      'authentication': instance.authentication,
-      'geo-auto-update': instance.geoAutoUpdate,
-      'geo-update-interval': instance.geoUpdateInterval,
-      'geox-url': instance.geoXUrl,
     };
-
-const _$FindProcessModeEnumMap = {
-  FindProcessMode.always: 'always',
-  FindProcessMode.off: 'off',
-};
-
-const _$ModeEnumMap = {
-  Mode.rule: 'rule',
-  Mode.global: 'global',
-  Mode.direct: 'direct',
-};
 
 const _$LogLevelEnumMap = {
   LogLevel.debug: 'debug',
@@ -85,11 +27,6 @@ const _$LogLevelEnumMap = {
   LogLevel.warning: 'warning',
   LogLevel.error: 'error',
   LogLevel.silent: 'silent',
-};
-
-const _$ExternalControllerStatusEnumMap = {
-  ExternalControllerStatus.close: '',
-  ExternalControllerStatus.open: '127.0.0.1:9090',
 };
 
 _VpnOptions _$VpnOptionsFromJson(Map<String, dynamic> json) => _VpnOptions(
@@ -177,19 +114,6 @@ Map<String, dynamic> _$RouteSnapshotToJson(_RouteSnapshot instance) =>
       'picks': instance.picks,
     };
 
-_UpdateGeoDataParams _$UpdateGeoDataParamsFromJson(Map<String, dynamic> json) =>
-    _UpdateGeoDataParams(
-      geoType: json['geo-type'] as String,
-      geoName: json['geo-name'] as String,
-    );
-
-Map<String, dynamic> _$UpdateGeoDataParamsToJson(
-  _UpdateGeoDataParams instance,
-) => <String, dynamic>{
-  'geo-type': instance.geoType,
-  'geo-name': instance.geoName,
-};
-
 _CoreEvent _$CoreEventFromJson(Map<String, dynamic> json) => _CoreEvent(
   type: $enumDecode(_$CoreEventTypeEnumMap, json['type']),
   data: json['data'],
@@ -204,11 +128,7 @@ Map<String, dynamic> _$CoreEventToJson(_CoreEvent instance) =>
 const _$CoreEventTypeEnumMap = {
   CoreEventType.log: 'log',
   CoreEventType.delay: 'delay',
-  CoreEventType.request: 'request',
-  CoreEventType.dns: 'dns',
-  CoreEventType.loaded: 'loaded',
   CoreEventType.crash: 'crash',
-  CoreEventType.geoUpdate: 'geoUpdate',
   CoreEventType.routeChanged: 'routeChanged',
 };
 
@@ -400,48 +320,6 @@ Map<String, dynamic> _$NowToJson(_Now instance) => <String, dynamic>{
   'name': instance.name,
   'value': instance.value,
 };
-
-_ProviderSubscriptionInfo _$ProviderSubscriptionInfoFromJson(
-  Map<String, dynamic> json,
-) => _ProviderSubscriptionInfo(
-  upload: (json['UPLOAD'] as num?)?.toInt() ?? 0,
-  download: (json['DOWNLOAD'] as num?)?.toInt() ?? 0,
-  total: (json['TOTAL'] as num?)?.toInt() ?? 0,
-  expire: (json['EXPIRE'] as num?)?.toInt() ?? 0,
-);
-
-Map<String, dynamic> _$ProviderSubscriptionInfoToJson(
-  _ProviderSubscriptionInfo instance,
-) => <String, dynamic>{
-  'UPLOAD': instance.upload,
-  'DOWNLOAD': instance.download,
-  'TOTAL': instance.total,
-  'EXPIRE': instance.expire,
-};
-
-_ExternalProvider _$ExternalProviderFromJson(Map<String, dynamic> json) =>
-    _ExternalProvider(
-      name: json['name'] as String,
-      type: json['type'] as String,
-      path: json['path'] as String?,
-      count: (json['count'] as num).toInt(),
-      subscriptionInfo: subscriptionInfoFormCore(
-        json['subscription-info'] as Map<String, Object?>?,
-      ),
-      vehicleType: json['vehicle-type'] as String,
-      updateAt: DateTime.parse(json['update-at'] as String),
-    );
-
-Map<String, dynamic> _$ExternalProviderToJson(_ExternalProvider instance) =>
-    <String, dynamic>{
-      'name': instance.name,
-      'type': instance.type,
-      'path': instance.path,
-      'count': instance.count,
-      'subscription-info': instance.subscriptionInfo,
-      'vehicle-type': instance.vehicleType,
-      'update-at': instance.updateAt.toIso8601String(),
-    };
 
 _ProxiesData _$ProxiesDataFromJson(Map<String, dynamic> json) => _ProxiesData(
   proxies: json['proxies'] as Map<String, dynamic>,

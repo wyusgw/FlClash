@@ -37,8 +37,8 @@ void main() {
   void enableSystemProxy({required bool running, int mixedPort = 7890}) {
     container.read(networkSettingProvider.notifier).value = const NetworkProps()
         .copyWith(systemProxy: true);
-    container.read(patchClashConfigProvider.notifier).value =
-        const PatchClashConfig().copyWith(mixedPort: mixedPort);
+    container.read(coreSettingProvider.notifier).value = const CoreConfig()
+        .copyWith(mixedPort: mixedPort);
     container.read(runTimeProvider.notifier).value = running ? 1 : null;
   }
 
@@ -86,8 +86,8 @@ void main() {
     container.read(runTimeProvider.notifier).value = 1;
     container.read(networkSettingProvider.notifier).value = const NetworkProps()
         .copyWith(systemProxy: true);
-    container.read(patchClashConfigProvider.notifier).value =
-        const PatchClashConfig().copyWith(mixedPort: 7892);
+    container.read(coreSettingProvider.notifier).value = const CoreConfig()
+        .copyWith(mixedPort: 7892);
 
     final state = container.read(proxyStateProvider);
     expect(state.isStart, isTrue);

@@ -30,14 +30,6 @@ void main() {
     });
   });
 
-  group('UsedProxyExtension', () {
-    test('returns enum names as proxy values', () {
-      expect(UsedProxy.GLOBAL.value, 'GLOBAL');
-      expect(UsedProxy.DIRECT.value, 'DIRECT');
-      expect(UsedProxy.REJECT.value, 'REJECT');
-    });
-  });
-
   group('KeyboardModifier', () {
     test('keeps platform key variants for paired modifiers', () {
       expect(KeyboardModifier.alt.physicalKeys, [
@@ -48,27 +40,6 @@ void main() {
         PhysicalKeyboardKey.metaLeft,
         PhysicalKeyboardKey.metaRight,
       ]);
-    });
-  });
-
-  group('RuleAction', () {
-    test('excludes actions that cannot be manually added', () {
-      expect(RuleAction.addedRuleActions, isNot(contains(RuleAction.MATCH)));
-      expect(RuleAction.addedRuleActions, isNot(contains(RuleAction.RULE_SET)));
-      expect(RuleAction.addedRuleActions, isNot(contains(RuleAction.SUB_RULE)));
-      expect(RuleAction.addedRuleActions, contains(RuleAction.DOMAIN));
-    });
-
-    test('identifies actions with extra params', () {
-      expect(RuleAction.GEOIP.hasParams, isTrue);
-      expect(RuleAction.IP_CIDR.hasParams, isTrue);
-      expect(RuleAction.DOMAIN.hasParams, isFalse);
-    });
-  });
-
-  group('RuleTarget', () {
-    test('contains built-in target names', () {
-      expect(RuleTarget.baseTargets, {'DIRECT', 'REJECT', 'REJECT-DROP'});
     });
   });
 

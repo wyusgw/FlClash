@@ -103,7 +103,6 @@ class Bootstrap {
       brightness: WidgetsBinding.instance.platformDispatcher.platformBrightness,
       version: version,
       viewSize: Size.zero,
-      requests: FixedList(maxRequestsLength),
       logs: FixedList(maxLogsLength),
       traffics: FixedList(trafficSampleLength),
       totalTraffic: const Traffic(),
@@ -233,7 +232,6 @@ class Bootstrap {
         .read(appSettingProvider.notifier)
         .update((state) => state.copyWith(crashlyticsTip: true));
   }
-
 }
 
 final bootstrap = Bootstrap();

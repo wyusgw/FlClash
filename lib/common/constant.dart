@@ -11,7 +11,6 @@ import 'package:material_ui/material_ui.dart';
 const appName = 'FlClash';
 const appHelperService = 'FlClashHelperService';
 const coreManifestName = 'manifest.json';
-const coreName = 'clash.meta';
 const browserUa =
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 const packageName = 'com.follow.clash';
@@ -89,10 +88,8 @@ const commonDuration = Duration(milliseconds: 300);
 /// animation restarts it mid-flight, so the list jumps instead of animating.
 const renderThrottleDuration = Duration(milliseconds: 300);
 const defaultUpdateDuration = Duration(days: 1);
-const MMDB = 'GEOIP.metadb';
-const ASN = 'ASN.mmdb';
-const GEOIP = 'GEOIP.dat';
-const GEOSITE = 'GEOSITE.dat';
+const geoIpFileName = 'geoip.dat';
+const geoSiteFileName = 'geosite.dat';
 
 /// The macOS sidebar material is the finished look; the Windows accent
 /// effects need a tint over them to keep the rail readable.
@@ -102,17 +99,7 @@ final double kHeaderHeight = getWindowHeaderHeight(
   isMacOS: system.isMacOS,
 );
 const profilesDirectoryName = 'profiles';
-const providersDirectoryName = 'providers';
-const proxiesProviderDirectoryName = 'proxies';
-const rulesProviderDirectoryName = 'rules';
-
-String providerCacheDirectoryName(ProviderKind kind) => switch (kind) {
-  ProviderKind.proxy => proxiesProviderDirectoryName,
-  ProviderKind.rule => rulesProviderDirectoryName,
-};
-
 const localhost = '127.0.0.1';
-const clashConfigKey = 'clash_config';
 const configKey = 'config';
 const systemDnsRecordKey = 'system_dns_record';
 const bootRecordKey = 'boot_record';
@@ -121,16 +108,14 @@ const double dialogCommonWidth = 300;
 const repository = 'chen08209/FlClash';
 const maxMobileWidth = 600;
 const maxLaptopWidth = 840;
+
+/// The client name subscriptions are fetched as.
+const subscriptionUserAgent = 'v2rayN/7.5.0';
 const defaultTestUrl = 'https://www.gstatic.com/generate_204';
 
 const stringListEquality = ListEquality<String>();
 const intListEquality = ListEquality<int>();
-const ruleListEquality = ListEquality<Rule>();
-const scriptListEquality = ListEquality<Script>();
 const profileListEquality = ListEquality<Profile>();
-const proxyGroupsEquality = ListEquality<ProxyGroup>();
-const customProxiesEquality = ListEquality<CustomProxy>();
-const clashProviderListEquality = ListEquality<ClashProvider>();
 const hotKeyActionListEquality = ListEquality<HotKeyAction>();
 const stringAndStringMapEntryListEquality =
     ListEquality<MapEntry<String, String>>();
@@ -143,11 +128,7 @@ const profilesStoreKey = PageStorageKey<String>('profiles');
 const defaultPrimaryColor = 0XFFD8C0C3;
 
 const maxLogsLength = 5000;
-const maxRequestsLength = 2000;
-const maxDnsQueriesLength = 3000;
 const pausedMaxLogsLength = maxLogsLength * 2;
-const pausedMaxRequestsLength = maxRequestsLength * 2;
-const pausedMaxDnsQueriesLength = maxDnsQueriesLength * 2;
 
 const trafficSampleLength = 30;
 

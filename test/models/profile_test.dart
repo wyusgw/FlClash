@@ -39,7 +39,7 @@ void main() {
       const urlProfile = Profile(
         id: 8,
         label: 'Remote',
-        url: 'https://example.com/profile.yaml',
+        url: 'https://example.com/profile',
         autoUpdate: true,
         autoUpdateDuration: defaultUpdateDuration,
       );
@@ -47,7 +47,7 @@ void main() {
       expect(fileProfile.type, ProfileType.file);
       expect(fileProfile.realAutoUpdate, false);
       expect(fileProfile.realLabel, '7');
-      expect(fileProfile.fileName, '7.yaml');
+      expect(fileProfile.fileName, '7.json');
       expect(fileProfile.updatingKey, 'profile_7');
 
       expect(urlProfile.type, ProfileType.url);
@@ -88,36 +88,6 @@ void main() {
       );
 
       expect(profiles.optimizeLabel(newProfile).label, 'Work(2)');
-    });
-
-    test('steps past a label an app-level proxy provider holds', () {
-      const profiles = <Profile>[];
-      const newProfile = Profile(
-        id: 3,
-        label: 'Shared nodes',
-        autoUpdateDuration: defaultUpdateDuration,
-      );
-
-      expect(
-        profiles
-            .optimizeLabel(newProfile, reserved: const {'Shared nodes'})
-            .label,
-        'Shared nodes(1)',
-      );
-    });
-  });
-
-  group('ProfileRuleLinkExt', () {
-    test('builds stable key from non-null parts', () {
-      const link = ProfileRuleLink(
-        profileId: 1,
-        ruleId: 2,
-        scene: RuleScene.added,
-      );
-      const globalLink = ProfileRuleLink(ruleId: 3);
-
-      expect(link.key, '1_2_added');
-      expect(globalLink.key, '3');
     });
   });
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fl_clash/common/task.dart';
 import 'package:fl_clash/core/event.dart';
 import 'package:fl_clash/core/desktop/model.dart';
 import 'package:fl_clash/core/interface.dart';
@@ -35,11 +36,11 @@ class _RecordingCoreHandler extends CoreHandlerInterface {
   }) async {
     calls[method] = arguments;
     final result = switch (method) {
-      CoreMethod.initClash => true as T,
+      CoreMethod.initCore => true as T,
       CoreMethod.getTraffic ||
       CoreMethod.getTotalTraffic => {'up': 12, 'down': 34},
       CoreMethod.asyncTestDelay => {
-        'name': 'DIRECT',
+        'name': '@direct',
         'url': 'https://example.com',
         'value': 42,
       },
@@ -48,43 +49,21 @@ class _RecordingCoreHandler extends CoreHandlerInterface {
         'delay': 17,
         'body': '',
         'url': 'https://example.com/',
-        'chains': ['DIRECT'],
-        'rule': 'Match',
+        'chains': ['@direct'],
+        'rule': '',
         'rule-payload': '',
       },
-      CoreMethod.getConnections => {
-        'connections': [
-          {
-            'id': 'connection-1',
-            'metadata': {'network': 'tcp'},
-            'upload': 0,
-            'download': 0,
-            'start': '2024-01-01',
-            'chains': ['DIRECT'],
-            'rule': 'DIRECT',
-            'rulePayload': '',
+      CoreMethod.getProxies => {
+        'proxies': {
+          'PROXY': {
+            'name': 'PROXY',
+            'type': 'Selector',
+            'all': ['node-a'],
+            'now': 'node-a',
           },
-        ],
-      },
-      CoreMethod.getExternalProviders => [
-        {
-          'name': 'provider-1',
-          'type': 'Proxy',
-          'count': 1,
-          'vehicle-type': 'HTTP',
-          'update-at': '2024-01-01T00:00:00.000Z',
+          'node-a': {'name': 'node-a', 'type': 'vless'},
         },
-      ],
-      CoreMethod.getExternalProvider => {
-        'name': 'provider-1',
-        'type': 'Proxy',
-        'count': 1,
-        'vehicle-type': 'HTTP',
-        'update-at': '2024-01-01T00:00:00.000Z',
-      },
-      CoreMethod.getConfig => {
-        'mode': 'rule',
-        'rule': ['MATCH,DIRECT'],
+        'all': ['PROXY'],
       },
       CoreMethod.getMemoryStats => {
         'rss': 2048,
@@ -94,7 +73,6 @@ class _RecordingCoreHandler extends CoreHandlerInterface {
         'runtimeOther': 32,
       },
       CoreMethod.changeProxy => {'message': '', 'changed': true},
-      CoreMethod.getConnectionCount => 3,
       CoreMethod.watchRoute => {
         'core-epoch': 1,
         'picks-version': 0,
@@ -106,62 +84,38 @@ class _RecordingCoreHandler extends CoreHandlerInterface {
   }
 }
 
-class _FailingConfigCoreHandler extends _RecordingCoreHandler {
-  @override
-  Future<T?> invokeMethod<T>({
-    required CoreMethod method,
-    Object? arguments,
-    Duration? timeout,
-  }) async {
-    if (method == CoreMethod.getConfig) {
-      throw const CoreMethodException(
-        code: 'core_error',
-        message: 'config not found',
-        details: {'path': '/missing.yaml'},
-      );
-    }
-    return super.invokeMethod(
-      method: method,
-      arguments: arguments,
-      timeout: timeout,
-    );
-  }
-}
-
-class _EmptyConfigCoreHandler extends _RecordingCoreHandler {
-  @override
-  Future<T?> invokeMethod<T>({
-    required CoreMethod method,
-    Object? arguments,
-    Duration? timeout,
-  }) async {
-    if (method == CoreMethod.getConfig) {
-      return null;
-    }
-    return super.invokeMethod(
-      method: method,
-      arguments: arguments,
-      timeout: timeout,
-    );
-  }
+Future<Map<String, dynamic>> _fixture() async {
+  return json.decode(
+        await File('test/fixtures/core_protocol.json').readAsString(),
+      )
+      as Map<String, dynamic>;
 }
 
 void main() {
   test('method call keeps structured arguments', () async {
-    final fixture =
-        json.decode(
-              await File('test/fixtures/core_protocol.json').readAsString(),
-            )
-            as Map<String, dynamic>;
     final call = CoreMethodCall.fromJson(
-      Map<String, Object?>.from(fixture['methodCall'] as Map),
+      Map<String, Object?>.from((await _fixture())['methodCall'] as Map),
     );
 
-    expect(call.method, CoreMethod.updateConfig);
+    expect(call.method, CoreMethod.setupConfig);
     expect(call.arguments, isA<Map<String, dynamic>>());
-    expect((call.arguments as Map)['mixed-port'], 7890);
+    expect((call.arguments as Map)['log-level'], 'error');
     expect(call.toJson(), containsPair('arguments', call.arguments));
     expect(call.toJson(), isNot(contains('data')));
+  });
+
+  test('the setup parameters decode from what the fixture carries', () async {
+    final call = CoreMethodCall.fromJson(
+      Map<String, Object?>.from((await _fixture())['methodCall'] as Map),
+    );
+
+    final params = SetupParams.fromJson(
+      Map<String, dynamic>.from(call.arguments as Map),
+    );
+
+    expect(params.selectedMap, {'PROXY': 'node-a'});
+    expect(params.logLevel, LogLevel.error);
+    expect(params.toJson(), call.arguments);
   });
 
   test('core interface sends structured request parameters', () async {
@@ -169,32 +123,29 @@ void main() {
 
     await handler.init(const InitParams(homeDir: '/tmp/flclash', version: 35));
     await handler.setupConfig(
-      const SetupParams(selectedMap: {'GLOBAL': 'DIRECT'}, testUrl: 'test'),
+      const SetupParams(selectedMap: {'PROXY': '@direct'}, testUrl: 'test'),
     );
     final switched = await handler.changeProxy(
-      const ChangeProxyParams(groupName: 'GLOBAL', proxyName: 'DIRECT'),
+      const ChangeProxyParams(groupName: 'PROXY', proxyName: 'node-a'),
     );
     expect(switched, const ChangeProxyResult(changed: true));
     final route = await handler.watchRoute(true);
     expect(route, const RouteSnapshot(coreEpoch: 1));
     expect(handler.calls[CoreMethod.watchRoute], isTrue);
-    await handler.sideLoadExternalProvider(providerName: 'provider', data: 'x');
-    await handler.asyncTestDelay('https://example.com', 'DIRECT');
+    await handler.asyncTestDelay('https://example.com', '@direct');
     await handler.probe(
       const ProbeParams(
         url: 'https://example.com',
-        proxyName: 'DIRECT',
+        proxyName: '@direct',
         timeout: 1000,
         maxBody: 64,
       ),
     );
-    await handler.clearEffect(42);
 
     for (final method in [
-      CoreMethod.initClash,
+      CoreMethod.initCore,
       CoreMethod.setupConfig,
       CoreMethod.changeProxy,
-      CoreMethod.sideLoadExternalProvider,
       CoreMethod.asyncTestDelay,
       CoreMethod.probe,
     ]) {
@@ -202,103 +153,40 @@ void main() {
     }
     expect(handler.calls[CoreMethod.probe], {
       'url': 'https://example.com',
-      'proxy-name': 'DIRECT',
+      'proxy-name': '@direct',
       'headers': <String, String>{},
       'timeout': 1000,
       'max-body': 64,
     });
-    expect(handler.calls[CoreMethod.clearEffect], 42);
-  });
-
-  test('dumpRuleSet sends the rule set path', () async {
-    final handler = _RecordingCoreHandler();
-
-    await handler.dumpRuleSet('/rules.mrs');
-
-    expect(handler.calls[CoreMethod.dumpRuleSet], '/rules.mrs');
   });
 
   test('event contract accepts batches and legacy single events', () async {
-    final fixture =
-        json.decode(
-              await File('test/fixtures/core_protocol.json').readAsString(),
-            )
-            as Map<String, dynamic>;
     final call = CoreMethodCall.fromJson(
-      Map<String, Object?>.from(fixture['eventCall'] as Map),
+      Map<String, Object?>.from((await _fixture())['eventCall'] as Map),
     );
 
     final events = coreEventsFromData(call.arguments);
     expect(events, hasLength(2));
-    expect(events.first.type, CoreEventType.loaded);
+    expect(events.first.type, CoreEventType.log);
     expect(events.last.type, CoreEventType.delay);
-
-    final legacy = coreEventsFromData({'type': 'loaded', 'data': 'provider-b'});
-    expect(legacy.single.data, 'provider-b');
-  });
-
-  test('event contract decodes the dns query the Core sends', () {
-    final events = coreEventsFromData([
-      {
-        'type': 'dns',
-        'data': {
-          'domain': 'www.example.com',
-          'type': 'A',
-          'initiator': 'app',
-          'answers': ['93.184.216.34'],
-          'rcode': 'NOERROR',
-          'delay': 0,
-          'time': '2026-09-18T12:30:01.123456789+08:00',
-        },
-      },
-      {
-        'type': 'dns',
-        'data': {
-          'domain': 'missing.test',
-          'type': 'AAAA',
-          'initiator': 'unknown-initiator',
-          'upstream': 'tls://1.1.1.1:853',
-          'cached': true,
-          'answers': <String>[],
-          'error': 'i/o timeout',
-          'delay': 5000,
-          'time': '2026-09-18T04:30:02Z',
-        },
-      },
-    ]);
-
-    expect(events.map((event) => event.type), [
-      CoreEventType.dns,
-      CoreEventType.dns,
-    ]);
-    final queries = [
-      for (final event in events)
-        DnsQuery.fromJson(Map<String, Object?>.from(event.data as Map)),
-    ];
-    expect(queries.first.initiator, DnsQueryInitiator.app);
-    expect(queries.first.upstream, isEmpty);
-    expect(queries.first.cached, isFalse);
-    expect(queries.first.answers, ['93.184.216.34']);
-    expect(
-      queries.first.time.toUtc(),
-      DateTime.utc(2026, 9, 18, 4, 30, 1, 123, 456),
+    final log = Log.fromJson(
+      Map<String, Object?>.from(events.first.data as Map),
     );
-    expect(queries.first.isFailed, isFalse);
-    expect(queries.last.initiator, isNull);
-    expect(queries.last.upstream, 'tls://1.1.1.1:853');
-    expect(queries.last.cached, isTrue);
-    expect(queries.last.rcode, isEmpty);
-    expect(queries.last.isFailed, isTrue);
+    expect(log.logLevel, LogLevel.warning);
+    expect(log.payload, 'started');
+
+    final legacy = coreEventsFromData({'type': 'crash', 'data': 'core done'});
+    expect(legacy.single.data, 'core done');
   });
 
   test('event contract skips malformed entries without dropping the batch', () {
     final events = coreEventsFromData([
-      {'type': 'loaded', 'data': 'provider-a'},
+      {'type': 'crash', 'data': 'core-a'},
       {'type': 'invalid-event', 'data': null},
-      {'type': 'loaded', 'data': 'provider-b'},
+      {'type': 'crash', 'data': 'core-b'},
     ]);
 
-    expect(events.map((event) => event.data), ['provider-a', 'provider-b']);
+    expect(events.map((event) => event.data), ['core-a', 'core-b']);
   });
 
   test('core interface converts structured method results', () async {
@@ -310,8 +198,8 @@ void main() {
       const Traffic(up: 12, down: 34),
     );
     expect(
-      await handler.asyncTestDelay('https://example.com', 'DIRECT'),
-      const Delay(name: 'DIRECT', url: 'https://example.com', value: 42),
+      await handler.asyncTestDelay('https://example.com', '@direct'),
+      const Delay(name: '@direct', url: 'https://example.com', value: 42),
     );
     expect(
       await handler.probe(
@@ -321,62 +209,36 @@ void main() {
         statusCode: 204,
         delay: 17,
         url: 'https://example.com/',
-        chains: ['DIRECT'],
-        rule: 'Match',
+        chains: ['@direct'],
       ),
     );
-    expect((await handler.getConnections()).single.id, 'connection-1');
-    expect(await handler.getConnectionCount(), 3);
-    expect((await handler.getExternalProviders()).single.name, 'provider-1');
-    expect(
-      (await handler.getExternalProvider('provider-1'))?.name,
-      'provider-1',
-    );
-    expect(await handler.getConfig('/config.yaml'), {
-      'mode': 'rule',
-      'rule': ['MATCH,DIRECT'],
-    });
     final memory = await handler.getMemoryStats();
     expect(memory?.rss, 2048);
     expect(memory?.runtimeTotal, 1024 + 256 + 64 + 32);
   });
 
-  test('getConfig preserves structured core errors', () async {
-    final handler = _FailingConfigCoreHandler();
+  test('the proxies the Core lists reach the proxies page as groups', () async {
+    final handler = _RecordingCoreHandler();
 
-    await expectLater(
-      handler.getConfig('/missing.yaml'),
-      throwsA(
-        isA<CoreMethodException>()
-            .having((error) => error.code, 'code', 'core_error')
-            .having((error) => error.details, 'details', {
-              'path': '/missing.yaml',
-            }),
+    final groups = await buildGroups(
+      ComputeGroupsState(
+        proxiesData: await handler.getProxies(),
+        sortType: ProxiesSortType.none,
+        delayMap: const {},
+        selectedMap: const {},
+        defaultTestUrl: '',
       ),
     );
-  });
 
-  test('getConfig rejects empty transport results', () async {
-    final handler = _EmptyConfigCoreHandler();
-
-    await expectLater(
-      handler.getConfig('/config.yaml'),
-      throwsA(
-        isA<CoreMethodException>().having(
-          (error) => error.code,
-          'code',
-          'empty_result',
-        ),
-      ),
-    );
+    expect(groups, hasLength(1));
+    expect(groups.single.name, 'PROXY');
+    expect(groups.single.type, GroupType.Selector);
+    expect(groups.single.now, 'node-a');
+    expect(groups.single.all.single.name, 'node-a');
   });
 
   test('method response separates result and structured errors', () async {
-    final fixture =
-        json.decode(
-              await File('test/fixtures/core_protocol.json').readAsString(),
-            )
-            as Map<String, dynamic>;
+    final fixture = await _fixture();
     final success = CoreMethodResponse.fromJson(
       Map<String, Object?>.from(fixture['successResponse'] as Map),
     );

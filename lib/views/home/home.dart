@@ -650,7 +650,7 @@ class _SubscriptionSection extends ConsumerWidget {
                 if (node.network != null) node.network!,
               ].map((part) => part.toUpperCase()).join(' / '),
               titleWidget: EmojiText(
-                node.name,
+                nodeDisplayName(node.name),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: palette.rowTitle.copyWith(

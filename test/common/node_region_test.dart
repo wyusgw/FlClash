@@ -28,4 +28,20 @@ void main() {
       expect(nodeRegionCode(''), isNull);
     });
   });
+
+  group('nodeDisplayName', () {
+    test('drops the flag emoji and the space after it', () {
+      expect(nodeDisplayName('\u{1F1EF}\u{1F1F5} Tokyo 01'), 'Tokyo 01');
+      expect(nodeDisplayName('HK \u{1F1ED}\u{1F1F0} 02'), 'HK 02');
+    });
+
+    test('leaves other names and other emoji alone', () {
+      expect(nodeDisplayName('Tokyo 01'), 'Tokyo 01');
+      expect(nodeDisplayName('\u{1F680} Fast'), '\u{1F680} Fast');
+    });
+
+    test('keeps a name that is nothing but a flag', () {
+      expect(nodeDisplayName('\u{1F1EF}\u{1F1F5}'), '\u{1F1EF}\u{1F1F5}');
+    });
+  });
 }

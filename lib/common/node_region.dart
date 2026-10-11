@@ -57,6 +57,7 @@ const _names = {
   'netherlands': 'NL',
 };
 
+final _flagEmoji = RegExp('[\u{1F1E6}-\u{1F1FF}]{2}\\s*', unicode: true);
 final _codePattern = RegExp(r'(?<![A-Za-z])([A-Z]{2})(?![A-Za-z])');
 const _knownCodes = {
   'HK', 'TW', 'JP', 'SG', 'US', 'KR', 'GB', 'UK', 'DE', 'FR', 'CA', 'AU', //
@@ -87,6 +88,13 @@ String? nodeRegionCode(String name) {
     }
   }
   return null;
+}
+
+/// The name without its flag emoji, which the round flag beside it already
+/// shows. A name that is nothing but flags stays as it is.
+String nodeDisplayName(String name) {
+  final stripped = name.replaceAll(_flagEmoji, '').trim();
+  return stripped.isEmpty ? name : stripped;
 }
 
 /// "8.08 GB" is a size, not Great Britain.

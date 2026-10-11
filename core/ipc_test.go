@@ -269,7 +269,7 @@ func TestDecodeMethodArgumentsRejectsInvalidPayloads(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			call := &MethodCall{
 				ID:        "1",
-				Method:    initClashMethod,
+				Method:    initCoreMethod,
 				Arguments: json.RawMessage(test.arguments),
 			}
 			target := InitParams{}
@@ -298,7 +298,7 @@ func TestDecodeMethodArgumentsRejectsInvalidPayloads(t *testing.T) {
 func TestDecodeMethodArgumentsAcceptsValidPayload(t *testing.T) {
 	call := &MethodCall{
 		ID:        "1",
-		Method:    initClashMethod,
+		Method:    initCoreMethod,
 		Arguments: json.RawMessage(`{"home-dir":"/tmp/flclash","version":3}`),
 	}
 	target := InitParams{}
@@ -766,7 +766,7 @@ func TestHandleStartLogAndStopLogLifecycle(t *testing.T) {
 }
 
 func TestServeReleasesTheCoreWhenTheHostDisconnects(t *testing.T) {
-	startEngine(t, groupedConfig)
+	startEngine(t, nodesConfig)
 
 	serve(&fakeConn{})
 

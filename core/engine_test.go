@@ -298,7 +298,14 @@ func TestTrafficCountsBytesThroughAnOutbound(t *testing.T) {
 		t.Fatalf("probe = %+v", result)
 	}
 
-	up, down := totals(false)
+	// The uplink counter is bumped after the write returns, so the response can
+	// beat it by a scheduling slice.
+	var up, down int64
+	for deadline := time.Now().Add(time.Second); time.Now().Before(deadline); time.Sleep(5 * time.Millisecond) {
+		if up, down = totals(false); up > 0 && down >= 4096 {
+			break
+		}
+	}
 	if up <= 0 || down < 4096 {
 		t.Errorf("totals = up %d down %d, want the request and the 4 KiB body", up, down)
 	}

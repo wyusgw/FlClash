@@ -25,6 +25,10 @@ void main() {
     test('names no country for a plain label', () {
       expect(nodeRegionCode('剩余流量：8.08 GB'), isNull);
       expect(nodeRegionCode('剩余流量：8.08+GB'), isNull);
+      expect(nodeRegionCode('剩余流量：8.08\u00A0GB'), isNull);
+      expect(nodeRegionCode('剩余流量：8.08\u2009GB'), isNull);
+      expect(nodeRegionCode('剩余流量：8.08\u3000GB'), isNull);
+      expect(nodeRegionCode('剩余流量：8.08GB'), isNull);
       expect(nodeRegionCode(''), isNull);
     });
   });

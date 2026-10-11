@@ -97,10 +97,13 @@ String nodeDisplayName(String name) {
   return stripped.isEmpty ? name : stripped;
 }
 
-/// "8.08 GB" is a size, not Great Britain.
+final _gap = RegExp(r'[\s+]');
+
+/// "8.08 GB" is a size, not Great Britain, whatever kind of space a panel puts
+/// between the number and the unit.
 bool _followsNumber(String name, int index) {
   var i = index - 1;
-  while (i >= 0 && (name[i] == ' ' || name[i] == '+')) {
+  while (i >= 0 && _gap.hasMatch(name[i])) {
     i--;
   }
   return i >= 0 && RegExp(r'\d').hasMatch(name[i]);

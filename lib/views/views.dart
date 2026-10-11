@@ -1,9 +1,9 @@
 export 'about.dart';
 export 'access.dart';
 export 'backup_and_restore.dart';
-export 'dashboard/dashboard.dart';
+export 'home/home.dart';
+export 'data.dart';
 export 'developer.dart';
 export 'logs.dart';
 export 'profiles/profiles.dart';
-export 'proxies/proxies.dart';
 export 'tools.dart';

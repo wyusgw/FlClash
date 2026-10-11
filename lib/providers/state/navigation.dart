@@ -2,22 +2,7 @@ part of '../state.dart';
 
 @riverpod
 NavigationItemsState navigationItemsState(Ref ref) {
-  final openLogs = ref.watch(appSettingProvider).openLogs;
-  final hasProfiles = ref.watch(
-    profilesProvider.select((state) => state.isNotEmpty),
-  );
-  final hasProxies = ref.watch(
-    currentGroupsStateProvider.select((state) => state.value.isNotEmpty),
-  );
-  final isInit = ref.watch(initProvider);
-  return NavigationItemsState(
-    value:
-        navigationPort?.getItems(
-          openLogs: openLogs,
-          hasProxies: !isInit ? hasProfiles : hasProxies,
-        ) ??
-        const [],
-  );
+  return NavigationItemsState(value: navigationPort?.getItems() ?? const []);
 }
 
 @riverpod
@@ -52,42 +37,6 @@ NavigationState navigationState(Ref ref) {
     locale: locale,
     currentIndex: currentIndex,
   );
-}
-
-@riverpod
-DashboardState dashboardState(Ref ref) {
-  final dashboardWidgets = ref.watch(
-    appSettingProvider.select((state) => state.dashboardWidgets),
-  );
-  return DashboardState(dashboardWidgets: dashboardWidgets);
-}
-
-@riverpod
-MoreToolsSelectorState moreToolsSelectorState(Ref ref) {
-  final viewMode = ref.watch(viewModeProvider);
-  final navigationItems = ref
-      .watch(
-        navigationItemsStateProvider.select((state) {
-          return SelectValue(
-            state.value.where((element) {
-              final isMore =
-                  element.modes.contains(NavigationItemMode.more) ||
-                  element.modes.contains(NavigationItemMode.moreFull);
-              final isDesktop = element.modes.contains(
-                NavigationItemMode.desktop,
-              );
-              if (isMore && !isDesktop) return true;
-              if (viewMode != ViewMode.mobile || !isMore) {
-                return false;
-              }
-              return true;
-            }).toList(),
-          );
-        }),
-      )
-      .value;
-
-  return MoreToolsSelectorState(navigationItems: navigationItems);
 }
 
 @riverpod

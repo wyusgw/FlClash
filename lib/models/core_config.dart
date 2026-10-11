@@ -105,6 +105,8 @@ abstract class Proxy with _$Proxy {
     required String name,
     required String type,
     String? now,
+    String? network,
+    String? address,
   }) = _Proxy;
 
   factory Proxy.fromJson(Map<String, Object?> json) => _$ProxyFromJson(json);

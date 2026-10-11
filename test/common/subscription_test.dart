@@ -151,15 +151,15 @@ void main() {
     test('hysteria2 puts the auth in the stream settings', () {
       final node = _node(_hysteria);
 
-      expect(node['protocol'], 'hysteria');
+      expect(node['protocol'], 'hysteria2');
       expect(node['settings'], {
         'version': 2,
         'address': 'hy.example.com',
         'port': 443,
       });
       final stream = node['streamSettings'] as Map<String, dynamic>;
-      expect(stream['network'], 'hysteria');
-      expect(stream['hysteriaSettings'], {'version': 2, 'auth': 'auth'});
+      expect(stream['network'], 'hysteria2');
+      expect(stream['hysteria2Settings'], {'version': 2, 'auth': 'auth'});
       expect(stream['finalmask'], {
         'udp': [
           {
@@ -170,11 +170,61 @@ void main() {
       });
     });
 
+    test('hysteria is its own outbound with the speeds and the xplus mask', () {
+      final node = _node(
+        'hysteria://hy1.example.com:8443?protocol=udp&auth=secret'
+        '&peer=sni.example.com&insecure=1&upmbps=20&downmbps=100'
+        '&obfs=xplus&obfsParam=mask#hy1',
+      );
+
+      expect(node['tag'], 'hy1');
+      expect(node['protocol'], 'hysteria');
+      expect(node['settings'], {
+        'address': 'hy1.example.com',
+        'port': 8443,
+        'auth': 'secret',
+        'up': '20mbps',
+        'down': '100mbps',
+        'obfs': 'xplus',
+        'obfsPassword': 'mask',
+        'serverName': 'sni.example.com',
+        'allowInsecure': true,
+      });
+      expect(nodeToProxy(node).network, 'udp');
+    });
+
+    test('hysteria is refused without speeds or over faketcp', () {
+      const base = 'hysteria://hy1.example.com:8443?auth=secret';
+      expect(parseShareLink('$base&upmbps=20'), isNull);
+      expect(parseShareLink('$base&upmbps=20&downmbps=0'), isNull);
+      expect(
+        parseShareLink('$base&upmbps=20&downmbps=20&protocol=faketcp'),
+        isNull,
+      );
+      expect(parseShareLink('$base&upmbps=20&downmbps=20'), isNotNull);
+    });
+
     test('hy2 is the same as hysteria2', () {
       expect(
         _node(_hysteria.replaceFirst('hysteria2://', 'hy2://'))['protocol'],
-        'hysteria',
+        'hysteria2',
       );
+    });
+
+    test('an upstream hysteria outbound of version 2 is hysteria2', () {
+      final nodes = parseSubscription(
+        '{"outbounds":['
+        '{"protocol":"hysteria","tag":"v2","settings":{"version":2,"address":"a.example.com","port":443},'
+        '"streamSettings":{"network":"hysteria","hysteriaSettings":{"version":2,"auth":"x"}}},'
+        '{"protocol":"hysteria","tag":"v1","settings":{"address":"b.example.com","port":443}}'
+        ']}',
+      );
+
+      expect(nodes.map((node) => node['protocol']), ['hysteria2', 'hysteria']);
+      expect(nodes.first['streamSettings'], {
+        'network': 'hysteria2',
+        'hysteria2Settings': {'version': 2, 'auth': 'x'},
+      });
     });
 
     test('tuic keeps the congestion control and the alpn', () {
@@ -300,5 +350,66 @@ void main() {
         'trojan-tj.example.com:443',
       );
     });
+  });
+
+  group('nodeToProxy', () {
+    test('carries the protocol, transport and address of an outbound', () {
+      final proxy = nodeToProxy({
+        'tag': 'ws-node',
+        'protocol': 'vless',
+        'settings': {'address': 'a.example.com', 'port': 443},
+        'streamSettings': {'network': 'ws'},
+      });
+
+      expect(proxy.name, 'ws-node');
+      expect(proxy.type, 'vless');
+      expect(proxy.network, 'ws');
+      expect(proxy.address, 'a.example.com:443');
+    });
+
+    test('reads a plain stream as tcp and tolerates a missing address', () {
+      final raw = nodeToProxy({
+        'tag': 'a',
+        'protocol': 'trojan',
+        'streamSettings': {'network': 'raw'},
+      });
+      final bare = nodeToProxy({'tag': 'b', 'protocol': 'shadowsocks'});
+
+      expect(raw.network, 'tcp');
+      expect(raw.address, isNull);
+      expect(bare.network, 'tcp');
+    });
+  });
+
+  test('an Xray JSON list keeps socks, http and mieru nodes', () {
+    final nodes = parseSubscription(
+      json.encode({
+        'outbounds': [
+          {
+            'tag': 's',
+            'protocol': 'socks',
+            'settings': {'address': 'a.example.com', 'port': 1080},
+          },
+          {
+            'tag': 'h',
+            'protocol': 'HTTP',
+            'settings': {'address': 'b.example.com', 'port': 8080},
+          },
+          {
+            'tag': 'm',
+            'protocol': 'mieru',
+            'settings': {
+              'address': 'c.example.com',
+              'port': 2999,
+              'username': 'u',
+              'password': 'p',
+            },
+          },
+          {'tag': 'x', 'protocol': 'wireguard'},
+        ],
+      }),
+    );
+
+    expect(nodes.map((node) => node['protocol']), ['socks', 'http', 'mieru']);
   });
 }

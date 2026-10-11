@@ -96,6 +96,46 @@ class ProfilesAction extends _$ProfilesAction {
     }
   }
 
+  /// Adds a server typed in by hand to the local profile: the one in use when
+  /// it is a file, else the first file profile, else a new one.
+  Future<void> addManualNode(Map<String, dynamic> outbound) async {
+    final current = ref.read(currentProfileProvider);
+    final target =
+        (current?.type == ProfileType.file ? current : null) ??
+        ref
+            .read(profilesProvider)
+            .where((profile) => profile.type == ProfileType.file)
+            .firstOrNull ??
+        Profile.normal(label: currentAppLocalizations.localProfile);
+    final saved = await globalState.loadingRun(
+      tag: LoadingTag.profiles,
+      () async {
+        final text = await readTextFileTask(
+          await appPath.getProfilePath(target.id.toString()),
+        );
+        final nodes = text == null
+            ? const <Map<String, dynamic>>[]
+            : parseSubscription(text);
+        return target.saveFile(
+          Uint8List.fromList(
+            utf8.encode(
+              json.encode({
+                'outbounds': [...nodes, outbound],
+              }),
+            ),
+          ),
+          validate: (path) => _core.validateConfig(path),
+        );
+      },
+      title: currentAppLocalizations.addProfile,
+    );
+    if (saved == null) return;
+    putProfile(saved);
+    if (saved.id == ref.read(currentProfileIdProvider)) {
+      ref.read(setupActionProvider.notifier).applyProfileDebounce();
+    }
+  }
+
   Future<void> addProfileFormFile() async {
     final platformFile = await globalState.safeRun(picker.pickerFile);
     if (platformFile == null) return;

@@ -133,8 +133,8 @@ void main() {
       reason:
           'A widget is reachable from `lib/common/common.dart`, so every file '
           'that imports the barrel for a string helper now compiles the UI. '
-          'This is how `common/navigation.dart` and the widget on '
-          '`DashboardWidget` each put ~60 view files in the closure. Data the '
+          'This is how `common/navigation.dart` once put ~60 view files in the '
+          'closure. Data the '
           'provider layer needs is passed through a port in '
           '`common/app_ports.dart`; the layer that owns the widgets binds '
           'it:\n${views.join('\n')}',

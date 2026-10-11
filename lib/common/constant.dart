@@ -51,12 +51,14 @@ String _randomPipeId() {
 final defaultTextScaleFactor =
     WidgetsBinding.instance.platformDispatcher.textScaleFactor;
 
+const defaultDelayTestTimeoutSeconds = 5;
+const minDelayTestTimeoutSeconds = 1;
+const maxDelayTestTimeoutSeconds = 60;
+
 /// How long the Core may spend on one delay test. It spends this twice in the
 /// worst case - once queueing for a slot, once on the probe itself - so the
 /// guard below has to outlast twice this value.
 const delayTestTimeoutDuration = Duration(seconds: 8);
-
-const delayTestGuardDuration = Duration(seconds: 30);
 
 const probeTimeoutDuration = Duration(seconds: 10);
 
@@ -121,6 +123,7 @@ const stringAndStringMapEntryListEquality =
     ListEquality<MapEntry<String, String>>();
 const keyboardModifierListEquality = SetEquality<KeyboardModifier>();
 
+const homeStoreKey = PageStorageKey<String>('home');
 const toolsStoreKey = PageStorageKey<String>('tools');
 const profilesStoreKey = PageStorageKey<String>('profiles');
 

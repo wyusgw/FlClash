@@ -8,7 +8,10 @@ import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/pages/editor.dart';
 import 'package:fl_clash/providers/action.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/core.dart';
+import 'package:fl_clash/views/profiles/add.dart';
+import 'package:fl_clash/views/profiles/profiles.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -16,13 +19,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class EditProfileView extends ConsumerStatefulWidget {
   final Profile profile;
-  final BuildContext context;
 
-  const EditProfileView({
-    super.key,
-    required this.context,
-    required this.profile,
-  });
+  const EditProfileView({super.key, required this.profile});
 
   @override
   ConsumerState<EditProfileView> createState() => _EditProfileViewState();
@@ -34,7 +32,6 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
   late final TextEditingController _autoUpdateDurationController;
   late bool _autoUpdate;
   String? _rawText;
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _fileInfoNotifier = ValueNotifier<FileInfo?>(null);
   late SetupAction _setupAction;
   Uint8List? _fileData;
@@ -61,14 +58,38 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
     _fileInfoNotifier.value = fileInfo;
   }
 
+  String? _invalid(AppLocalizations appLocalizations) {
+    if (_labelController.text.isEmpty) {
+      return appLocalizations.profileNameNullValidationDesc;
+    }
+    if (widget.profile.type != ProfileType.url) return null;
+    final url = _urlController.text;
+    if (url.isEmpty) return appLocalizations.profileUrlNullValidationDesc;
+    if (!url.isUrl) return appLocalizations.profileUrlInvalidValidationDesc;
+    if (_autoUpdate) {
+      final interval = _autoUpdateDurationController.text;
+      if (interval.isEmpty) {
+        return appLocalizations.profileAutoUpdateIntervalNullValidationDesc;
+      }
+      if (int.tryParse(interval) == null) {
+        return appLocalizations.profileAutoUpdateIntervalInvalidValidationDesc;
+      }
+    }
+    return null;
+  }
+
   Future<void> _handleConfirm() async {
-    if (!_formKey.currentState!.validate()) return;
+    final problem = _invalid(context.appLocalizations);
+    if (problem != null) {
+      dialogs.showNotifier(problem, level: MessageLevel.error);
+      return;
+    }
     var profile = widget.profile.copyWith(
       url: _urlController.text,
       label: _labelController.text,
       autoUpdate: _autoUpdate,
       autoUpdateDuration: Duration(
-        minutes: int.parse(_autoUpdateDurationController.text),
+        minutes: int.tryParse(_autoUpdateDurationController.text) ?? 0,
       ),
     );
     final profilesAction = ref.read(profilesActionProvider.notifier);
@@ -218,27 +239,30 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
     _setupAction.autoApplyProfile();
   }
 
+  Future<void> _delete() async {
+    final profile = widget.profile;
+    final appLocalizations = context.appLocalizations;
+    final res = await dialogs.showMessage(
+      title: appLocalizations.tip,
+      message: TextSpan(
+        text: appLocalizations.deleteTip(appLocalizations.profile),
+      ),
+    );
+    if (res != true) {
+      return;
+    }
+    await ref.read(profilesActionProvider.notifier).deleteProfile(profile.id);
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    final items = <Widget>[
-      _ProfileNameField(controller: _labelController),
-      if (widget.profile.type == ProfileType.url) ...[
-        _ProfileUrlField(controller: _urlController),
-        ListItem.toggle(
-          title: Text(appLocalizations.autoUpdate),
-          value: _autoUpdate,
-          onChanged: _setAutoUpdate,
-        ),
-        if (_autoUpdate)
-          _AutoUpdateIntervalField(controller: _autoUpdateDurationController),
-      ],
-      _ProfileFileItem(
-        fileInfoNotifier: _fileInfoNotifier,
-        onEdit: _editProfileFile,
-        onUpload: _uploadProfileFile,
-      ),
-    ];
+    final profile = widget.profile;
+    final isUrl = profile.type == ProfileType.url;
+    final actions = ProfileActions(profile);
     return FocusTraversalGroup(
       policy: PageTraversalPolicy(),
       child: PageFocusScope(
@@ -250,208 +274,146 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
             _handleBack();
             return false;
           },
-          child: CommonScaffold(
+          child: GroupedPage(
             title: appLocalizations.edit,
-            iconActions: [
-              IconButtonData(
-                glyph: AppGlyphs.check,
-                onPressed: _handleConfirm,
-                tooltip: appLocalizations.save,
+            onBack: () => Navigator.of(context).maybePop(),
+            trailing: GroupedBarAction(
+              label: appLocalizations.save,
+              tooltip: appLocalizations.save,
+              onPressed: _handleConfirm,
+            ),
+            body: ListView(
+              padding: EdgeInsets.fromLTRB(
+                groupedPageInset,
+                13,
+                groupedPageInset,
+                20 + BottomInsetScope.of(context),
               ),
-            ],
-            body: Form(
-              key: _formKey,
-              child: Builder(
-                builder: (context) => ListView.separated(
-                  padding: kMaterialListPadding.copyWith(
-                    top: context.contentTopPadding,
-                    bottom: BottomInsetScope.of(context) + 16,
-                  ),
-                  itemBuilder: (_, index) {
-                    return items[index];
-                  },
-                  separatorBuilder: (_, _) {
-                    return const SizedBox(height: 24);
-                  },
-                  itemCount: items.length,
+              children: [
+                GroupedSection(
+                  children: [
+                    GroupedRow(
+                      title: appLocalizations.profileType,
+                      value: isUrl
+                          ? appLocalizations.subscribe
+                          : appLocalizations.file,
+                      chevron: true,
+                      onTap: () => BaseNavigator.push(
+                        context,
+                        ProfileTypeView(isFile: !isUrl),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+                const SizedBox(height: groupedSectionGap),
+                GroupedSection(
+                  children: [
+                    if (isUrl)
+                      GroupedFieldRow(
+                        label: appLocalizations.url,
+                        hint: appLocalizations.required,
+                        controller: _urlController,
+                        keyboardType: TextInputType.url,
+                        inputFormatters: TextInputLimits.limit(
+                          TextInputLimits.url,
+                        ),
+                      ),
+                    GroupedFieldRow(
+                      label: appLocalizations.name,
+                      hint: appLocalizations.required,
+                      controller: _labelController,
+                      inputFormatters: TextInputLimits.limit(
+                        TextInputLimits.name,
+                      ),
+                    ),
+                    if (isUrl)
+                      GroupedRow(
+                        title: appLocalizations.autoUpdate,
+                        trailing: GroupedSwitch(
+                          value: _autoUpdate,
+                          onChanged: _setAutoUpdate,
+                        ),
+                      ),
+                    if (isUrl && _autoUpdate)
+                      GroupedFieldRow(
+                        label: appLocalizations.autoUpdateInterval,
+                        hint: '',
+                        controller: _autoUpdateDurationController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: TextInputLimits.digitsOnly(
+                          TextInputLimits.interval,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: groupedSectionGap),
+                ValueListenableBuilder<FileInfo?>(
+                  valueListenable: _fileInfoNotifier,
+                  builder: (context, fileInfo, _) => GroupedSection(
+                    footer: fileInfo == null
+                        ? null
+                        : [
+                            fileInfo.size.traffic.show,
+                            fileInfo.lastModified?.getLastUpdateTimeDesc(
+                                  context,
+                                ) ??
+                                appLocalizations.unknown,
+                          ].join(' · '),
+                    children: [
+                      GroupedRow(
+                        leading: const GroupedIcon(AppGlyphs.edit),
+                        title: appLocalizations.edit,
+                        chevron: true,
+                        onTap: _editProfileFile,
+                      ),
+                      GroupedRow(
+                        leading: const GroupedIcon(AppGlyphs.upload),
+                        title: appLocalizations.upload,
+                        chevron: true,
+                        onTap: _uploadProfileFile,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: groupedSectionGap),
+                GroupedSection(
+                  children: [
+                    GroupedRow(
+                      leading: const GroupedIcon(AppGlyphs.export),
+                      title: appLocalizations.exportFile,
+                      chevron: true,
+                      onTap: () => unawaited(actions.exportFile(context)),
+                    ),
+                    GroupedRow(
+                      leading: const GroupedIcon(AppGlyphs.code),
+                      title: appLocalizations.copyJson,
+                      chevron: true,
+                      onTap: () => unawaited(actions.copyJson(context)),
+                    ),
+                    if (isUrl)
+                      GroupedRow(
+                        leading: const GroupedIcon(AppGlyphs.copy),
+                        title: appLocalizations.copyLink,
+                        chevron: true,
+                        onTap: () => unawaited(actions.copyLink(context)),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: groupedSectionGap),
+                GroupedSection(
+                  children: [
+                    GroupedButtonRow(
+                      label: appLocalizations.delete,
+                      color: const Color(0xFFFF453A),
+                      onTap: _delete,
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
       ),
-    );
-  }
-}
-
-class _ProfileNameField extends StatelessWidget {
-  const _ProfileNameField({required this.controller});
-
-  final TextEditingController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final appLocalizations = context.appLocalizations;
-    return ListItem(
-      title: TextFormField(
-        textInputAction: TextInputAction.next,
-        controller: controller,
-        inputFormatters: TextInputLimits.limit(TextInputLimits.name),
-        decoration: InputDecoration(labelText: appLocalizations.name),
-        validator: (String? value) {
-          if (value == null || value.isEmpty) {
-            return appLocalizations.profileNameNullValidationDesc;
-          }
-          return null;
-        },
-      ),
-    );
-  }
-}
-
-class _ProfileUrlField extends StatelessWidget {
-  const _ProfileUrlField({required this.controller});
-
-  final TextEditingController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final appLocalizations = context.appLocalizations;
-    return ListItem(
-      title: TextFormField(
-        textInputAction: TextInputAction.next,
-        keyboardType: TextInputType.url,
-        controller: controller,
-        inputFormatters: TextInputLimits.limit(TextInputLimits.url),
-        maxLines: 5,
-        minLines: 1,
-        decoration: InputDecoration(labelText: appLocalizations.url),
-        validator: (String? value) {
-          if (value == null || value.isEmpty) {
-            return appLocalizations.profileUrlNullValidationDesc;
-          }
-          if (!value.isUrl) {
-            return appLocalizations.profileUrlInvalidValidationDesc;
-          }
-          return null;
-        },
-      ),
-    );
-  }
-}
-
-class _AutoUpdateIntervalField extends StatelessWidget {
-  const _AutoUpdateIntervalField({required this.controller});
-
-  final TextEditingController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final appLocalizations = context.appLocalizations;
-    return ListItem(
-      title: TextFormField(
-        textInputAction: TextInputAction.next,
-        controller: controller,
-        inputFormatters: TextInputLimits.digitsOnly(TextInputLimits.interval),
-        decoration: InputDecoration(
-          labelText: appLocalizations.autoUpdateInterval,
-        ),
-        validator: (String? value) {
-          if (value == null || value.isEmpty) {
-            return appLocalizations.profileAutoUpdateIntervalNullValidationDesc;
-          }
-          try {
-            int.parse(value);
-          } catch (_) {
-            return appLocalizations
-                .profileAutoUpdateIntervalInvalidValidationDesc;
-          }
-          return null;
-        },
-      ),
-    );
-  }
-}
-
-class _ProfileFileItem extends StatelessWidget {
-  const _ProfileFileItem({
-    required this.fileInfoNotifier,
-    required this.onEdit,
-    required this.onUpload,
-  });
-
-  final ValueNotifier<FileInfo?> fileInfoNotifier;
-  final VoidCallback onEdit;
-  final VoidCallback onUpload;
-
-  Widget _buildMetadata(BuildContext context, FileInfo fileInfo) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4, bottom: 2),
-      child: Row(
-        spacing: 4,
-        children: [
-          MetaChip(label: fileInfo.size.traffic.show),
-          MetaChip(
-            label:
-                fileInfo.lastModified?.getLastUpdateTimeDesc(context) ??
-                context.appLocalizations.unknown,
-          ),
-        ],
-      ),
-    );
-  }
-
-  List<CommonPopupMenuItem> _menuItems(BuildContext context) {
-    final appLocalizations = context.appLocalizations;
-    return [
-      CommonPopupMenuItem(
-        glyph: AppGlyphs.edit,
-        label: appLocalizations.edit,
-        onPressed: onEdit,
-      ),
-      CommonPopupMenuItem(
-        glyph: AppGlyphs.upload,
-        label: appLocalizations.upload,
-        onPressed: onUpload,
-      ),
-    ];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final appLocalizations = context.appLocalizations;
-    return ValueListenableBuilder<FileInfo?>(
-      valueListenable: fileInfoNotifier,
-      builder: (context, fileInfo, _) {
-        return FadeThroughBox(
-          alignment: Alignment.centerLeft,
-          child: fileInfo == null
-              ? Container()
-              : Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: ItemPositionProvider(
-                    position: ItemPosition.startAndEnd,
-                    child: DecorationListItem(
-                      minVerticalPadding: 8,
-                      contentPadding: const EdgeInsets.only(left: 16, right: 8),
-                      title: Text(appLocalizations.profile),
-                      subtitle: _buildMetadata(context, fileInfo),
-                      trailing: CommonPopupBox(
-                        popupBuilder: (_) =>
-                            CommonPopupMenu(items: _menuItems(context)),
-                        targetBuilder: (open) {
-                          return IconButton(
-                            tooltip: appLocalizations.more,
-                            onPressed: open,
-                            icon: const GlyphIcon(AppGlyphs.more),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-        );
-      },
     );
   }
 }

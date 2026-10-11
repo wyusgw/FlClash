@@ -137,8 +137,12 @@ class CoreController {
     return _interface.stopListener();
   }
 
-  Future<Delay?> getDelay(String url, String proxyName) async {
-    return _interface.asyncTestDelay(url, proxyName);
+  Future<Delay?> getDelay(
+    String url,
+    String proxyName, {
+    Duration? timeout,
+  }) async {
+    return _interface.asyncTestDelay(url, proxyName, timeout: timeout);
   }
 
   Future<ProbeResult?> probe(ProbeParams params) => _interface.probe(params);

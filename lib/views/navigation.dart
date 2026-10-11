@@ -9,46 +9,30 @@ class Navigation implements NavigationPort {
   static Navigation? _instance;
 
   @override
-  List<NavigationItem> getItems({
-    bool openLogs = false,
-    bool hasProxies = false,
-  }) {
+  List<NavigationItem> getItems() {
     return [
       NavigationItem(
         keep: false,
-        glyph: AppGlyphs.dashboard,
+        glyph: AppGlyphs.home,
         label: PageLabel.dashboard,
         builder: (_) =>
-            const DashboardView(key: GlobalObjectKey(PageLabel.dashboard)),
+            const HomeView(key: GlobalObjectKey(PageLabel.dashboard)),
       ),
       NavigationItem(
-        glyph: AppGlyphs.proxies,
-        label: PageLabel.proxies,
-        builder: (_) =>
-            const ProxiesView(key: GlobalObjectKey(PageLabel.proxies)),
-        modes: hasProxies
-            ? [NavigationItemMode.mobile, NavigationItemMode.desktop]
-            : [],
-      ),
-      NavigationItem(
-        glyph: AppGlyphs.profiles,
+        glyph: AppGlyphs.folder,
         label: PageLabel.profiles,
         builder: (_) =>
             const ProfilesView(key: GlobalObjectKey(PageLabel.profiles)),
       ),
       NavigationItem(
-        glyph: AppGlyphs.logs,
+        glyph: AppGlyphs.pulse,
         label: PageLabel.logs,
-        builder: (_) => const LogsView(key: GlobalObjectKey(PageLabel.logs)),
-        modes: openLogs
-            ? [NavigationItemMode.desktop, NavigationItemMode.more]
-            : [],
+        builder: (_) => const DataView(key: GlobalObjectKey(PageLabel.logs)),
       ),
       NavigationItem(
-        glyph: AppGlyphs.tools,
+        glyph: AppGlyphs.settings,
         label: PageLabel.tools,
         builder: (_) => const ToolsView(key: GlobalObjectKey(PageLabel.tools)),
-        modes: [NavigationItemMode.desktop, NavigationItemMode.mobile],
       ),
     ];
   }

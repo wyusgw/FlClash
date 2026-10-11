@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:fl_clash/models/models.dart';
+
 /// The outbound protocols a subscription entry may name.
 const supportedOutboundProtocols = {
   'vless',
@@ -7,8 +9,12 @@ const supportedOutboundProtocols = {
   'trojan',
   'shadowsocks',
   'hysteria',
+  'hysteria2',
   'tuic',
   'anytls',
+  'socks',
+  'http',
+  'mieru',
 };
 
 const _shadowsocksMethods = {
@@ -57,9 +63,38 @@ List<Map<String, dynamic>> _fromJson(String text) {
       continue;
     }
     node['protocol'] = protocol;
+    if (_isUpstreamHysteria2(node)) {
+      _renameHysteria2(node);
+    }
     nodes.add(node);
   }
   return nodes;
+}
+
+/// Upstream Xray names the second generation `hysteria`, with a `hysteria`
+/// transport and `hysteriaSettings`; here all three are `hysteria2` and
+/// `hysteria` is the first generation.
+bool _isUpstreamHysteria2(Map<String, dynamic> node) {
+  final settings = node['settings'];
+  return node['protocol'] == 'hysteria' &&
+      settings is Map &&
+      '${settings['version']}' == '2';
+}
+
+void _renameHysteria2(Map<String, dynamic> node) {
+  node['protocol'] = 'hysteria2';
+  final stream = node['streamSettings'];
+  if (stream is! Map) {
+    return;
+  }
+  final renamed = Map<String, dynamic>.from(stream);
+  if (renamed['network'] == 'hysteria') {
+    renamed['network'] = 'hysteria2';
+  }
+  if (renamed.containsKey('hysteriaSettings')) {
+    renamed['hysteria2Settings'] = renamed.remove('hysteriaSettings');
+  }
+  node['streamSettings'] = renamed;
 }
 
 List<String> _linkLines(String text) {
@@ -102,6 +137,7 @@ Map<String, dynamic>? parseShareLink(String link) {
       'vless' => _vless(Uri.parse(link)),
       'trojan' => _trojan(Uri.parse(link)),
       'ss' => _shadowsocks(body),
+      'hysteria' => _hysteria1(Uri.parse(link)),
       'hysteria2' || 'hy2' => _hysteria(Uri.parse(link)),
       'tuic' => _tuic(Uri.parse(link)),
       'anytls' => _anytls(Uri.parse(link)),
@@ -462,12 +498,12 @@ Map<String, dynamic>? _hysteria(Uri uri) {
   final ports = _param(query, ['mport']);
   return {
     'tag': _name(uri).isEmpty
-        ? _defaultName('hysteria', uri.host, port)
+        ? _defaultName('hysteria2', uri.host, port)
         : _name(uri),
-    'protocol': 'hysteria',
+    'protocol': 'hysteria2',
     'settings': {'version': 2, 'address': uri.host, 'port': port},
     'streamSettings': {
-      'network': 'hysteria',
+      'network': 'hysteria2',
       'security': 'tls',
       'tlsSettings': {
         'serverName': _param(query, ['sni']) ?? uri.host,
@@ -475,7 +511,7 @@ Map<String, dynamic>? _hysteria(Uri uri) {
         if (_truthy(_param(query, ['insecure', 'allowInsecure'])))
           'allowInsecure': true,
       },
-      'hysteriaSettings': {'version': 2, 'auth': auth},
+      'hysteria2Settings': {'version': 2, 'auth': auth},
       if ((_param(query, ['obfs']) == 'salamander' && obfsPassword != null) ||
           ports != null)
         'finalmask': {
@@ -496,6 +532,48 @@ Map<String, dynamic>? _hysteria(Uri uri) {
               },
           ],
         },
+    },
+  };
+}
+
+Map<String, dynamic>? _hysteria1(Uri uri) {
+  final query = uri.queryParameters;
+  final auth = _param(query, ['auth', 'auth_str']);
+  final port = _port(uri.port);
+  final up = int.tryParse(_param(query, ['upmbps']) ?? '');
+  final down = int.tryParse(_param(query, ['downmbps']) ?? '');
+  if (auth == null ||
+      uri.host.isEmpty ||
+      port == null ||
+      up == null ||
+      down == null ||
+      up < 1 ||
+      down < 1 ||
+      (_param(query, ['protocol']) ?? 'udp') != 'udp') {
+    return null;
+  }
+  final obfsPassword = _param(query, ['obfsParam']);
+  final sni = _param(query, ['peer', 'sni']);
+  final alpn = _param(query, ['alpn']);
+  return {
+    'tag': _name(uri).isEmpty
+        ? _defaultName('hysteria', uri.host, port)
+        : _name(uri),
+    'protocol': 'hysteria',
+    'settings': {
+      'address': uri.host,
+      'port': port,
+      'auth': auth,
+      'up': '${up}mbps',
+      'down': '${down}mbps',
+      if (_param(query, ['obfs']) == 'xplus' && obfsPassword != null) ...{
+        'obfs': 'xplus',
+        'obfsPassword': obfsPassword,
+      },
+      'serverName': ?sni,
+      if (_truthy(_param(query, ['insecure', 'allowInsecure'])))
+        'allowInsecure': true,
+      'alpn': ?(alpn == null ? null : [alpn]),
     },
   };
 }
@@ -585,4 +663,28 @@ List<Map<String, dynamic>> _uniqueTags(List<Map<String, dynamic>> nodes) {
     result.add({...node, 'tag': count == 1 ? tag : '$tag ($count)'});
   }
   return result;
+}
+
+/// The node list's view of an outbound: what it is and where it points.
+Proxy nodeToProxy(Map<String, dynamic> outbound) {
+  final settings = outbound['settings'];
+  final stream = outbound['streamSettings'];
+  final host = settings is Map ? settings['address'] : null;
+  final port = settings is Map ? settings['port'] : null;
+  final protocol = '${outbound['protocol']}';
+  final String network;
+  if (protocol == 'mieru' && settings is Map) {
+    network = '${settings['transport'] ?? 'tcp'}'.toLowerCase();
+  } else if (protocol == 'hysteria') {
+    network = 'udp';
+  } else {
+    final raw = stream is Map ? '${stream['network'] ?? 'tcp'}' : 'tcp';
+    network = raw == 'raw' ? 'tcp' : raw;
+  }
+  return Proxy(
+    name: '${outbound['tag']}',
+    type: protocol,
+    network: network,
+    address: host == null ? null : (port == null ? '$host' : '$host:$port'),
+  );
 }

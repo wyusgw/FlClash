@@ -1,149 +1,444 @@
 import 'dart:async';
 
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/pages/scan.dart';
 import 'package:fl_clash/providers/action.dart';
-import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void showAddProfilePage() {
-  final context = globalState.navigatorKey.currentState!.context;
-  showExtend(
-    context,
-    builder: (context) => CommonScaffold(
-      title: context.appLocalizations.addProfile,
-      body: AddProfileView(context: context),
-    ),
-  );
+void showAddProfilePage(BuildContext context) {
+  unawaited(BaseNavigator.push(context, const AddProfileView()));
 }
 
-class AddProfileView extends ConsumerWidget {
-  final BuildContext context;
-
-  const AddProfileView({super.key, required this.context});
-
-  Future<void> _handleAddProfileFormFile(WidgetRef ref) async {
-    unawaited(ref.read(profilesActionProvider.notifier).addProfileFormFile());
+Future<void> scanProfileQrCode(BuildContext context, WidgetRef ref) async {
+  final profilesAction = ref.read(profilesActionProvider.notifier);
+  if (system.isDesktop) {
+    unawaited(profilesAction.addProfileFormQrCode());
+    return;
   }
-
-  Future<void> _toScan(WidgetRef ref) async {
-    final profilesAction = ref.read(profilesActionProvider.notifier);
-    if (system.isDesktop) {
-      unawaited(profilesAction.addProfileFormQrCode());
-      return;
-    }
-    final url = await BaseNavigator.push(context, const ScanPage());
-    if (url != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        unawaited(profilesAction.addProfileFormURL(url));
-      });
-    }
+  final url = await BaseNavigator.push(context, const ScanPage());
+  if (url != null) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(profilesAction.addProfileFormURL(url));
+    });
   }
+}
 
-  Future<void> _toAdd(WidgetRef ref) async {
-    final profilesAction = ref.read(profilesActionProvider.notifier);
-    final appLocalizations = context.appLocalizations;
-    final res = await dialogs.showNamedUrlInput(
-      title: appLocalizations.importFromURL,
-      urlValidator: (value) {
-        if (value == null || value.isEmpty) {
-          return appLocalizations.emptyTip('').trim();
-        }
-        if (!value.isUrl) {
-          return appLocalizations.urlTip('').trim();
-        }
-        return null;
-      },
-    );
-    if (res != null) {
-      unawaited(profilesAction.addProfileFormURL(res.url, label: res.label));
-    }
-  }
+String nodeKindLabel(NodeKind kind) => switch (kind) {
+  NodeKind.shadowsocks => 'Shadowsocks',
+  NodeKind.vmess => 'VMess',
+  NodeKind.vless => 'VLESS',
+  NodeKind.socks => 'Socks5',
+  NodeKind.http => 'HTTP',
+  NodeKind.trojan => 'Trojan',
+  NodeKind.hysteria => 'Hysteria',
+  NodeKind.hysteria2 => 'Hysteria2',
+  NodeKind.tuic => 'TUIC',
+  NodeKind.anytls => 'AnyTLS',
+  NodeKind.mieru => 'Mieru',
+};
+
+String nodeFieldLabel(AppLocalizations l, String key) => switch (key) {
+  'address' => l.address,
+  'port' => l.port,
+  'password' => l.password,
+  'method' => l.algorithm,
+  'uuid' => l.uuid,
+  'security' => l.security,
+  'network' => l.network,
+  'path' => l.path,
+  'host' => l.host,
+  'serviceName' => l.serviceName,
+  'tls' => 'TLS',
+  'sni' => l.serverName,
+  'allowInsecure' => l.allowInsecure,
+  'flow' => l.flow,
+  'fingerprint' => l.fingerprint,
+  'publicKey' => l.publicKey,
+  'shortId' => l.shortId,
+  'congestion' => l.congestionControl,
+  'obfsPassword' => l.obfsPassword,
+  'uploadSpeed' => l.uploadSpeed,
+  'downloadSpeed' => l.downloadSpeed,
+  'remark' => l.name,
+  'username' => l.username,
+  'transport' => l.transportMode,
+  'multiplexing' => l.multiplexing,
+  'handshake' => l.handshake,
+  _ => key,
+};
+
+/// The page that takes a server: a subscription by its address, or one
+/// protocol by the fields it needs; either way a QR code and a file are the
+/// other ways in.
+class AddProfileView extends ConsumerStatefulWidget {
+  const AddProfileView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final appLocalizations = context.appLocalizations;
-    return ListView(
-      padding: EdgeInsets.only(top: context.contentTopPadding, bottom: 16),
-      children: [
-        ListItem(
-          leading: const GlyphIcon(AppGlyphs.qrCode),
-          title: Text(appLocalizations.qrcode),
-          subtitle: Text(appLocalizations.qrcodeDesc),
-          onTap: () => _toScan(ref),
-        ),
-        ListItem(
-          leading: const GlyphIcon(AppGlyphs.importFile),
-          title: Text(appLocalizations.file),
-          subtitle: Text(appLocalizations.fileDesc),
-          onTap: () => _handleAddProfileFormFile(ref),
-        ),
-        ListItem(
-          leading: const GlyphIcon(AppGlyphs.cloudDownload),
-          title: Text(appLocalizations.url),
-          subtitle: Text(appLocalizations.urlDesc),
-          onTap: () => _toAdd(ref),
-        ),
-      ],
-    );
-  }
+  ConsumerState<AddProfileView> createState() => _AddProfileViewState();
 }
 
-class URLFormDialog extends StatefulWidget {
-  const URLFormDialog({super.key});
+class _AddProfileViewState extends ConsumerState<AddProfileView> {
+  final _url = TextEditingController();
+  final _label = TextEditingController();
+  final _controllers = <String, TextEditingController>{};
+  final _revealed = <String>{};
+  NodeKind? _kind;
+  Map<String, String> _values = {};
 
-  @override
-  State<URLFormDialog> createState() => _URLFormDialogState();
-}
-
-class _URLFormDialogState extends State<URLFormDialog> {
-  final _urlController = TextEditingController();
-
-  Future<void> _handleAddProfileFormURL() async {
-    final url = _urlController.value.text;
-    if (url.isEmpty) return;
-    Navigator.of(context).pop<String>(url);
+  bool get _valid {
+    final kind = _kind;
+    return kind == null
+        ? _url.text.trim().isUrl
+        : nodeFormProblem(kind, _values) == null;
   }
 
   @override
   void dispose() {
-    _urlController.dispose();
+    _url.dispose();
+    _label.dispose();
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
     super.dispose();
+  }
+
+  void _setKind(NodeKind? kind) {
+    final retired = _controllers.values.toList();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final controller in retired) {
+        controller.dispose();
+      }
+    });
+    setState(() {
+      _controllers.clear();
+      _revealed.clear();
+      _kind = kind;
+      _values = kind == null ? {} : nodeDefaults(kind);
+    });
+  }
+
+  void _setValue(String key, String value) {
+    setState(() => _values = {..._values, key: value});
+  }
+
+  void _save() {
+    final profilesAction = ref.read(profilesActionProvider.notifier);
+    final kind = _kind;
+    if (kind == null) {
+      final label = _label.text.trim();
+      final url = _url.text.trim();
+      Navigator.of(context).pop();
+      unawaited(
+        profilesAction.addProfileFormURL(
+          url,
+          label: label.isEmpty ? null : label,
+        ),
+      );
+      return;
+    }
+    final outbound = buildNodeOutbound(kind, _values);
+    if (outbound == null) {
+      dialogs.showNotifier(
+        context.appLocalizations.nodeInvalid,
+        level: MessageLevel.error,
+      );
+      return;
+    }
+    Navigator.of(context).pop();
+    unawaited(profilesAction.addManualNode(outbound));
+  }
+
+  void _addFile() {
+    final profilesAction = ref.read(profilesActionProvider.notifier);
+    Navigator.of(context).pop();
+    unawaited(profilesAction.addProfileFormFile());
+  }
+
+  Widget _field(NodeField field) {
+    final appLocalizations = context.appLocalizations;
+    final palette = GroupedPalette.of(context);
+    final label = nodeFieldLabel(appLocalizations, field.key);
+    switch (field.type) {
+      case NodeFieldType.text:
+      case NodeFieldType.secret:
+      case NodeFieldType.number:
+        final secret = field.type == NodeFieldType.secret;
+        final revealed = _revealed.contains(field.key);
+        final controller = _controllers.putIfAbsent(
+          field.key,
+          () => TextEditingController(text: _values[field.key] ?? ''),
+        );
+        return GroupedFieldRow(
+          key: ValueKey('field.${field.key}'),
+          label: label,
+          hint: field.required
+              ? appLocalizations.required
+              : appLocalizations.optional,
+          controller: controller,
+          obscure: secret && !revealed,
+          keyboardType: field.type == NodeFieldType.number
+              ? TextInputType.number
+              : null,
+          inputFormatters: field.type == NodeFieldType.number
+              ? [FilteringTextInputFormatter.digitsOnly]
+              : null,
+          trailing: secret
+              ? InkResponse(
+                  onTap: () => setState(() {
+                    if (!_revealed.add(field.key)) _revealed.remove(field.key);
+                  }),
+                  radius: 14,
+                  child: GlyphIcon(
+                    revealed ? AppGlyphs.eyeOff : AppGlyphs.eye,
+                    size: 19,
+                    color: palette.secondary,
+                  ),
+                )
+              : null,
+          onChanged: (value) => _setValue(field.key, value),
+        );
+      case NodeFieldType.choice:
+        return GroupedRow(
+          key: ValueKey('field.${field.key}'),
+          title: label,
+          value: _values[field.key],
+          chevron: true,
+          onTap: () async {
+            final picked = await BaseNavigator.push<String>(
+              context,
+              ChoiceView(
+                title: label,
+                options: field.options,
+                selected: _values[field.key] ?? field.initial,
+              ),
+            );
+            if (picked != null) _setValue(field.key, picked);
+          },
+        );
+      case NodeFieldType.toggle:
+        return GroupedRow(
+          key: ValueKey('field.${field.key}'),
+          title: label,
+          trailing: GroupedSwitch(
+            value: _values[field.key] == 'true',
+            onChanged: (value) => _setValue(field.key, '$value'),
+          ),
+        );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    return CommonDialog(
-      title: appLocalizations.importFromURL,
-      actions: [
-        TextButton(
-          onPressed: _handleAddProfileFormURL,
-          child: Text(appLocalizations.submit),
+    final kind = _kind;
+    return GroupedPage(
+      title: appLocalizations.addProfile,
+      onBack: () => Navigator.of(context).maybePop(),
+      trailing: GroupedBarAction(
+        label: appLocalizations.save,
+        tooltip: appLocalizations.save,
+        onPressed: _valid ? _save : null,
+      ),
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(
+          groupedPageInset,
+          13,
+          groupedPageInset,
+          20 + BottomInsetScope.of(context),
         ),
-      ],
-      child: SizedBox(
-        width: 300,
-        child: Wrap(
-          runSpacing: 16,
-          children: [
-            TextField(
-              keyboardType: TextInputType.url,
-              minLines: 1,
-              maxLines: 5,
-              inputFormatters: TextInputLimits.limit(TextInputLimits.url),
-              onSubmitted: (_) {
-                _handleAddProfileFormURL();
-              },
-              onEditingComplete: _handleAddProfileFormURL,
-              controller: _urlController,
-              decoration: InputDecoration(labelText: appLocalizations.url),
+        children: [
+          GroupedSection(
+            children: [
+              GroupedRow(
+                title: appLocalizations.profileType,
+                value: kind == null
+                    ? appLocalizations.subscribe
+                    : nodeKindLabel(kind),
+                chevron: true,
+                onTap: () => BaseNavigator.push(
+                  context,
+                  ProfileTypeView(selected: kind, onSelected: _setKind),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: groupedSectionGap),
+          if (kind == null)
+            GroupedSection(
+              children: [
+                GroupedFieldRow(
+                  label: appLocalizations.url,
+                  hint: appLocalizations.required,
+                  controller: _url,
+                  keyboardType: TextInputType.url,
+                  inputFormatters: TextInputLimits.limit(TextInputLimits.url),
+                  onChanged: (_) => setState(() {}),
+                ),
+                GroupedFieldRow(
+                  label: appLocalizations.name,
+                  hint: appLocalizations.optional,
+                  controller: _label,
+                ),
+              ],
+            )
+          else
+            GroupedSection(
+              children: [
+                for (final field in nodeFields(kind))
+                  if (field.visible(_values)) _field(field),
+              ],
+            ),
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
+            children: [
+              GroupedRow(
+                leading: const GroupedIcon(AppGlyphs.scanFrame),
+                title: appLocalizations.qrcode,
+                chevron: true,
+                onTap: () {
+                  Navigator.of(context).pop();
+                  unawaited(scanProfileQrCode(context, ref));
+                },
+              ),
+              GroupedRow(
+                leading: const GroupedIcon(AppGlyphs.importFile),
+                title: appLocalizations.file,
+                chevron: true,
+                onTap: _addFile,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The kinds of profile there are: a subscription, or one server of a
+/// protocol. Given [onSelected] it picks one; without it, it only shows the
+/// kind a profile already is.
+class ProfileTypeView extends StatelessWidget {
+  const ProfileTypeView({
+    super.key,
+    this.isFile = false,
+    this.selected,
+    this.onSelected,
+  });
+
+  final bool isFile;
+  final NodeKind? selected;
+  final ValueChanged<NodeKind?>? onSelected;
+
+  void _pick(BuildContext context, NodeKind? kind) {
+    onSelected?.call(kind);
+    Navigator.of(context).maybePop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
+    final palette = GroupedPalette.of(context);
+    final picking = onSelected != null;
+    Widget? check(bool on) =>
+        on ? GlyphIcon(AppGlyphs.check, size: 18, color: palette.icon) : null;
+    return GroupedPage(
+      title: appLocalizations.profileType,
+      onBack: () => Navigator.of(context).maybePop(),
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(
+          groupedPageInset,
+          13,
+          groupedPageInset,
+          20 + BottomInsetScope.of(context),
+        ),
+        children: [
+          GroupedSection(
+            children: [
+              GroupedRow(
+                title: isFile
+                    ? appLocalizations.file
+                    : appLocalizations.subscribe,
+                subtitle: isFile ? null : appLocalizations.subscribeDesc,
+                trailing: check(!picking || selected == null),
+                onTap: () => picking
+                    ? _pick(context, null)
+                    : Navigator.of(context).maybePop(),
+              ),
+            ],
+          ),
+          if (picking) ...[
+            const SizedBox(height: groupedSectionGap),
+            GroupedSection(
+              header: appLocalizations.chooseType,
+              children: [
+                for (final kind in NodeKind.values)
+                  GroupedRow(
+                    key: ValueKey(kind),
+                    title: nodeKindLabel(kind),
+                    trailing: check(kind == selected),
+                    onTap: () => _pick(context, kind),
+                  ),
+              ],
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+/// A page of options with the chosen one checked; picking one closes it and
+/// hands the option back.
+class ChoiceView extends StatelessWidget {
+  const ChoiceView({
+    super.key,
+    required this.title,
+    required this.options,
+    required this.selected,
+  });
+
+  final String title;
+  final List<String> options;
+  final String selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    return GroupedPage(
+      title: title,
+      onBack: () => Navigator.of(context).maybePop(),
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(
+          groupedPageInset,
+          13,
+          groupedPageInset,
+          20 + BottomInsetScope.of(context),
         ),
+        children: [
+          GroupedSection(
+            children: [
+              for (final option in options)
+                GroupedRow(
+                  key: ValueKey(option),
+                  title: option,
+                  trailing: option == selected
+                      ? GlyphIcon(
+                          AppGlyphs.check,
+                          size: 18,
+                          color: palette.icon,
+                        )
+                      : null,
+                  onTap: () => Navigator.of(context).pop(option),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

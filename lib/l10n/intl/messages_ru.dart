@@ -145,8 +145,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "addressTip": MessageLookupByLibrary.simpleMessage(
       "Введите корректный адрес WebDAV",
     ),
+    "advanced": MessageLookupByLibrary.simpleMessage("Дополнительно"),
+    "algorithm": MessageLookupByLibrary.simpleMessage("Алгоритм"),
     "allowBypass": MessageLookupByLibrary.simpleMessage(
       "Разрешить приложениям обходить VPN",
+    ),
+    "allowInsecure": MessageLookupByLibrary.simpleMessage(
+      "Разрешить небезопасные",
     ),
     "allowLan": MessageLookupByLibrary.simpleMessage("Разрешить LAN"),
     "answers": MessageLookupByLibrary.simpleMessage("Ответы"),
@@ -260,6 +265,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "checkUpdateError": MessageLookupByLibrary.simpleMessage(
       "У вас уже последняя версия",
     ),
+    "chooseType": MessageLookupByLibrary.simpleMessage("Выберите тип"),
     "clearData": MessageLookupByLibrary.simpleMessage("Очистить данные"),
     "clearSearch": MessageLookupByLibrary.simpleMessage("Очистить поиск"),
     "clipboardExport": MessageLookupByLibrary.simpleMessage(
@@ -283,18 +289,28 @@ class MessageLookup extends MessageLookupByLibrary {
     "confirmForceCrashCore": MessageLookupByLibrary.simpleMessage(
       "Вы уверены, что хотите принудительно завершить ядро со сбоем?",
     ),
+    "congestionControl": MessageLookupByLibrary.simpleMessage(
+      "Контроль перегрузки",
+    ),
+    "connectDesc": MessageLookupByLibrary.simpleMessage(
+      "Проверка URL-запроса через прокси-сервер.",
+    ),
     "connected": MessageLookupByLibrary.simpleMessage("Подключено"),
     "connecting": MessageLookupByLibrary.simpleMessage("Подключение…"),
     "connection": MessageLookupByLibrary.simpleMessage("Соединение"),
     "connections": MessageLookupByLibrary.simpleMessage("Соединения"),
     "connectivity": MessageLookupByLibrary.simpleMessage("Подключение: "),
+    "connectivityTest": MessageLookupByLibrary.simpleMessage("Проверка связи"),
     "content": MessageLookupByLibrary.simpleMessage("Содержимое"),
     "contentScheme": MessageLookupByLibrary.simpleMessage("Контентная"),
     "copy": MessageLookupByLibrary.simpleMessage("Копировать"),
+    "copyAddress": MessageLookupByLibrary.simpleMessage("Копировать адрес"),
     "copyEnvVar": MessageLookupByLibrary.simpleMessage(
       "Копировать переменные окружения",
     ),
+    "copyJson": MessageLookupByLibrary.simpleMessage("Копировать JSON"),
     "copyLink": MessageLookupByLibrary.simpleMessage("Копировать ссылку"),
+    "copyName": MessageLookupByLibrary.simpleMessage("Копировать имя"),
     "copySuccess": MessageLookupByLibrary.simpleMessage("Скопировано"),
     "core": MessageLookupByLibrary.simpleMessage("Ядро"),
     "coreBlockedByPolicyTip": m1,
@@ -316,6 +332,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "cut": MessageLookupByLibrary.simpleMessage("Вырезать"),
     "dark": MessageLookupByLibrary.simpleMessage("Тёмная"),
     "dashboard": MessageLookupByLibrary.simpleMessage("Панель"),
+    "data": MessageLookupByLibrary.simpleMessage("Данные"),
     "dataCollectionContent": MessageLookupByLibrary.simpleMessage(
       "Это приложение использует Firebase Crashlytics для сбора информации о сбоях, чтобы повысить стабильность.\nСобираемые данные включают сведения об устройстве и подробности сбоя и не содержат личных конфиденциальных данных.\nЭту функцию можно отключить в настройках.",
     ),
@@ -329,10 +346,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "defaultText": MessageLookupByLibrary.simpleMessage("По умолчанию"),
     "delay": MessageLookupByLibrary.simpleMessage("Задержка"),
     "delayTest": MessageLookupByLibrary.simpleMessage("Тест задержки"),
+    "delayTestMethod": MessageLookupByLibrary.simpleMessage(
+      "Способ проверки задержки",
+    ),
     "delete": MessageLookupByLibrary.simpleMessage("Удалить"),
+    "deleteAllProfiles": MessageLookupByLibrary.simpleMessage(
+      "Удалить все профили",
+    ),
     "deleteTip": m5,
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Многоплатформенный прокси-клиент на основе ClashMeta: простой и удобный, с открытым исходным кодом и без рекламы.",
+      "Многоплатформенный прокси-клиент на основе Xray-core: простой и удобный, с открытым исходным кодом и без рекламы.",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("Назначение"),
     "details": m6,
@@ -344,6 +367,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Режим разработчика включён.",
     ),
     "direct": MessageLookupByLibrary.simpleMessage("Прямой"),
+    "directModeDesc": MessageLookupByLibrary.simpleMessage(
+      "Не использовать прокси для трафика",
+    ),
     "disabled": MessageLookupByLibrary.simpleMessage("Выключено"),
     "disconnected": MessageLookupByLibrary.simpleMessage("Отключено"),
     "discoverNewVersion": MessageLookupByLibrary.simpleMessage(
@@ -353,7 +379,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "dnsQueries": MessageLookupByLibrary.simpleMessage("DNS-запросы"),
     "docked": MessageLookupByLibrary.simpleMessage("Закреплённая"),
     "domain": MessageLookupByLibrary.simpleMessage("Домен"),
+    "done": MessageLookupByLibrary.simpleMessage("Готово"),
     "download": MessageLookupByLibrary.simpleMessage("Загрузка"),
+    "downloadSpeed": MessageLookupByLibrary.simpleMessage(
+      "Скорость загрузки (Мбит/с)",
+    ),
     "edit": MessageLookupByLibrary.simpleMessage("Редактировать"),
     "editSsid": MessageLookupByLibrary.simpleMessage("Изменить SSID"),
     "editorUnavailable": MessageLookupByLibrary.simpleMessage(
@@ -395,7 +425,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Файл изменён. Сохранить изменения?",
     ),
     "filter": MessageLookupByLibrary.simpleMessage("Фильтр"),
+    "fingerprint": MessageLookupByLibrary.simpleMessage("Отпечаток"),
     "floating": MessageLookupByLibrary.simpleMessage("Плавающая"),
+    "flow": MessageLookupByLibrary.simpleMessage("Flow"),
     "followSystem": MessageLookupByLibrary.simpleMessage("Как в системе"),
     "fontFamily": MessageLookupByLibrary.simpleMessage("Шрифт"),
     "fontSize": MessageLookupByLibrary.simpleMessage("Размер"),
@@ -406,8 +438,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("Фруктовый микс"),
     "general": MessageLookupByLibrary.simpleMessage("Общие"),
     "global": MessageLookupByLibrary.simpleMessage("Глобальный"),
+    "globalModeDesc": MessageLookupByLibrary.simpleMessage(
+      "Пересылать весь трафик через прокси",
+    ),
+    "globalRouting": MessageLookupByLibrary.simpleMessage(
+      "Глобальная маршрутизация",
+    ),
     "go": MessageLookupByLibrary.simpleMessage("Перейти"),
     "goDownload": MessageLookupByLibrary.simpleMessage("Скачать"),
+    "handshake": MessageLookupByLibrary.simpleMessage("Рукопожатие"),
     "hasCacheChange": MessageLookupByLibrary.simpleMessage(
       "Кэшировать изменения?",
     ),
@@ -422,6 +461,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "hideTimeoutProxiesDesc": MessageLookupByLibrary.simpleMessage(
       "Не показывать узлы, у которых последний тест задержки завершился таймаутом",
     ),
+    "home": MessageLookupByLibrary.simpleMessage("Главная"),
     "host": MessageLookupByLibrary.simpleMessage("Хост"),
     "hotkeyConflictWith": m9,
     "hotkeyDesc": MessageLookupByLibrary.simpleMessage(
@@ -529,6 +569,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localNetworkDeniedTip": MessageLookupByLibrary.simpleMessage(
       "Доступ к локальной сети запрещён: используется стек gvisor, локальная сеть недоступна.",
     ),
+    "localProfile": MessageLookupByLibrary.simpleMessage("Локальные серверы"),
     "locationPermission": MessageLookupByLibrary.simpleMessage(
       "Разрешение на геолокацию",
     ),
@@ -602,6 +643,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "monochromeScheme": MessageLookupByLibrary.simpleMessage("Монохром"),
     "monthsAgo": m17,
     "more": MessageLookupByLibrary.simpleMessage("Ещё"),
+    "multiplexing": MessageLookupByLibrary.simpleMessage("Мультиплексирование"),
     "name": MessageLookupByLibrary.simpleMessage("Название"),
     "navigationBarStyle": MessageLookupByLibrary.simpleMessage("Нижняя панель"),
     "network": MessageLookupByLibrary.simpleMessage("Сеть"),
@@ -644,6 +686,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "noSearchResults": MessageLookupByLibrary.simpleMessage(
       "Ничего не найдено",
     ),
+    "nodeInvalid": MessageLookupByLibrary.simpleMessage(
+      "Эти значения не образуют рабочий сервер.",
+    ),
     "none": MessageLookupByLibrary.simpleMessage("Нет"),
     "notSelectedTip": MessageLookupByLibrary.simpleMessage(
       "Текущую группу прокси нельзя выбрать",
@@ -653,6 +698,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "nullTip": m23,
     "numberTip": m24,
+    "obfsPassword": MessageLookupByLibrary.simpleMessage("Пароль обфускации"),
     "onDemand": MessageLookupByLibrary.simpleMessage("По условию"),
     "onDemandDesc": MessageLookupByLibrary.simpleMessage(
       "Настройте состояние работы приложения для определённых сценариев",
@@ -674,6 +720,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "palette": MessageLookupByLibrary.simpleMessage("Палитра"),
     "password": MessageLookupByLibrary.simpleMessage("Пароль"),
     "paste": MessageLookupByLibrary.simpleMessage("Вставить"),
+    "path": MessageLookupByLibrary.simpleMessage("Путь"),
     "pickFromAlbum": MessageLookupByLibrary.simpleMessage("Выбрать из галереи"),
     "pinWindow": MessageLookupByLibrary.simpleMessage(
       "Закрепить поверх всех окон",
@@ -705,9 +752,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "Профиль изменён. Отключить автообновление?",
     ),
+    "profileInUseTip": MessageLookupByLibrary.simpleMessage(
+      "Галочка отмечает используемый профиль.",
+    ),
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Введите название профиля",
     ),
+    "profileType": MessageLookupByLibrary.simpleMessage("Тип"),
     "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Введите корректный URL профиля",
     ),
@@ -723,6 +774,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyNode": MessageLookupByLibrary.simpleMessage("Прокси-узел"),
     "proxyProviders": MessageLookupByLibrary.simpleMessage("Провайдеры прокси"),
     "pruneCache": MessageLookupByLibrary.simpleMessage("Очистить кэш"),
+    "publicKey": MessageLookupByLibrary.simpleMessage("Публичный ключ"),
     "pureBlack": MessageLookupByLibrary.simpleMessage("Чисто чёрный"),
     "pureBlackMode": MessageLookupByLibrary.simpleMessage("Чисто чёрный режим"),
     "qrcode": MessageLookupByLibrary.simpleMessage("QR-код"),
@@ -744,6 +796,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "requestsAndUpdates": MessageLookupByLibrary.simpleMessage(
       "Запросы и обновления",
     ),
+    "required": MessageLookupByLibrary.simpleMessage("Обязательно"),
     "reset": MessageLookupByLibrary.simpleMessage("Сброс"),
     "resetPageChangesTip": MessageLookupByLibrary.simpleMessage(
       "На этой странице есть изменения. Вы уверены, что хотите выполнить сброс?",
@@ -786,6 +839,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "ru": MessageLookupByLibrary.simpleMessage("Русский"),
     "rule": MessageLookupByLibrary.simpleMessage("Правило"),
+    "ruleModeDesc": MessageLookupByLibrary.simpleMessage(
+      "Пересылать трафик по правилам маршрутизации",
+    ),
     "ruleProviders": MessageLookupByLibrary.simpleMessage("Провайдеры правил"),
     "rules": MessageLookupByLibrary.simpleMessage("Правила"),
     "runTime": MessageLookupByLibrary.simpleMessage("Время работы"),
@@ -799,10 +855,12 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "search": MessageLookupByLibrary.simpleMessage("Поиск"),
     "seconds": MessageLookupByLibrary.simpleMessage("секунд"),
+    "security": MessageLookupByLibrary.simpleMessage("Безопасность"),
     "selectAll": MessageLookupByLibrary.simpleMessage("Выбрать всё"),
     "selected": MessageLookupByLibrary.simpleMessage("Выбрано"),
     "selectedCountTitle": m27,
     "server": MessageLookupByLibrary.simpleMessage("Сервер"),
+    "serverName": MessageLookupByLibrary.simpleMessage("Имя сервера (SNI)"),
     "serviceAvailable": MessageLookupByLibrary.simpleMessage("Доступен"),
     "serviceBlocked": MessageLookupByLibrary.simpleMessage("Заблокировано"),
     "serviceCheck": MessageLookupByLibrary.simpleMessage("Проверить"),
@@ -816,6 +874,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "serviceManage": MessageLookupByLibrary.simpleMessage(
       "Управление сервисами",
     ),
+    "serviceName": MessageLookupByLibrary.simpleMessage("Имя службы"),
     "serviceOriginalsOnly": MessageLookupByLibrary.simpleMessage(
       "Только оригиналы",
     ),
@@ -829,6 +888,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Регион не поддерживается",
     ),
     "settings": MessageLookupByLibrary.simpleMessage("Настройки"),
+    "shortId": MessageLookupByLibrary.simpleMessage("Short ID"),
     "show": MessageLookupByLibrary.simpleMessage("Показать"),
     "showLess": MessageLookupByLibrary.simpleMessage("Свернуть"),
     "showMore": MessageLookupByLibrary.simpleMessage("Развернуть"),
@@ -870,6 +930,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "style": MessageLookupByLibrary.simpleMessage("Стиль"),
     "subRule": MessageLookupByLibrary.simpleMessage("Подправило"),
     "submit": MessageLookupByLibrary.simpleMessage("Отправить"),
+    "subscribe": MessageLookupByLibrary.simpleMessage("Подписка"),
+    "subscribeDesc": MessageLookupByLibrary.simpleMessage(
+      "URL подписки или Xray JSON",
+    ),
     "subscriptionInfo": MessageLookupByLibrary.simpleMessage(
       "Информация о подписке",
     ),
@@ -885,6 +949,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Нажмите, чтобы разрешить",
     ),
     "testUrl": MessageLookupByLibrary.simpleMessage("URL для теста"),
+    "testUrlDesc": MessageLookupByLibrary.simpleMessage("URL для проверки."),
     "textScale": MessageLookupByLibrary.simpleMessage("Масштаб текста"),
     "textScalePreview": MessageLookupByLibrary.simpleMessage(
       "Так будет выглядеть текст в приложении",
@@ -898,6 +963,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "tight": MessageLookupByLibrary.simpleMessage("Плотный"),
     "time": MessageLookupByLibrary.simpleMessage("Время"),
     "timeout": MessageLookupByLibrary.simpleMessage("Тайм-аут"),
+    "timeoutDesc": MessageLookupByLibrary.simpleMessage(
+      "Если проверка не завершится до таймаута, она будет прервана.",
+    ),
     "tip": MessageLookupByLibrary.simpleMessage("Подсказка"),
     "toggle": MessageLookupByLibrary.simpleMessage("Переключить"),
     "tolerance": MessageLookupByLibrary.simpleMessage("Допуск"),
@@ -907,6 +975,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "total": MessageLookupByLibrary.simpleMessage("Всего"),
     "totalTraffic": MessageLookupByLibrary.simpleMessage("Общий трафик"),
     "trafficUsage": MessageLookupByLibrary.simpleMessage("Статистика трафика"),
+    "transportMode": MessageLookupByLibrary.simpleMessage("Транспорт"),
     "tun": MessageLookupByLibrary.simpleMessage("TUN"),
     "tunDesc": MessageLookupByLibrary.simpleMessage(
       "Работает только в режиме администратора",
@@ -922,14 +991,23 @@ class MessageLookup extends MessageLookupByLibrary {
     "unnamed": MessageLookupByLibrary.simpleMessage("Без названия"),
     "unpinWindow": MessageLookupByLibrary.simpleMessage("Открепить окно"),
     "update": MessageLookupByLibrary.simpleMessage("Обновить"),
+    "updateAll": MessageLookupByLibrary.simpleMessage("Обновить все"),
     "upload": MessageLookupByLibrary.simpleMessage("Отдача"),
+    "uploadSpeed": MessageLookupByLibrary.simpleMessage(
+      "Скорость отправки (Мбит/с)",
+    ),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("Получить профиль по URL"),
+    "urlTestSettings": MessageLookupByLibrary.simpleMessage(
+      "Настройки проверки URL",
+    ),
     "urlTip": m30,
     "usedTraffic": MessageLookupByLibrary.simpleMessage(
       "Использованный трафик",
     ),
     "userAgent": MessageLookupByLibrary.simpleMessage("User-Agent"),
+    "username": MessageLookupByLibrary.simpleMessage("Имя пользователя"),
+    "uuid": MessageLookupByLibrary.simpleMessage("UUID"),
     "value": MessageLookupByLibrary.simpleMessage("Значение"),
     "vibrantScheme": MessageLookupByLibrary.simpleMessage("Яркая"),
     "view": MessageLookupByLibrary.simpleMessage("Просмотр"),

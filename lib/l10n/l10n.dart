@@ -140,6 +140,66 @@ class AppLocalizations {
     );
   }
 
+  /// `Home`
+  String get home {
+    return Intl.message('Home', name: 'home', desc: '', args: []);
+  }
+
+  /// `Global routing`
+  String get globalRouting {
+    return Intl.message(
+      'Global routing',
+      name: 'globalRouting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connectivity test`
+  String get connectivityTest {
+    return Intl.message(
+      'Connectivity test',
+      name: 'connectivityTest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Data`
+  String get data {
+    return Intl.message('Data', name: 'data', desc: '', args: []);
+  }
+
+  /// `Forward traffic by the routing rules`
+  String get ruleModeDesc {
+    return Intl.message(
+      'Forward traffic by the routing rules',
+      name: 'ruleModeDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Forward all traffic through the proxy`
+  String get globalModeDesc {
+    return Intl.message(
+      'Forward all traffic through the proxy',
+      name: 'globalModeDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Do not forward traffic through the proxy`
+  String get directModeDesc {
+    return Intl.message(
+      'Do not forward traffic through the proxy',
+      name: 'directModeDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Network detection`
   String get networkDetection {
     return Intl.message(
@@ -920,10 +980,10 @@ class AppLocalizations {
     );
   }
 
-  /// `A multi-platform proxy client based on ClashMeta, simple and easy to use, open-source and ad-free.`
+  /// `A multi-platform proxy client based on Xray-core, simple and easy to use, open-source and ad-free.`
   String get desc {
     return Intl.message(
-      'A multi-platform proxy client based on ClashMeta, simple and easy to use, open-source and ad-free.',
+      'A multi-platform proxy client based on Xray-core, simple and easy to use, open-source and ad-free.',
       name: 'desc',
       desc: '',
       args: [],
@@ -1555,6 +1615,301 @@ class AppLocalizations {
     return Intl.message(
       'Sort profiles',
       name: 'profilesSort',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update all`
+  String get updateAll {
+    return Intl.message('Update all', name: 'updateAll', desc: '', args: []);
+  }
+
+  /// `Delete all profiles`
+  String get deleteAllProfiles {
+    return Intl.message(
+      'Delete all profiles',
+      name: 'deleteAllProfiles',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Advanced`
+  String get advanced {
+    return Intl.message('Advanced', name: 'advanced', desc: '', args: []);
+  }
+
+  /// `Required`
+  String get required {
+    return Intl.message('Required', name: 'required', desc: '', args: []);
+  }
+
+  /// `Type`
+  String get profileType {
+    return Intl.message('Type', name: 'profileType', desc: '', args: []);
+  }
+
+  /// `Subscribe`
+  String get subscribe {
+    return Intl.message('Subscribe', name: 'subscribe', desc: '', args: []);
+  }
+
+  /// `Subscription URL or Xray JSON`
+  String get subscribeDesc {
+    return Intl.message(
+      'Subscription URL or Xray JSON',
+      name: 'subscribeDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `URL test settings`
+  String get urlTestSettings {
+    return Intl.message(
+      'URL test settings',
+      name: 'urlTestSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Test a URL request through the proxy server.`
+  String get connectDesc {
+    return Intl.message(
+      'Test a URL request through the proxy server.',
+      name: 'connectDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `If the test does not finish before the timeout, it is given up.`
+  String get timeoutDesc {
+    return Intl.message(
+      'If the test does not finish before the timeout, it is given up.',
+      name: 'timeoutDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The URL to test.`
+  String get testUrlDesc {
+    return Intl.message(
+      'The URL to test.',
+      name: 'testUrlDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delay test method`
+  String get delayTestMethod {
+    return Intl.message(
+      'Delay test method',
+      name: 'delayTestMethod',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy name`
+  String get copyName {
+    return Intl.message('Copy name', name: 'copyName', desc: '', args: []);
+  }
+
+  /// `Copy address`
+  String get copyAddress {
+    return Intl.message(
+      'Copy address',
+      name: 'copyAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy JSON`
+  String get copyJson {
+    return Intl.message('Copy JSON', name: 'copyJson', desc: '', args: []);
+  }
+
+  /// `Done`
+  String get done {
+    return Intl.message('Done', name: 'done', desc: '', args: []);
+  }
+
+  /// `Algorithm`
+  String get algorithm {
+    return Intl.message('Algorithm', name: 'algorithm', desc: '', args: []);
+  }
+
+  /// `Security`
+  String get security {
+    return Intl.message('Security', name: 'security', desc: '', args: []);
+  }
+
+  /// `Path`
+  String get path {
+    return Intl.message('Path', name: 'path', desc: '', args: []);
+  }
+
+  /// `Server name (SNI)`
+  String get serverName {
+    return Intl.message(
+      'Server name (SNI)',
+      name: 'serverName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Allow insecure`
+  String get allowInsecure {
+    return Intl.message(
+      'Allow insecure',
+      name: 'allowInsecure',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Flow`
+  String get flow {
+    return Intl.message('Flow', name: 'flow', desc: '', args: []);
+  }
+
+  /// `Fingerprint`
+  String get fingerprint {
+    return Intl.message('Fingerprint', name: 'fingerprint', desc: '', args: []);
+  }
+
+  /// `Public key`
+  String get publicKey {
+    return Intl.message('Public key', name: 'publicKey', desc: '', args: []);
+  }
+
+  /// `Short ID`
+  String get shortId {
+    return Intl.message('Short ID', name: 'shortId', desc: '', args: []);
+  }
+
+  /// `Congestion control`
+  String get congestionControl {
+    return Intl.message(
+      'Congestion control',
+      name: 'congestionControl',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `UUID`
+  String get uuid {
+    return Intl.message('UUID', name: 'uuid', desc: '', args: []);
+  }
+
+  /// `Obfuscation password`
+  String get obfsPassword {
+    return Intl.message(
+      'Obfuscation password',
+      name: 'obfsPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Upload speed (Mbps)`
+  String get uploadSpeed {
+    return Intl.message(
+      'Upload speed (Mbps)',
+      name: 'uploadSpeed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Download speed (Mbps)`
+  String get downloadSpeed {
+    return Intl.message(
+      'Download speed (Mbps)',
+      name: 'downloadSpeed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Service name`
+  String get serviceName {
+    return Intl.message(
+      'Service name',
+      name: 'serviceName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose a type`
+  String get chooseType {
+    return Intl.message(
+      'Choose a type',
+      name: 'chooseType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `These values do not make a usable server.`
+  String get nodeInvalid {
+    return Intl.message(
+      'These values do not make a usable server.',
+      name: 'nodeInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Local servers`
+  String get localProfile {
+    return Intl.message(
+      'Local servers',
+      name: 'localProfile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Username`
+  String get username {
+    return Intl.message('Username', name: 'username', desc: '', args: []);
+  }
+
+  /// `Transport`
+  String get transportMode {
+    return Intl.message('Transport', name: 'transportMode', desc: '', args: []);
+  }
+
+  /// `Multiplexing`
+  String get multiplexing {
+    return Intl.message(
+      'Multiplexing',
+      name: 'multiplexing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Handshake`
+  String get handshake {
+    return Intl.message('Handshake', name: 'handshake', desc: '', args: []);
+  }
+
+  /// `A check mark marks the profile in use.`
+  String get profileInUseTip {
+    return Intl.message(
+      'A check mark marks the profile in use.',
+      name: 'profileInUseTip',
       desc: '',
       args: [],
     );

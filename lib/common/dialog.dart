@@ -132,24 +132,6 @@ class Dialogs {
     );
   }
 
-  Future<({String label, String url})?> showNamedUrlInput({
-    required String title,
-    String label = '',
-    String url = '',
-    FormFieldValidator<String>? labelValidator,
-    FormFieldValidator<String>? urlValidator,
-  }) {
-    return showCommonDialog<({String label, String url})>(
-      child: NamedUrlDialog(
-        title: title,
-        label: label,
-        url: url,
-        labelValidator: labelValidator,
-        urlValidator: urlValidator,
-      ),
-    );
-  }
-
   void showNotifier(
     String text, {
     MessageLevel level = MessageLevel.info,

@@ -4,12 +4,10 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:fl_clash/common/request.dart';
-import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/about.dart';
-import 'package:fl_clash/views/proxies/setting.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -72,53 +70,6 @@ void main() {
       version: '0.0.0',
       buildNumber: '1',
     );
-  });
-
-  testWidgets('proxies setting sheet renders and switches layout type', (
-    tester,
-  ) async {
-    final container = _containerFor(tester);
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: const TestApp(child: Scaffold(body: ProxiesSetting())),
-      ),
-    );
-    await tester.pump();
-
-    expect(find.byType(ProxiesSetting), findsOneWidget);
-    expect(tester.takeException(), null);
-
-    container
-        .read(proxiesStyleSettingProvider.notifier)
-        .update((state) => state.copyWith(layout: ProxiesLayout.tight));
-    await tester.pump();
-
-    expect(tester.takeException(), null);
-  });
-
-  testWidgets('proxies setting sorts by delay when selected', (tester) async {
-    final container = _containerFor(tester);
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: const TestApp(child: Scaffold(body: ProxiesSetting())),
-      ),
-    );
-    await tester.pump();
-
-    container
-        .read(proxiesStyleSettingProvider.notifier)
-        .update((state) => state.copyWith(sortType: ProxiesSortType.delay));
-    await tester.pump();
-
-    expect(
-      container.read(proxiesStyleSettingProvider).sortType,
-      ProxiesSortType.delay,
-    );
-    expect(tester.takeException(), null);
   });
 
   testWidgets('about view renders version and link sections', (tester) async {

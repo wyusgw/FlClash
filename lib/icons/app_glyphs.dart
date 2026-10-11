@@ -2073,4 +2073,97 @@ abstract final class AppGlyphs {
       _ => arrowBack,
     };
   }
+
+  static const home = Glyph([
+    GlyphPath('M3.4 11.6 11.2 4.4a1.2 1.2 0 0 1 1.6 0l7.8 7.2'),
+    GlyphPath(
+      'M5.6 10.2v8.8a1.2 1.2 0 0 0 1.2 1.2h10.4a1.2 1.2 0 0 0 1.2-1.2v-8.8',
+    ),
+    GlyphPath(
+      'M10 20.2v-5a.8.8 0 0 1 .8-.8h2.4a.8.8 0 0 1 .8.8v5',
+      role: GlyphRole.detail,
+    ),
+  ]);
+
+  static const folder = Glyph([
+    GlyphPath(
+      'M3.2 17.6V6.4A1.4 1.4 0 0 1 4.6 5h4.2l2 2.3h6.6A1.4 1.4 0 0 1 18.8 8.7V10',
+    ),
+    GlyphPath(
+      'M2.9 18.4 5 11a1 1 0 0 1 1-.7h14.4a1 1 0 0 1 1 1.3l-2 6.9a1 1 0 0 1-1 .7H4a1 1 0 0 1-1.1-1.2Z',
+    ),
+  ]);
+
+  static const pulse = Glyph([
+    GlyphPath('M2.4 12.2h5.2l1.8-5.4 3.2 10.6 2.2-7.2 1.2 2h5.6'),
+  ]);
+
+  static const scanFrame = Glyph([
+    GlyphPath('M3.6 8.4V6.6A2 2 0 0 1 5.6 4.6h1.8'),
+    GlyphPath('M16.6 4.6h1.8a2 2 0 0 1 2 2v1.8'),
+    GlyphPath('M20.4 15.6v1.8a2 2 0 0 1-2 2h-1.8'),
+    GlyphPath('M7.4 19.4H5.6a2 2 0 0 1-2-2v-1.8'),
+    GlyphPolyline([
+      GlyphVertex(3.6, 12),
+      GlyphVertex(20.4, 12),
+    ], role: GlyphRole.line),
+  ]);
+
+  static const starburst = Glyph([
+    GlyphPolyline([
+      GlyphVertex(12.00, 2.40, 0.5),
+      GlyphVertex(14.37, 6.27, 0.5),
+      GlyphVertex(18.79, 5.21, 0.5),
+      GlyphVertex(17.73, 9.63, 0.5),
+      GlyphVertex(21.60, 12.00, 0.5),
+      GlyphVertex(17.73, 14.37, 0.5),
+      GlyphVertex(18.79, 18.79, 0.5),
+      GlyphVertex(14.37, 17.73, 0.5),
+      GlyphVertex(12.00, 21.60, 0.5),
+      GlyphVertex(9.63, 17.73, 0.5),
+      GlyphVertex(5.21, 18.79, 0.5),
+      GlyphVertex(6.27, 14.37, 0.5),
+      GlyphVertex(2.40, 12.00, 0.5),
+      GlyphVertex(6.27, 9.63, 0.5),
+      GlyphVertex(5.21, 5.21, 0.5),
+      GlyphVertex(9.63, 6.27, 0.5),
+    ], closed: true),
+  ]);
+
+  static const circleT = Glyph([
+    GlyphCircle(12, 12, 8.8),
+    GlyphPolyline([
+      GlyphVertex(8.4, 8.6),
+      GlyphVertex(15.6, 8.6),
+    ], role: GlyphRole.detail),
+    GlyphPolyline([
+      GlyphVertex(12, 8.6),
+      GlyphVertex(12, 16.4),
+    ], role: GlyphRole.detail),
+  ]);
+
+  static const signpost = Glyph([
+    GlyphPolyline([
+      GlyphVertex(12, 3.4),
+      GlyphVertex(12, 20.6),
+    ], role: GlyphRole.line),
+    GlyphPolyline([
+      GlyphVertex(7.4, 20.6),
+      GlyphVertex(16.6, 20.6),
+    ], role: GlyphRole.line),
+    GlyphPath('M4.6 5.8h11l3 2.9-3 2.9h-11Z'),
+  ]);
+
+  static const rocket = Glyph([
+    GlyphPath(
+      'M14.6 4.4c2.6-.6 4.4-.4 5.1-.3.1.7.3 2.5-.3 5.1-.7 3.1-2.9 5.3-5.8 7.3l-4-4c2-2.9 4.2-5.1 5-8.1Z',
+    ),
+    GlyphCircle(15.2, 8.8, 1.3, role: GlyphRole.detail),
+    GlyphPath('M9.2 9.4 6.4 9.9 3.8 12.6l3.2.4', role: GlyphRole.detail),
+    GlyphPath('M14.6 14.8l-.5 2.8-2.7 2.6-.4-3.2', role: GlyphRole.detail),
+  ]);
+  static const circleC = Glyph([
+    GlyphCircle(12, 12, 8.8),
+    GlyphPath('M15.4 9.6A4.2 4.2 0 1 0 15.4 14.4', role: GlyphRole.detail),
+  ]);
 }

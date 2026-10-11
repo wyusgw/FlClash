@@ -61,41 +61,6 @@ final List<HotKeyAction> defaultHotKeyActions = system.isWindows
         _defaultHotKeyAction(HotAction.delayTest, PhysicalKeyboardKey.keyD),
       ];
 
-const List<DashboardWidget> defaultDashboardWidgets = [
-  DashboardWidget.networkSpeed,
-  DashboardWidget.systemProxyButton,
-  DashboardWidget.tunButton,
-  DashboardWidget.outboundMode,
-  DashboardWidget.networkDetection,
-  DashboardWidget.trafficUsage,
-  DashboardWidget.intranetIp,
-];
-
-const _legacyOutboundModeV2 = 'outboundModeV2';
-
-List<DashboardWidget> dashboardWidgetsSafeFormJson(
-  List<dynamic>? dashboardWidgets,
-) {
-  return decodeOrRestoreDefault(
-    'dashboard widgets',
-    () =>
-        dashboardWidgets
-            ?.map(
-              (e) => e == _legacyOutboundModeV2
-                  ? DashboardWidget.outboundMode
-                  : $enumDecode(_$DashboardWidgetEnumMap, e),
-            )
-            .toSet()
-            .toList() ??
-        defaultDashboardWidgets,
-    () => defaultDashboardWidgets,
-  );
-}
-
-Object? _readSidebarExpanded(Map<dynamic, dynamic> json, String key) {
-  return json.containsKey(key) ? json[key] : json['showLabel'];
-}
-
 Object? _readTabAnimation(Map<dynamic, dynamic> json, String key) {
   if (json.containsKey(key)) {
     return json[key];
@@ -122,9 +87,6 @@ Object? _readUserAgents(Map<dynamic, dynamic> json, String key) {
 abstract class AppSettingProps with _$AppSettingProps {
   const factory AppSettingProps({
     String? locale,
-    @Default(defaultDashboardWidgets)
-    @JsonKey(fromJson: dashboardWidgetsSafeFormJson)
-    List<DashboardWidget> dashboardWidgets,
     @Default(false) bool onlyStatisticsProxy,
     @Default(true) bool showNotificationStopAction,
     @Default(false) bool autoLaunch,
@@ -132,14 +94,13 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(false) bool autoRun,
     @Default(false) bool openLogs,
     @Default(defaultTestUrl) String testUrl,
+    @Default(DelayTestMethod.tcp) DelayTestMethod delayTestMethod,
+    @Default(defaultDelayTestTimeoutSeconds) int delayTestTimeoutSeconds,
     @Default(TabAnimation.slide)
     @JsonKey(readValue: _readTabAnimation)
     TabAnimation tabAnimation,
     @Default(true) bool floatingNavigationBar,
     @Default(true) bool autoCheckUpdate,
-    @Default(true)
-    @JsonKey(readValue: _readSidebarExpanded)
-    bool sidebarExpanded,
     @Default(false) bool crashlyticsTip,
     @Default(false) bool crashlytics,
     @Default(true) bool minimizeOnExit,

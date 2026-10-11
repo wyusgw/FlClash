@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fl_clash/common/node_form.dart';
 import 'package:fl_clash/common/subscription.dart';
 import 'package:fl_clash/common/xray_config.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -63,7 +64,34 @@ void _expectFixture(String name, Object? value) {
 
 void main() {
   test('outbounds fixture covers every protocol', () {
-    final outbounds = parseSubscription(_subscription);
+    final outbounds = [
+      ...parseSubscription(_subscription),
+      for (final kind in const [NodeKind.socks, NodeKind.http, NodeKind.mieru])
+        buildNodeOutbound(kind, {
+          ...nodeDefaults(kind),
+          'address': 'proxy.example.com',
+          'port': '1080',
+          'username': 'user',
+          'password': 'pass',
+        })!,
+      buildNodeOutbound(NodeKind.http, {
+        ...nodeDefaults(NodeKind.http),
+        'address': 'proxy.example.com',
+        'port': '8443',
+        'tls': 'true',
+        'sni': 'sni.example.com',
+        'allowInsecure': 'true',
+        'remark': 'https',
+      })!,
+      buildNodeOutbound(NodeKind.hysteria, {
+        ...nodeDefaults(NodeKind.hysteria),
+        'address': 'hy1.example.com',
+        'port': '8443',
+        'password': 'auth',
+        'obfsPassword': 'mask',
+        'remark': 'hysteria1',
+      })!,
+    ];
 
     expect(
       outbounds.map((node) => node['protocol']).toSet(),

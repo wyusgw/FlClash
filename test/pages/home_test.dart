@@ -2,7 +2,6 @@ import 'package:fl_clash/common/app_ports.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/manager/app_manager.dart';
 import 'package:fl_clash/manager/theme_manager.dart';
 import 'package:fl_clash/manager/window_manager.dart';
 import 'package:fl_clash/models/models.dart';
@@ -125,35 +124,7 @@ void main() {
       );
       await tester.pump();
 
-      final sidebarBackground = find.descendant(
-        of: find.byType(AppSidebarContainer),
-        matching: find.byWidgetPredicate(
-          (widget) => widget is Container && widget.child is Row,
-        ),
-      );
-      final sidebarContainer = tester.widget<Container>(
-        sidebarBackground.first,
-      );
-      final colorScheme = Theme.of(
-        tester.element(find.byType(AppSidebarContainer)),
-      ).colorScheme;
-      expect(sidebarContainer.color, colorScheme.surfaceContainer);
-
-      final sidebarEdge = tester.widget<Material>(
-        find
-            .descendant(
-              of: find.byType(AppSidebarContainer),
-              matching: find.byWidgetPredicate(
-                (widget) =>
-                    widget is Material && widget.shape is BorderDirectional,
-              ),
-            )
-            .first,
-      );
-      expect(
-        (sidebarEdge.shape! as BorderDirectional).end.color,
-        colorScheme.outlineVariant,
-      );
+      expect(tester.getSize(find.byType(NavigationSidebar)).width, 241);
 
       await tester.tap(find.text('count: 0'));
       await tester.pump();
@@ -200,75 +171,6 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-
-  testWidgets('the sidebar widens in place only at desktop width', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(1200, 800);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    final container = ProviderContainer(
-      overrides: [
-        navigationItemsStateProvider.overrideWithValue(
-          NavigationItemsState(
-            value: [
-              NavigationItem(
-                glyph: AppGlyphs.dashboard,
-                label: PageLabel.dashboard,
-                builder: (_) => const SizedBox.shrink(),
-              ),
-              NavigationItem(
-                glyph: AppGlyphs.tools,
-                label: PageLabel.tools,
-                builder: (_) => const SizedBox.shrink(),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-    globalState.container = container;
-    container.read(viewSizeProvider.notifier).value = const Size(1200, 800);
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: const TestApp(includeNavigatorKey: false, child: HomePage()),
-      ),
-    );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    final sidebar = find.byType(NavigationSidebar);
-    expect(tester.getSize(sidebar).width, 220);
-
-    await tester.tap(find.byTooltip('Collapse'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(container.read(appSettingProvider).sidebarExpanded, isFalse);
-    expect(tester.getSize(sidebar).width, 48);
-
-    await tester.tap(find.byTooltip('Expand'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.getSize(sidebar).width, 220);
-
-    tester.view.physicalSize = const Size(800, 800);
-    container.read(viewSizeProvider.notifier).value = const Size(800, 800);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.getSize(sidebar).width, 48);
-
-    await tester.tap(find.byTooltip('Expand'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.getSize(sidebar).width, 48);
-    expect(find.text('Tools'), findsNWidgets(2));
-    expect(container.read(appSettingProvider).sidebarExpanded, isTrue);
-    expect(tester.takeException(), isNull);
-  });
 
   testWidgets(
     'list content stays valid while resizing through the breakpoint',

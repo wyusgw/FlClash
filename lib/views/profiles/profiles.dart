@@ -7,7 +7,6 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,177 +23,212 @@ class ProfilesView extends ConsumerStatefulWidget {
 }
 
 class _ProfilesViewState extends ConsumerState<ProfilesView> {
-  Function? applyConfigDebounce;
   bool _isUpdating = false;
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
   Future<void> _updateProfiles(List<Profile> profiles) async {
-    if (_isUpdating == true) {
+    if (_isUpdating) {
       return;
     }
     _isUpdating = true;
     final appLocalizations = context.appLocalizations;
     final profilesAction = ref.read(profilesActionProvider.notifier);
-    final List<UpdatingMessage> messages = [];
-    final updateProfiles = profiles.map<Future>((profile) async {
-      if (profile.type == ProfileType.file) return;
-      try {
-        await profilesAction.updateProfile(profile, showLoading: true);
-      } catch (e) {
-        messages.add(
-          UpdatingMessage(
-            label: profile.realLabel,
-            message: userFacingErrorMessage(e, appLocalizations),
-          ),
-        );
-      }
-    });
-    await Future.wait(updateProfiles);
+    final messages = <UpdatingMessage>[];
+    await Future.wait(
+      profiles.map<Future>((profile) async {
+        if (profile.type == ProfileType.file) return;
+        try {
+          await profilesAction.updateProfile(profile, showLoading: true);
+        } catch (e) {
+          messages.add(
+            UpdatingMessage(
+              label: profile.realLabel,
+              message: userFacingErrorMessage(e, appLocalizations),
+            ),
+          );
+        }
+      }),
+    );
     if (messages.isNotEmpty) {
       unawaited(dialogs.showAllUpdatingMessagesDialog(messages));
     }
     _isUpdating = false;
   }
 
-  List<IconButtonData> _buildActions(List<Profile> profiles) {
-    return profiles.isNotEmpty
-        ? [
-            IconButtonData(
-              glyph: AppGlyphs.sync,
-              onPressed: () {
-                _updateProfiles(profiles);
-              },
-              tooltip: context.appLocalizations.update,
-            ),
-            IconButtonData(
-              glyph: AppGlyphs.sort,
-              onPressed: () {
-                showSheet(
-                  context: context,
-                  builder: (_) {
-                    return ReorderableProfilesSheet(profiles: profiles);
-                  },
-                );
-              },
-              tooltip: context.appLocalizations.profilesSort,
-            ),
-          ]
-        : [];
+  void _sort(List<Profile> profiles) {
+    showSheet(
+      context: context,
+      builder: (_) => ReorderableProfilesSheet(profiles: profiles),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(
-      builder: (_, ref, _) {
-        final appLocalizations = context.appLocalizations;
-        final isLoading = ref.watch(loadingProvider(LoadingTag.profiles));
-        final state = ref.watch(profilesStateProvider);
-        final spacing = cardSpacing;
-        return CommonScaffold(
-          isLoading: isLoading,
-          title: appLocalizations.profiles,
-          primaryAction: state.profiles.isEmpty
-              ? null
-              : IconButtonData(
-                  glyph: AppGlyphs.add,
-                  onPressed: showAddProfilePage,
-                  tooltip: appLocalizations.addProfile,
-                ),
-          iconActions: _buildActions(state.profiles),
-          foldPrimaryAction: true,
-          body: NullStatusSwitcher(
-            isEmpty: state.profiles.isEmpty,
-            nullStatus: NullStatus(
-              label: appLocalizations.nullTip(appLocalizations.profiles),
-              description: appLocalizations.nullProfileDesc,
-              illustration: NullStatusIllustration.profile,
-              action: ElasticButton(
-                child: FilledButton.tonalIcon(
-                  onPressed: showAddProfilePage,
-                  icon: const GlyphIcon(AppGlyphs.add, fill: 1),
-                  label: Text(appLocalizations.addProfile),
-                ),
+    final appLocalizations = context.appLocalizations;
+    final profiles = ref.watch(profilesProvider);
+    final currentId = ref.watch(currentProfileIdProvider);
+    final hasProfiles = profiles.isNotEmpty;
+    return GroupedPage(
+      title: appLocalizations.profiles,
+      leading: GroupedBarAction(
+        glyph: AppGlyphs.scanFrame,
+        tooltip: appLocalizations.qrcode,
+        onPressed: () => scanProfileQrCode(context, ref),
+      ),
+      trailing: GroupedBarAction(
+        glyph: AppGlyphs.add,
+        tooltip: appLocalizations.addProfile,
+        onPressed: () => showAddProfilePage(context),
+      ),
+      body: ListView(
+        key: profilesStoreKey,
+        padding: EdgeInsets.fromLTRB(
+          groupedPageInset,
+          13,
+          groupedPageInset,
+          20 + BottomInsetScope.of(context),
+        ),
+        children: [
+          GroupedSection(
+            children: [
+              GroupedRow(
+                leading: const GroupedIcon(AppGlyphs.cloudDownload),
+                title: appLocalizations.addProfile,
+                chevron: true,
+                onTap: () => showAddProfilePage(context),
               ),
-            ),
-            child: _ProfilesGrid(
-              profiles: state.profiles,
-              currentProfileId: state.currentProfileId,
-              spacing: spacing,
-            ),
+              if (hasProfiles)
+                GroupedRow(
+                  leading: const GroupedIcon(AppGlyphs.sync),
+                  title: appLocalizations.updateAll,
+                  chevron: true,
+                  onTap: () => unawaited(_updateProfiles(profiles)),
+                ),
+              if (hasProfiles)
+                GroupedRow(
+                  leading: const GroupedIcon(AppGlyphs.sort),
+                  title: appLocalizations.profilesSort,
+                  chevron: true,
+                  onTap: () => _sort(profiles),
+                ),
+            ],
           ),
-        );
-      },
+          if (hasProfiles) ...[
+            const SizedBox(height: groupedSectionGap),
+            GroupedSection(
+              header: appLocalizations.profiles,
+              footer: appLocalizations.profileInUseTip,
+              children: [
+                for (final profile in profiles)
+                  _ProfileRow(
+                    key: ValueKey(profile.id),
+                    profile: profile,
+                    selected: profile.id == currentId,
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
 
-class _ProfilesGrid extends ConsumerWidget {
-  const _ProfilesGrid({
-    required this.profiles,
-    required this.currentProfileId,
-    required this.spacing,
-  });
+/// A row of the profile list: the file's name, when it was written and how
+/// big it is, a check where it is the one in use, and the menu of what can be
+/// done to it.
+class _ProfileRow extends ConsumerStatefulWidget {
+  const _ProfileRow({super.key, required this.profile, required this.selected});
 
-  static const _horizontalPadding = 16.0;
-
-  final List<Profile> profiles;
-  final int? currentProfileId;
-  final double spacing;
+  final Profile profile;
+  final bool selected;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return LayoutBuilder(
-      builder: (_, constraints) {
-        final columns = getProfilesColumns(
-          constraints.maxWidth - _horizontalPadding * 2,
-          spacing: spacing,
-          minItemWidth: profileItemMinWidth.ap,
-        );
-        return MasonryGridView.count(
-          key: profilesStoreKey,
-          padding: EdgeInsets.only(
-            left: _horizontalPadding,
-            right: _horizontalPadding,
-            top: context.contentTopPadding,
-            bottom: 16 + BottomInsetScope.of(context),
-          ),
-          crossAxisCount: columns,
-          mainAxisSpacing: spacing,
-          crossAxisSpacing: spacing,
-          itemCount: profiles.length,
-          itemBuilder: (context, index) {
-            final profile = profiles[index];
-            return ProfileItem(
-              profile: profile,
-              groupValue: currentProfileId,
-              onChanged: (profileId) {
-                ref.read(currentProfileIdProvider.notifier).value = profileId;
-              },
-            );
-          },
-        );
-      },
+  ConsumerState<_ProfileRow> createState() => _ProfileRowState();
+}
+
+class _ProfileRowState extends ConsumerState<_ProfileRow> {
+  late Future<int?> _size = _readSize();
+
+  Future<int?> _readSize() async {
+    try {
+      final file = await widget.profile.file;
+      return await file.length();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _ProfileRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.profile.lastUpdateDate != widget.profile.lastUpdateDate) {
+      _size = _readSize();
+    }
+  }
+
+  String _subtitle(int? size) {
+    final date = widget.profile.lastUpdateDate?.showFull;
+    return [?date, if (size != null) formatFileSize(size)].join(' - ');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    final profile = widget.profile;
+    final isUpdating = ref.watch(isUpdatingProvider(profile.updatingKey));
+    final actions = ProfileActions(profile);
+    return FutureBuilder<int?>(
+      future: _size,
+      builder: (_, snapshot) => GroupedRow(
+        title: profile.realLabel,
+        subtitle: _subtitle(snapshot.data),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 12,
+          children: [
+            if (widget.selected)
+              GlyphIcon(AppGlyphs.check, size: 18, color: palette.icon),
+            if (isUpdating)
+              SizedBox.square(
+                dimension: 19,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: palette.icon,
+                ),
+              )
+            else
+              CommonPopupBox(
+                popupBuilder: (_) =>
+                    CommonPopupMenu(items: actions.menuItems(context, ref)),
+                targetBuilder: (open) => Tooltip(
+                  message: context.appLocalizations.more,
+                  child: InkResponse(
+                    onTap: open,
+                    radius: 16,
+                    child: GlyphIcon(
+                      AppGlyphs.info,
+                      size: 21,
+                      color: palette.icon,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        onTap: () =>
+            ref.read(currentProfileIdProvider.notifier).value = profile.id,
+      ),
     );
   }
 }
 
-class ProfileItem extends ConsumerWidget {
+/// What can be done to one profile, as the entries of its popup menu.
+class ProfileActions {
+  const ProfileActions(this.profile);
+
   final Profile profile;
-  final int? groupValue;
-  final void Function(int? value) onChanged;
 
-  const ProfileItem({
-    super.key,
-    required this.profile,
-    required this.groupValue,
-    required this.onChanged,
-  });
-
-  Future<void> _handleDeleteProfile(BuildContext context, WidgetRef ref) async {
+  Future<void> deleteProfile(BuildContext context, WidgetRef ref) async {
     final profilesAction = ref.read(profilesActionProvider.notifier);
     final appLocalizations = context.appLocalizations;
     final res = await dialogs.showMessage(
@@ -252,37 +286,11 @@ class ProfileItem extends ConsumerWidget {
     }, tag: LoadingTag.profiles);
   }
 
-  void _handleShowEditExtendPage(BuildContext context) {
-    showExtend(
-      context,
-      builder: (context) => EditProfileView(profile: profile, context: context),
-    );
+  void showEditPage(BuildContext context) {
+    unawaited(BaseNavigator.push(context, EditProfileView(profile: profile)));
   }
 
-  List<Widget> _buildUrlProfileInfo(BuildContext context) {
-    final subscriptionInfo = profile.subscriptionInfo;
-    return [
-      if (subscriptionInfo != null && subscriptionInfo.total > 0) ...[
-        SubscriptionInfoView(subscriptionInfo: subscriptionInfo),
-        const SizedBox(height: 6),
-      ],
-      LastUpdateTimeText(
-        lastUpdateDate: profile.lastUpdateDate,
-        style: context.textTheme.bodySmall?.toLighter,
-      ),
-    ];
-  }
-
-  List<Widget> _buildFileProfileInfo(BuildContext context) {
-    return [
-      LastUpdateTimeText(
-        lastUpdateDate: profile.lastUpdateDate,
-        style: context.textTheme.bodySmall?.toLighter,
-      ),
-    ];
-  }
-
-  Future<void> _handleCopyLink(BuildContext context) async {
+  Future<void> copyLink(BuildContext context) async {
     await Clipboard.setData(ClipboardData(text: profile.url));
     if (context.mounted) {
       context.showNotifier(
@@ -292,7 +300,21 @@ class ProfileItem extends ConsumerWidget {
     }
   }
 
-  Future<void> _handleExportFile(BuildContext context) async {
+  Future<void> copyJson(BuildContext context) async {
+    final text = await readTextFileTask(
+      await appPath.getProfilePath(profile.id.toString()),
+    );
+    if (text == null) return;
+    await Clipboard.setData(ClipboardData(text: text));
+    if (context.mounted) {
+      context.showNotifier(
+        context.appLocalizations.copySuccess,
+        level: MessageLevel.success,
+      );
+    }
+  }
+
+  Future<void> exportFile(BuildContext context) async {
     final appLocalizations = context.appLocalizations;
     final res = await globalState.safeRun<bool>(() async {
       final mFile = await profile.file;
@@ -311,7 +333,7 @@ class ProfileItem extends ConsumerWidget {
     }
   }
 
-  List<CommonPopupMenuItem> _menuItems(BuildContext context, WidgetRef ref) {
+  List<CommonPopupMenuItem> menuItems(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
     final isUrl = profile.type == ProfileType.url;
     final subscriptionInfo = profile.subscriptionInfo;
@@ -322,7 +344,7 @@ class ProfileItem extends ConsumerWidget {
         glyph: AppGlyphs.edit,
         label: appLocalizations.edit,
         onPressed: () {
-          _handleShowEditExtendPage(context);
+          showEditPage(context);
         },
       ),
       CommonPopupMenuItem(
@@ -357,14 +379,14 @@ class ProfileItem extends ConsumerWidget {
               glyph: AppGlyphs.copy,
               label: appLocalizations.copyLink,
               onPressed: () {
-                _handleCopyLink(context);
+                copyLink(context);
               },
             ),
           CommonPopupMenuItem(
             glyph: AppGlyphs.export,
             label: appLocalizations.exportFile,
             onPressed: () {
-              _handleExportFile(context);
+              exportFile(context);
             },
           ),
         ],
@@ -374,99 +396,10 @@ class ProfileItem extends ConsumerWidget {
         glyph: AppGlyphs.delete,
         label: appLocalizations.delete,
         onPressed: () {
-          _handleDeleteProfile(context, ref);
+          deleteProfile(context, ref);
         },
       ),
     ];
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return CommonCard(
-      enterActionsOnRight: true,
-      radius: AppCorner.xl,
-      isSelected: profile.id == groupValue,
-      onPressed: () {
-        onChanged(profile.id);
-      },
-      child: ListItem(
-        key: Key(profile.id.toString()),
-        horizontalTitleGap: 8,
-        minVerticalPadding: 12,
-        padding: const EdgeInsets.only(left: 16, right: 6),
-        trailing: SizedBox(
-          height: 40,
-          width: 40,
-          child: Consumer(
-            builder: (context, ref, _) {
-              final isUpdating = ref.watch(
-                isUpdatingProvider(profile.updatingKey),
-              );
-              return FadeThroughBox(
-                alignment: Alignment.center,
-                child: isUpdating
-                    ? const Padding(
-                        key: ValueKey('loading'),
-                        padding: EdgeInsets.all(8),
-                        child: CommonCircleLoading(),
-                      )
-                    : CommonPopupBox(
-                        key: const ValueKey('menu'),
-                        popupBuilder: (_) =>
-                            CommonPopupMenu(items: _menuItems(context, ref)),
-                        targetBuilder: (open) {
-                          return IconButton(
-                            style: IconButton.styleFrom(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              visualDensity: VisualDensity.standard,
-                            ),
-                            tooltip: context.appLocalizations.more,
-                            onPressed: () {
-                              open();
-                            },
-                            icon: const GlyphIcon(AppGlyphs.more),
-                          );
-                        },
-                      ),
-              );
-            },
-          ),
-        ),
-        title: _ProfileCardTitle(
-          profile: profile,
-          info: switch (profile.type) {
-            ProfileType.file => _buildFileProfileInfo(context),
-            ProfileType.url => _buildUrlProfileInfo(context),
-          },
-        ),
-        tileTitleAlignment: ListTileTitleAlignment.top,
-      ),
-    );
-  }
-}
-
-class _ProfileCardTitle extends StatelessWidget {
-  const _ProfileCardTitle({required this.profile, required this.info});
-
-  final Profile profile;
-  final List<Widget> info;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          profile.realLabel,
-          style: context.textTheme.titleMedium,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 6),
-        ...info,
-      ],
-    );
   }
 }
 

@@ -4,7 +4,6 @@ import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/manager/app_manager.dart';
 import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/views/dashboard/widgets/start_button.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -74,14 +73,9 @@ class _HomeShell extends ConsumerWidget {
     final floating = ref.watch(
       appSettingProvider.select((state) => state.floatingNavigationBar),
     );
-    final hasProfile = ref.watch(
-      profilesProvider.select((profiles) => profiles.isNotEmpty),
-    );
-    final isDashboard = ref.watch(
-      currentPageLabelProvider.select((label) => label == PageLabel.dashboard),
-    );
+    final palette = GroupedPalette.of(context);
     return Material(
-      color: context.colorScheme.surface,
+      color: palette.canvas,
       child: Column(
         children: [
           Expanded(
@@ -117,9 +111,6 @@ class _HomeShell extends ConsumerWidget {
                         onSelected: (index) {
                           _handleToPage(navigationItems[index].label, ref);
                         },
-                        trailing: hasProfile && isDashboard
-                            ? const StartButton()
-                            : null,
                       ),
                     ),
                   ),
@@ -130,21 +121,41 @@ class _HomeShell extends ConsumerWidget {
           AnimatedVisibility.bottomNavigation(
             visible: isMobile && !floating,
             child: _NavigationPadding(
-              child: NavigationBar(
-                destinations: [
-                  for (final (index, item) in navigationItems.indexed)
-                    NavigationDestination(
-                      icon: AnimatedGlyph(
-                        glyph: item.glyph,
-                        filled: index == state.currentIndex,
-                      ),
-                      label: item.label.label,
+              child: NavigationBarTheme(
+                data: NavigationBarThemeData(
+                  backgroundColor: palette.bar,
+                  surfaceTintColor: Colors.transparent,
+                  indicatorColor: Colors.transparent,
+                  iconTheme: WidgetStateProperty.resolveWith(
+                    (states) => IconThemeData(
+                      color: states.contains(WidgetState.selected)
+                          ? palette.accent
+                          : palette.secondary,
                     ),
-                ],
-                selectedIndex: state.currentIndex,
-                onDestinationSelected: (index) {
-                  _handleToPage(navigationItems[index].label, ref);
-                },
+                  ),
+                  labelTextStyle: WidgetStateProperty.resolveWith(
+                    (states) => TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: states.contains(WidgetState.selected)
+                          ? palette.accent
+                          : palette.secondary,
+                    ),
+                  ),
+                ),
+                child: NavigationBar(
+                  destinations: [
+                    for (final item in navigationItems)
+                      NavigationDestination(
+                        icon: GlyphIcon(item.glyph),
+                        label: item.label.label,
+                      ),
+                  ],
+                  selectedIndex: state.currentIndex,
+                  onDestinationSelected: (index) {
+                    _handleToPage(navigationItems[index].label, ref);
+                  },
+                ),
               ),
             ),
           ),

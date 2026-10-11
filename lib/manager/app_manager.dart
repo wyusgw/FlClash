@@ -8,6 +8,7 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/animated_visibility.dart';
+import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:fl_clash/widgets/icon.dart';
 import 'package:fl_clash/widgets/sidebar.dart';
 import 'package:flutter/foundation.dart';
@@ -146,21 +147,15 @@ class _Sidebar extends ConsumerWidget {
   const _Sidebar({
     required this.items,
     required this.currentIndex,
-    required this.viewMode,
     required this.onSelected,
   });
 
   final List<NavigationItem> items;
   final int currentIndex;
-  final ViewMode viewMode;
   final void Function(int index) onSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final canExpand = canExpandSidebar(viewMode);
-    final sidebarExpanded = ref.watch(
-      appSettingProvider.select((state) => state.sidebarExpanded),
-    );
     final version = ref.watch(versionProvider);
     return NavigationSidebar(
       destinations: [
@@ -168,18 +163,7 @@ class _Sidebar extends ConsumerWidget {
           SidebarDestination(glyph: item.glyph, label: item.label.label),
       ],
       selectedIndex: currentIndex,
-      expanded: canExpand && sidebarExpanded,
       onSelected: onSelected,
-      onToggle: canExpand
-          ? () {
-              ref
-                  .read(appSettingProvider.notifier)
-                  .update(
-                    (state) =>
-                        state.copyWith(sidebarExpanded: !state.sidebarExpanded),
-                  );
-            }
-          : null,
       windowControls: windowControlsOverSidebar(
         isMacOS: system.isMacOS,
         version: version,
@@ -192,18 +176,6 @@ class AppSidebarContainer extends ConsumerWidget {
   final Widget child;
 
   const AppSidebarContainer({super.key, required this.child});
-
-  Widget _buildBackground({
-    required Color color,
-    required Color edge,
-    required Widget child,
-  }) {
-    return Material(
-      color: color,
-      shape: BorderDirectional(end: BorderSide(color: edge)),
-      child: child,
-    );
-  }
 
   void _updateSideBarWidth(WidgetRef ref, double contentWidth) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -236,9 +208,6 @@ class AppSidebarContainer extends ConsumerWidget {
     final navigationItems = navigationState.navigationItems;
     final viewMode = navigationState.viewMode;
     final currentIndex = navigationState.currentIndex;
-    final blur = ref.watch(windowBlurProvider);
-    final colorScheme = context.colorScheme;
-    final surfaceContainer = colorScheme.surfaceContainer;
     void onSelected(int index) {
       _handleToPage(ref, navigationItems[index].label);
     }
@@ -246,26 +215,19 @@ class AppSidebarContainer extends ConsumerWidget {
     final hasSidebar = viewMode != ViewMode.mobile;
     final isLtr = Directionality.of(context) == TextDirection.ltr;
     return Container(
-      color: blur ? Colors.transparent : surfaceContainer,
+      color: GroupedPalette.of(context).canvas,
       child: Row(
         children: [
           AnimatedVisibility.sidebar(
             visible: hasSidebar,
-            child: _buildBackground(
-              color: blur
-                  ? surfaceContainer.withValues(alpha: kSidebarBlurOpacity)
-                  : surfaceContainer,
-              edge: colorScheme.outlineVariant,
-              child: MediaQuery.removePadding(
-                context: context,
-                removeLeft: !isLtr,
-                removeRight: isLtr,
-                child: _Sidebar(
-                  items: navigationItems,
-                  currentIndex: currentIndex,
-                  viewMode: viewMode,
-                  onSelected: onSelected,
-                ),
+            child: MediaQuery.removePadding(
+              context: context,
+              removeLeft: !isLtr,
+              removeRight: isLtr,
+              child: _Sidebar(
+                items: navigationItems,
+                currentIndex: currentIndex,
+                onSelected: onSelected,
               ),
             ),
           ),

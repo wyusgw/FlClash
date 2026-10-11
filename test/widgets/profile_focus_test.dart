@@ -9,7 +9,6 @@ import 'package:fl_clash/views/profiles/profiles.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -70,8 +69,16 @@ Future<ProviderContainer> pumpProfiles(
   return container;
 }
 
+Finder _infoOf(String label) {
+  final row = find.ancestor(
+    of: find.text(label),
+    matching: find.byType(GroupedRow),
+  );
+  return find.descendant(of: row, matching: find.byGlyph(AppGlyphs.info));
+}
+
 void main() {
-  testWidgets('arrow right from a profile card focuses its more button', (
+  testWidgets('every profile gets a row with its own menu button', (
     tester,
   ) async {
     final profiles = [
@@ -81,53 +88,28 @@ void main() {
     ];
     await pumpProfiles(tester, profiles: profiles);
 
-    final cards = find
-        .byType(OutlinedButton)
-        .evaluate()
-        .map((element) => element.widget)
-        .toList();
-
-    Future<void> focusCard(int index) async {
-      for (var tab = 0; tab < 50; tab++) {
-        final context = FocusManager.instance.primaryFocus?.context;
-        final focusedCard = context
-            ?.findAncestorWidgetOfExactType<OutlinedButton>();
-        final focusedAction = context
-            ?.findAncestorWidgetOfExactType<IconButton>();
-        if (focusedAction == null && identical(focusedCard, cards[index])) {
-          return;
-        }
-        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-        await tester.pump();
-      }
-      fail('Profile card $index was not reachable');
+    for (final profile in profiles) {
+      expect(_infoOf(profile.realLabel), findsOneWidget);
     }
+  });
 
-    for (var profileIndex = 0; profileIndex < profiles.length; profileIndex++) {
-      await focusCard(profileIndex);
+  testWidgets('the menu button opens the actions of its profile', (
+    tester,
+  ) async {
+    await pumpProfiles(tester, profiles: [urlProfile('url')]);
 
-      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-      await tester.pump();
+    await tester.tap(_infoOf('url'));
+    await tester.pumpAndSettle();
 
-      final context = FocusManager.instance.primaryFocus?.context;
-      expect(context?.findAncestorWidgetOfExactType<IconButton>(), isNotNull);
-      expect(
-        context?.findAncestorWidgetOfExactType<ListItem>()?.key,
-        Key(profiles[profileIndex].id.toString()),
-      );
-    }
+    expect(find.text(currentAppLocalizations.edit), findsOneWidget);
+    expect(find.text(currentAppLocalizations.preview), findsOneWidget);
+    expect(find.text(currentAppLocalizations.delete), findsOneWidget);
   });
 
   testWidgets('subscription menu item opens the usage dialog', (tester) async {
     await pumpProfiles(tester, profiles: [urlProfile('url')]);
 
-    final profileItem = find.ancestor(
-      of: find.text('url'),
-      matching: find.byType(ListItem),
-    );
-    await tester.tap(
-      find.descendant(of: profileItem, matching: find.byGlyph(AppGlyphs.more)),
-    );
+    await tester.tap(_infoOf('url'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text(currentAppLocalizations.more).last);

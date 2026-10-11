@@ -32,35 +32,10 @@ void main() {
       expect(restored.openLogs, false);
       expect(restored.tabAnimation, TabAnimation.slide);
       expect(restored.autoCheckUpdate, true);
-      expect(restored.sidebarExpanded, true);
       expect(restored.minimizeOnExit, true);
       expect(restored.restoreStrategy, RestoreStrategy.compatible);
       expect(restored.userAgents, defaultUserAgents);
       expect(restored.testUrl, defaultTestUrl);
-    });
-
-    test('a saved outboundModeV2 card folds into outboundMode', () {
-      final restored = AppSettingProps.fromJson({
-        'dashboardWidgets': ['networkSpeed', 'outboundModeV2', 'outboundMode'],
-      });
-      expect(restored.dashboardWidgets, [
-        DashboardWidget.networkSpeed,
-        DashboardWidget.outboundMode,
-      ]);
-
-      final alone = AppSettingProps.fromJson({
-        'dashboardWidgets': ['outboundModeV2', 'trafficUsage'],
-      });
-      expect(alone.dashboardWidgets, [
-        DashboardWidget.outboundMode,
-        DashboardWidget.trafficUsage,
-      ]);
-    });
-
-    test('every dashboard widget survives round-trip', () {
-      const props = AppSettingProps(dashboardWidgets: DashboardWidget.values);
-      final restored = roundTrip(props.toJson, AppSettingProps.fromJson);
-      expect(restored.dashboardWidgets, DashboardWidget.values);
     });
 
     test('custom values survive round-trip', () {
@@ -118,21 +93,6 @@ void main() {
         }).tabAnimation,
         TabAnimation.slide,
       );
-    });
-
-    test('a legacy showLabel sets whether the sidebar is expanded', () {
-      expect(
-        AppSettingProps.fromJson({'showLabel': false}).sidebarExpanded,
-        false,
-      );
-      expect(
-        AppSettingProps.fromJson({
-          'showLabel': false,
-          'sidebarExpanded': true,
-        }).sidebarExpanded,
-        true,
-      );
-      expect(AppSettingProps.fromJson({}).sidebarExpanded, true);
     });
 
     test('safeFromJson returns default on null', () {
@@ -307,9 +267,7 @@ void main() {
     });
 
     test('round-trip with custom values', () {
-      const props = ProxiesStyleProps(
-        sortType: ProxiesSortType.delay,
-      );
+      const props = ProxiesStyleProps(sortType: ProxiesSortType.delay);
       final restored = roundTrip(
         () => props.toJson(),
         ProxiesStyleProps.fromJson,

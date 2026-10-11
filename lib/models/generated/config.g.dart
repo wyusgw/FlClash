@@ -10,9 +10,6 @@ _AppSettingProps _$AppSettingPropsFromJson(
   Map<String, dynamic> json,
 ) => _AppSettingProps(
   locale: json['locale'] as String?,
-  dashboardWidgets: json['dashboardWidgets'] == null
-      ? defaultDashboardWidgets
-      : dashboardWidgetsSafeFormJson(json['dashboardWidgets'] as List?),
   onlyStatisticsProxy: json['onlyStatisticsProxy'] as bool? ?? false,
   showNotificationStopAction:
       json['showNotificationStopAction'] as bool? ?? true,
@@ -21,6 +18,12 @@ _AppSettingProps _$AppSettingPropsFromJson(
   autoRun: json['autoRun'] as bool? ?? false,
   openLogs: json['openLogs'] as bool? ?? false,
   testUrl: json['testUrl'] as String? ?? defaultTestUrl,
+  delayTestMethod:
+      $enumDecodeNullable(_$DelayTestMethodEnumMap, json['delayTestMethod']) ??
+      DelayTestMethod.tcp,
+  delayTestTimeoutSeconds:
+      (json['delayTestTimeoutSeconds'] as num?)?.toInt() ??
+      defaultDelayTestTimeoutSeconds,
   tabAnimation:
       $enumDecodeNullable(
         _$TabAnimationEnumMap,
@@ -29,8 +32,6 @@ _AppSettingProps _$AppSettingPropsFromJson(
       TabAnimation.slide,
   floatingNavigationBar: json['floatingNavigationBar'] as bool? ?? true,
   autoCheckUpdate: json['autoCheckUpdate'] as bool? ?? true,
-  sidebarExpanded:
-      _readSidebarExpanded(json, 'sidebarExpanded') as bool? ?? true,
   crashlyticsTip: json['crashlyticsTip'] as bool? ?? false,
   crashlytics: json['crashlytics'] as bool? ?? false,
   minimizeOnExit: json['minimizeOnExit'] as bool? ?? true,
@@ -68,9 +69,6 @@ _AppSettingProps _$AppSettingPropsFromJson(
 Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
     <String, dynamic>{
       'locale': instance.locale,
-      'dashboardWidgets': instance.dashboardWidgets
-          .map((e) => _$DashboardWidgetEnumMap[e]!)
-          .toList(),
       'onlyStatisticsProxy': instance.onlyStatisticsProxy,
       'showNotificationStopAction': instance.showNotificationStopAction,
       'autoLaunch': instance.autoLaunch,
@@ -78,10 +76,11 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'autoRun': instance.autoRun,
       'openLogs': instance.openLogs,
       'testUrl': instance.testUrl,
+      'delayTestMethod': _$DelayTestMethodEnumMap[instance.delayTestMethod]!,
+      'delayTestTimeoutSeconds': instance.delayTestTimeoutSeconds,
       'tabAnimation': _$TabAnimationEnumMap[instance.tabAnimation]!,
       'floatingNavigationBar': instance.floatingNavigationBar,
       'autoCheckUpdate': instance.autoCheckUpdate,
-      'sidebarExpanded': instance.sidebarExpanded,
       'crashlyticsTip': instance.crashlyticsTip,
       'crashlytics': instance.crashlytics,
       'minimizeOnExit': instance.minimizeOnExit,
@@ -100,6 +99,11 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'currentService': instance.currentService,
     };
 
+const _$DelayTestMethodEnumMap = {
+  DelayTestMethod.tcp: 'tcp',
+  DelayTestMethod.url: 'url',
+};
+
 const _$TabAnimationEnumMap = {
   TabAnimation.slide: 'slide',
   TabAnimation.fade: 'fade',
@@ -114,22 +118,6 @@ const _$EditorFontSizeEnumMap = {
   EditorFontSize.standard: 'standard',
   EditorFontSize.large: 'large',
   EditorFontSize.extraLarge: 'extraLarge',
-};
-
-const _$DashboardWidgetEnumMap = {
-  DashboardWidget.networkSpeed: 'networkSpeed',
-  DashboardWidget.outboundMode: 'outboundMode',
-  DashboardWidget.trafficUsage: 'trafficUsage',
-  DashboardWidget.networkDetection: 'networkDetection',
-  DashboardWidget.tunButton: 'tunButton',
-  DashboardWidget.vpnButton: 'vpnButton',
-  DashboardWidget.systemProxyButton: 'systemProxyButton',
-  DashboardWidget.intranetIp: 'intranetIp',
-  DashboardWidget.memoryInfo: 'memoryInfo',
-  DashboardWidget.serviceStatus: 'serviceStatus',
-  DashboardWidget.runTime: 'runTime',
-  DashboardWidget.proxyGroups: 'proxyGroups',
-  DashboardWidget.profiles: 'profiles',
 };
 
 _AccessControlProps _$AccessControlPropsFromJson(Map<String, dynamic> json) =>

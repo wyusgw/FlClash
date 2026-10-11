@@ -149,14 +149,6 @@ void main() {
     });
   });
 
-  group('canExpandSidebar', () {
-    test('expands only in the desktop view mode', () {
-      expect(canExpandSidebar(getViewMode(maxLaptopWidth + 1)), isTrue);
-      expect(canExpandSidebar(getViewMode(maxLaptopWidth.toDouble())), isFalse);
-      expect(canExpandSidebar(ViewMode.mobile), isFalse);
-    });
-  });
-
   group('windowControlsOverSidebar', () {
     test('only macOS 11 and later draw the traffic lights over it', () {
       expect(

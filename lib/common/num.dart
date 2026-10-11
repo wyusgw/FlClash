@@ -70,3 +70,17 @@ extension OffsetExt on Offset {
     return direction == Axis.vertical ? dy : dx;
   }
 }
+
+/// A file size as a short label, "102.4K" or "3.0M".
+String formatFileSize(int bytes) {
+  const units = ['B', 'K', 'M', 'G', 'T'];
+  var size = bytes.toDouble();
+  var index = 0;
+  while (size >= 1024 && index < units.length - 1) {
+    size /= 1024;
+    index++;
+  }
+  return index == 0
+      ? '$bytes${units[0]}'
+      : '${size.toStringAsFixed(1)}${units[index]}';
+}

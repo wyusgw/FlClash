@@ -211,7 +211,6 @@ enum RestoreOption { all, onlyProfiles }
 
 enum CommonCardType { plain, filled }
 
-
 enum ProxiesLayout { loose, standard, tight }
 
 enum ProxyCardType { expand, shrink, min }
@@ -297,26 +296,6 @@ enum FunctionTag {
   reloadPackages,
 }
 
-enum DashboardWidget {
-  networkSpeed,
-  outboundMode,
-  trafficUsage,
-  networkDetection,
-  tunButton(platforms: desktopPlatforms),
-  vpnButton(platforms: [SupportPlatform.Android]),
-  systemProxyButton(platforms: desktopPlatforms),
-  intranetIp,
-  memoryInfo,
-  serviceStatus,
-  runTime,
-  proxyGroups,
-  profiles;
-
-  final List<SupportPlatform> platforms;
-
-  const DashboardWidget({this.platforms = SupportPlatform.values});
-}
-
 enum IpType { residential, mobile, business, hosting }
 
 enum IpQualityLevel { good, normal, risky }
@@ -359,6 +338,10 @@ enum LoadingTag {
 }
 
 enum CoreStatus { connecting, connected, disconnected }
+
+/// How a node's latency is measured: a TCP connect to its server, or a URL
+/// request through it.
+enum DelayTestMethod { tcp, url }
 
 enum UpdatingScope { core, local }
 

@@ -233,28 +233,22 @@ void main() {
     expect(groups.last.all.map((proxy) => proxy.name), ['a', 'b']);
   });
 
-  test('navigation providers select items for width and current page', () {
-    container
-        .read(viewSizeProvider.notifier)
-        .update((_) => Size(maxMobileWidth.toDouble(), 800));
-    final mobile = container.read(currentNavigationItemsStateProvider).value;
-    expect(
-      mobile.map((item) => item.label),
-      containsAll([PageLabel.dashboard, PageLabel.profiles, PageLabel.tools]),
-    );
-    expect(mobile.map((item) => item.label), isNot(contains(PageLabel.logs)));
-
+  test('navigation providers list the four destinations in order', () {
     container
         .read(viewSizeProvider.notifier)
         .update((_) => const Size(1200, 800));
-    container
-        .read(appSettingProvider.notifier)
-        .update((state) => state.copyWith(openLogs: true));
     container.read(currentPageLabelProvider.notifier).toPage(PageLabel.logs);
-    final desktop = container.read(navigationStateProvider);
-    expect(desktop.viewMode, ViewMode.desktop);
-    expect(desktop.currentIndex, greaterThan(0));
-    expect(desktop.navigationItems[desktop.currentIndex].label, PageLabel.logs);
+
+    final state = container.read(navigationStateProvider);
+
+    expect(state.viewMode, ViewMode.desktop);
+    expect(state.navigationItems.map((item) => item.label), [
+      PageLabel.dashboard,
+      PageLabel.profiles,
+      PageLabel.logs,
+      PageLabel.tools,
+    ]);
+    expect(state.currentIndex, 2);
 
     container.read(currentPageLabelProvider.notifier).toPage(PageLabel.proxies);
     expect(container.read(navigationStateProvider).currentIndex, 0);
@@ -272,9 +266,6 @@ void main() {
     final profiles = container.read(profilesStateProvider);
     expect(profiles.profiles.single.label, 'Primary');
     expect(profiles.currentProfileId, profile.id);
-
-    final dashboard = container.read(dashboardStateProvider);
-    expect(dashboard.dashboardWidgets, isNotEmpty);
   });
 
   test(

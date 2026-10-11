@@ -98,14 +98,14 @@
     },
     {
       "tag": "hy2",
-      "protocol": "hysteria",
+      "protocol": "hysteria2",
       "settings": {
         "version": 2,
         "address": "hy.example.com",
         "port": 443
       },
       "streamSettings": {
-        "network": "hysteria",
+        "network": "hysteria2",
         "security": "tls",
         "tlsSettings": {
           "serverName": "hy.example.com",
@@ -113,7 +113,7 @@
             "h3"
           ]
         },
-        "hysteriaSettings": {
+        "hysteria2Settings": {
           "version": 2,
           "auth": "auth"
         },

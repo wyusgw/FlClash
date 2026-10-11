@@ -7,19 +7,14 @@ import 'package:test/test.dart';
 void main() {
   group('SetupParams', () {
     test('fromJson uses snake-case keys', () {
-      final json = {
-        'test-url': 'http://test.com',
-        'log-level': 'debug',
-      };
+      final json = {'test-url': 'http://test.com', 'log-level': 'debug'};
       final params = SetupParams.fromJson(json);
       expect(params.testUrl, 'http://test.com');
       expect(params.logLevel, LogLevel.debug);
     });
 
     test('the log level defaults to error', () {
-      final params = SetupParams.fromJson({
-        'test-url': 'http://test.com',
-      });
+      final params = SetupParams.fromJson({'test-url': 'http://test.com'});
       expect(params.logLevel, LogLevel.error);
     });
 

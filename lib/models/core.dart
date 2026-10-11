@@ -197,4 +197,3 @@ abstract class Now with _$Now {
 
   factory Now.fromJson(Map<String, Object?> json) => _$NowFromJson(json);
 }
-

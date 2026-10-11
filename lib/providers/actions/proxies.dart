@@ -5,11 +5,13 @@ class _DelayTestTarget {
     required this.proxyName,
     required this.testUrl,
     required this.key,
+    this.address,
   });
 
   final String proxyName;
   final String testUrl;
   final String key;
+  final String? address;
 }
 
 typedef _DelayTestBatch = ({List<Proxy> proxies, String? testUrl});
@@ -117,10 +119,7 @@ class ProxiesAction extends _$ProxiesAction {
       await appPath.getProfilePath(profileId.toString()),
     );
     if (text == null) return const [];
-    return [
-      for (final node in parseSubscription(text))
-        Proxy(name: '${node['tag']}', type: '${node['protocol']}'),
-    ];
+    return [for (final node in parseSubscription(text)) nodeToProxy(node)];
   }
 
   Future<void> updateGroups() async {
@@ -234,6 +233,16 @@ class ProxiesAction extends _$ProxiesAction {
     }
   }
 
+  String? _addressOf(String name, Proxy proxy, List<Group> groups) {
+    if (proxy.name == name) return proxy.address;
+    for (final group in groups) {
+      for (final candidate in group.all) {
+        if (candidate.name == name) return candidate.address;
+      }
+    }
+    return null;
+  }
+
   List<_DelayTestTarget> _resolveDelayTestTargets(
     List<_DelayTestBatch> batches,
   ) {
@@ -264,6 +273,7 @@ class ProxiesAction extends _$ProxiesAction {
             proxyName: state.proxyName,
             testUrl: currentTestUrl,
             key: key,
+            address: _addressOf(state.proxyName, proxy, groups),
           ),
         );
       }
@@ -313,7 +323,20 @@ class ProxiesAction extends _$ProxiesAction {
       _scheduleDelayFlush();
     }
     try {
-      final delay = await _core.getDelay(target.testUrl, target.proxyName);
+      final settings = ref.read(appSettingProvider);
+      final timeout = Duration(seconds: settings.delayTestTimeoutSeconds);
+      final delay = switch (settings.delayTestMethod) {
+        DelayTestMethod.tcp => Delay(
+          name: target.proxyName,
+          url: target.testUrl,
+          value: await tcpConnectDelay(target.address, timeout),
+        ),
+        DelayTestMethod.url => await _core.getDelay(
+          target.testUrl,
+          target.proxyName,
+          timeout: timeout,
+        ),
+      };
       if (delay != null && !job.cancelled) {
         setDelay(delay);
       }

@@ -37,10 +37,6 @@ ViewMode getViewMode(double viewWidth) {
   return ViewMode.desktop;
 }
 
-/// An expanded sidebar in the laptop range would leave the content narrower
-/// than the mobile layout one breakpoint below, so labels wait for desktop.
-bool canExpandSidebar(ViewMode viewMode) => viewMode == ViewMode.desktop;
-
 /// Measured on macOS 27, the traffic lights span 9 to 69 from the left edge
 /// of the hidden 32 tall title bar; macOS 10 keeps its title bar instead.
 const macOSTrafficLightsArea = Size(78, 32);

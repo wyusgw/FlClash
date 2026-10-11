@@ -18,6 +18,8 @@ export 'effect.dart';
 export 'fade_box.dart';
 export 'focus.dart';
 export 'grid.dart';
+export 'grouped_list.dart';
+export 'grouped_page.dart';
 export 'icon.dart';
 export 'info_message_button.dart';
 export 'inherited.dart';

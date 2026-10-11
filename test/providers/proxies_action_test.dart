@@ -85,6 +85,7 @@ ProviderContainer _delayContainer(ProviderContainer Function() build) {
   final container = build();
   container.read(appSettingProvider.notifier).value = const AppSettingProps(
     testUrl: _testUrl,
+    delayTestMethod: DelayTestMethod.url,
   );
   return container;
 }
@@ -251,7 +252,13 @@ void main() {
     test('marks the node pending while it runs, then records it', () async {
       late ProviderContainer container;
       final observed = <bool>[];
-      when(() => core.asyncTestDelay(_testUrl, 'HK-01')).thenAnswer((_) async {
+      when(
+        () => core.asyncTestDelay(
+          _testUrl,
+          'HK-01',
+          timeout: any(named: 'timeout'),
+        ),
+      ).thenAnswer((_) async {
         observed.add(
           container.read(pendingDelayTestsProvider).containsKey(_delayKey),
         );
@@ -268,7 +275,11 @@ void main() {
 
     test('keeps the last measurement when the Core does not answer', () async {
       when(
-        () => core.asyncTestDelay(_testUrl, 'HK-01'),
+        () => core.asyncTestDelay(
+          _testUrl,
+          'HK-01',
+          timeout: any(named: 'timeout'),
+        ),
       ).thenAnswer((_) async => null);
       final container = _delayContainer(buildContainer);
       container
@@ -283,7 +294,11 @@ void main() {
 
     test('falls back to untested when a throwing call had no value', () async {
       when(
-        () => core.asyncTestDelay(_testUrl, 'HK-01'),
+        () => core.asyncTestDelay(
+          _testUrl,
+          'HK-01',
+          timeout: any(named: 'timeout'),
+        ),
       ).thenThrow(StateError('channel is gone'));
       final container = _delayContainer(buildContainer);
 
@@ -300,13 +315,86 @@ void main() {
 
       expect(container.read(delayDataSourceProvider), isEmpty);
       expect(container.read(pendingDelayTestsProvider), isEmpty);
-      verifyNever(() => core.asyncTestDelay(any(), any()));
+      verifyNever(
+        () => core.asyncTestDelay(any(), any(), timeout: any(named: 'timeout')),
+      );
+    });
+  });
+
+  group('delay test method', () {
+    test('a TCP test connects to the node and never asks the Core', () async {
+      final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(server.close);
+      final container = buildContainer();
+      container.read(appSettingProvider.notifier).value = const AppSettingProps(
+        testUrl: _testUrl,
+      );
+
+      await actionOf(container).delayTest([
+        Proxy(name: 'HK-01', type: 'ss', address: '127.0.0.1:${server.port}'),
+      ]);
+
+      final value = container.read(delayDataSourceProvider)[_testUrl]?['HK-01'];
+      expect(value, greaterThanOrEqualTo(1));
+      verifyNever(
+        () => core.asyncTestDelay(any(), any(), timeout: any(named: 'timeout')),
+      );
+    });
+
+    test('a TCP test of a node nobody answers for records a timeout', () async {
+      final container = buildContainer();
+      container.read(appSettingProvider.notifier).value = const AppSettingProps(
+        testUrl: _testUrl,
+      );
+
+      await actionOf(container).delayTest(const [
+        Proxy(name: 'HK-01', type: 'ss', address: '127.0.0.1:1'),
+        Proxy(name: 'HK-02', type: 'ss'),
+      ]);
+
+      final delays = container.read(delayDataSourceProvider)[_testUrl];
+      expect(delays?['HK-01'], -1);
+      expect(delays?['HK-02'], -1);
+    });
+
+    test('a URL test hands the configured timeout to the Core', () async {
+      when(
+        () => core.asyncTestDelay(
+          _testUrl,
+          'HK-01',
+          timeout: any(named: 'timeout'),
+        ),
+      ).thenAnswer(
+        (_) async => const Delay(name: 'HK-01', url: _testUrl, value: 20),
+      );
+      final container = buildContainer();
+      container.read(appSettingProvider.notifier).value = const AppSettingProps(
+        testUrl: _testUrl,
+        delayTestMethod: DelayTestMethod.url,
+        delayTestTimeoutSeconds: 3,
+      );
+
+      await actionOf(container).delayTest(const [_proxy]);
+
+      verify(
+        () => core.asyncTestDelay(
+          _testUrl,
+          'HK-01',
+          timeout: const Duration(seconds: 3),
+        ),
+      ).called(1);
     });
   });
 
   group('delayTest', () {
     test('measures every proxy and bumps the sort counter', () async {
-      when(() => core.asyncTestDelay(_testUrl, any())).thenAnswer(
+      when(
+        () => core.asyncTestDelay(
+          _testUrl,
+          any(),
+          timeout: any(named: 'timeout'),
+        ),
+      ).thenAnswer(
         (invocation) async => Delay(
           name: invocation.positionalArguments[1] as String,
           url: _testUrl,
@@ -328,7 +416,13 @@ void main() {
     });
 
     test('lands a run of quick results in batches, not one per node', () async {
-      when(() => core.asyncTestDelay(_testUrl, any())).thenAnswer(
+      when(
+        () => core.asyncTestDelay(
+          _testUrl,
+          any(),
+          timeout: any(named: 'timeout'),
+        ),
+      ).thenAnswer(
         (invocation) async => Delay(
           name: invocation.positionalArguments[1] as String,
           url: _testUrl,
@@ -360,7 +454,13 @@ void main() {
       'marks only nodes the pool runs as running, the rest queued',
       () async {
         final answers = <String, Completer<Delay?>>{};
-        when(() => core.asyncTestDelay(_testUrl, any())).thenAnswer(
+        when(
+          () => core.asyncTestDelay(
+            _testUrl,
+            any(),
+            timeout: any(named: 'timeout'),
+          ),
+        ).thenAnswer(
           (invocation) => answers
               .putIfAbsent(
                 invocation.positionalArguments[1] as String,
@@ -401,19 +501,33 @@ void main() {
     );
 
     test('probes a node that appears twice only once', () async {
-      when(() => core.asyncTestDelay(_testUrl, 'HK-01')).thenAnswer(
+      when(
+        () => core.asyncTestDelay(
+          _testUrl,
+          'HK-01',
+          timeout: any(named: 'timeout'),
+        ),
+      ).thenAnswer(
         (_) async => const Delay(name: 'HK-01', url: _testUrl, value: 10),
       );
       final container = _delayContainer(buildContainer);
 
       await actionOf(container).delayTest(const [_proxy, _proxy]);
 
-      verify(() => core.asyncTestDelay(_testUrl, 'HK-01')).called(1);
+      verify(
+        () => core.asyncTestDelay(
+          _testUrl,
+          'HK-01',
+          timeout: any(named: 'timeout'),
+        ),
+      ).called(1);
     });
 
     test('testing groups probes a shared node once per test URL', () async {
       const otherUrl = 'http://other.test';
-      when(() => core.asyncTestDelay(any(), any())).thenAnswer(
+      when(
+        () => core.asyncTestDelay(any(), any(), timeout: any(named: 'timeout')),
+      ).thenAnswer(
         (invocation) async => Delay(
           url: invocation.positionalArguments[0] as String,
           name: invocation.positionalArguments[1] as String,
@@ -434,16 +548,40 @@ void main() {
         ),
       ]);
 
-      verify(() => core.asyncTestDelay(_testUrl, 'HK-01')).called(1);
-      verify(() => core.asyncTestDelay(_testUrl, 'HK-02')).called(1);
-      verify(() => core.asyncTestDelay(otherUrl, 'HK-01')).called(1);
+      verify(
+        () => core.asyncTestDelay(
+          _testUrl,
+          'HK-01',
+          timeout: any(named: 'timeout'),
+        ),
+      ).called(1);
+      verify(
+        () => core.asyncTestDelay(
+          _testUrl,
+          'HK-02',
+          timeout: any(named: 'timeout'),
+        ),
+      ).called(1);
+      verify(
+        () => core.asyncTestDelay(
+          otherUrl,
+          'HK-01',
+          timeout: any(named: 'timeout'),
+        ),
+      ).called(1);
       expect(container.read(sortNumProvider), before + 1);
     });
 
     test(
       'testing a page group probes the nodes the timeout filter hides',
       () async {
-        when(() => core.asyncTestDelay(_testUrl, any())).thenAnswer(
+        when(
+          () => core.asyncTestDelay(
+            _testUrl,
+            any(),
+            timeout: any(named: 'timeout'),
+          ),
+        ).thenAnswer(
           (invocation) async => Delay(
             name: invocation.positionalArguments[1] as String,
             url: _testUrl,
@@ -472,16 +610,38 @@ void main() {
 
         await actionOf(container).delayTestPageGroup('Proxy');
 
-        verify(() => core.asyncTestDelay(_testUrl, 'HK-01')).called(1);
-        verify(() => core.asyncTestDelay(_testUrl, 'HK-02')).called(1);
-        verifyNever(() => core.asyncTestDelay(_testUrl, 'JP-01'));
+        verify(
+          () => core.asyncTestDelay(
+            _testUrl,
+            'HK-01',
+            timeout: any(named: 'timeout'),
+          ),
+        ).called(1);
+        verify(
+          () => core.asyncTestDelay(
+            _testUrl,
+            'HK-02',
+            timeout: any(named: 'timeout'),
+          ),
+        ).called(1);
+        verifyNever(
+          () => core.asyncTestDelay(
+            _testUrl,
+            'JP-01',
+            timeout: any(named: 'timeout'),
+          ),
+        );
       },
     );
 
     test('a page group holds its testing mark until the run settles', () async {
       final release = Completer<Delay?>();
       when(
-        () => core.asyncTestDelay(_testUrl, 'HK-01'),
+        () => core.asyncTestDelay(
+          _testUrl,
+          'HK-01',
+          timeout: any(named: 'timeout'),
+        ),
       ).thenAnswer((_) => release.future);
       final container = _delayContainer(buildContainer);
       container
@@ -501,13 +661,25 @@ void main() {
       );
       await run;
 
-      verify(() => core.asyncTestDelay(_testUrl, 'HK-01')).called(1);
+      verify(
+        () => core.asyncTestDelay(
+          _testUrl,
+          'HK-01',
+          timeout: any(named: 'timeout'),
+        ),
+      ).called(1);
       expect(container.read(delayTestingGroupsProvider), isEmpty);
     });
 
     test('stops the run once the transport is gone', () async {
       var calls = 0;
-      when(() => core.asyncTestDelay(_testUrl, any())).thenAnswer((_) async {
+      when(
+        () => core.asyncTestDelay(
+          _testUrl,
+          any(),
+          timeout: any(named: 'timeout'),
+        ),
+      ).thenAnswer((_) async {
         calls++;
         throw const CoreMethodException(
           code: 'transport_disconnected',
@@ -530,9 +702,13 @@ void main() {
 
     test('a proxy that answers nothing leaves the rest of the run', () async {
       var calls = 0;
-      when(() => core.asyncTestDelay(_testUrl, any())).thenAnswer((
-        invocation,
-      ) async {
+      when(
+        () => core.asyncTestDelay(
+          _testUrl,
+          any(),
+          timeout: any(named: 'timeout'),
+        ),
+      ).thenAnswer((invocation) async {
         calls++;
         final name = invocation.positionalArguments[1] as String;
         if (name == 'HK-1') {
@@ -557,9 +733,13 @@ void main() {
 
     test('a proxy that fails leaves the rest of the run', () async {
       var calls = 0;
-      when(() => core.asyncTestDelay(_testUrl, any())).thenAnswer((
-        invocation,
-      ) async {
+      when(
+        () => core.asyncTestDelay(
+          _testUrl,
+          any(),
+          timeout: any(named: 'timeout'),
+        ),
+      ).thenAnswer((invocation) async {
         calls++;
         final name = invocation.positionalArguments[1] as String;
         if (name == 'HK-1') {
@@ -588,7 +768,11 @@ void main() {
     test('drops every spinner when the Core goes away mid-run', () async {
       final release = Completer<Delay?>();
       when(
-        () => core.asyncTestDelay(_testUrl, any()),
+        () => core.asyncTestDelay(
+          _testUrl,
+          any(),
+          timeout: any(named: 'timeout'),
+        ),
       ).thenAnswer((_) => release.future);
       final container = _delayContainer(buildContainer);
       container.read(coreStatusProvider.notifier).value = CoreStatus.connected;

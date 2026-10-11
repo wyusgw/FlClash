@@ -73,14 +73,14 @@
     },
     {
       "tag": "hy2",
-      "protocol": "hysteria",
+      "protocol": "hysteria2",
       "settings": {
         "version": 2,
         "address": "hy.example.com",
         "port": 443
       },
       "streamSettings": {
-        "network": "hysteria",
+        "network": "hysteria2",
         "security": "tls",
         "tlsSettings": {
           "serverName": "hy.example.com",
@@ -88,7 +88,7 @@
             "h3"
           ]
         },
-        "hysteriaSettings": {
+        "hysteria2Settings": {
           "version": 2,
           "auth": "auth"
         },
@@ -140,6 +140,68 @@
         "tlsSettings": {
           "serverName": "at.example.com"
         }
+      }
+    },
+    {
+      "tag": "socks-proxy.example.com:1080",
+      "protocol": "socks",
+      "settings": {
+        "address": "proxy.example.com",
+        "port": 1080,
+        "user": "user",
+        "pass": "pass"
+      }
+    },
+    {
+      "tag": "http-proxy.example.com:1080",
+      "protocol": "http",
+      "settings": {
+        "address": "proxy.example.com",
+        "port": 1080,
+        "user": "user",
+        "pass": "pass"
+      }
+    },
+    {
+      "tag": "mieru-proxy.example.com:1080",
+      "protocol": "mieru",
+      "settings": {
+        "address": "proxy.example.com",
+        "port": 1080,
+        "username": "user",
+        "password": "pass",
+        "transport": "TCP",
+        "multiplexing": "MULTIPLEXING_LOW",
+        "handshakeMode": "HANDSHAKE_STANDARD"
+      }
+    },
+    {
+      "tag": "https",
+      "protocol": "http",
+      "settings": {
+        "address": "proxy.example.com",
+        "port": 8443
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "sni.example.com",
+          "allowInsecure": true
+        }
+      }
+    },
+    {
+      "tag": "hysteria1",
+      "protocol": "hysteria",
+      "settings": {
+        "address": "hy1.example.com",
+        "port": 8443,
+        "auth": "auth",
+        "up": "100mbps",
+        "down": "100mbps",
+        "obfs": "xplus",
+        "obfsPassword": "mask"
       }
     }
   ]

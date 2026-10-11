@@ -108,9 +108,7 @@ void main() {
     final handler = _RecordingCoreHandler();
 
     await handler.init(const InitParams(homeDir: '/tmp/flclash', version: 35));
-    await handler.setupConfig(
-      const SetupParams(testUrl: 'test'),
-    );
+    await handler.setupConfig(const SetupParams(testUrl: 'test'));
     final route = await handler.watchRoute(true);
     expect(route, const RouteSnapshot(coreEpoch: 1));
     expect(handler.calls[CoreMethod.watchRoute], isTrue);

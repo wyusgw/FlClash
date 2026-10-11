@@ -7,11 +7,9 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/pages/home.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/dashboard/widgets/start_button.dart';
 import 'package:fl_clash/views/navigation.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -124,34 +122,6 @@ void main() {
     addTearDown(() => navigationPort = null);
   });
 
-  testWidgets('the start button holds the end of the dock on the dashboard', (
-    tester,
-  ) async {
-    final container = await _pumpHome(tester);
-
-    final bar = tester.getRect(find.byType(FloatingNavigationBar));
-    final button = tester.getRect(find.byType(FloatingActionButton));
-    expect(find.byType(StartButton), findsOneWidget);
-    expect(button.width, button.height);
-    expect(button.height, bar.height);
-    expect(button.center.dy, bar.center.dy);
-    expect(button.left - bar.right, 8);
-    expect((bar.left + button.right) / 2, _mobileSize.width / 2);
-
-    await tester.drag(
-      find.byType(FloatingNavigationBar),
-      Offset(bar.width * 0.7, 0),
-      warnIfMissed: false,
-    );
-    await tester.pumpAndSettle();
-    expect(container.read(currentPageLabelProvider), PageLabel.tools);
-    expect(find.byType(StartButton), findsNothing);
-    final alone = tester.getRect(find.byType(FloatingNavigationBar));
-    expect(alone.center.dx, _mobileSize.width / 2);
-    expect(alone.width, lessThan(_mobileSize.width - 40));
-    expect(tester.takeException(), isNull);
-  });
-
   testWidgets('a tap that just misses the bar still reaches it', (
     tester,
   ) async {
@@ -231,44 +201,6 @@ void main() {
     expect(tester.getRect(_lens), resting);
   });
 
-  testWidgets(
-    'the docked start button swells and follows a drag like the lens',
-    (tester) async {
-      await _pumpHome(tester);
-      final press = find.ancestor(
-        of: find.byType(FloatingActionButton),
-        matching: find.byType(ElasticPress),
-      );
-      final resting = tester.getRect(press);
-      Rect painted() => _painted(
-        tester,
-        tester.renderObject<RenderProxyBox>(press).child!,
-        resting,
-      );
-
-      final gesture = await tester.startGesture(resting.center);
-      await tester.pumpAndSettle();
-      final pressed = painted();
-      expect(tester.getRect(press), resting);
-      expect(pressed.center, resting.center);
-      expect(pressed.width, greaterThan(resting.width + 8));
-      expect(
-        pressed.width / pressed.height,
-        moreOrLessEquals(resting.width / resting.height),
-      );
-
-      await gesture.moveBy(const Offset(-60, 0));
-      await tester.pumpAndSettle();
-      final pulled = painted();
-      expect(pulled.center.dx, lessThan(resting.center.dx - 4));
-      expect(pulled.width / pulled.height, greaterThan(1));
-
-      await gesture.up();
-      await tester.pumpAndSettle();
-      expect(painted(), resting);
-    },
-  );
-
   testWidgets('the bar swells under a pointer and stretches past its end', (
     tester,
   ) async {
@@ -330,6 +262,8 @@ void main() {
       addTearDown(mouse.removePointer);
       await mouse.addPointer(location: Offset.zero);
       await mouse.moveTo(resting.center + const Offset(30, 0));
+      await tester.pumpAndSettle();
+      Tooltip.dismissAllToolTips();
       await tester.pumpAndSettle();
       final hovered = tester.getRect(tools);
       expect(hovered.width, moreOrLessEquals(resting.width));
@@ -424,33 +358,6 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
-
-  testWidgets(
-    'the docked start button stays an icon-only circle while it runs',
-    (tester) async {
-      await _pumpHome(
-        tester,
-        settle: false,
-        overrides: [
-          runTimeProvider.overrideWithBuild(
-            (_, _) => const Duration(
-              hours: 2,
-              minutes: 13,
-              seconds: 8,
-            ).inMilliseconds,
-          ),
-        ],
-      );
-
-      final bar = tester.getRect(find.byType(FloatingNavigationBar));
-      final button = tester.getRect(find.byType(FloatingActionButton));
-      expect(button.width, button.height);
-      expect(button.height, bar.height);
-      expect(find.text('02:13:08'), findsNothing);
-      expect(find.byType(RunTimeText), findsNothing);
-      expect(tester.takeException(), isNull);
-    },
-  );
 
   testWidgets('a page off the dock shows its primary action as a FAB', (
     tester,

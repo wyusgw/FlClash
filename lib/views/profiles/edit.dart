@@ -25,6 +25,7 @@ class EditProfileView extends ConsumerStatefulWidget {
 class _EditProfileViewState extends ConsumerState<EditProfileView> {
   late final TextEditingController _labelController;
   late final TextEditingController _urlController;
+  late final TextEditingController _autoUpdateDurationController;
   late bool _autoUpdate;
   final _fileInfoNotifier = ValueNotifier<FileInfo?>(null);
   late SetupAction _setupAction;
@@ -35,6 +36,9 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
     _labelController = TextEditingController(text: widget.profile.label);
     _urlController = TextEditingController(text: widget.profile.url);
     _autoUpdate = widget.profile.autoUpdate;
+    _autoUpdateDurationController = TextEditingController(
+      text: widget.profile.autoUpdateDuration.inMinutes.toString(),
+    );
     _setupAction = ref.read(setupActionProvider.notifier);
     _updateFileInfo();
   }
@@ -56,6 +60,15 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
     final url = _urlController.text;
     if (url.isEmpty) return appLocalizations.profileUrlNullValidationDesc;
     if (!url.isUrl) return appLocalizations.profileUrlInvalidValidationDesc;
+    if (_autoUpdate) {
+      final interval = _autoUpdateDurationController.text;
+      if (interval.isEmpty) {
+        return appLocalizations.profileAutoUpdateIntervalNullValidationDesc;
+      }
+      if (int.tryParse(interval) == null) {
+        return appLocalizations.profileAutoUpdateIntervalInvalidValidationDesc;
+      }
+    }
     return null;
   }
 
@@ -69,6 +82,9 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
       url: _urlController.text,
       label: _labelController.text,
       autoUpdate: _autoUpdate,
+      autoUpdateDuration: Duration(
+        minutes: int.tryParse(_autoUpdateDurationController.text) ?? 0,
+      ),
     );
     final profilesAction = ref.read(profilesActionProvider.notifier);
     if (widget.profile.url == profile.url) {
@@ -97,6 +113,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
   void dispose() {
     _labelController.dispose();
     _urlController.dispose();
+    _autoUpdateDurationController.dispose();
     _fileInfoNotifier.dispose();
     super.dispose();
     _setupAction.autoApplyProfile();
@@ -189,6 +206,16 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
                         trailing: GroupedSwitch(
                           value: _autoUpdate,
                           onChanged: _setAutoUpdate,
+                        ),
+                      ),
+                    if (isUrl && _autoUpdate)
+                      GroupedFieldRow(
+                        label: appLocalizations.autoUpdateInterval,
+                        hint: '',
+                        controller: _autoUpdateDurationController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: TextInputLimits.digitsOnly(
+                          TextInputLimits.interval,
                         ),
                       ),
                   ],

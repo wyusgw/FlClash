@@ -15,6 +15,7 @@ abstract final class TextInputLimits {
   static const fileName = 255;
   static const port = 5;
   static const number = 10;
+  static const interval = number;
   static const search = 256;
   static const rule = 1024;
   static const filter = 1024;

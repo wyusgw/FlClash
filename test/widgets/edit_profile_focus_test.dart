@@ -148,24 +148,34 @@ void main() {
     expect(find.text(l10n.autoUpdate), findsNothing);
   });
 
-  testWidgets('auto update is a switch alone, with no interval to type', (
+  testWidgets('the interval shows only while auto update is on', (
     tester,
   ) async {
-    final profile = await openEdit(tester);
-    final fields = find.byType(TextField);
-    final before = fields.evaluate().length;
+    await openEdit(tester);
+    final l10n = currentAppLocalizations;
+    expect(find.text(l10n.autoUpdateInterval), findsNothing);
 
     await tester.tap(find.byType(GroupedSwitch));
     await tester.pumpAndSettle();
 
-    expect(fields.evaluate().length, before);
+    expect(find.text(l10n.autoUpdateInterval), findsOneWidget);
+  });
 
+  testWidgets('saving keeps the interval typed in minutes', (tester) async {
+    final profile = await openEdit(tester);
+    await tester.tap(find.byType(GroupedSwitch));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      field(currentAppLocalizations.autoUpdateInterval),
+      '90',
+    );
     await tester.tap(find.text(currentAppLocalizations.save));
     await tester.pumpAndSettle();
 
     final saved = container.read(profilesProvider).single;
     expect(saved.autoUpdate, !profile.autoUpdate);
-    expect(saved.autoUpdateDuration, profile.autoUpdateDuration);
+    expect(saved.autoUpdateDuration, const Duration(minutes: 90));
   });
 
   testWidgets('saving stores the new name and closes the page', (tester) async {

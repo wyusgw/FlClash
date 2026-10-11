@@ -730,6 +730,36 @@ class AppLocalizations {
     return Intl.message('Auto update', name: 'autoUpdate', desc: '', args: []);
   }
 
+  /// `Auto-update interval`
+  String get autoUpdateInterval {
+    return Intl.message(
+      'Auto-update interval',
+      name: 'autoUpdateInterval',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter the auto-update interval`
+  String get profileAutoUpdateIntervalNullValidationDesc {
+    return Intl.message(
+      'Please enter the auto-update interval',
+      name: 'profileAutoUpdateIntervalNullValidationDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a valid interval`
+  String get profileAutoUpdateIntervalInvalidValidationDesc {
+    return Intl.message(
+      'Please enter a valid interval',
+      name: 'profileAutoUpdateIntervalInvalidValidationDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Theme mode`
   String get themeMode {
     return Intl.message('Theme mode', name: 'themeMode', desc: '', args: []);

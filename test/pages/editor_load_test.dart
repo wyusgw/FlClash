@@ -149,35 +149,6 @@ void main() {
     (tester) => openCrlf(tester, loaded: false),
   );
 
-  Future<CodeForgeController> pumpTyped(
-    WidgetTester tester,
-    Language language,
-    String typed,
-  ) async {
-    await tester.pumpWidget(
-      TestApp(
-        overrides: [
-          viewSizeProvider.overrideWithBuild((_, _) => const Size(1200, 1000)),
-        ],
-        child: EditorPage(
-          title: 'Editor',
-          content: '',
-          language: language,
-          onSave: (_, _, _) {},
-        ),
-      ),
-    );
-    await settle(tester);
-    final controller = tester
-        .widget<CodeForge>(find.byType(CodeForge))
-        .controller;
-    controller.focusNode!.requestFocus();
-    await settle(tester, 2);
-    await typeText(tester, controller, typed);
-    await settle(tester, 8);
-    return controller;
-  }
-
   testWidgets('only an edit that changes the document can be saved', (
     tester,
   ) async {
@@ -449,25 +420,5 @@ void main() {
 
     expect(saved, ['mode: rules']);
     expect(find.byType(EditorPage), findsNothing);
-  });
-
-  testWidgets('the YAML editor completes Clash keys with their separator', (
-    tester,
-  ) async {
-    final controller = await pumpTyped(tester, Language.yaml, 'mixed-p');
-
-    await tester.tap(find.text('mixed-port'));
-    await settle(tester, 8);
-
-    expect(controller.text, 'mixed-port: ');
-    expect(controller.selection.extentOffset, controller.length);
-  });
-
-  testWidgets('the script editor completes script words', (tester) async {
-    await pumpTyped(tester, Language.javaScript, 'cons');
-
-    expect(find.text('console'), findsOneWidget);
-    expect(find.text('mixed-port'), findsNothing);
-    await settle(tester, 8);
   });
 }

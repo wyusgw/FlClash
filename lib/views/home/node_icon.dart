@@ -1,3 +1,4 @@
+import 'package:country_flags/country_flags.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
@@ -6,8 +7,9 @@ import 'package:material_ui/material_ui.dart';
 
 const _nodeIconSize = 19.0;
 
-/// A round flag for the country a node's name points at; a name that points
-/// at none gets the plain house badge.
+/// A round flag for the country a node's name points at, filling the circle;
+/// a name that points at none, or at a country the flag set lacks, gets the
+/// plain house badge.
 class NodeIcon extends StatelessWidget {
   const NodeIcon({super.key, required this.name});
 
@@ -15,39 +17,31 @@ class NodeIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = GroupedPalette.of(context);
     final region = nodeRegionCode(name);
+    if (region != null && FlagCode.fromCountryCode(region) != null) {
+      return CountryFlag.fromCountryCode(
+        region,
+        theme: const ImageTheme(
+          width: _nodeIconSize,
+          height: _nodeIconSize,
+          shape: Circle(),
+        ),
+      );
+    }
     return SizedBox.square(
       dimension: _nodeIconSize,
       child: DecoratedBox(
         decoration: ShapeDecoration(
-          color: region == null ? palette.icon : palette.fill,
+          color: GroupedPalette.of(context).icon,
           shape: AppShape.full,
         ),
-        child: ClipPath(
-          clipper: const ShapeBorderClipper(shape: _circle),
-          child: Center(
-            child: region == null
-                ? const GlyphIcon(
-                    AppGlyphs.home,
-                    size: 13,
-                    color: Color(0xFFFFFFFF),
-                  )
-                : FittedBox(
-                    fit: BoxFit.cover,
-                    child: Text(
-                      region.countryFlagEmoji,
-                      style: const TextStyle(fontSize: _nodeIconSize),
-                    ),
-                  ),
-          ),
+        child: const Center(
+          child: GlyphIcon(AppGlyphs.home, size: 13, color: Color(0xFFFFFFFF)),
         ),
       ),
     );
   }
 }
-
-const _circle = CircleBorder();
 
 void showNodeDetail(BuildContext context, Proxy node) {
   showExtend(

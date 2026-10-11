@@ -29,18 +29,6 @@ extension StringExtension on String {
     return toLowerCase().compareTo(other.toLowerCase());
   }
 
-  String get countryFlagEmoji {
-    final code = toUpperCase();
-    if (!RegExp(r'^[A-Z]{2}$').hasMatch(code)) {
-      return this;
-    }
-    const regionalIndicatorA = 0x1F1E6;
-    return String.fromCharCodes([
-      code.codeUnitAt(0) - 0x41 + regionalIndicatorA,
-      code.codeUnitAt(1) - 0x41 + regionalIndicatorA,
-    ]);
-  }
-
   String safeSubstring(int start, [int? end]) {
     if (isEmpty) return '';
     final safeStart = start.clamp(0, length);

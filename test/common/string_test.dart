@@ -68,18 +68,6 @@ void main() {
     });
   });
 
-  group('StringExtension.countryFlagEmoji', () {
-    test('maps a two-letter region code to its flag', () {
-      expect('us'.countryFlagEmoji, '🇺🇸');
-    });
-
-    test('leaves anything but two ASCII letters untouched', () {
-      expect('1A'.countryFlagEmoji, '1A');
-      expect('É1'.countryFlagEmoji, 'É1');
-      expect('USA'.countryFlagEmoji, 'USA');
-    });
-  });
-
   group('StringExtension.safeSubstring', () {
     test('returns empty for empty string', () {
       expect(''.safeSubstring(0), '');

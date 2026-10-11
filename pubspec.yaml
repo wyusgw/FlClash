@@ -76,6 +76,7 @@ dependencies:
     path: plugins/rust_api
   setup:
     path: plugins/setup
+  country_flags: ^4.1.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

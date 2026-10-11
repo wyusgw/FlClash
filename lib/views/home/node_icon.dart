@@ -1,47 +1,47 @@
-import 'package:country_flags/country_flags.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/action.dart';
+import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/views/profiles/edit_server.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-const _nodeIconSize = 19.0;
-
-/// A round flag for the country a node's name points at, filling the circle;
-/// a name that points at none, or at a country the flag set lacks, gets the
-/// plain house badge.
-class NodeIcon extends StatelessWidget {
-  const NodeIcon({super.key, required this.name});
+/// A round flag for the country a node is in: the one the user placed it in,
+/// else the one its name points at. Without one, or with one the flag set
+/// lacks, a line of the subscription's own notes gets the icon of what it
+/// tells, and any other name the plain house badge.
+class NodeIcon extends ConsumerWidget {
+  const NodeIcon({
+    super.key,
+    required this.name,
+    this.region,
+    this.address,
+    this.size,
+  });
 
   final String name;
 
+  /// The country the user chose; null leaves it to the name.
+  final String? region;
+
+  /// Where the node points, `host:port`; a name with no country is looked up
+  /// by it, while the user allows that.
+  final String? address;
+  final double? size;
+
   @override
-  Widget build(BuildContext context) {
-    final region = nodeRegionCode(name);
-    if (region != null && FlagCode.fromCountryCode(region) != null) {
-      return CountryFlag.fromCountryCode(
-        region,
-        theme: const ImageTheme(
-          width: _nodeIconSize,
-          height: _nodeIconSize,
-          shape: Circle(),
-        ),
-      );
+  Widget build(BuildContext context, WidgetRef ref) {
+    var code = region ?? nodeRegionCode(name);
+    final host = hostOfAddress(address);
+    if (code == null && host != null) {
+      code = ref.watch(nodeGeoRegionProvider(host)).value;
     }
-    return SizedBox.square(
-      dimension: _nodeIconSize,
-      child: DecoratedBox(
-        decoration: ShapeDecoration(
-          color: GroupedPalette.of(context).icon,
-          shape: AppShape.full,
-        ),
-        child: const Center(
-          child: GlyphIcon(AppGlyphs.home, size: 13, color: Color(0xFFFFFFFF)),
-        ),
-      ),
+    return RegionFlag(
+      code: code,
+      size: size,
+      fallback: nodeInfoGlyph(name) ?? AppGlyphs.home,
     );
   }
 }

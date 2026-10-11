@@ -107,6 +107,9 @@ abstract class Proxy with _$Proxy {
     String? now,
     String? network,
     String? address,
+
+    /// The country the user placed the node in; null leaves it to its name.
+    String? region,
   }) = _Proxy;
 
   factory Proxy.fromJson(Map<String, Object?> json) => _$ProxyFromJson(json);

@@ -333,6 +333,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "fileDesc": MessageLookupByLibrary.simpleMessage("直接上传配置文件"),
     "filter": MessageLookupByLibrary.simpleMessage("筛选"),
     "fingerprint": MessageLookupByLibrary.simpleMessage("指纹"),
+    "flag": MessageLookupByLibrary.simpleMessage("旗帜"),
     "floating": MessageLookupByLibrary.simpleMessage("悬浮"),
     "flow": MessageLookupByLibrary.simpleMessage("流控"),
     "followSystem": MessageLookupByLibrary.simpleMessage("跟随系统"),
@@ -342,6 +343,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "format": MessageLookupByLibrary.simpleMessage("格式"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("果缤纷"),
     "general": MessageLookupByLibrary.simpleMessage("常规"),
+    "geoRegion": MessageLookupByLibrary.simpleMessage("查询服务器国家"),
+    "geoRegionDesc": MessageLookupByLibrary.simpleMessage(
+      "向 GeoIP 服务查询服务器所在国家以显示国旗，会把服务器地址发送给该服务。",
+    ),
     "global": MessageLookupByLibrary.simpleMessage("全局"),
     "globalModeDesc": MessageLookupByLibrary.simpleMessage("通过代理转发所有流量"),
     "globalRouting": MessageLookupByLibrary.simpleMessage("全局路由"),

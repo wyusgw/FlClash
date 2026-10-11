@@ -39,6 +39,7 @@ export 'palette.dart';
 export 'pop_scope.dart';
 export 'popup.dart';
 export 'record.dart';
+export 'region_flag.dart';
 export 'route_motion_hold.dart';
 export 'scaffold.dart';
 export 'scroll.dart';

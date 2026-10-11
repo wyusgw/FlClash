@@ -111,6 +111,7 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(TrayMode.embedded) TrayMode trayMode,
     @Default(true) bool showSidebar,
     @Default(false) bool archiveStats,
+    @Default(true) bool geoRegion,
     @Default(true) bool checkCertificate,
     @Default(defaultUserAgents)
     @JsonKey(readValue: _readUserAgents)

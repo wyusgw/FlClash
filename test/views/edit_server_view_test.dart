@@ -5,6 +5,7 @@ import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/edit_server.dart';
+import 'package:fl_clash/views/profiles/region.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -120,6 +121,29 @@ void main() {
     expect((replaced.outbound['settings'] as Map)['port'], 24444);
     expect(replaced.outbound['tag'], 'Japan');
     expect(find.byType(EditServerView), findsNothing);
+  });
+
+  testWidgets('the flag beside the address changes only the country', (
+    tester,
+  ) async {
+    await openPage(tester);
+    expect(tester.widget<InkResponse>(save()).onTap, isNull);
+
+    await tester.tap(find.byKey(const ValueKey('field.region')));
+    await tester.pumpAndSettle();
+    expect(find.byType(RegionView), findsOneWidget);
+    await tester.enterText(find.byType(TextField).last, 'germany');
+    await tester.pump();
+    await tester.tap(find.text('DE'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<InkResponse>(save()).onTap, isNotNull);
+
+    await tester.tap(find.text(l10n.save));
+    await tester.pumpAndSettle();
+
+    final saved = action().replaced.single.outbound;
+    expect(saved['region'], 'DE');
+    expect((saved['settings'] as Map)['port'], 23333);
   });
 
   testWidgets('a form that is no longer complete cannot be saved', (

@@ -6,6 +6,8 @@ import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/pages/scan.dart';
 import 'package:fl_clash/providers/action.dart';
+import 'package:fl_clash/providers/app.dart';
+import 'package:fl_clash/views/profiles/region.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
@@ -360,7 +362,7 @@ class ChoiceView extends StatelessWidget {
 
 /// The inputs of one protocol's server form, in a grouped card. It keeps the
 /// text being typed; [values] is what the parent holds of it.
-class NodeFormFields extends StatefulWidget {
+class NodeFormFields extends ConsumerStatefulWidget {
   const NodeFormFields({
     super.key,
     required this.kind,
@@ -373,15 +375,41 @@ class NodeFormFields extends StatefulWidget {
   final void Function(String key, String value) onChanged;
 
   @override
-  State<NodeFormFields> createState() => _NodeFormFieldsState();
+  ConsumerState<NodeFormFields> createState() => _NodeFormFieldsState();
 }
 
-class _NodeFormFieldsState extends State<NodeFormFields> {
+class _NodeFormFieldsState extends ConsumerState<NodeFormFields> {
+  static const _settle = Duration(milliseconds: 800);
+
   final _controllers = <String, TextEditingController>{};
   final _revealed = <String>{};
 
+  /// The address once typing has paused on it, so that the country is asked of
+  /// the GeoIP service for an address and not for each letter of one.
+  String _askedHost = '';
+  Timer? _settling;
+
+  @override
+  void initState() {
+    super.initState();
+    _askedHost = widget.values['address']?.trim() ?? '';
+  }
+
+  @override
+  void didUpdateWidget(covariant NodeFormFields oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final address = widget.values['address']?.trim() ?? '';
+    if (address != (oldWidget.values['address']?.trim() ?? '')) {
+      _settling?.cancel();
+      _settling = Timer(_settle, () {
+        if (mounted) setState(() => _askedHost = address);
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _settling?.cancel();
     for (final controller in _controllers.values) {
       controller.dispose();
     }
@@ -389,6 +417,39 @@ class _NodeFormFieldsState extends State<NodeFormFields> {
   }
 
   Map<String, String> get _values => widget.values;
+
+  /// What the server's name, then where its address is, then the address
+  /// itself point at.
+  String? get _detected {
+    final named = nodeRegionCode(_values['remark'] ?? '');
+    if (named != null) return named;
+    final host = _askedHost;
+    if (host.isNotEmpty) {
+      final located = ref.watch(nodeGeoRegionProvider(host)).value;
+      if (located != null) return located;
+    }
+    return nodeRegionCode(_values['address'] ?? '');
+  }
+
+  Widget _regionButton() {
+    final chosen = _values['region'] ?? '';
+    final detected = _detected;
+    return Tooltip(
+      message: context.appLocalizations.flag,
+      child: InkResponse(
+        key: const ValueKey('field.region'),
+        radius: 16,
+        onTap: () async {
+          final picked = await BaseNavigator.push<String>(
+            context,
+            RegionView(selected: chosen, detected: detected),
+          );
+          if (picked != null) _setValue('region', picked);
+        },
+        child: RegionFlag(code: chosen.isEmpty ? detected : chosen),
+      ),
+    );
+  }
 
   void _setValue(String key, String value) => widget.onChanged(key, value);
 
@@ -420,7 +481,9 @@ class _NodeFormFieldsState extends State<NodeFormFields> {
           inputFormatters: field.type == NodeFieldType.number
               ? [FilteringTextInputFormatter.digitsOnly]
               : null,
-          trailing: secret
+          trailing: field.key == 'address'
+              ? _regionButton()
+              : secret
               ? InkResponse(
                   onTap: () => setState(() {
                     if (!_revealed.add(field.key)) _revealed.remove(field.key);

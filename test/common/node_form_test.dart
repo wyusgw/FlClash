@@ -527,6 +527,55 @@ void main() {
     });
   });
 
+  group('region', () {
+    test('the country the user chose is kept beside the outbound', () {
+      final outbound = _outbound(
+        NodeKind.trojan,
+        _values(NodeKind.trojan, {'password': 'pw', 'region': 'jp'}),
+      );
+
+      expect(outbound['region'], 'JP');
+    });
+
+    test('no country leaves the outbound without the key', () {
+      final outbound = _outbound(
+        NodeKind.trojan,
+        _values(NodeKind.trojan, {'password': 'pw'}),
+      );
+
+      expect(outbound.containsKey('region'), isFalse);
+    });
+
+    test('it reads back into the form and the node list', () {
+      final outbound = _outbound(
+        NodeKind.shadowsocks,
+        _values(NodeKind.shadowsocks, {'password': 'pw', 'region': 'DE'}),
+      );
+
+      expect(nodeFormOf(outbound)!.values['region'], 'DE');
+      expect(nodeToProxy(outbound).region, 'DE');
+    });
+
+    test('a node with none is shown without one', () {
+      final outbound = _outbound(
+        NodeKind.shadowsocks,
+        _values(NodeKind.shadowsocks, {'password': 'pw'}),
+      );
+
+      expect(nodeFormOf(outbound)!.values['region'], '');
+      expect(nodeToProxy(outbound).region, isNull);
+    });
+
+    test('changing the protocol keeps it', () {
+      final values = nodeValuesFor(
+        NodeKind.vless,
+        _values(NodeKind.shadowsocks, {'region': 'US'}),
+      );
+
+      expect(values['region'], 'US');
+    });
+  });
+
   group('nodeValuesFor', () {
     test('keeps what means the same and defaults the rest', () {
       final values = nodeValuesFor(NodeKind.trojan, {

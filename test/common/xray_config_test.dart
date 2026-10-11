@@ -90,6 +90,7 @@ void main() {
         'password': 'auth',
         'obfsPassword': 'mask',
         'remark': 'hysteria1',
+        'region': 'JP',
       })!,
     ];
 
@@ -98,6 +99,23 @@ void main() {
       supportedOutboundProtocols,
     );
     _expectFixture('outbounds', {'outbounds': outbounds});
+  });
+
+  test('the region a node was placed in never reaches the Core', () {
+    final node = buildNodeOutbound(NodeKind.shadowsocks, {
+      ...nodeDefaults(NodeKind.shadowsocks),
+      'address': 'proxy.example.com',
+      'port': '8388',
+      'password': 'pw',
+      'region': 'JP',
+    })!;
+    final config = buildXrayConfig(_state(outbounds: [node]));
+
+    expect(node['region'], 'JP');
+    expect(
+      (config['outbounds'] as List).cast<Map>().first.containsKey('region'),
+      isFalse,
+    );
   });
 
   group('rule mode', () {

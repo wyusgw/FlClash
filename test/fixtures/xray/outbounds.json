@@ -202,7 +202,8 @@
         "down": "100mbps",
         "obfs": "xplus",
         "obfsPassword": "mask"
-      }
+      },
+      "region": "JP"
     }
   ]
 }

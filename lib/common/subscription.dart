@@ -199,7 +199,7 @@ List<String>? _list(String? value) {
 }
 
 /// A name or address Xray treats as private: it lets a node skip TLS.
-bool _isPrivateHost(String host) {
+bool isPrivateHost(String host) {
   final lower = host.toLowerCase();
   if (lower == 'localhost' ||
       lower.endsWith('.local') ||
@@ -367,7 +367,7 @@ Map<String, dynamic>? _vless(Uri uri) {
   final encryption = _param(query, ['encryption']) ?? 'none';
   if (encryption == 'none' &&
       (security == null || security == 'none') &&
-      !_isPrivateHost(uri.host)) {
+      !isPrivateHost(uri.host)) {
     return null;
   }
   final stream = _transport(
@@ -686,5 +686,11 @@ Proxy nodeToProxy(Map<String, dynamic> outbound) {
     type: protocol,
     network: network,
     address: host == null ? null : (port == null ? '$host' : '$host:$port'),
+    region: _regionOf(outbound),
   );
+}
+
+String? _regionOf(Map<String, dynamic> outbound) {
+  final region = '${outbound['region'] ?? ''}'.trim().toUpperCase();
+  return region.isEmpty ? null : region;
 }

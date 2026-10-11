@@ -2695,6 +2695,31 @@ class AppLocalizations {
     return Intl.message('Edit server', name: 'editServer', desc: '', args: []);
   }
 
+  /// `Flag`
+  String get flag {
+    return Intl.message('Flag', name: 'flag', desc: '', args: []);
+  }
+
+  /// `Look up server countries`
+  String get geoRegion {
+    return Intl.message(
+      'Look up server countries',
+      name: 'geoRegion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Asks a GeoIP service which country a server is in, to show its flag. The server address is sent to that service.`
+  String get geoRegionDesc {
+    return Intl.message(
+      'Asks a GeoIP service which country a server is in, to show its flag. The server address is sent to that service.',
+      name: 'geoRegionDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Statistics`
   String get statistics {
     return Intl.message('Statistics', name: 'statistics', desc: '', args: []);

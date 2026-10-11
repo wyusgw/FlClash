@@ -443,6 +443,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "filter": MessageLookupByLibrary.simpleMessage("Фильтр"),
     "fingerprint": MessageLookupByLibrary.simpleMessage("Отпечаток"),
+    "flag": MessageLookupByLibrary.simpleMessage("Флаг"),
     "floating": MessageLookupByLibrary.simpleMessage("Плавающая"),
     "flow": MessageLookupByLibrary.simpleMessage("Flow"),
     "followSystem": MessageLookupByLibrary.simpleMessage("Как в системе"),
@@ -454,6 +455,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "format": MessageLookupByLibrary.simpleMessage("Формат"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("Фруктовый микс"),
     "general": MessageLookupByLibrary.simpleMessage("Общие"),
+    "geoRegion": MessageLookupByLibrary.simpleMessage(
+      "Определять страну сервера",
+    ),
+    "geoRegionDesc": MessageLookupByLibrary.simpleMessage(
+      "Запрашивает у GeoIP-сервиса страну сервера, чтобы показать флаг. Адрес сервера отправляется этому сервису.",
+    ),
     "global": MessageLookupByLibrary.simpleMessage("Глобальный"),
     "globalModeDesc": MessageLookupByLibrary.simpleMessage(
       "Пересылать весь трафик через прокси",
@@ -505,10 +512,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "inbound": MessageLookupByLibrary.simpleMessage("Входящие"),
     "infiniteTime": MessageLookupByLibrary.simpleMessage("Бессрочно"),
     "init": MessageLookupByLibrary.simpleMessage("Инициализация"),
-    "installedAppsPermissionDeniedMessage":
-        MessageLookupByLibrary.simpleMessage(
-          "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
-        ),
+    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
+      "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
+    ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "Эта система не выдаёт список установленных приложений без разрешения. Предоставьте его, чтобы настроить прокси для отдельных приложений.",
     ),

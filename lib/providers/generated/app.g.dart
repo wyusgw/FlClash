@@ -361,6 +361,89 @@ abstract class _$TotalTraffic extends $Notifier<Traffic> {
   }
 }
 
+/// The country the server at [host] is in, asked of a GeoIP service while the
+/// user allows it.
+
+@ProviderFor(nodeGeoRegion)
+final nodeGeoRegionProvider = NodeGeoRegionFamily._();
+
+/// The country the server at [host] is in, asked of a GeoIP service while the
+/// user allows it.
+
+final class NodeGeoRegionProvider
+    extends $FunctionalProvider<AsyncValue<String?>, String?, FutureOr<String?>>
+    with $FutureModifier<String?>, $FutureProvider<String?> {
+  /// The country the server at [host] is in, asked of a GeoIP service while the
+  /// user allows it.
+  NodeGeoRegionProvider._({
+    required NodeGeoRegionFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'nodeGeoRegionProvider',
+         isAutoDispose: false,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$nodeGeoRegionHash();
+
+  @override
+  String toString() {
+    return r'nodeGeoRegionProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<String?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<String?> create(Ref ref) {
+    final argument = this.argument as String;
+    return nodeGeoRegion(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is NodeGeoRegionProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$nodeGeoRegionHash() => r'6e6e2ee4f8df40ca35a65b3f92691363ffa0c356';
+
+/// The country the server at [host] is in, asked of a GeoIP service while the
+/// user allows it.
+
+final class NodeGeoRegionFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<String?>, String> {
+  NodeGeoRegionFamily._()
+    : super(
+        retry: null,
+        name: r'nodeGeoRegionProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: false,
+      );
+
+  /// The country the server at [host] is in, asked of a GeoIP service while the
+  /// user allows it.
+
+  NodeGeoRegionProvider call(String host) =>
+      NodeGeoRegionProvider._(argument: host, from: this);
+
+  @override
+  String toString() => r'nodeGeoRegionProvider';
+}
+
 @ProviderFor(StatsSnapshot)
 final statsSnapshotProvider = StatsSnapshotProvider._();
 

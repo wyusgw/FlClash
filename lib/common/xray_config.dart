@@ -143,7 +143,7 @@ Map<String, dynamic> buildXrayConfig(MakeRealProfileState state) {
     'log': {'loglevel': _logLevelName(config.logLevel), 'access': 'none'},
     'inbounds': _inbounds(state),
     'outbounds': [
-      ...state.outbounds,
+      for (final node in state.outbounds) {...node}..remove('region'),
       {'tag': directOutboundTag, 'protocol': 'freedom'},
       {'tag': blockOutboundTag, 'protocol': 'blackhole'},
       {'tag': dnsOutboundTag, 'protocol': 'dns'},

@@ -252,6 +252,8 @@ Map<String, String> nodeDefaults(NodeKind kind) => {
     field.key: field.type == NodeFieldType.toggle
         ? (field.initial.isEmpty ? 'false' : field.initial)
         : field.initial,
+  // Empty leaves the country to the server's name.
+  'region': '',
 };
 
 /// The key of the first visible field that is required and empty, or whose
@@ -462,10 +464,21 @@ Map<String, dynamic>? buildNodeOutbound(
   if (kind == NodeKind.socks ||
       kind == NodeKind.http ||
       kind == NodeKind.mieru) {
-    return _directOutbound(kind, values);
+    return _withRegion(_directOutbound(kind, values), values);
   }
   final link = buildNodeLink(kind, values);
-  return link == null ? null : parseShareLink(link);
+  final outbound = link == null ? null : parseShareLink(link);
+  return outbound == null ? null : _withRegion(outbound, values);
+}
+
+/// The country the user placed the server in is kept beside the outbound, not
+/// in it: the Core never sees it.
+Map<String, dynamic> _withRegion(
+  Map<String, dynamic> outbound,
+  Map<String, String> values,
+) {
+  final region = _text(values, 'region').toUpperCase();
+  return region.isEmpty ? outbound : {...outbound, 'region': region};
 }
 
 Map<String, dynamic> _map(Object? value) =>
@@ -531,6 +544,7 @@ Map<String, String> _valuesOf(NodeKind kind, Map<String, dynamic> outbound) {
     'address': _str(settings['address']),
     'port': _str(settings['port']),
     'remark': _str(outbound['tag']),
+    'region': _str(outbound['region']),
   };
   switch (kind) {
     case NodeKind.shadowsocks:
@@ -645,6 +659,7 @@ const _portableFields = {
   'address',
   'port',
   'remark',
+  'region',
   'password',
   'uuid',
   'username',

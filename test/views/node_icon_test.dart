@@ -1,13 +1,31 @@
 import 'package:country_flags/country_flags.dart';
 import 'package:fl_clash/icons/icons.dart';
+import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/views/home/node_icon.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
-Future<void> _pump(WidgetTester tester, String name) {
+Future<void> _pump(
+  WidgetTester tester,
+  String name, {
+  String? region,
+  String? address,
+  Map<String, String?> geo = const {},
+}) {
   return tester.pumpWidget(
-    MaterialApp(
-      home: Center(child: NodeIcon(name: name)),
+    ProviderScope(
+      overrides: [
+        for (final entry in geo.entries)
+          nodeGeoRegionProvider(
+            entry.key,
+          ).overrideWith((_) async => entry.value),
+      ],
+      child: MaterialApp(
+        home: Center(
+          child: NodeIcon(name: name, region: region, address: address),
+        ),
+      ),
     ),
   );
 }
@@ -31,5 +49,95 @@ void main() {
 
     expect(find.byType(CountryFlag), findsNothing);
     expect(find.byType(GlyphIcon), findsOneWidget);
+  });
+
+  testWidgets('the country the user chose beats the one in the name', (
+    tester,
+  ) async {
+    await _pump(tester, '日本 Tokyo 01', region: 'DE');
+
+    final flag = tester.widget<CountryFlag>(find.byType(CountryFlag));
+    expect(flag.flagCode, 'de');
+  });
+
+  testWidgets('a chosen country with no flag falls back to the badge', (
+    tester,
+  ) async {
+    await _pump(tester, '日本 Tokyo 01', region: 'ZZ');
+
+    expect(find.byType(CountryFlag), findsNothing);
+    expect(find.byType(GlyphIcon), findsOneWidget);
+  });
+
+  testWidgets('a line of the subscription\'s notes gets its own icon', (
+    tester,
+  ) async {
+    await _pump(tester, '剩余流量：8.08 GB');
+
+    expect(find.byType(CountryFlag), findsNothing);
+    final glyph = tester.widget<GlyphIcon>(find.byType(GlyphIcon));
+    expect(glyph.glyph, AppGlyphs.dataUsage);
+  });
+
+  testWidgets('a country in the name still wins over the notes', (
+    tester,
+  ) async {
+    await _pump(tester, '日本 流量 x2');
+
+    expect(find.byType(CountryFlag), findsOneWidget);
+  });
+
+  testWidgets('a name with no country is placed by where its server is', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      '剩余流量：8.08 GB',
+      address: '203.0.113.9:8388',
+      geo: {'203.0.113.9': 'JP'},
+    );
+    await tester.pump();
+
+    final flag = tester.widget<CountryFlag>(find.byType(CountryFlag));
+    expect(flag.flagCode, 'jp');
+  });
+
+  testWidgets('until the lookup answers the notes icon stands in', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      '剩余流量：8.08 GB',
+      address: '203.0.113.9:8388',
+      geo: {'203.0.113.9': null},
+    );
+    await tester.pump();
+
+    expect(find.byType(CountryFlag), findsNothing);
+    expect(
+      tester.widget<GlyphIcon>(find.byType(GlyphIcon)).glyph,
+      AppGlyphs.dataUsage,
+    );
+  });
+
+  testWidgets('a country in the name is never looked up', (tester) async {
+    var asked = false;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          nodeGeoRegionProvider('203.0.113.9').overrideWith((_) async {
+            asked = true;
+            return 'DE';
+          }),
+        ],
+        child: const MaterialApp(
+          home: NodeIcon(name: '日本 01', address: '203.0.113.9:443'),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(asked, isFalse);
+    expect(tester.widget<CountryFlag>(find.byType(CountryFlag)).flagCode, 'jp');
   });
 }

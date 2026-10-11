@@ -10,6 +10,7 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/core.dart';
+import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/widgets.dart';
@@ -204,6 +205,17 @@ void main() {
       expect(nodes.map((node) => node['tag']), ['first', 'second']);
       expect((nodes.first['settings'] as Map)['port'], 9999);
       expect((nodes.last['settings'] as Map)['port'], 8388);
+    });
+
+    test('a changed country reaches the node list at once', () async {
+      final profile = await twoNodes();
+      container.listen(groupsProvider, (_, _) {});
+
+      await replace(profile, 'first', {..._node('first'), 'region': 'DE'});
+
+      final nodes = container.read(groupsProvider).getGroup(nodeGroupName)?.all;
+      expect(nodes?.firstWhere((node) => node.name == 'first').region, 'DE');
+      expect(nodes?.firstWhere((node) => node.name == 'second').region, isNull);
     });
 
     test('a renamed node stays the chosen one', () async {

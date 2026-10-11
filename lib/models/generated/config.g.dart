@@ -46,6 +46,7 @@ _AppSettingProps _$AppSettingPropsFromJson(
       TrayMode.embedded,
   showSidebar: json['showSidebar'] as bool? ?? true,
   archiveStats: json['archiveStats'] as bool? ?? false,
+  geoRegion: json['geoRegion'] as bool? ?? true,
   checkCertificate: json['checkCertificate'] as bool? ?? true,
   userAgents:
       (_readUserAgents(json, 'userAgents') as List<dynamic>?)
@@ -96,6 +97,7 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'trayMode': _$TrayModeEnumMap[instance.trayMode]!,
       'showSidebar': instance.showSidebar,
       'archiveStats': instance.archiveStats,
+      'geoRegion': instance.geoRegion,
       'checkCertificate': instance.checkCertificate,
       'userAgents': instance.userAgents,
       'globalUa': instance.globalUa,

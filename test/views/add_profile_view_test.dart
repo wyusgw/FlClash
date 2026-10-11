@@ -2,8 +2,11 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
+import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/add.dart';
+import 'package:fl_clash/views/profiles/region.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -35,7 +38,7 @@ class _RecordingProfilesAction extends ProfilesAction {
 void main() {
   late ProviderContainer container;
 
-  Future<void> openPage(WidgetTester tester) async {
+  Future<void> openPage(WidgetTester tester, {bool geoRegion = false}) async {
     const size = Size(1000, 900);
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -44,8 +47,14 @@ void main() {
     container = ProviderContainer(
       overrides: [
         profilesActionProvider.overrideWith(_RecordingProfilesAction.new),
+        nodeGeoRegionProvider('8.8.8.8').overrideWith((_) async => 'US'),
       ],
     );
+    container.listen(appSettingProvider, (_, _) {});
+    // The hosts typed here are not worth a real lookup.
+    container
+        .read(appSettingProvider.notifier)
+        .update((state) => state.copyWith(geoRegion: geoRegion));
     addTearDown(container.dispose);
     globalState.container = container;
     container.read(viewSizeProvider.notifier).update((_) => size);
@@ -358,5 +367,94 @@ void main() {
       expect(find.text(currentAppLocalizations.url), findsOneWidget);
       expect(find.text(currentAppLocalizations.password), findsNothing);
     });
+
+    testWidgets('the flag beside the address picks the country by hand', (
+      tester,
+    ) async {
+      final l10n = currentAppLocalizations;
+      await openPage(tester);
+      await pickKind(tester, 'Trojan');
+      await tester.enterText(fieldOf('address'), 'tj.example.com');
+      await tester.enterText(fieldOf('port'), '443');
+      await tester.enterText(fieldOf('password'), 'pw');
+
+      await tester.tap(find.byKey(const ValueKey('field.region')));
+      await tester.pumpAndSettle();
+      expect(find.byType(RegionView), findsOneWidget);
+      await tester.enterText(find.byType(TextField), 'japan');
+      await tester.pump();
+      await tester.tap(find.text('JP'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n.save));
+      await tester.pumpAndSettle();
+
+      expect(action().nodes.single['region'], 'JP');
+    });
+
+    testWidgets('the country the name points at is checked in the picker', (
+      tester,
+    ) async {
+      await openPage(tester);
+      await pickKind(tester, 'Trojan');
+      await tester.enterText(fieldOf('remark'), '日本 01');
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('field.region')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(
+          of: find.widgetWithText(GroupedRow, 'JP'),
+          matching: find.byGlyph(AppGlyphs.check),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('picking the same country again leaves it to the address', (
+      tester,
+    ) async {
+      final l10n = currentAppLocalizations;
+      await openPage(tester);
+      await pickKind(tester, 'Trojan');
+      await tester.enterText(fieldOf('address'), 'tj.example.com');
+      await tester.enterText(fieldOf('port'), '443');
+      await tester.enterText(fieldOf('password'), 'pw');
+
+      for (var i = 0; i < 2; i++) {
+        await tester.tap(find.byKey(const ValueKey('field.region')));
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField), 'japan');
+        await tester.pump();
+        await tester.tap(find.text('JP'));
+        await tester.pumpAndSettle();
+      }
+
+      await tester.tap(find.text(l10n.save));
+      await tester.pumpAndSettle();
+
+      expect(action().nodes.single.containsKey('region'), isFalse);
+    });
+
+    testWidgets(
+      'the flag follows where the typed address is, once typing stops',
+      (tester) async {
+        await openPage(tester, geoRegion: true);
+        await pickKind(tester, 'Trojan');
+
+        await tester.enterText(fieldOf('address'), '8.8.8.8');
+        await tester.pump();
+        expect(
+          tester.widget<RegionFlag>(find.byType(RegionFlag)).code,
+          isNull,
+          reason: 'not asked while the address is still being typed',
+        );
+
+        await tester.pump(const Duration(milliseconds: 900));
+        await tester.pump();
+        expect(tester.widget<RegionFlag>(find.byType(RegionFlag)).code, 'US');
+      },
+    );
   });
 }

@@ -95,6 +95,16 @@ class TotalTraffic extends _$TotalTraffic with AutoDisposeNotifierMixin {
   }
 }
 
+/// The country the server at [host] is in, asked of a GeoIP service while the
+/// user allows it.
+@Riverpod(keepAlive: true)
+Future<String?> nodeGeoRegion(Ref ref, String host) {
+  final allowed = ref.watch(
+    appSettingProvider.select((state) => state.geoRegion),
+  );
+  return allowed ? geoRegion.resolve(host) : Future.value(null);
+}
+
 @Riverpod(keepAlive: true)
 class StatsSnapshot extends _$StatsSnapshot with AutoDisposeNotifierMixin {
   @override

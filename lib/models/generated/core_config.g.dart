@@ -12,6 +12,7 @@ _Proxy _$ProxyFromJson(Map<String, dynamic> json) => _Proxy(
   now: json['now'] as String?,
   network: json['network'] as String?,
   address: json['address'] as String?,
+  region: json['region'] as String?,
 );
 
 Map<String, dynamic> _$ProxyToJson(_Proxy instance) => <String, dynamic>{
@@ -20,6 +21,7 @@ Map<String, dynamic> _$ProxyToJson(_Proxy instance) => <String, dynamic>{
   'now': instance.now,
   'network': instance.network,
   'address': instance.address,
+  'region': instance.region,
 };
 
 _Tun _$TunFromJson(Map<String, dynamic> json) => _Tun(

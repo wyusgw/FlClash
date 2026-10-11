@@ -299,6 +299,12 @@ class GeneralView extends ConsumerWidget {
         update: (state, value) => state.copyWith(checkCertificate: value),
       ),
       _appSettingToggle(
+        title: (l) => l.geoRegion,
+        subtitle: (l) => l.geoRegionDesc,
+        select: (state) => state.geoRegion,
+        update: (state, value) => state.copyWith(geoRegion: value),
+      ),
+      _appSettingToggle(
         title: (l) => l.autoCheckUpdate,
         select: (state) => state.autoCheckUpdate,
         update: (state, value) => state.copyWith(autoCheckUpdate: value),

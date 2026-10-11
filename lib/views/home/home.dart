@@ -632,10 +632,18 @@ class _SubscriptionSection extends ConsumerWidget {
                             _nodeKey(profile.id, node.name),
                           ),
                         ),
-                        NodeIcon(name: node.name),
+                        NodeIcon(
+                          name: node.name,
+                          region: node.region,
+                          address: node.address,
+                        ),
                       ],
                     )
-                  : NodeIcon(name: node.name),
+                  : NodeIcon(
+                      name: node.name,
+                      region: node.region,
+                      address: node.address,
+                    ),
               leadingWidth: editing
                   ? groupedLeadingSize * 2 + _selectGap
                   : groupedLeadingSize,

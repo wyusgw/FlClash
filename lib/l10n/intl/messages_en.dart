@@ -435,6 +435,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "filter": MessageLookupByLibrary.simpleMessage("Filter"),
     "fingerprint": MessageLookupByLibrary.simpleMessage("Fingerprint"),
+    "flag": MessageLookupByLibrary.simpleMessage("Flag"),
     "floating": MessageLookupByLibrary.simpleMessage("Floating"),
     "flow": MessageLookupByLibrary.simpleMessage("Flow"),
     "followSystem": MessageLookupByLibrary.simpleMessage("Follow system"),
@@ -446,6 +447,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "format": MessageLookupByLibrary.simpleMessage("Format"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("Fruit salad"),
     "general": MessageLookupByLibrary.simpleMessage("General"),
+    "geoRegion": MessageLookupByLibrary.simpleMessage(
+      "Look up server countries",
+    ),
+    "geoRegionDesc": MessageLookupByLibrary.simpleMessage(
+      "Asks a GeoIP service which country a server is in, to show its flag. The server address is sent to that service.",
+    ),
     "global": MessageLookupByLibrary.simpleMessage("Global"),
     "globalModeDesc": MessageLookupByLibrary.simpleMessage(
       "Forward all traffic through the proxy",
@@ -497,10 +504,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "inbound": MessageLookupByLibrary.simpleMessage("Inbound"),
     "infiniteTime": MessageLookupByLibrary.simpleMessage("Never expires"),
     "init": MessageLookupByLibrary.simpleMessage("Init"),
-    "installedAppsPermissionDeniedMessage":
-        MessageLookupByLibrary.simpleMessage(
-          "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
-        ),
+    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
+      "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
+    ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "This system hides the installed app list until the permission is granted. Authorize it to configure the per-app proxy.",
     ),

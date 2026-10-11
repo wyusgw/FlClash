@@ -367,6 +367,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "fileDesc": MessageLookupByLibrary.simpleMessage("プロファイルファイルを直接アップロードします"),
     "filter": MessageLookupByLibrary.simpleMessage("フィルター"),
     "fingerprint": MessageLookupByLibrary.simpleMessage("フィンガープリント"),
+    "flag": MessageLookupByLibrary.simpleMessage("国旗"),
     "floating": MessageLookupByLibrary.simpleMessage("フローティング"),
     "flow": MessageLookupByLibrary.simpleMessage("フロー"),
     "followSystem": MessageLookupByLibrary.simpleMessage("システムに従う"),
@@ -378,6 +379,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "format": MessageLookupByLibrary.simpleMessage("形式"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("フルーツサラダ"),
     "general": MessageLookupByLibrary.simpleMessage("一般"),
+    "geoRegion": MessageLookupByLibrary.simpleMessage("サーバーの国を検索"),
+    "geoRegionDesc": MessageLookupByLibrary.simpleMessage(
+      "国旗を表示するため、GeoIP サービスにサーバーの所在国を問い合わせます。サーバーのアドレスがそのサービスに送信されます。",
+    ),
     "global": MessageLookupByLibrary.simpleMessage("グローバル"),
     "globalModeDesc": MessageLookupByLibrary.simpleMessage(
       "すべてのトラフィックをプロキシ経由で転送します",

@@ -201,6 +201,9 @@ class ProfilesAction extends _$ProfilesAction {
     putProfile(saved.copyWith(selectedMap: selectedMap));
     if (saved.id == ref.read(currentProfileIdProvider)) {
       ref.read(setupActionProvider.notifier).applyProfileDebounce();
+      // What the Core is given leaves out a node's country, so a change to it
+      // alone does not rebuild the list the setup would.
+      await ref.read(proxiesActionProvider.notifier).updateGroups();
     }
     _notifySuccess(appLocalizations.saveSuccess);
   }

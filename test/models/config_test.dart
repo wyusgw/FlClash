@@ -246,7 +246,6 @@ void main() {
       expect(config.mixedPort, defaultMixedPort);
       expect(config.allowLan, false);
       expect(config.mode, Mode.rule);
-      expect(config.autoSelect, false);
       expect(config.proxyDns, defaultProxyDnsServers);
       expect(config.directDns, defaultDirectDnsServers);
     });
@@ -258,7 +257,6 @@ void main() {
         mode: Mode.global,
         logLevel: LogLevel.debug,
         ipv6: true,
-        autoSelect: true,
         proxyDns: ['9.9.9.9'],
         directDns: ['114.114.114.114'],
       );
@@ -304,21 +302,18 @@ void main() {
   group('ProxiesStyleProps JSON round-trip', () {
     test('default values', () {
       const props = ProxiesStyleProps();
-      expect(props.type, ProxiesType.tab);
       expect(props.sortType, ProxiesSortType.none);
       expect(props.layout, ProxiesLayout.standard);
     });
 
     test('round-trip with custom values', () {
       const props = ProxiesStyleProps(
-        type: ProxiesType.list,
         sortType: ProxiesSortType.delay,
       );
       final restored = roundTrip(
         () => props.toJson(),
         ProxiesStyleProps.fromJson,
       );
-      expect(restored.type, ProxiesType.list);
       expect(restored.sortType, ProxiesSortType.delay);
     });
 

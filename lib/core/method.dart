@@ -10,8 +10,6 @@ enum CoreMethod {
   shutdown,
   validateConfig,
   validateProxies,
-  getProxies,
-  changeProxy,
   getTraffic,
   getTotalTraffic,
   resetTraffic,

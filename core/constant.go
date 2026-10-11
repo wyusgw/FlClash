@@ -8,19 +8,8 @@ type InitParams struct {
 }
 
 type SetupParams struct {
-	SelectedMap map[string]string `json:"selected-map"`
-	TestURL     string            `json:"test-url"`
-	LogLevel    string            `json:"log-level"`
-}
-
-type ChangeProxyParams struct {
-	GroupName string `json:"group-name"`
-	ProxyName string `json:"proxy-name"`
-}
-
-type ChangeProxyResult struct {
-	Message string `json:"message"`
-	Changed bool   `json:"changed"`
+	TestURL  string `json:"test-url"`
+	LogLevel string `json:"log-level"`
 }
 
 type RouteState struct {
@@ -75,23 +64,6 @@ type MemoryStats struct {
 	RuntimeOther uint64 `json:"runtimeOther"`
 }
 
-type ProxiesData struct {
-	Proxies map[string]any `json:"proxies"`
-	All     []string       `json:"all"`
-}
-
-type nodeView struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-}
-
-type groupView struct {
-	Name string   `json:"name"`
-	Type string   `json:"type"`
-	All  []string `json:"all"`
-	Now  string   `json:"now"`
-}
-
 const (
 	messageMethod         CoreMethod = "message"
 	initCoreMethod        CoreMethod = "initCore"
@@ -101,8 +73,6 @@ const (
 	validateConfigMethod  CoreMethod = "validateConfig"
 	validateProxiesMethod CoreMethod = "validateProxies"
 	setupConfigMethod     CoreMethod = "setupConfig"
-	getProxiesMethod      CoreMethod = "getProxies"
-	changeProxyMethod     CoreMethod = "changeProxy"
 	getTrafficMethod      CoreMethod = "getTraffic"
 	getTotalTrafficMethod CoreMethod = "getTotalTraffic"
 	resetTrafficMethod    CoreMethod = "resetTraffic"

@@ -246,8 +246,8 @@ void main() {
       service.onInvokeMethod = (call) =>
           CoreMethodResponse(id: call.id, result: 'ok');
 
-      await lib.invokeMethod<String>(method: CoreMethod.getProxies);
-      await lib.invokeMethod<String>(method: CoreMethod.getProxies);
+      await lib.invokeMethod<String>(method: CoreMethod.getTraffic);
+      await lib.invokeMethod<String>(method: CoreMethod.getTraffic);
 
       expect(service.invokedCalls.map((call) => call.id), ['1', '2']);
     });
@@ -258,7 +258,7 @@ void main() {
           CoreMethodResponse(id: call.id, result: 'payload');
 
       expect(
-        await lib.invokeMethod<String>(method: CoreMethod.getProxies),
+        await lib.invokeMethod<String>(method: CoreMethod.getTraffic),
         'payload',
       );
     });
@@ -268,7 +268,7 @@ void main() {
       service.onInvokeMethod = (_) => null;
 
       expect(
-        await lib.invokeMethod<String>(method: CoreMethod.getProxies),
+        await lib.invokeMethod<String>(method: CoreMethod.getTraffic),
         isNull,
       );
     });
@@ -278,7 +278,7 @@ void main() {
     ) async {
       Object? result = 'unset';
       final pending = lib
-          .invokeMethod<String>(method: CoreMethod.getProxies)
+          .invokeMethod<String>(method: CoreMethod.getTraffic)
           .then((value) => result = value);
 
       await tester.pump(const Duration(seconds: 11));

@@ -52,32 +52,15 @@ Future<List<Group>> toGroupsTask(ComputeGroupsState data) async {
 
 @visibleForTesting
 Future<List<Group>> buildGroups(ComputeGroupsState state) async {
-  final proxiesData = state.proxiesData;
-  final all = proxiesData.all;
-  final sortType = state.sortType;
-  final delayMap = state.delayMap;
-  final selectedMap = state.selectedMap;
-  final defaultTestUrl = state.defaultTestUrl;
-  final proxies = proxiesData.proxies;
-  if (proxies.isEmpty) return [];
-  final groups = <Group>[];
-  for (final groupName in all) {
-    final raw = proxies[groupName];
-    if (raw is! Map) continue;
-    if (!GroupTypeExtension.valueList.contains(raw['type'])) continue;
-    final memberNames = raw['all'];
-    final group = Map<String, dynamic>.from(raw);
-    group['all'] = memberNames is List
-        ? memberNames.map((name) => proxies[name]).nonNulls.toList()
-        : const [];
-    groups.add(Group.fromJson(group));
-  }
+  if (state.nodes.isEmpty) return [];
   return computeSort(
-    groups: groups,
-    sortType: sortType,
-    delayMap: delayMap,
-    selectedMap: selectedMap,
-    defaultTestUrl: defaultTestUrl,
+    groups: [
+      Group(name: nodeGroupName, type: GroupType.Selector, all: state.nodes),
+    ],
+    sortType: state.sortType,
+    delayMap: state.delayMap,
+    selectedMap: state.selectedMap,
+    defaultTestUrl: state.defaultTestUrl,
   );
 }
 

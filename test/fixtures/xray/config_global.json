@@ -198,24 +198,7 @@
       },
       {
         "network": "tcp,udp",
-        "balancerTag": "PROXY"
-      }
-    ],
-    "balancers": [
-      {
-        "tag": "PROXY",
-        "selector": [
-          "vm-ws",
-          "vless-reality",
-          "trojan-ws",
-          "ss-sip002",
-          "hy2",
-          "tuic",
-          "anytls"
-        ],
-        "strategy": {
-          "type": "random"
-        }
+        "outboundTag": "vm-ws"
       }
     ]
   },

@@ -23,6 +23,7 @@ final _subscription = [
 MakeRealProfileState _state({
   CoreConfig config = const CoreConfig(),
   List<Map<String, dynamic>>? outbounds,
+  String? selectedNode,
   List<String> authentication = const [],
   bool tunInbound = false,
   bool safeMode = false,
@@ -31,7 +32,7 @@ MakeRealProfileState _state({
     outbounds: outbounds ?? parseSubscription(_subscription),
     coreConfig: config,
     routeMode: RouteMode.config,
-    testUrl: 'https://www.gstatic.com/generate_204',
+    selectedNode: selectedNode,
     authentication: authentication,
     tunInbound: tunInbound,
     safeMode: safeMode,
@@ -74,44 +75,34 @@ void main() {
   group('rule mode', () {
     final config = buildXrayConfig(_state());
 
-    test('routes private and Chinese traffic direct and the rest to PROXY', () {
-      final rules = _rules(config);
+    test(
+      'routes private and Chinese traffic direct and the rest to a node',
+      () {
+        final rules = _rules(config);
 
-      expect(rules.first, {
-        'inboundTag': [tunInboundTag],
-        'port': '53',
-        'outboundTag': dnsOutboundTag,
-      });
-      expect(rules.map((rule) => rule['outboundTag']).whereType<String>(), [
-        dnsOutboundTag,
-        directOutboundTag,
-        directOutboundTag,
-        directOutboundTag,
-      ]);
-      expect(_finalRule(config), {
-        'network': 'tcp,udp',
-        'balancerTag': proxyGroupName,
-      });
-      _expectFixture('config_rule', config);
-    });
+        expect(rules.first, {
+          'inboundTag': [tunInboundTag],
+          'port': '53',
+          'outboundTag': dnsOutboundTag,
+        });
+        expect(rules.map((rule) => rule['outboundTag']).whereType<String>(), [
+          dnsOutboundTag,
+          directOutboundTag,
+          directOutboundTag,
+          directOutboundTag,
+          'vm-ws',
+        ]);
+        expect(_finalRule(config), {
+          'network': 'tcp,udp',
+          'outboundTag': 'vm-ws',
+        });
+        _expectFixture('config_rule', config);
+      },
+    );
 
-    test('one balancer selects every node', () {
-      final balancers = (_routing(config)['balancers'] as List)
-          .cast<Map<String, dynamic>>();
-
-      expect(balancers, hasLength(1));
-      expect(balancers.single['tag'], proxyGroupName);
-      expect(balancers.single['selector'], [
-        'vm-ws',
-        'vless-reality',
-        'trojan-ws',
-        'ss-sip002',
-        'hy2',
-        'tuic',
-        'anytls',
-      ]);
-      expect(balancers.single['strategy'], {'type': 'random'});
-      expect(balancers.single.containsKey('fallbackTag'), isFalse);
+    test('has no balancer and no observatory', () {
+      expect(_routing(config).containsKey('balancers'), isFalse);
+      expect(config.containsKey('observatory'), isFalse);
     });
 
     test('keeps the nodes and adds the app outbounds after them', () {
@@ -136,12 +127,12 @@ void main() {
     });
   });
 
-  test('global mode sends everything but private addresses to PROXY', () {
+  test('global mode sends everything but private addresses to a node', () {
     final config = buildXrayConfig(
       _state(config: const CoreConfig(mode: Mode.global)),
     );
 
-    expect(_finalRule(config)['balancerTag'], proxyGroupName);
+    expect(_finalRule(config)['outboundTag'], 'vm-ws');
     expect(_rules(config).where((rule) => rule.containsKey('domain')), isEmpty);
     _expectFixture('config_global', config);
   });
@@ -165,29 +156,32 @@ void main() {
     },
   );
 
-  test('auto select picks by latency and probes the nodes', () {
-    final config = buildXrayConfig(
-      _state(config: const CoreConfig(autoSelect: true)),
-    );
+  test('the chosen node takes the proxy rules', () {
+    final config = buildXrayConfig(_state(selectedNode: 'trojan-ws'));
 
-    final balancer = (_routing(config)['balancers'] as List).single as Map;
-    expect(balancer['strategy'], {'type': 'leastPing'});
-    expect(balancer['fallbackTag'], directOutboundTag);
-    final observatory = config['observatory'] as Map;
-    expect(observatory['subjectSelector'], balancer['selector']);
-    expect(observatory['probeURL'], 'https://www.gstatic.com/generate_204');
-    _expectFixture('config_auto', config);
+    expect(_finalRule(config), {
+      'network': 'tcp,udp',
+      'outboundTag': 'trojan-ws',
+    });
+    _expectFixture('config_selected', config);
   });
 
-  test('without nodes there is no balancer and PROXY traffic goes direct', () {
+  test(
+    'a chosen node the subscription no longer has falls back to the first',
+    () {
+      final config = buildXrayConfig(_state(selectedNode: 'gone'));
+
+      expect(_finalRule(config)['outboundTag'], 'vm-ws');
+    },
+  );
+
+  test('without nodes the proxy rules go direct', () {
     final config = buildXrayConfig(_state(outbounds: const []));
 
-    expect(_routing(config).containsKey('balancers'), isFalse);
     expect(_finalRule(config), {
       'network': 'tcp,udp',
       'outboundTag': directOutboundTag,
     });
-    expect(config.containsKey('observatory'), isFalse);
     _expectFixture('config_no_nodes', config);
   });
 

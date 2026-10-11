@@ -121,11 +121,10 @@ func runProbe(parent context.Context, req probeRequest) *ProbeResult {
 	}
 	dialer := &probeDialer{running: running}
 	if req.proxyName != "" {
-		tag, ok := resolveOutboundTag(running, req.proxyName)
-		if !ok {
+		if _, ok := running.meta.outbound(req.proxyName); !ok {
 			return fail(fmt.Errorf("proxy %q is not part of the applied config", req.proxyName))
 		}
-		dialer.tag = tag
+		dialer.tag = req.proxyName
 	}
 
 	timeout := req.timeout
@@ -223,26 +222,4 @@ func acquireSlot(ctx context.Context, slots chan struct{}) bool {
 	case <-ctx.Done():
 		return false
 	}
-}
-
-// A group name pins to the member the host selected, or its first member.
-func resolveOutboundTag(running *engine, name string) (string, bool) {
-	if _, ok := running.meta.outbound(name); ok {
-		return name, true
-	}
-	balancer, ok := running.meta.balancer(name)
-	if !ok {
-		return "", false
-	}
-	selectMu.Lock()
-	choice := selected[name]
-	selectMu.Unlock()
-	if choice != "" {
-		return choice, true
-	}
-	members := running.meta.members(balancer)
-	if len(members) == 0 {
-		return "", false
-	}
-	return members[0], true
 }

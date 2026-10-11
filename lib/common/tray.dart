@@ -12,6 +12,7 @@ import 'keyboard.dart';
 import 'provider_reader.dart';
 import 'system.dart';
 import 'window.dart';
+import 'xray_config.dart';
 
 class AppTray implements TrayPort {
   static AppTray? _instance;
@@ -254,7 +255,9 @@ class AppTray implements TrayPort {
     required void Function(String proxyName) onSelected,
   }) {
     return TrayMenuSubmenu(
-      label: group.name,
+      label: group.name == nodeGroupName
+          ? currentAppLocalizations.proxies
+          : group.name,
       detail: _delayText(delays[selectedName]),
       items: [
         for (final proxy in group.all)

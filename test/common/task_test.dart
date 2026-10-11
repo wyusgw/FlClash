@@ -21,63 +21,29 @@ void main() {
     expect(await encodeMD5Task('abc'), '900150983cd24fb0d6963f7d28e17f72');
   });
 
-  test('toGroupsTask converts, selects, and sorts core proxy data', () async {
-    final proxies = <String, dynamic>{
-      'Selector': {
-        'name': 'Selector',
-        'type': 'Selector',
-        'now': 'Beta',
-        'all': ['Zulu', 'Beta', 'missing'],
-      },
-      'Direct': {'name': 'Direct', 'type': 'Direct'},
-      'Zulu': {'name': 'Zulu', 'type': 'Direct'},
-      'Beta': {'name': 'Beta', 'type': 'Direct'},
-    };
+  test('toGroupsTask puts the nodes in one sorted list', () async {
     final groups = await toGroupsTask(
-      ComputeGroupsState(
-        proxiesData: ProxiesData(
-          all: const ['Selector', 'Direct'],
-          proxies: proxies,
-        ),
+      const ComputeGroupsState(
+        nodes: [
+          Proxy(name: 'Zulu', type: 'vless'),
+          Proxy(name: 'Beta', type: 'trojan'),
+        ],
         sortType: ProxiesSortType.name,
-        delayMap: const {},
-        selectedMap: const {'Selector': 'Beta'},
+        delayMap: {},
+        selectedMap: {},
         defaultTestUrl: 'https://example.com/generate_204',
       ),
     );
 
     expect(groups, hasLength(1));
-    expect(groups.single.name, 'Selector');
+    expect(groups.single.name, nodeGroupName);
     expect(groups.single.all.map((proxy) => proxy.name), ['Beta', 'Zulu']);
   });
 
-  test('toGroupsTask leaves the source proxy map untouched', () async {
-    final proxies = <String, dynamic>{
-      'Selector': {
-        'name': 'Selector',
-        'type': 'Selector',
-        'all': ['Beta'],
-      },
-      'Beta': {'name': 'Beta', 'type': 'Direct'},
-    };
-    final state = ComputeGroupsState(
-      proxiesData: ProxiesData(all: const ['Selector'], proxies: proxies),
-      sortType: ProxiesSortType.none,
-      delayMap: const {},
-      selectedMap: const {},
-      defaultTestUrl: '',
-    );
-
-    await buildGroups(state);
-    await buildGroups(state);
-
-    expect(proxies['Selector']['all'], ['Beta']);
-  });
-
-  test('toGroupsTask returns empty data without proxies', () async {
+  test('toGroupsTask returns empty data without nodes', () async {
     final groups = await toGroupsTask(
       const ComputeGroupsState(
-        proxiesData: ProxiesData(proxies: {}, all: []),
+        nodes: [],
         sortType: ProxiesSortType.none,
         delayMap: {},
         selectedMap: {},
@@ -96,7 +62,6 @@ void main() {
         ),
         coreConfig: const CoreConfig(),
         routeMode: RouteMode.config,
-        testUrl: 'https://example.com/generate_204',
       ),
     );
 

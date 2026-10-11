@@ -80,25 +80,6 @@ func TestEveryGeneratedConfigBuildsAnInstance(t *testing.T) {
 	}
 }
 
-func TestGeneratedConfigGroupsReachTheHost(t *testing.T) {
-	startEngineIn(t, homeWithGeoData(t), withFreePort(t, readFixture(t, "config_rule.json")))
-
-	data := handleGetProxies()
-
-	group, ok := data.Proxies["PROXY"].(groupView)
-	if !ok {
-		t.Fatalf("PROXY is %T", data.Proxies["PROXY"])
-	}
-	if len(group.All) != 7 {
-		t.Errorf("group members = %v, want the 7 generated nodes", group.All)
-	}
-	for _, tag := range group.All {
-		if tag[0] == '@' {
-			t.Errorf("app outbound %q leaked into the group", tag)
-		}
-	}
-}
-
 // The generated config listens on the user's proxy port, which a test must not
 // take from the app that may be running next to it.
 func withFreePort(t *testing.T, config []byte) string {

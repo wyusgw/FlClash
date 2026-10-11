@@ -211,7 +211,6 @@ enum RestoreOption { all, onlyProfiles }
 
 enum CommonCardType { plain, filled }
 
-enum ProxiesType { tab, list }
 
 enum ProxiesLayout { loose, standard, tight }
 

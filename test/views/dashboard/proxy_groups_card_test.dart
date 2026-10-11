@@ -1,3 +1,4 @@
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -61,31 +62,43 @@ void main() {
     await tester.pump();
   }
 
-  List<Group> manyGroups() => [
-    for (var index = 0; index < 8; index++) _group('G$index', ['N$index']),
-  ];
+  Group nodes(int count) => _group(nodeGroupName, [
+    for (var index = 0; index < count; index++) 'N$index',
+  ]);
 
-  Finder groupLabel(int index) => find.text('G$index', findRichText: true);
+  Finder nodeLabel(int index) => find.text('N$index', findRichText: true);
 
   int shownRows(WidgetTester tester) {
     final bottom = tester.getRect(find.byType(ProxyGroupsCard)).bottom;
     return [
       for (var index = 0; index < 8; index++)
-        if (tester.any(groupLabel(index)) &&
-            tester.getRect(groupLabel(index)).bottom <= bottom)
+        if (tester.any(nodeLabel(index)) &&
+            tester.getRect(nodeLabel(index)).bottom <= bottom)
           index,
     ].length;
   }
 
-  testWidgets('shows an empty state without proxy groups', (tester) async {
+  testWidgets('shows an empty state without nodes', (tester) async {
     await pumpCard(tester);
 
     expect(find.byType(EmptyIllustration), findsOneWidget);
-    expect(find.text('No Proxy group yet'), findsOneWidget);
+    expect(find.text('No Proxies yet'), findsOneWidget);
   });
 
-  testWidgets('fits more groups as the card grows taller', (tester) async {
-    container.read(groupsProvider.notifier).value = manyGroups();
+  testWidgets('lists the nodes straight away under a plain heading', (
+    tester,
+  ) async {
+    container.read(groupsProvider.notifier).value = [nodes(3)];
+    await pumpCard(tester);
+
+    expect(find.text('Proxies'), findsOneWidget);
+    expect(find.text(nodeGroupName), findsNothing);
+    expect(nodeLabel(0), findsOneWidget);
+    expect(nodeLabel(1), findsOneWidget);
+  });
+
+  testWidgets('fits more nodes as the card grows taller', (tester) async {
+    container.read(groupsProvider.notifier).value = [nodes(8)];
 
     await pumpCard(tester);
     final compact = shownRows(tester);
@@ -100,7 +113,7 @@ void main() {
   testWidgets('row corners stay under a third of the row height', (
     tester,
   ) async {
-    container.read(groupsProvider.notifier).value = manyGroups();
+    container.read(groupsProvider.notifier).value = [nodes(8)];
     for (final unitHeight in [80.0, 120.0]) {
       await pumpCard(tester, unitHeight: unitHeight);
       final pill = find.byType(RowCardPill).first;
@@ -114,124 +127,53 @@ void main() {
     }
   });
 
-  testWidgets('scrolls to the groups below the fold', (tester) async {
-    container.read(groupsProvider.notifier).value = manyGroups();
+  testWidgets('scrolls to the nodes below the fold', (tester) async {
+    container.read(groupsProvider.notifier).value = [nodes(8)];
     await pumpCard(tester);
 
-    await tester.drag(groupLabel(0), const Offset(0, -600));
+    await tester.drag(nodeLabel(0), const Offset(0, -600));
     await tester.pumpAndSettle();
 
     expect(shownRows(tester), greaterThan(0));
-    expect(tester.any(groupLabel(0)), isFalse);
-    expect(tester.any(groupLabel(7)), isTrue);
+    expect(tester.any(nodeLabel(0)), isFalse);
+    expect(tester.any(nodeLabel(7)), isTrue);
   });
 
-  const wheelRest = Duration(milliseconds: 250);
-
-  Future<void> expectWheelRestsOnRow(WidgetTester tester) async {
+  testWidgets('nodes settle on rows of a new height', (tester) async {
+    container.read(groupsProvider.notifier).value = [nodes(20)];
+    await pumpCard(tester);
+    final before = tester.widget<ListView>(find.byType(ListView)).itemExtent;
+    tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await tester.pump();
     final list = find.byType(ListView);
+    expect(tester.widget<ListView>(list).itemExtent, isNot(before));
+
     await tester.sendEventToBinding(
       PointerScrollEvent(
         position: tester.getCenter(list),
         scrollDelta: const Offset(0, 10),
       ),
     );
-    await tester.pump(wheelRest);
+    await tester.pump(const Duration(milliseconds: 250));
     await tester.pumpAndSettle();
+
     final listView = tester.widget<ListView>(list);
     expect(listView.controller!.offset, listView.itemExtent);
-  }
-
-  Future<void> resizeRows(WidgetTester tester) async {
-    final before = tester.widget<ListView>(find.byType(ListView)).itemExtent;
-    tester.platformDispatcher.textScaleFactorTestValue = 1.3;
-    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    await tester.pump();
-    final after = tester.widget<ListView>(find.byType(ListView)).itemExtent;
-    expect(after, isNot(before));
-  }
-
-  testWidgets('groups settle on rows of a new height', (tester) async {
-    container.read(groupsProvider.notifier).value = [
-      for (var index = 0; index < 20; index++) _group('G$index', ['N$index']),
-    ];
-    await pumpCard(tester);
-    await resizeRows(tester);
-
-    await expectWheelRestsOnRow(tester);
   });
 
-  testWidgets('nodes settle on rows of a new height', (tester) async {
-    container.read(groupsProvider.notifier).value = [
-      _group('Nodes', [for (var index = 0; index < 20; index++) 'N$index']),
-    ];
-    await pumpCard(tester);
-    await tester.tap(find.text('Nodes', findRichText: true));
-    await tester.pumpAndSettle();
-    await resizeRows(tester);
-
-    await expectWheelRestsOnRow(tester);
-  });
-
-  testWidgets('a tapped group swaps in its nodes and back again', (
-    tester,
-  ) async {
-    container.read(groupsProvider.notifier).value = [
-      _group('Auto', ['HK-01']),
-      _group('Media', ['JP-01', 'US-01']),
-    ];
-    await pumpCard(tester);
-
-    expect(find.byType(CommonCard), findsNothing);
-
-    await tester.tap(find.text('Media', findRichText: true));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Auto', findRichText: true), findsNothing);
-    expect(find.text('Media'), findsOneWidget);
-    expect(find.text('JP-01', findRichText: true), findsOneWidget);
-    expect(find.text('US-01', findRichText: true), findsOneWidget);
-
-    await tester.tap(find.text('Media'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Auto', findRichText: true), findsOneWidget);
-    expect(find.text('JP-01', findRichText: true), findsNothing);
-  });
-
-  Future<Iterable<String?>> tooltipsFor(
-    WidgetTester tester, {
-    required String group,
-    required String selected,
-  }) async {
-    container.read(groupsProvider.notifier).value = [
-      _group(group, [selected]).copyWith(now: selected),
-    ];
-    await pumpCard(tester);
-    return tester
-        .widgetList<Tooltip>(find.byType(Tooltip))
-        .map((tooltip) => tooltip.message);
-  }
-
-  testWidgets('short names show in full without a tooltip', (tester) async {
-    expect(await tooltipsFor(tester, group: 'Auto', selected: 'HK'), isEmpty);
-  });
-
-  testWidgets('a long group name leaves the selected node whole', (
-    tester,
-  ) async {
-    const group = 'Streaming-Services-Regional-Unlock-Fallback';
-    expect(await tooltipsFor(tester, group: group, selected: 'VPS-HK-01'), [
-      group,
-    ]);
-  });
-
-  testWidgets('a long selected node leaves the group name whole', (
-    tester,
-  ) async {
+  testWidgets('a long node name shows whole through a tooltip', (tester) async {
     const selected = 'VPS-HongKong-Premium-Dedicated-Line-01-Backup-Route';
-    expect(await tooltipsFor(tester, group: 'Proxy', selected: selected), [
-      selected,
-    ]);
+    container.read(groupsProvider.notifier).value = [
+      _group(nodeGroupName, [selected]),
+    ];
+    await pumpCard(tester);
+
+    expect(
+      tester
+          .widgetList<Tooltip>(find.byType(Tooltip))
+          .map((tooltip) => tooltip.message),
+      [selected],
+    );
   });
 }

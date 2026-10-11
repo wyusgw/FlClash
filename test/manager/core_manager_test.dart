@@ -117,7 +117,7 @@ void main() {
   late Directory profileSwitchTempDir;
 
   setUpAll(() async {
-    registerFallbackValue(const SetupParams(selectedMap: {}, testUrl: ''));
+    registerFallbackValue(const SetupParams(testUrl: ''));
     await AppLocalizations.load(const Locale('en'));
     profileSwitchTempDir = Directory.systemTemp.createTempSync(
       'core_manager_test',

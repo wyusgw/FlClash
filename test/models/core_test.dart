@@ -8,19 +8,16 @@ void main() {
   group('SetupParams', () {
     test('fromJson uses snake-case keys', () {
       final json = {
-        'selected-map': {'G1': 'P1'},
         'test-url': 'http://test.com',
         'log-level': 'debug',
       };
       final params = SetupParams.fromJson(json);
-      expect(params.selectedMap, {'G1': 'P1'});
       expect(params.testUrl, 'http://test.com');
       expect(params.logLevel, LogLevel.debug);
     });
 
     test('the log level defaults to error', () {
       final params = SetupParams.fromJson({
-        'selected-map': <String, String>{},
         'test-url': 'http://test.com',
       });
       expect(params.logLevel, LogLevel.error);
@@ -28,12 +25,10 @@ void main() {
 
     test('toJson uses snake-case keys', () {
       const params = SetupParams(
-        selectedMap: {'G1': 'P1'},
         testUrl: 'http://t.com',
         logLevel: LogLevel.warning,
       );
       final json = params.toJson();
-      expect(json['selected-map'], {'G1': 'P1'});
       expect(json['test-url'], 'http://t.com');
       expect(json['log-level'], 'warning');
     });
@@ -48,18 +43,6 @@ void main() {
       final restored = jsonDecode(jsonEncode(params.toJson()));
       expect(restored['home-dir'], '/data/clash');
       expect(restored['version'], 3);
-    });
-  });
-
-  group('ChangeProxyParams', () {
-    test('fromJson and toJson use snake-case', () {
-      final json = {'group-name': 'Proxy', 'proxy-name': 'auto'};
-      final params = ChangeProxyParams.fromJson(json);
-      expect(params.groupName, 'Proxy');
-      expect(params.proxyName, 'auto');
-      final out = params.toJson();
-      expect(out['group-name'], 'Proxy');
-      expect(out['proxy-name'], 'auto');
     });
   });
 
@@ -85,24 +68,6 @@ void main() {
       final now = Now.fromJson({'name': 'test', 'value': '123'});
       expect(now.name, 'test');
       expect(now.value, '123');
-    });
-  });
-
-  group('ProxiesData', () {
-    test('fromJson with proxies and all list', () {
-      final json = {
-        'proxies': {
-          'G1': {
-            'type': 'Selector',
-            'now': 'auto',
-            'all': ['auto', 'P1'],
-          },
-        },
-        'all': ['G1'],
-      };
-      final data = ProxiesData.fromJson(json);
-      expect(data.all, ['G1']);
-      expect(data.proxies['G1'], isA<Map>());
     });
   });
 

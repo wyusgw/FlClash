@@ -125,7 +125,7 @@ class TestSetupAction extends SetupAction {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() {
-    registerFallbackValue(const SetupParams(selectedMap: {}, testUrl: ''));
+    registerFallbackValue(const SetupParams(testUrl: ''));
   });
 
   late TestSetupAction action;

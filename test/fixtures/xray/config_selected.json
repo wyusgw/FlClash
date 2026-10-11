@@ -210,25 +210,7 @@
       },
       {
         "network": "tcp,udp",
-        "balancerTag": "PROXY"
-      }
-    ],
-    "balancers": [
-      {
-        "tag": "PROXY",
-        "selector": [
-          "vm-ws",
-          "vless-reality",
-          "trojan-ws",
-          "ss-sip002",
-          "hy2",
-          "tuic",
-          "anytls"
-        ],
-        "strategy": {
-          "type": "leastPing"
-        },
-        "fallbackTag": "@direct"
+        "outboundTag": "trojan-ws"
       }
     ]
   },
@@ -253,19 +235,5 @@
       "localhost"
     ],
     "queryStrategy": "UseIPv4"
-  },
-  "observatory": {
-    "subjectSelector": [
-      "vm-ws",
-      "vless-reality",
-      "trojan-ws",
-      "ss-sip002",
-      "hy2",
-      "tuic",
-      "anytls"
-    ],
-    "probeURL": "https://www.gstatic.com/generate_204",
-    "probeInterval": "5m",
-    "enableConcurrency": true
   }
 }

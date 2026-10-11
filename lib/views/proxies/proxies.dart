@@ -3,7 +3,6 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/views/proxies/list.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,7 +19,6 @@ class ProxiesView extends ConsumerStatefulWidget {
 
 class _ProxiesViewState extends ConsumerState<ProxiesView> {
   final GlobalKey<ProxiesTabViewState> _proxiesTabKey = GlobalKey();
-  bool _isTab = false;
 
   List<CommonPopupMenuItem> _buildMenuItems(BuildContext context) {
     final appLocalizations = context.appLocalizations;
@@ -45,9 +43,6 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
   }
 
   IconButtonData? _buildPrimaryAction() {
-    if (!_isTab) {
-      return null;
-    }
     final currentGroupName = ref.watch(
       proxiesTabControllerStateProvider.select(
         (state) => state.currentGroupName,
@@ -73,50 +68,25 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    ref.listenManual(
-      proxiesStyleSettingProvider.select(
-        (state) => state.type == ProxiesType.tab,
-      ),
-      (prev, next) {
-        if (prev != next) {
-          setState(() {
-            _isTab = next;
-          });
-        }
-      },
-      fireImmediately: true,
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final proxiesType = ref.watch(
-      proxiesStyleSettingProvider.select((state) => state.type),
-    );
     final isLoading = ref.watch(loadingProvider(LoadingTag.proxies));
     return CommonScaffold(
       isLoading: isLoading,
       resizeToAvoidBottomInset: false,
       primaryAction: _buildPrimaryAction(),
       iconActions: [
-        if (_isTab)
-          IconButtonData(
-            glyph: AppGlyphs.locate,
-            onPressed: () {
-              _proxiesTabKey.currentState?.scrollToGroupSelected();
-            },
-            tooltip: context.appLocalizations.scrollToSelected,
-          ),
+        IconButtonData(
+          glyph: AppGlyphs.locate,
+          onPressed: () {
+            _proxiesTabKey.currentState?.scrollToGroupSelected();
+          },
+          tooltip: context.appLocalizations.scrollToSelected,
+        ),
       ],
       menuItems: _buildMenuItems(context),
       title: context.appLocalizations.proxies,
       searchState: AppBarSearchState(onSearch: _onSearch),
-      body: switch (proxiesType) {
-        ProxiesType.tab => ProxiesTabView(key: _proxiesTabKey),
-        ProxiesType.list => const ProxiesListView(),
-      },
+      body: ProxiesTabView(key: _proxiesTabKey),
     );
   }
 }

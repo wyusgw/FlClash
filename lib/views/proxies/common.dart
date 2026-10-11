@@ -5,11 +5,6 @@ import 'package:flutter/widgets.dart';
 
 const proxyGridSpacing = 8.0;
 
-double get listHeaderHeight {
-  final measure = globalState.measure;
-  return 20 + measure.titleSmallHeight + 2 + measure.labelSmallHeight + 2;
-}
-
 double getItemHeight(ProxyCardType proxyCardType) {
   final measure = globalState.measure;
   final baseHeight =
@@ -23,27 +18,6 @@ double getItemHeight(ProxyCardType proxyCardType) {
 
 double getRowExtent(ProxyCardType proxyCardType) =>
     getItemHeight(proxyCardType) + proxyGridSpacing;
-
-class GroupOffsets {
-  const GroupOffsets(this.groups, this.offsets);
-
-  static const empty = GroupOffsets(<Group>[], <double>[]);
-
-  final List<Group> groups;
-  final List<double> offsets;
-
-  bool get isEmpty => offsets.isEmpty;
-
-  double offsetOf(String groupName) {
-    final index = groups.indexWhere((group) => group.name == groupName);
-    if (index < 0 || index >= offsets.length) {
-      return 0;
-    }
-    return offsets[index];
-  }
-
-  Group? groupOf(String groupName) => groups.getGroup(groupName);
-}
 
 double? selectedRowOffset({
   required List<Proxy> proxies,

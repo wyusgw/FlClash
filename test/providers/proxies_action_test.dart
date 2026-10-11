@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/controller.dart';
@@ -16,11 +18,53 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:riverpod/riverpod.dart';
 
 import '../helpers/test_profiles.dart';
 
 class MockCoreHandlerInterface extends Mock implements CoreHandlerInterface {}
+
+class _FakePathProvider extends PathProviderPlatform {
+  _FakePathProvider(this.root);
+
+  final String root;
+
+  @override
+  Future<String?> getTemporaryPath() async => root;
+
+  @override
+  Future<String?> getApplicationSupportPath() async => root;
+
+  @override
+  Future<String?> getApplicationCachePath() async => root;
+}
+
+class _FakeSetupAction extends SetupAction {
+  int applied = 0;
+  bool Function() result = () => true;
+
+  @override
+  Future<bool> applyProfile({
+    bool silence = false,
+    bool force = false,
+    Future<void> Function()? preloadInvoke,
+  }) async {
+    applied++;
+    return result();
+  }
+}
+
+Map<String, Object?> _node(String tag) => {
+  'tag': tag,
+  'protocol': 'shadowsocks',
+  'settings': {
+    'address': '192.0.2.1',
+    'port': 8388,
+    'method': 'aes-128-gcm',
+    'password': 'secret',
+  },
+};
 
 const _testUrl = 'http://delay.test';
 
@@ -32,7 +76,7 @@ const _proxy = Proxy(name: 'HK-01', type: 'ss');
 Profile _selectedProfile(String proxyName) => Profile(
   id: 1,
   autoUpdateDuration: Duration.zero,
-  selectedMap: {'Proxy': proxyName},
+  selectedMap: {nodeGroupName: proxyName},
 );
 
 final _delayKey = delayTestKey(_testUrl, 'HK-01');
@@ -50,20 +94,24 @@ void main() {
 
   late MockCoreHandlerInterface core;
 
+  late Directory home;
+
   setUpAll(() async {
-    registerFallbackValue(
-      const ChangeProxyParams(groupName: 'G', proxyName: 'P'),
-    );
+    home = Directory.systemTemp.createTempSync('proxies_action_test');
+    PathProviderPlatform.instance = _FakePathProvider(home.path);
     core = MockCoreHandlerInterface();
     await AppLocalizations.load(const Locale('en'));
   });
 
+  tearDownAll(() => home.deleteSync(recursive: true));
+
   setUp(() => reset(core));
 
-  ProviderContainer buildContainer({Profile? profile}) {
+  ProviderContainer buildContainer({Profile? profile, SetupAction? setup}) {
     final container = ProviderContainer(
       overrides: [
         coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+        if (setup != null) setupActionProvider.overrideWith(() => setup),
         profilesProvider.overrideWith(() => TestProfiles([?profile])),
         currentProfileIdProvider.overrideWithBuild((_, _) => profile?.id),
       ],
@@ -75,96 +123,35 @@ void main() {
   ProxiesAction actionOf(ProviderContainer container) =>
       container.read(proxiesActionProvider.notifier);
 
-  ProviderContainer runningContainer() {
-    final container = buildContainer();
-    container.read(initProvider.notifier).value = true;
-    container.read(runTimeProvider.notifier).value = 1;
-    return container;
-  }
-
   group('updateGroups', () {
-    test('publishes the groups derived from core proxy data', () async {
-      when(core.getProxies).thenAnswer(
-        (_) async => ProxiesData(
-          all: const ['Proxy', 'Direct'],
-          proxies: Map<String, dynamic>.from({
-            'Proxy': Map<String, dynamic>.from({
-              'name': 'Proxy',
-              'type': 'Selector',
-              'now': 'HK-01',
-              'all': ['HK-01'],
-            }),
-            'Direct': Map<String, dynamic>.from({
-              'name': 'Direct',
-              'type': 'Direct',
-            }),
-            'HK-01': Map<String, dynamic>.from({'name': 'HK-01', 'type': 'ss'}),
+    test('publishes the nodes of the current profile as one list', () async {
+      File(await appPath.getProfilePath('1'))
+        ..createSync(recursive: true)
+        ..writeAsStringSync(
+          jsonEncode({
+            'outbounds': [_node('HK-01'), _node('JP-01')],
           }),
-        ),
-      );
-      final container = buildContainer();
+        );
+      final container = buildContainer(profile: _selectedProfile('HK-01'));
 
       await actionOf(container).updateGroups();
 
       final groups = container.read(groupsProvider);
-      expect(groups.map((group) => group.name), ['Proxy']);
-      expect(groups.single.all.map((proxy) => proxy.name), ['HK-01']);
+      expect(groups.map((group) => group.name), [nodeGroupName]);
+      expect(groups.single.all.map((proxy) => proxy.name), ['HK-01', 'JP-01']);
+      expect(groups.single.all.first.type, 'shadowsocks');
     });
 
-    test(
-      'publishes the groups once a retry succeeds after core throws',
-      () async {
-        var attempt = 0;
-        when(core.getProxies).thenAnswer((_) async {
-          attempt++;
-          if (attempt == 1) {
-            throw StateError('core down');
-          }
-          return ProxiesData(
-            all: const ['Proxy', 'Direct'],
-            proxies: Map<String, dynamic>.from({
-              'Proxy': Map<String, dynamic>.from({
-                'name': 'Proxy',
-                'type': 'Selector',
-                'now': 'HK-01',
-                'all': ['HK-01'],
-              }),
-              'Direct': Map<String, dynamic>.from({
-                'name': 'Direct',
-                'type': 'Direct',
-              }),
-              'HK-01': Map<String, dynamic>.from({
-                'name': 'HK-01',
-                'type': 'ss',
-              }),
-            }),
-          );
-        });
-        final container = buildContainer();
+    test('clears the list when there is no profile', () async {
+      final container = buildContainer();
+      container.read(groupsProvider.notifier).value = [
+        _group('Stale', const []),
+      ];
 
-        await actionOf(container).updateGroups();
+      await actionOf(container).updateGroups();
 
-        final groups = container.read(groupsProvider);
-        expect(groups.map((group) => group.name), ['Proxy']);
-        verify(core.getProxies).called(2);
-      },
-    );
-
-    test(
-      'clears the groups once retry is exhausted after core throws',
-      () async {
-        when(core.getProxies).thenThrow(StateError('core down'));
-        final container = buildContainer();
-        container.read(groupsProvider.notifier).value = [
-          _group('Stale', const []),
-        ];
-
-        await actionOf(container).updateGroups();
-
-        expect(container.read(groupsProvider), isEmpty);
-        verify(core.getProxies).called(3);
-      },
-    );
+      expect(container.read(groupsProvider), isEmpty);
+    });
 
     test('a core status change alone does not clear the groups', () {
       final container = buildContainer();
@@ -184,85 +171,78 @@ void main() {
   });
 
   group('changeProxy', () {
-    setUp(() {
-      when(
-        () => core.changeProxy(any()),
-      ).thenAnswer((_) async => const ChangeProxyResult(changed: true));
-    });
-
-    test('hands the selection to the Core', () async {
-      final container = runningContainer();
-
-      await actionOf(
-        container,
-      ).changeProxy(groupName: 'Proxy', proxyName: 'HK-01');
-
-      verify(
-        () => core.changeProxy(
-          const ChangeProxyParams(groupName: 'Proxy', proxyName: 'HK-01'),
-        ),
-      ).called(1);
-    });
-
-    test('rolls the selection back when the Core answers a message', () async {
-      when(() => core.changeProxy(any())).thenAnswer(
-        (_) async => const ChangeProxyResult(message: 'proxy not exist'),
+    test('writes the node into the config by applying the profile', () async {
+      final setup = _FakeSetupAction();
+      final container = buildContainer(
+        profile: _selectedProfile('HK-00'),
+        setup: setup,
       );
-      final container = buildContainer(profile: _selectedProfile('HK-00'));
 
       await actionOf(
         container,
-      ).changeProxy(groupName: 'Proxy', proxyName: 'HK-01');
+      ).changeProxy(groupName: nodeGroupName, proxyName: 'HK-01');
 
+      expect(setup.applied, 1);
       expect(container.read(currentProfileProvider)?.selectedMap, {
-        'Proxy': 'HK-00',
+        nodeGroupName: 'HK-01',
       });
     });
 
-    test('commits the selection the Core accepted', () async {
-      final container = buildContainer(profile: _selectedProfile('HK-00'));
+    test('rolls the selection back when the Core refuses the config', () async {
+      final setup = _FakeSetupAction()..result = () => false;
+      final container = buildContainer(
+        profile: _selectedProfile('HK-00'),
+        setup: setup,
+      );
 
       await actionOf(
         container,
-      ).changeProxy(groupName: 'Proxy', proxyName: 'HK-01');
+      ).changeProxy(groupName: nodeGroupName, proxyName: 'HK-01');
 
       expect(container.read(currentProfileProvider)?.selectedMap, {
-        'Proxy': 'HK-01',
+        nodeGroupName: 'HK-00',
       });
     });
 
-    test('rolls the selection back when the switch fails', () async {
-      when(() => core.changeProxy(any())).thenThrow(StateError('core down'));
-      final container = buildContainer(profile: _selectedProfile('HK-00'));
+    test('rolls the selection back when applying throws', () async {
+      final setup = _FakeSetupAction()
+        ..result = () => throw StateError('core down');
+      final container = buildContainer(
+        profile: _selectedProfile('HK-00'),
+        setup: setup,
+      );
 
       await actionOf(
         container,
-      ).changeProxy(groupName: 'Proxy', proxyName: 'HK-01');
+      ).changeProxy(groupName: nodeGroupName, proxyName: 'HK-01');
 
       expect(container.read(currentProfileProvider)?.selectedMap, {
-        'Proxy': 'HK-00',
+        nodeGroupName: 'HK-00',
       });
     });
 
     test(
       'rolls back to the last selection the Core applied, not the last tap',
       () async {
-        when(() => core.changeProxy(any())).thenThrow(StateError('core down'));
-        final container = buildContainer(profile: _selectedProfile('HK-00'));
+        final setup = _FakeSetupAction()..result = () => false;
+        final container = buildContainer(
+          profile: _selectedProfile('HK-00'),
+          setup: setup,
+        );
         final action = actionOf(container);
 
-        action.changeProxyDebounce('Proxy', 'HK-01');
-        action.changeProxyDebounce('Proxy', 'HK-02');
+        action.changeProxyDebounce(nodeGroupName, 'HK-01');
+        action.changeProxyDebounce(nodeGroupName, 'HK-02');
         expect(container.read(currentProfileProvider)?.selectedMap, {
-          'Proxy': 'HK-02',
+          nodeGroupName: 'HK-02',
         });
 
-        await action.changeProxy(groupName: 'Proxy', proxyName: 'HK-02');
+        await action.changeProxy(groupName: nodeGroupName, proxyName: 'HK-02');
 
         expect(container.read(currentProfileProvider)?.selectedMap, {
-          'Proxy': 'HK-00',
+          nodeGroupName: 'HK-00',
         });
-        debouncer.cancel((FunctionTag.changeProxy, 'Proxy'));
+        debouncer.cancel((FunctionTag.changeProxy, nodeGroupName));
       },
     );
   });

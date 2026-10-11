@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:fl_clash/common/task.dart';
 import 'package:fl_clash/core/event.dart';
 import 'package:fl_clash/core/desktop/model.dart';
 import 'package:fl_clash/core/interface.dart';
@@ -53,18 +52,6 @@ class _RecordingCoreHandler extends CoreHandlerInterface {
         'rule': '',
         'rule-payload': '',
       },
-      CoreMethod.getProxies => {
-        'proxies': {
-          'PROXY': {
-            'name': 'PROXY',
-            'type': 'Selector',
-            'all': ['node-a'],
-            'now': 'node-a',
-          },
-          'node-a': {'name': 'node-a', 'type': 'vless'},
-        },
-        'all': ['PROXY'],
-      },
       CoreMethod.getMemoryStats => {
         'rss': 2048,
         'heapInuse': 1024,
@@ -72,7 +59,6 @@ class _RecordingCoreHandler extends CoreHandlerInterface {
         'stackInuse': 64,
         'runtimeOther': 32,
       },
-      CoreMethod.changeProxy => {'message': '', 'changed': true},
       CoreMethod.watchRoute => {
         'core-epoch': 1,
         'picks-version': 0,
@@ -113,7 +99,7 @@ void main() {
       Map<String, dynamic>.from(call.arguments as Map),
     );
 
-    expect(params.selectedMap, {'PROXY': 'node-a'});
+    expect(params.testUrl, 'https://www.gstatic.com/generate_204');
     expect(params.logLevel, LogLevel.error);
     expect(params.toJson(), call.arguments);
   });
@@ -123,12 +109,8 @@ void main() {
 
     await handler.init(const InitParams(homeDir: '/tmp/flclash', version: 35));
     await handler.setupConfig(
-      const SetupParams(selectedMap: {'PROXY': '@direct'}, testUrl: 'test'),
+      const SetupParams(testUrl: 'test'),
     );
-    final switched = await handler.changeProxy(
-      const ChangeProxyParams(groupName: 'PROXY', proxyName: 'node-a'),
-    );
-    expect(switched, const ChangeProxyResult(changed: true));
     final route = await handler.watchRoute(true);
     expect(route, const RouteSnapshot(coreEpoch: 1));
     expect(handler.calls[CoreMethod.watchRoute], isTrue);
@@ -145,7 +127,6 @@ void main() {
     for (final method in [
       CoreMethod.initCore,
       CoreMethod.setupConfig,
-      CoreMethod.changeProxy,
       CoreMethod.asyncTestDelay,
       CoreMethod.probe,
     ]) {
@@ -215,26 +196,6 @@ void main() {
     final memory = await handler.getMemoryStats();
     expect(memory?.rss, 2048);
     expect(memory?.runtimeTotal, 1024 + 256 + 64 + 32);
-  });
-
-  test('the proxies the Core lists reach the proxies page as groups', () async {
-    final handler = _RecordingCoreHandler();
-
-    final groups = await buildGroups(
-      ComputeGroupsState(
-        proxiesData: await handler.getProxies(),
-        sortType: ProxiesSortType.none,
-        delayMap: const {},
-        selectedMap: const {},
-        defaultTestUrl: '',
-      ),
-    );
-
-    expect(groups, hasLength(1));
-    expect(groups.single.name, 'PROXY');
-    expect(groups.single.type, GroupType.Selector);
-    expect(groups.single.now, 'node-a');
-    expect(groups.single.all.single.name, 'node-a');
   });
 
   test('method response separates result and structured errors', () async {

@@ -11,14 +11,14 @@ const directOutboundTag = '@direct';
 const blockOutboundTag = '@block';
 const dnsOutboundTag = '@dns';
 
-/// The balancer every node belongs to, and the group name the UI shows.
-const proxyGroupName = 'PROXY';
+/// The key the chosen node is stored under: the node list is the only list the
+/// app shows, and Xray has no group to select from, so the choice is a rule.
+const nodeGroupName = 'nodes';
 
 const mixedInboundTag = 'mixed-in';
 const tunInboundTag = 'tun-in';
 
 const _tunGateway = '172.19.0.1/30';
-const _probeInterval = '5m';
 
 String _logLevelName(LogLevel level) => switch (level) {
   LogLevel.silent => 'none',
@@ -73,11 +73,19 @@ List<Map<String, dynamic>> _inbounds(MakeRealProfileState state) {
   ];
 }
 
-Map<String, dynamic> _routing(MakeRealProfileState state, bool hasNodes) {
+/// The node the proxy rules send traffic to: the chosen one while it is still
+/// in the subscription, otherwise the first.
+String? _proxiedNode(MakeRealProfileState state) {
+  final tags = [for (final node in state.outbounds) '${node['tag']}'];
+  final chosen = state.selectedNode;
+  if (chosen != null && tags.contains(chosen)) return chosen;
+  return tags.firstOrNull;
+}
+
+Map<String, dynamic> _routing(MakeRealProfileState state) {
   final config = state.coreConfig;
-  final proxyTarget = hasNodes
-      ? {'balancerTag': proxyGroupName}
-      : {'outboundTag': directOutboundTag};
+  final node = _proxiedNode(state);
+  final proxyTarget = {'outboundTag': node ?? directOutboundTag};
   final rules = <Map<String, dynamic>>[
     {
       'inboundTag': [tunInboundTag],
@@ -107,21 +115,7 @@ Map<String, dynamic> _routing(MakeRealProfileState state, bool hasNodes) {
         {'network': 'tcp,udp', ...proxyTarget},
       ]);
   }
-  return {
-    'domainStrategy': 'IpIfNonMatch',
-    'rules': rules,
-    if (hasNodes)
-      'balancers': [
-        {
-          'tag': proxyGroupName,
-          'selector': [for (final node in state.outbounds) node['tag']],
-          'strategy': {'type': config.autoSelect ? 'leastPing' : 'random'},
-          // A fallback is resolved through the observatory, which only exists
-          // when the nodes are probed.
-          if (config.autoSelect) 'fallbackTag': directOutboundTag,
-        },
-      ],
-  };
+  return {'domainStrategy': 'IpIfNonMatch', 'rules': rules};
 }
 
 Map<String, dynamic> _dns(CoreConfig config) {
@@ -144,7 +138,6 @@ Map<String, dynamic> _dns(CoreConfig config) {
 /// The Xray config the Core is asked to run: the user's nodes, the app's own
 /// outbounds, and inbounds, routing and DNS derived from [state].
 Map<String, dynamic> buildXrayConfig(MakeRealProfileState state) {
-  final hasNodes = state.outbounds.isNotEmpty;
   final config = state.coreConfig;
   return {
     'log': {'loglevel': _logLevelName(config.logLevel), 'access': 'none'},
@@ -155,15 +148,8 @@ Map<String, dynamic> buildXrayConfig(MakeRealProfileState state) {
       {'tag': blockOutboundTag, 'protocol': 'blackhole'},
       {'tag': dnsOutboundTag, 'protocol': 'dns'},
     ],
-    'routing': _routing(state, hasNodes),
+    'routing': _routing(state),
     'dns': _dns(config),
-    if (hasNodes && config.autoSelect)
-      'observatory': {
-        'subjectSelector': [for (final node in state.outbounds) node['tag']],
-        'probeURL': state.testUrl,
-        'probeInterval': _probeInterval,
-        'enableConcurrency': true,
-      },
   };
 }
 

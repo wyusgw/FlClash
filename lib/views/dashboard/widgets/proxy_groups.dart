@@ -5,7 +5,6 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/dashboard/widget_metrics.dart';
 import 'package:fl_clash/views/proxies/card.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -15,33 +14,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'row_card.dart';
 
 const _summaryGap = 8.0;
-const _headerInkInset = EdgeInsets.symmetric(horizontal: 6, vertical: 2);
 
-class ProxyGroupsCard extends ConsumerStatefulWidget {
+class ProxyGroupsCard extends ConsumerWidget {
   const ProxyGroupsCard({super.key});
 
   @override
-  ConsumerState<ProxyGroupsCard> createState() => _ProxyGroupsCardState();
-}
-
-class _ProxyGroupsCardState extends ConsumerState<ProxyGroupsCard> {
-  String? _groupName;
-  bool _reverse = false;
-
-  void _show(String? groupName) {
-    setState(() {
-      _reverse = groupName == null;
-      _groupName = groupName;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final groups = ref.watch(visibleGroupsStateProvider).value;
-    final group = _groupName == null ? null : groups.getGroup(_groupName!);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final nodes = ref.watch(
+      visibleGroupsStateProvider.select(
+        (state) => state.value.getGroup(nodeGroupName),
+      ),
+    );
     return RowCardFrame(
       child: PageTransitionSwitcher(
-        reverse: _reverse,
         duration: context.motionDuration(commonDuration),
         transitionBuilder: (child, animation, secondaryAnimation) {
           return SharedAxisTransition(
@@ -52,94 +37,37 @@ class _ProxyGroupsCardState extends ConsumerState<ProxyGroupsCard> {
             child: child,
           );
         },
-        child: group == null
-            ? _GroupsPane(
-                key: const ValueKey('proxy-groups'),
-                groups: groups,
-                onSelect: (group) => _show(group.name),
-              )
-            : _ProxiesPane(
-                key: ValueKey(group.name),
-                group: group,
-                onBack: () => _show(null),
-              ),
+        child: nodes == null
+            ? const _EmptyPane(key: ValueKey('empty'))
+            : _ProxiesPane(key: const ValueKey('nodes'), group: nodes),
       ),
     );
   }
 }
 
-class _GroupsPane extends StatefulWidget {
-  const _GroupsPane({super.key, required this.groups, required this.onSelect});
-
-  final List<Group> groups;
-  final void Function(Group group) onSelect;
-
-  @override
-  State<_GroupsPane> createState() => _GroupsPaneState();
-}
-
-class _GroupsPaneState extends State<_GroupsPane> {
-  final _controller = RowSnapScrollController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+class _EmptyPane extends StatelessWidget {
+  const _EmptyPane({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final groups = widget.groups;
     final appLocalizations = context.appLocalizations;
     return RowCardPane(
       header: InfoHeader(
         padding: DashboardWidgetMetrics.paddingOf(context).copyWith(bottom: 0),
-        info: Info(
-          label: appLocalizations.proxyGroup,
-          glyph: AppGlyphs.proxies,
-        ),
+        info: Info(label: appLocalizations.proxies, glyph: AppGlyphs.proxies),
       ),
-      body: groups.isEmpty
-          ? RowCardEmpty(
-              illustration: NullStatusIllustration.proxies,
-              label: appLocalizations.nullTip(appLocalizations.proxyGroup),
-            )
-          : RowCardSlots(
-              rowExtent:
-                  rowCardLineExtentOf(context) +
-                  globalState.measure.labelSmallHeight *
-                      DashboardWidgetMetrics.textScaleOf(context),
-              builder: (_, rowHeight, spacing) {
-                final itemExtent = rowHeight + spacing;
-                _controller.itemExtent = itemExtent;
-                return ListView.builder(
-                  controller: _controller,
-                  padding: EdgeInsets.zero,
-                  physics: const RowSnapScrollPhysics(),
-                  itemExtent: itemExtent,
-                  itemCount: groups.length,
-                  itemBuilder: (_, index) {
-                    final group = groups[index];
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: spacing),
-                      child: RowCardPill(
-                        onTap: () => widget.onSelect(group),
-                        child: _GroupSummary(group: group),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+      body: RowCardEmpty(
+        illustration: NullStatusIllustration.proxies,
+        label: appLocalizations.nullTip(appLocalizations.proxies),
+      ),
     );
   }
 }
 
 class _ProxiesPane extends ConsumerStatefulWidget {
-  const _ProxiesPane({super.key, required this.group, required this.onBack});
+  const _ProxiesPane({super.key, required this.group});
 
   final Group group;
-  final VoidCallback onBack;
 
   @override
   ConsumerState<_ProxiesPane> createState() => _ProxiesPaneState();
@@ -181,85 +109,67 @@ class _ProxiesPaneState extends ConsumerState<_ProxiesPane> {
   Widget build(BuildContext context) {
     final group = widget.group;
     final selected = ref.watch(selectedProxyNameProvider(group.name));
-    final colorScheme = context.colorScheme;
     final headerPadding = DashboardWidgetMetrics.paddingOf(
       context,
     ).copyWith(bottom: 0);
     return RowCardPane(
-      headerOverhang: _headerInkInset.bottom,
-      header: Padding(
-        padding: headerPadding.copyWith(
-          left: headerPadding.left - _headerInkInset.left,
-          top: headerPadding.top - _headerInkInset.top,
-          right: headerPadding.right - _headerInkInset.right,
+      header: InfoHeader(
+        padding: headerPadding,
+        info: Info(
+          label: context.appLocalizations.proxies,
+          glyph: AppGlyphs.proxies,
         ),
-        child: Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: Material(
-            type: MaterialType.transparency,
-            child: InkWell(
-              customBorder: AppShape.full,
-              onTap: widget.onBack,
-              child: Semantics(
-                button: true,
-                label: context.appLocalizations.back,
-                child: InfoHeader(
-                  padding: _headerInkInset,
-                  info: Info(label: group.name, glyph: AppGlyphs.chevronBack),
+      ),
+      body: _buildProxies(group, selected),
+    );
+  }
+
+  Widget _buildProxies(Group group, String? selected) {
+    final colorScheme = context.colorScheme;
+    return RowCardSlots(
+      rowExtent: rowCardLineExtentOf(context),
+      builder: (_, rowHeight, spacing) {
+        final itemExtent = rowHeight + spacing;
+        _controller.itemExtent = itemExtent;
+        _revealSelected(itemExtent);
+        return ListView.builder(
+          controller: _controller,
+          padding: EdgeInsets.zero,
+          physics: const RowSnapScrollPhysics(),
+          itemExtent: itemExtent,
+          itemCount: group.all.length,
+          itemBuilder: (_, index) {
+            final proxy = group.all[index];
+            final isSelected = proxy.name == selected;
+            return Padding(
+              padding: EdgeInsets.only(bottom: spacing),
+              child: RowCardPill(
+                color: isSelected ? colorScheme.secondaryContainer : null,
+                onTap: () => selectGroupProxy(
+                  ref,
+                  groupName: group.name,
+                  groupType: group.type,
+                  proxyName: proxy.name,
+                ),
+                child: Row(
+                  spacing: _summaryGap,
+                  children: [
+                    Expanded(
+                      child: _RowLabel(
+                        text: proxy.name,
+                        color: isSelected
+                            ? colorScheme.onSecondaryContainer
+                            : null,
+                      ),
+                    ),
+                    _ProxyDelay(proxyName: proxy.name, testUrl: group.testUrl),
+                  ],
                 ),
               ),
-            ),
-          ),
-        ),
-      ),
-      body: RowCardSlots(
-        rowExtent: rowCardLineExtentOf(context),
-        builder: (_, rowHeight, spacing) {
-          final itemExtent = rowHeight + spacing;
-          _controller.itemExtent = itemExtent;
-          _revealSelected(itemExtent);
-          return ListView.builder(
-            controller: _controller,
-            padding: EdgeInsets.zero,
-            physics: const RowSnapScrollPhysics(),
-            itemExtent: itemExtent,
-            itemCount: group.all.length,
-            itemBuilder: (_, index) {
-              final proxy = group.all[index];
-              final isSelected = proxy.name == selected;
-              return Padding(
-                padding: EdgeInsets.only(bottom: spacing),
-                child: RowCardPill(
-                  color: isSelected ? colorScheme.secondaryContainer : null,
-                  onTap: () => selectGroupProxy(
-                    ref,
-                    groupName: group.name,
-                    groupType: group.type,
-                    proxyName: proxy.name,
-                  ),
-                  child: Row(
-                    spacing: _summaryGap,
-                    children: [
-                      Expanded(
-                        child: _RowLabel(
-                          text: proxy.name,
-                          color: isSelected
-                              ? colorScheme.onSecondaryContainer
-                              : null,
-                        ),
-                      ),
-                      _ProxyDelay(
-                        proxyName: proxy.name,
-                        testUrl: group.testUrl,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
+            );
+          },
+        );
+      },
     );
   }
 }
@@ -277,39 +187,6 @@ class _RowLabel extends StatelessWidget {
       style: context.textTheme.bodyMedium?.copyWith(
         color: color ?? context.colorScheme.onSurface,
       ),
-    );
-  }
-}
-
-class _GroupSummary extends ConsumerWidget {
-  const _GroupSummary({required this.group});
-
-  final Group group;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final proxyName = ref
-        .watch(selectedProxyNameProvider(group.name))
-        .takeFirstValid([]);
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          spacing: _summaryGap,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Expanded(child: _RowLabel(text: group.name)),
-            _ProxyDelay(proxyName: group.name, testUrl: group.testUrl),
-          ],
-        ),
-        if (proxyName.isNotEmpty)
-          OverflowTooltipText(
-            text: proxyName,
-            style: context.textTheme.labelSmall?.toLight,
-          ),
-      ],
     );
   }
 }

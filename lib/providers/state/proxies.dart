@@ -7,7 +7,7 @@ GroupsState currentGroupsState(Ref ref) {
   final shown = switch (mode) {
     Mode.direct => const <Group>[],
     Mode.global => groups,
-    Mode.rule => groups.where((item) => item.hidden == false),
+    Mode.rule => groups.where((item) => item.hidden != true),
   };
   return GroupsState(value: shown.map(_withoutSelection).toList());
 }
@@ -45,15 +45,6 @@ ProxyState proxyState(Ref ref) {
     bassDomain: systemProxySelector.bypassDomain,
     port: mixedPort,
   );
-}
-
-@riverpod
-ProxiesActionsState proxiesActionsState(Ref ref) {
-  final pageLabel = ref.watch(currentPageLabelProvider);
-  final type = ref.watch(
-    proxiesStyleSettingProvider.select((state) => state.type),
-  );
-  return ProxiesActionsState(pageLabel: pageLabel, type: type);
 }
 
 /// Watching the delay map instead would drop nodes one probe at a time, and
@@ -116,21 +107,6 @@ GroupsState filterGroupsState(Ref ref, String query) {
       .where((group) => group.all.isNotEmpty)
       .toList();
   return currentGroups.copyWith(value: groups);
-}
-
-@riverpod
-ProxiesListState proxiesListState(Ref ref) {
-  final query = ref.watch(queryProvider(QueryTag.proxies));
-  final currentGroups = ref.watch(filterGroupsStateProvider(query));
-  final currentUnfoldSet = ref.watch(unfoldSetProvider);
-  final cardType = ref.watch(
-    proxiesStyleSettingProvider.select((state) => state.cardType),
-  );
-  return ProxiesListState(
-    groups: currentGroups.value,
-    currentUnfoldSet: currentUnfoldSet,
-    proxyCardType: cardType,
-  );
 }
 
 @riverpod

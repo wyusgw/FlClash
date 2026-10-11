@@ -68,7 +68,6 @@ _CoreConfig _$CoreConfigFromJson(Map<String, dynamic> json) => _CoreConfig(
   directDns: json['direct-dns'] == null
       ? defaultDirectDnsServers
       : _directDnsFromJson(json['direct-dns']),
-  autoSelect: json['auto-select'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$CoreConfigToJson(_CoreConfig instance) =>
@@ -81,7 +80,6 @@ Map<String, dynamic> _$CoreConfigToJson(_CoreConfig instance) =>
       'tun': instance.tun,
       'proxy-dns': instance.proxyDns,
       'direct-dns': instance.directDns,
-      'auto-select': instance.autoSelect,
     };
 
 const _$ModeEnumMap = {

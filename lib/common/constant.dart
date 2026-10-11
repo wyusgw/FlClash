@@ -121,7 +121,6 @@ const stringAndStringMapEntryListEquality =
     ListEquality<MapEntry<String, String>>();
 const keyboardModifierListEquality = SetEquality<KeyboardModifier>();
 
-const proxiesListStoreKey = PageStorageKey<String>('proxies_list');
 const toolsStoreKey = PageStorageKey<String>('tools');
 const profilesStoreKey = PageStorageKey<String>('profiles');
 

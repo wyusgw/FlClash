@@ -8,7 +8,6 @@ part 'generated/core.g.dart';
 @freezed
 abstract class SetupParams with _$SetupParams {
   const factory SetupParams({
-    @JsonKey(name: 'selected-map') required Map<String, String> selectedMap,
     @JsonKey(name: 'test-url') required String testUrl,
     @JsonKey(name: 'log-level') @Default(LogLevel.error) LogLevel logLevel,
   }) = _SetupParams;
@@ -45,28 +44,6 @@ abstract class InitParams with _$InitParams {
 
   factory InitParams.fromJson(Map<String, Object?> json) =>
       _$InitParamsFromJson(json);
-}
-
-@freezed
-abstract class ChangeProxyParams with _$ChangeProxyParams {
-  const factory ChangeProxyParams({
-    @JsonKey(name: 'group-name') required String groupName,
-    @JsonKey(name: 'proxy-name') required String proxyName,
-  }) = _ChangeProxyParams;
-
-  factory ChangeProxyParams.fromJson(Map<String, Object?> json) =>
-      _$ChangeProxyParamsFromJson(json);
-}
-
-@freezed
-abstract class ChangeProxyResult with _$ChangeProxyResult {
-  const factory ChangeProxyResult({
-    @Default('') String message,
-    @Default(false) bool changed,
-  }) = _ChangeProxyResult;
-
-  factory ChangeProxyResult.fromJson(Map<String, Object?> json) =>
-      _$ChangeProxyResultFromJson(json);
 }
 
 @freezed
@@ -221,13 +198,3 @@ abstract class Now with _$Now {
   factory Now.fromJson(Map<String, Object?> json) => _$NowFromJson(json);
 }
 
-@freezed
-abstract class ProxiesData with _$ProxiesData {
-  const factory ProxiesData({
-    required Map<String, dynamic> proxies,
-    required List<String> all,
-  }) = _ProxiesData;
-
-  factory ProxiesData.fromJson(Map<String, Object?> json) =>
-      _$ProxiesDataFromJson(json);
-}

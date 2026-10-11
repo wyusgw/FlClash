@@ -7,7 +7,6 @@ part of '../core.dart';
 // **************************************************************************
 
 _SetupParams _$SetupParamsFromJson(Map<String, dynamic> json) => _SetupParams(
-  selectedMap: Map<String, String>.from(json['selected-map'] as Map),
   testUrl: json['test-url'] as String,
   logLevel:
       $enumDecodeNullable(_$LogLevelEnumMap, json['log-level']) ??
@@ -16,7 +15,6 @@ _SetupParams _$SetupParamsFromJson(Map<String, dynamic> json) => _SetupParams(
 
 Map<String, dynamic> _$SetupParamsToJson(_SetupParams instance) =>
     <String, dynamic>{
-      'selected-map': instance.selectedMap,
       'test-url': instance.testUrl,
       'log-level': _$LogLevelEnumMap[instance.logLevel]!,
     };
@@ -74,27 +72,6 @@ Map<String, dynamic> _$InitParamsToJson(_InitParams instance) =>
       'home-dir': instance.homeDir,
       'version': instance.version,
     };
-
-_ChangeProxyParams _$ChangeProxyParamsFromJson(Map<String, dynamic> json) =>
-    _ChangeProxyParams(
-      groupName: json['group-name'] as String,
-      proxyName: json['proxy-name'] as String,
-    );
-
-Map<String, dynamic> _$ChangeProxyParamsToJson(_ChangeProxyParams instance) =>
-    <String, dynamic>{
-      'group-name': instance.groupName,
-      'proxy-name': instance.proxyName,
-    };
-
-_ChangeProxyResult _$ChangeProxyResultFromJson(Map<String, dynamic> json) =>
-    _ChangeProxyResult(
-      message: json['message'] as String? ?? '',
-      changed: json['changed'] as bool? ?? false,
-    );
-
-Map<String, dynamic> _$ChangeProxyResultToJson(_ChangeProxyResult instance) =>
-    <String, dynamic>{'message': instance.message, 'changed': instance.changed};
 
 _RouteSnapshot _$RouteSnapshotFromJson(Map<String, dynamic> json) =>
     _RouteSnapshot(
@@ -320,11 +297,3 @@ Map<String, dynamic> _$NowToJson(_Now instance) => <String, dynamic>{
   'name': instance.name,
   'value': instance.value,
 };
-
-_ProxiesData _$ProxiesDataFromJson(Map<String, dynamic> json) => _ProxiesData(
-  proxies: json['proxies'] as Map<String, dynamic>,
-  all: (json['all'] as List<dynamic>).map((e) => e as String).toList(),
-);
-
-Map<String, dynamic> _$ProxiesDataToJson(_ProxiesData instance) =>
-    <String, dynamic>{'proxies': instance.proxies, 'all': instance.all};

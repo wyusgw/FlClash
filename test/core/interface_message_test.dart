@@ -35,7 +35,7 @@ const _unused = CoreLifecycleResult(
   outcome: CoreLifecycleOutcome.applied,
 );
 
-const _setupParams = SetupParams(selectedMap: {}, testUrl: 'http://x.com');
+const _setupParams = SetupParams(testUrl: 'http://x.com');
 
 void main() {
   late _SilentCore core;
@@ -62,19 +62,6 @@ void main() {
         );
       });
     });
-  });
-
-  test('an unanswered changeProxy is not reported as applied', () {
-    expect(
-      core.changeProxy(const ChangeProxyParams(groupName: 'G', proxyName: 'P')),
-      throwsA(
-        isA<CoreMethodException>().having(
-          (error) => error.code,
-          'code',
-          'no_response',
-        ),
-      ),
-    );
   });
 
   test('an answered call still returns the core message verbatim', () async {

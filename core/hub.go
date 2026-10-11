@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"os"
 	"runtime"
 	"runtime/debug"
@@ -39,7 +38,6 @@ func handleStartListener() bool {
 			return false
 		}
 	}
-	refreshRoute()
 	return true
 }
 
@@ -106,80 +104,6 @@ func handleValidateProxies(mappings []map[string]any) []string {
 		}
 	}
 	return results
-}
-
-// The host recognises a group by these names: a random balancer is a plain
-// selectable group, the latency strategies are the self-picking ones.
-func groupType(balancer balancerMeta) string {
-	switch balancer.Strategy.Type {
-	case "leastPing", "leastLoad":
-		return "URLTest"
-	case "roundRobin":
-		return "LoadBalance"
-	default:
-		return "Selector"
-	}
-}
-
-func handleGetProxies() ProxiesData {
-	data := ProxiesData{Proxies: map[string]any{}, All: []string{}}
-	running := currentEngine.Load()
-	if running == nil {
-		return data
-	}
-	for _, outbound := range running.meta.outbounds {
-		data.Proxies[outbound.Tag] = nodeView{Name: outbound.Tag, Type: outbound.Protocol}
-	}
-	selectMu.Lock()
-	defer selectMu.Unlock()
-	for _, balancer := range running.meta.balancers {
-		data.All = append(data.All, balancer.Tag)
-		data.Proxies[balancer.Tag] = groupView{
-			Name: balancer.Tag,
-			Type: groupType(balancer),
-			All:  running.meta.members(balancer),
-			Now:  selected[balancer.Tag],
-		}
-	}
-	return data
-}
-
-var (
-	errGroupNotFound = errors.New("Not found group")
-	errNotInGroup    = errors.New("Proxy is not in the group")
-)
-
-func handleChangeProxy(params *ChangeProxyParams) *ChangeProxyResult {
-	selectMu.Lock()
-	defer selectMu.Unlock()
-
-	running := currentEngine.Load()
-	if running == nil {
-		return &ChangeProxyResult{Message: errConfigNotApplied.Error()}
-	}
-	balancer, ok := running.meta.balancer(params.GroupName)
-	if !ok {
-		return &ChangeProxyResult{Message: errGroupNotFound.Error()}
-	}
-	if params.ProxyName != "" && !containsTag(running.meta.members(balancer), params.ProxyName) {
-		return &ChangeProxyResult{Message: errNotInGroup.Error()}
-	}
-	overrider := routerOf(running.instance)
-	if overrider == nil {
-		return &ChangeProxyResult{Message: "router does not support selection"}
-	}
-	if err := overrider.SetOverrideTarget(params.GroupName, params.ProxyName); err != nil {
-		return &ChangeProxyResult{Message: err.Error()}
-	}
-	before := selected[params.GroupName]
-	if params.ProxyName == "" {
-		delete(selected, params.GroupName)
-	} else {
-		selected[params.GroupName] = params.ProxyName
-	}
-	changed := before != params.ProxyName
-	refreshRouteLocked(false)
-	return &ChangeProxyResult{Changed: changed}
 }
 
 func delayTestTimeout(milliseconds int64) time.Duration {

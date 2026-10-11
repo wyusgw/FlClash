@@ -48,18 +48,13 @@ class SetupAction extends _$SetupAction {
           ref.read(appSettingProvider).showTrayTitle);
 
   SetupParams get _setupParams {
-    final selectedMap = ref.read(selectedMapProvider);
     final testUrl = ref.read(
       appSettingProvider.select((state) => state.testUrl),
     );
     final logLevel = ref.read(
       coreSettingProvider.select((state) => state.logLevel),
     );
-    return SetupParams(
-      selectedMap: selectedMap,
-      testUrl: testUrl,
-      logLevel: logLevel,
-    );
+    return SetupParams(testUrl: testUrl, logLevel: logLevel);
   }
 
   Future<bool> fullSetup() async {
@@ -337,7 +332,11 @@ class SetupAction extends _$SetupAction {
           tun: coreConfig.tun.getRealTun(network.routeMode),
         ),
         routeMode: network.routeMode,
-        testUrl: ref.read(appSettingProvider.select((state) => state.testUrl)),
+        selectedNode: ref.read(
+          currentProfileProvider.select(
+            (state) => state?.selectedMap[nodeGroupName],
+          ),
+        ),
         authentication: network.authentication.credentials,
         tunInbound: system.isDesktop,
         safeMode: ref.read(safeModeProvider),

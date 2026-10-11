@@ -167,10 +167,7 @@ SharedState sharedState(Ref ref) {
   ref.watch(loadedLocaleProvider);
   final currentProfile = ref.watch(
     currentProfileProvider.select(
-      (state) => CurrentProfileSelectorState(
-        label: state?.label ?? '',
-        selectedMap: state?.selectedMap ?? {},
-      ),
+      (state) => CurrentProfileSelectorState(label: state?.label ?? ''),
     ),
   );
   final appSetting = ref.watch(
@@ -204,7 +201,6 @@ SharedState sharedState(Ref ref) {
   final vpnSetting = ref.watch(vpnSettingProvider);
   final safeMode = ref.watch(safeModeProvider);
   final currentProfileName = currentProfile.label;
-  final selectedMap = currentProfile.selectedMap;
   final onlyStatisticsProxy = appSetting.onlyStatisticsProxy;
   final crashlytics = appSetting.crashlytics;
   final testUrl = appSetting.testUrl;
@@ -219,7 +215,7 @@ SharedState sharedState(Ref ref) {
     stopTip: currentAppLocalizations.stopVpn,
     startTip: currentAppLocalizations.startVpn,
     localNetworkTip: currentAppLocalizations.localNetworkDeniedTip,
-    setupParams: SetupParams(selectedMap: selectedMap, testUrl: testUrl),
+    setupParams: SetupParams(testUrl: testUrl),
     vpnOptions: VpnOptions(
       enable: vpnSetting.enable && !safeMode,
       stack: stack,

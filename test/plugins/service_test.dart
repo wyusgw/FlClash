@@ -208,7 +208,7 @@ void main() {
       );
 
       final response = await Service().invokeMethod(
-        const CoreMethodCall(id: '3', method: CoreMethod.getProxies),
+        const CoreMethodCall(id: '3', method: CoreMethod.getTraffic),
       );
 
       expect(response!.result, names);

@@ -477,7 +477,7 @@ final class SharedStateProvider
   }
 }
 
-String _$sharedStateHash() => r'e5adfc6adedcd5d49d1b62caf5c7147f6cfa8d04';
+String _$sharedStateHash() => r'2401f29ec36c854ff0c49d176498f4e6a5a1e341';
 
 @ProviderFor(AccessControlState)
 final accessControlStateProvider = AccessControlStateProvider._();
@@ -854,7 +854,7 @@ final class CurrentGroupsStateProvider
 }
 
 String _$currentGroupsStateHash() =>
-    r'e90e32a3d8aa6641cbce1da0dfed714458891720';
+    r'cf7c3acfbc6d61d9a7ab30a29054274040de7120';
 
 @ProviderFor(proxyState)
 final proxyStateProvider = ProxyStateProvider._();
@@ -896,54 +896,6 @@ final class ProxyStateProvider
 }
 
 String _$proxyStateHash() => r'9ebe83160b2abd6ad9455c0769aab1531b54360c';
-
-@ProviderFor(proxiesActionsState)
-final proxiesActionsStateProvider = ProxiesActionsStateProvider._();
-
-final class ProxiesActionsStateProvider
-    extends
-        $FunctionalProvider<
-          ProxiesActionsState,
-          ProxiesActionsState,
-          ProxiesActionsState
-        >
-    with $Provider<ProxiesActionsState> {
-  ProxiesActionsStateProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'proxiesActionsStateProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$proxiesActionsStateHash();
-
-  @$internal
-  @override
-  $ProviderElement<ProxiesActionsState> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  ProxiesActionsState create(Ref ref) {
-    return proxiesActionsState(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ProxiesActionsState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ProxiesActionsState>(value),
-    );
-  }
-}
-
-String _$proxiesActionsStateHash() =>
-    r'5e69e5221f7a8b41a02495f4c2063330fbe58421';
 
 /// Watching the delay map instead would drop nodes one probe at a time, and
 /// reading it on any other rebuild would drop them whenever something
@@ -1116,52 +1068,6 @@ final class FilterGroupsStateFamily extends $Family
   @override
   String toString() => r'filterGroupsStateProvider';
 }
-
-@ProviderFor(proxiesListState)
-final proxiesListStateProvider = ProxiesListStateProvider._();
-
-final class ProxiesListStateProvider
-    extends
-        $FunctionalProvider<
-          ProxiesListState,
-          ProxiesListState,
-          ProxiesListState
-        >
-    with $Provider<ProxiesListState> {
-  ProxiesListStateProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'proxiesListStateProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$proxiesListStateHash();
-
-  @$internal
-  @override
-  $ProviderElement<ProxiesListState> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  ProxiesListState create(Ref ref) {
-    return proxiesListState(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ProxiesListState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ProxiesListState>(value),
-    );
-  }
-}
-
-String _$proxiesListStateHash() => r'212d21f79e9c149076e13d1d19ccd83ccb4b471b';
 
 @ProviderFor(proxiesTabState)
 final proxiesTabStateProvider = ProxiesTabStateProvider._();

@@ -15,12 +15,9 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(
-      const SetupParams(selectedMap: {}, testUrl: 'http://x.com'),
+      const SetupParams(testUrl: 'http://x.com'),
     );
     registerFallbackValue(const InitParams(homeDir: '.', version: 1));
-    registerFallbackValue(
-      const ChangeProxyParams(groupName: 'G', proxyName: 'P'),
-    );
   });
 
   setUp(() {
@@ -91,7 +88,7 @@ void main() {
     });
 
     test('setupConfig waits for asynchronous preload', () async {
-      const params = SetupParams(selectedMap: {}, testUrl: 'http://x.com');
+      const params = SetupParams(testUrl: 'http://x.com');
       final preloadCompleter = Completer<void>();
       final events = <String>[];
       when(() => mock.setupConfig(params)).thenAnswer((_) {
@@ -119,13 +116,6 @@ void main() {
   });
 
   group('proxy methods', () {
-    test('changeProxy delegates to interface', () async {
-      const params = ChangeProxyParams(groupName: 'G1', proxyName: 'P1');
-      const result = ChangeProxyResult(changed: true);
-      when(() => mock.changeProxy(params)).thenAnswer((_) async => result);
-      expect(await controller.changeProxy(params), result);
-    });
-
     test('watchRoute delegates to interface', () async {
       const snapshot = RouteSnapshot(
         coreEpoch: 3,

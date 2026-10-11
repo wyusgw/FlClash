@@ -3,9 +3,6 @@
     "id": "setupConfig#contract",
     "method": "setupConfig",
     "arguments": {
-      "selected-map": {
-        "PROXY": "node-a"
-      },
       "test-url": "https://www.gstatic.com/generate_204",
       "log-level": "error"
     }

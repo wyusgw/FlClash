@@ -17,23 +17,20 @@ func TestDefaultSetupParams(t *testing.T) {
 	if params.TestURL != "https://www.gstatic.com/generate_204" {
 		t.Errorf("TestURL = %s, want the gstatic generate_204 probe", params.TestURL)
 	}
-	if params.SelectedMap == nil {
-		t.Error("SelectedMap must be a usable map so decoding can merge into it")
-	}
 }
 
 func TestDefaultSetupParamsSurvivesPartialDecode(t *testing.T) {
 	params := defaultSetupParams()
 
-	if err := json.Unmarshal([]byte(`{"selected-map":{"GLOBAL":"auto"},"log-level":"debug"}`), params); err != nil {
+	if err := json.Unmarshal([]byte(`{"log-level":"debug"}`), params); err != nil {
 		t.Fatalf("decode error: %v", err)
 	}
 
 	if params.TestURL != "https://www.gstatic.com/generate_204" {
 		t.Errorf("TestURL = %s, want the default to survive a partial payload", params.TestURL)
 	}
-	if params.SelectedMap["GLOBAL"] != "auto" {
-		t.Errorf("SelectedMap = %v, want GLOBAL mapped to auto", params.SelectedMap)
+	if params.LogLevel != "debug" {
+		t.Errorf("LogLevel = %s, want the decoded debug", params.LogLevel)
 	}
 }
 
@@ -168,7 +165,7 @@ func TestRegisterMethodRejectsADuplicate(t *testing.T) {
 		}
 	}()
 
-	registerMethod(getProxiesMethod, withoutArguments(func(response MethodResponse) {}))
+	registerMethod(getTrafficMethod, withoutArguments(func(response MethodResponse) {}))
 }
 
 // The Dart enum is the host's list of calls; every one of them has to reach a

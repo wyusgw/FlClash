@@ -103,7 +103,6 @@ class ProxiesAction extends _$ProxiesAction {
       String proxyName,
     ) async {
       await changeProxy(groupName: groupName, proxyName: proxyName);
-      updateGroupsDebounce();
     }, args: [groupName, proxyName]);
   }
 
@@ -111,46 +110,38 @@ class ProxiesAction extends _$ProxiesAction {
     return ref.read(currentProfileProvider)?.selectedMap[groupName] ?? '';
   }
 
+  Future<List<Proxy>> _readNodes() async {
+    final profileId = ref.read(currentProfileIdProvider);
+    if (profileId == null) return const [];
+    final text = await readTextFileTask(
+      await appPath.getProfilePath(profileId.toString()),
+    );
+    if (text == null) return const [];
+    return [
+      for (final node in parseSubscription(text))
+        Proxy(name: '${node['tag']}', type: '${node['protocol']}'),
+    ];
+  }
+
   Future<void> updateGroups() async {
     try {
       commonPrint.log('updateGroups');
-      ref.read(groupsProvider.notifier).value = await retry(
-        task: () async {
-          final sortType = ref.read(
+      final nodes = await _readNodes();
+      ref.read(groupsProvider.notifier).value = await toGroupsTask(
+        ComputeGroupsState(
+          nodes: nodes,
+          sortType: ref.read(
             proxiesStyleSettingProvider.select((state) => state.sortType),
-          );
-          final delayMap = ref.read(delayDataSourceProvider);
-          final testUrl = ref.read(
+          ),
+          delayMap: ref.read(delayDataSourceProvider),
+          selectedMap: ref.read(selectedMapProvider),
+          defaultTestUrl: ref.read(
             appSettingProvider.select((state) => state.testUrl),
-          );
-          final selectedMap = ref.read(
-            currentProfileProvider.select((state) => state?.selectedMap ?? {}),
-          );
-          try {
-            return await _core.getProxiesGroups(
-              selectedMap: selectedMap,
-              sortType: sortType,
-              delayMap: delayMap,
-              defaultTestUrl: testUrl,
-            );
-          } catch (e) {
-            commonPrint.log(
-              'updateGroups error: $e',
-              logLevel: coreFailureLogLevel(e),
-            );
-            return [];
-          }
-        },
-        retryIf: (res) => res.isEmpty,
+          ),
+        ),
       );
     } catch (e) {
-      // The Core failure path already runs inside the retry task above; a
-      // throw here only means ref.read hit a disposed container or the
-      // groupsProvider write itself failed.
-      commonPrint.log(
-        'updateGroups failed: $e',
-        logLevel: coreFailureLogLevel(e),
-      );
+      commonPrint.log('updateGroups failed: $e', logLevel: LogLevel.warning);
     }
   }
 
@@ -175,6 +166,7 @@ class ProxiesAction extends _$ProxiesAction {
     _scheduleDelayFlush();
   }
 
+  /// A node is chosen by the config the Core runs, so a pick rewrites it.
   Future<void> changeProxy({
     required String groupName,
     required String proxyName,
@@ -185,11 +177,11 @@ class ProxiesAction extends _$ProxiesAction {
         _currentSelectedName(groupName);
     profilesAction.updateCurrentSelectedMap(groupName, proxyName);
     try {
-      final result = await _core.changeProxy(
-        ChangeProxyParams(groupName: groupName, proxyName: proxyName),
-      );
-      if (result.message.isNotEmpty) {
-        throw MessageException(result.message);
+      final applied = await ref
+          .read(setupActionProvider.notifier)
+          .applyProfile(silence: true);
+      if (!applied) {
+        throw const MessageException('The Core refused the new node');
       }
     } catch (error) {
       commonPrint.log(

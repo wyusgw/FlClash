@@ -1,17 +1,12 @@
 package main
 
-import (
-	"maps"
-	"sync"
-)
+import "sync"
 
 type routeTracker struct {
-	mu           sync.Mutex
-	epoch        uint64
-	picksVersion uint64
-	picks        map[string]string
-	watched      bool
-	watchSeq     uint64
+	mu       sync.Mutex
+	epoch    uint64
+	watched  bool
+	watchSeq uint64
 }
 
 var (
@@ -22,16 +17,10 @@ var (
 	}
 )
 
+// A node is chosen by the config the host writes, so a route only ever changes
+// with the epoch; the picks stay empty for the host's freshness check.
 func routeStateLocked() RouteState {
-	picks := currentRoute.picks
-	if picks == nil {
-		picks = map[string]string{}
-	}
-	return RouteState{
-		CoreEpoch:    currentRoute.epoch,
-		PicksVersion: currentRoute.picksVersion,
-		Picks:        maps.Clone(picks),
-	}
+	return RouteState{CoreEpoch: currentRoute.epoch, Picks: map[string]string{}}
 }
 
 func routeState() RouteState {
@@ -43,61 +32,22 @@ func routeState() RouteState {
 func routeStamp() (epoch, picksVersion uint64) {
 	currentRoute.mu.Lock()
 	defer currentRoute.mu.Unlock()
-	return currentRoute.epoch, currentRoute.picksVersion
+	return currentRoute.epoch, 0
 }
 
-// A balancer's own pick is not readable, so a group's pick is the host's
-// selection; a group the host has not pinned reports nothing.
-func readPicks() map[string]string {
-	picks := map[string]string{}
-	running := currentEngine.Load()
-	if running == nil {
-		return picks
-	}
-	for _, balancer := range running.meta.balancers {
-		picks[balancer.Tag] = selected[balancer.Tag]
-	}
-	return picks
-}
-
-// The caller holds selectMu.
-func refreshRouteLocked(structural bool) {
-	picks := readPicks()
-
+func bumpRouteEpoch() {
 	currentRoute.mu.Lock()
-	if structural {
-		currentRoute.epoch++
-	}
-	changed := structural
-	if !maps.Equal(picks, currentRoute.picks) {
-		currentRoute.picks = picks
-		currentRoute.picksVersion++
-		changed = true
-	}
+	currentRoute.epoch++
 	state := routeStateLocked()
 	watched := currentRoute.watched
 	currentRoute.mu.Unlock()
 
-	if changed && watched {
+	if watched {
 		publishRoute(state)
 	}
 }
 
-func refreshRoute() {
-	selectMu.Lock()
-	defer selectMu.Unlock()
-	refreshRouteLocked(false)
-}
-
-func bumpRouteEpoch() {
-	selectMu.Lock()
-	defer selectMu.Unlock()
-	refreshRouteLocked(true)
-}
-
 func handleWatchRoute(watch bool, seq uint64) RouteState {
-	refreshRoute()
-
 	currentRoute.mu.Lock()
 	defer currentRoute.mu.Unlock()
 	if seq < currentRoute.watchSeq {

@@ -189,14 +189,6 @@ var methodHandlers = map[CoreMethod]methodHandler{
 	setupConfigMethod: withDefaults(defaultSetupParams, func(params *SetupParams, response MethodResponse) {
 		response.success(handleSetupConfig(params))
 	}),
-	getProxiesMethod: withoutArguments(func(response MethodResponse) {
-		response.success(handleGetProxies())
-	}),
-	changeProxyMethod: withArguments(func(params *ChangeProxyParams, response MethodResponse) {
-		safeGo(response, func() {
-			response.success(handleChangeProxy(params))
-		})
-	}),
 	getTrafficMethod: withArguments(func(onlyStatisticsProxy *bool, response MethodResponse) {
 		response.success(handleGetTraffic(*onlyStatisticsProxy))
 	}),

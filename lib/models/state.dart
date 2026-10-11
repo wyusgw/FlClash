@@ -138,15 +138,6 @@ abstract class NavigationItemsState with _$NavigationItemsState {
 }
 
 @freezed
-abstract class ProxiesListState with _$ProxiesListState {
-  const factory ProxiesListState({
-    required List<Group> groups,
-    required Set<String> currentUnfoldSet,
-    required ProxyCardType proxyCardType,
-  }) = _ProxiesListState;
-}
-
-@freezed
 abstract class ProxiesTabState with _$ProxiesTabState {
   const factory ProxiesTabState({
     required List<Group> groups,
@@ -223,23 +214,6 @@ extension PackageListSelectorStateExt on PackageListSelectorState {
 }
 
 @freezed
-abstract class ProxiesListHeaderSelectorState
-    with _$ProxiesListHeaderSelectorState {
-  const factory ProxiesListHeaderSelectorState({
-    required double offset,
-    required int currentIndex,
-  }) = _ProxiesListHeaderSelectorState;
-}
-
-@freezed
-abstract class ProxiesActionsState with _$ProxiesActionsState {
-  const factory ProxiesActionsState({
-    required PageLabel pageLabel,
-    required ProxiesType type,
-  }) = _ProxiesActionsState;
-}
-
-@freezed
 abstract class ProxyState with _$ProxyState {
   const factory ProxyState({
     required bool isStart,
@@ -269,10 +243,8 @@ abstract class SystemProxySelectorState with _$SystemProxySelectorState {
 
 @freezed
 abstract class CurrentProfileSelectorState with _$CurrentProfileSelectorState {
-  const factory CurrentProfileSelectorState({
-    required String label,
-    required Map<String, String> selectedMap,
-  }) = _CurrentProfileSelectorState;
+  const factory CurrentProfileSelectorState({required String label}) =
+      _CurrentProfileSelectorState;
 }
 
 @freezed
@@ -325,7 +297,7 @@ extension SharedStateExt on SharedState {
 @freezed
 abstract class ComputeGroupsState with _$ComputeGroupsState {
   const factory ComputeGroupsState({
-    required ProxiesData proxiesData,
+    required List<Proxy> nodes,
     required ProxiesSortType sortType,
     required DelayMap delayMap,
     required Map<String, String> selectedMap,
@@ -339,7 +311,7 @@ abstract class MakeRealProfileState with _$MakeRealProfileState {
     required List<Map<String, dynamic>> outbounds,
     required CoreConfig coreConfig,
     required RouteMode routeMode,
-    required String testUrl,
+    String? selectedNode,
     @Default([]) List<String> authentication,
     @Default(false) bool tunInbound,
     @Default(false) bool safeMode,

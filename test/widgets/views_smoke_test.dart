@@ -10,7 +10,6 @@ import 'package:fl_clash/views/config/network.dart';
 import 'package:fl_clash/views/config/on_demand.dart';
 import 'package:fl_clash/views/config/user_agents.dart';
 import 'package:fl_clash/views/hotkey.dart';
-import 'package:fl_clash/views/proxies/list.dart';
 import 'package:fl_clash/views/proxies/tab.dart';
 import 'package:fl_clash/views/theme.dart';
 import 'package:fl_clash/views/views.dart';
@@ -159,7 +158,7 @@ void main() {
     expect(tester.takeException(), null);
   });
 
-  testWidgets('proxies renders populated tab and list layouts', (tester) async {
+  testWidgets('proxies renders the populated node list', (tester) async {
     tester.view.physicalSize = const Size(1400, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -208,12 +207,6 @@ void main() {
     expect(container.read(proxiesTabStateProvider).groups, [group]);
     expect(find.byType(ProxiesTabView), findsOneWidget);
     expect(find.byType(ProxyGroupView), findsOneWidget);
-
-    container
-        .read(proxiesStyleSettingProvider.notifier)
-        .update((state) => state.copyWith(type: ProxiesType.list));
-    await tester.pump();
-    expect(find.byType(ProxiesListView), findsOneWidget);
 
     final scrollables = find.byType(Scrollable);
     for (var index = 0; index < 8; index++) {

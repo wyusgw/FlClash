@@ -24,10 +24,6 @@ var (
 	// readers on the hot paths go through currentEngine instead.
 	configMu sync.Mutex
 
-	// selectMu serialises proxy-group selection writes and the route state they
-	// feed. Taking it under configMu fixes the order as configMu -> selectMu.
-	selectMu sync.Mutex
-
 	homeDir    string
 	isInit     atomic.Bool
 	isRunning  atomic.Bool
@@ -41,8 +37,7 @@ var (
 
 func defaultSetupParams() *SetupParams {
 	return &SetupParams{
-		TestURL:     defaultTestURL,
-		SelectedMap: map[string]string{},
+		TestURL: defaultTestURL,
 	}
 }
 

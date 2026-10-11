@@ -71,60 +71,35 @@ void main() {
     return key;
   }
 
-  testWidgets('current group follows the rendered tab list', (tester) async {
-    final key = await pumpTabView(tester);
-
-    expect(key.currentState?.currentGroup?.name, 'B');
-
-    final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-    tabBar.controller?.animateTo(1);
-    await tester.pumpAndSettle();
-
-    expect(key.currentState?.currentGroup?.name, 'C');
-    expect(globalContainer.read(currentProfileProvider)?.currentGroupName, 'C');
-  });
-
-  testWidgets(
-    'keeps the outgoing tab bar usable while the empty state enters',
-    (tester) async {
-      final key = await pumpTabView(tester);
-
-      globalContainer.read(_tabStateProvider.notifier).set(_tabState([]));
-      await tester.pump();
-
-      expect(find.byType(TabBar), findsOneWidget);
-      await tester.tap(find.byType(Tab).at(1), warnIfMissed: false);
-      await tester.pump();
-
-      expect(tester.takeException(), isNull);
-      expect(key.currentState?.currentGroup, isNull);
-
-      await tester.pumpAndSettle();
-
-      expect(find.byType(TabBar), findsNothing);
-      expect(tester.takeException(), isNull);
-    },
-  );
-
-  testWidgets('the last tab scrolls clear of the more button fade', (
-    tester,
-  ) async {
+  testWidgets('shows the nodes without a tab bar', (tester) async {
     globalContainer
         .read(_tabStateProvider.notifier)
-        .set(_tabState([for (var i = 0; i < 12; i++) _group('Group $i')]));
+        .set(
+          _tabState([
+            const Group(
+              type: GroupType.Selector,
+              name: 'B',
+              all: [Proxy(name: 'HK-01', type: 'ss')],
+            ),
+          ]),
+        );
     await pumpTabView(tester);
 
-    final tabs = find.descendant(
-      of: find.byType(TabBar),
-      matching: find.byType(Scrollable),
-    );
-    final position = tester.state<ScrollableState>(tabs).position;
-    position.jumpTo(position.maxScrollExtent);
-    await tester.pump();
+    expect(find.byType(TabBar), findsNothing);
+    expect(find.text('HK-01', findRichText: true), findsOneWidget);
+  });
 
-    final label = tester.getRect(find.text('Group 11', findRichText: true));
-    final more = tester.getRect(find.byType(IconButton));
-    expect(label.right, lessThanOrEqualTo(more.left - kTabLabelPadding.right));
+  testWidgets('falls back to the empty state when the nodes go away', (
+    tester,
+  ) async {
+    final key = await pumpTabView(tester);
+
+    globalContainer.read(_tabStateProvider.notifier).set(_tabState([]));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ProxyGroupView), findsNothing);
+    expect(key.currentState?.currentGroup, isNull);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('scroll to selected brings the row to the top of the grid', (
@@ -160,22 +135,6 @@ void main() {
       tester.getRect(find.text('B-41', findRichText: true).first).top,
       firstRowTop,
     );
-  });
-
-  testWidgets('rebuilds the tab bar when groups return', (tester) async {
-    final key = await pumpTabView(tester);
-
-    globalContainer.read(_tabStateProvider.notifier).set(_tabState([]));
-    await tester.pumpAndSettle();
-    globalContainer
-        .read(_tabStateProvider.notifier)
-        .set(_tabState([_group('A'), _group('B'), _group('C')]));
-    await tester.pumpAndSettle();
-
-    final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-    expect(tabBar.controller?.length, 3);
-    expect(key.currentState?.currentGroup?.name, 'B');
-    expect(tester.takeException(), isNull);
   });
 }
 

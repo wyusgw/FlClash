@@ -92,10 +92,9 @@ void main() {
 
     container
         .read(proxiesStyleSettingProvider.notifier)
-        .update((state) => state.copyWith(type: ProxiesType.list));
+        .update((state) => state.copyWith(layout: ProxiesLayout.tight));
     await tester.pump();
 
-    expect(container.read(proxiesStyleSettingProvider).type, ProxiesType.list);
     expect(tester.takeException(), null);
   });
 

@@ -35,10 +35,6 @@ mixin CoreInterface {
 
   Future<String> setupConfig(SetupParams setupParams);
 
-  Future<ProxiesData> getProxies();
-
-  Future<ChangeProxyResult> changeProxy(ChangeProxyParams changeProxyParams);
-
   Future<RouteSnapshot?> watchRoute(bool watch);
 
   Future<bool> startListener();
@@ -164,33 +160,6 @@ abstract class CoreHandlerInterface with CoreInterface {
   @override
   Future<bool> crash() async {
     return await _invokeMethod<bool>(method: CoreMethod.crash) ?? false;
-  }
-
-  @override
-  Future<ProxiesData> getProxies() async {
-    final data = await _invokeMethod<Map<String, dynamic>>(
-      method: CoreMethod.getProxies,
-    );
-    return data != null
-        ? ProxiesData.fromJson(data)
-        : const ProxiesData(proxies: {}, all: []);
-  }
-
-  @override
-  Future<ChangeProxyResult> changeProxy(
-    ChangeProxyParams changeProxyParams,
-  ) async {
-    final data = await _invokeMethod<Map<String, dynamic>>(
-      method: CoreMethod.changeProxy,
-      arguments: changeProxyParams.toJson(),
-    );
-    if (data == null) {
-      throw CoreMethodException(
-        code: 'no_response',
-        message: 'Core did not answer ${CoreMethod.changeProxy.name}',
-      );
-    }
-    return ChangeProxyResult.fromJson(data);
   }
 
   @override

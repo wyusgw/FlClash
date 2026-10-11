@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
 	"testing"
@@ -20,17 +19,14 @@ func probeServer(t *testing.T, handler http.HandlerFunc) *httptest.Server {
 	return server
 }
 
-const groupedConfig = `{
+const nodesConfig = `{
   "outbounds": [
     {"tag": "node-a", "protocol": "freedom"},
     {"tag": "node-b", "protocol": "freedom"},
     {"tag": "direct", "protocol": "freedom"}
   ],
   "routing": {
-    "balancers": [
-      {"tag": "PROXY", "selector": ["node-"], "strategy": {"type": "random"}}
-    ],
-    "rules": [{"type": "field", "network": "tcp,udp", "balancerTag": "PROXY"}]
+    "rules": [{"type": "field", "network": "tcp,udp", "outboundTag": "node-a"}]
   }
 }`
 
@@ -42,9 +38,6 @@ func resetEngineState() {
 	isInit.Store(false)
 	configMu.Unlock()
 
-	selectMu.Lock()
-	selected = map[string]string{}
-	selectMu.Unlock()
 	currentRoute = routeTracker{}
 	sampleMu.Lock()
 	samples = map[bool]trafficSample{}
@@ -132,20 +125,6 @@ func TestNormalizeConfigRejectsMalformedJson(t *testing.T) {
 	}
 }
 
-func TestBalancerMembersFollowTheSelectorPrefixes(t *testing.T) {
-	_, meta, err := normalizeConfig([]byte(groupedConfig))
-	if err != nil {
-		t.Fatal(err)
-	}
-	balancer, ok := meta.balancer("PROXY")
-	if !ok {
-		t.Fatal("PROXY balancer not parsed")
-	}
-	if got := meta.members(balancer); !slices.Equal(got, []string{"node-a", "node-b"}) {
-		t.Errorf("members = %v, want [node-a node-b]", got)
-	}
-}
-
 func TestIsProxyExcludesDirectAndBlockOutbounds(t *testing.T) {
 	meta := &configMeta{outbounds: []outboundMeta{
 		{Tag: "a", Protocol: "vless"},
@@ -159,128 +138,12 @@ func TestIsProxyExcludesDirectAndBlockOutbounds(t *testing.T) {
 	}
 }
 
-func TestHandleGetProxiesListsNodesAndGroups(t *testing.T) {
-	startEngine(t, groupedConfig)
-
-	data := handleGetProxies()
-
-	if !slices.Equal(data.All, []string{"PROXY"}) {
-		t.Errorf("all = %v, want [PROXY]", data.All)
-	}
-	group, ok := data.Proxies["PROXY"].(groupView)
-	if !ok {
-		t.Fatalf("PROXY is %T, want groupView", data.Proxies["PROXY"])
-	}
-	if group.Type != "Selector" || !slices.Equal(group.All, []string{"node-a", "node-b"}) || group.Now != "" {
-		t.Errorf("group = %+v", group)
-	}
-	if node, ok := data.Proxies["node-a"].(nodeView); !ok || node.Type != "freedom" {
-		t.Errorf("node-a = %#v", data.Proxies["node-a"])
-	}
-}
-
-func TestHandleGetProxiesIsEmptyBeforeAnApply(t *testing.T) {
-	resetEngineState()
-	data := handleGetProxies()
-	if len(data.All) != 0 || len(data.Proxies) != 0 {
-		t.Errorf("data = %+v, want empty", data)
-	}
-}
-
-func TestHandleChangeProxyReportsWhetherThePickMoved(t *testing.T) {
-	startEngine(t, groupedConfig)
-	_, firstVersion := routeStamp()
-
-	first := handleChangeProxy(&ChangeProxyParams{GroupName: "PROXY", ProxyName: "node-b"})
-	again := handleChangeProxy(&ChangeProxyParams{GroupName: "PROXY", ProxyName: "node-b"})
-
-	if first.Message != "" || !first.Changed {
-		t.Errorf("first = %+v, want a change", first)
-	}
-	if again.Message != "" || again.Changed {
-		t.Errorf("again = %+v, want no change", again)
-	}
-	if now := handleGetProxies().Proxies["PROXY"].(groupView).Now; now != "node-b" {
-		t.Errorf("now = %q, want node-b", now)
-	}
-	if _, version := routeStamp(); version != firstVersion+1 {
-		t.Errorf("picks version = %d, want %d", version, firstVersion+1)
-	}
-}
-
-func TestHandleChangeProxyRejectsWhatIsNotInTheConfig(t *testing.T) {
-	startEngine(t, groupedConfig)
-
-	if got := handleChangeProxy(&ChangeProxyParams{GroupName: "missing", ProxyName: "node-a"}); got.Message != errGroupNotFound.Error() {
-		t.Errorf("unknown group: %+v", got)
-	}
-	if got := handleChangeProxy(&ChangeProxyParams{GroupName: "PROXY", ProxyName: "direct"}); got.Message != errNotInGroup.Error() {
-		t.Errorf("non-member: %+v", got)
-	}
-}
-
-func TestHandleChangeProxyClearsASelection(t *testing.T) {
-	startEngine(t, groupedConfig)
-	handleChangeProxy(&ChangeProxyParams{GroupName: "PROXY", ProxyName: "node-a"})
-
-	cleared := handleChangeProxy(&ChangeProxyParams{GroupName: "PROXY"})
-
-	if cleared.Message != "" || !cleared.Changed {
-		t.Errorf("cleared = %+v", cleared)
-	}
-	if now := handleGetProxies().Proxies["PROXY"].(groupView).Now; now != "" {
-		t.Errorf("now = %q, want none", now)
-	}
-}
-
-func TestSelectionSurvivesAReapplyAndARestart(t *testing.T) {
-	startEngine(t, groupedConfig)
-	handleChangeProxy(&ChangeProxyParams{GroupName: "PROXY", ProxyName: "node-b"})
-
-	if message := handleSetupConfig(&SetupParams{
-		SelectedMap: map[string]string{"PROXY": "node-b"},
-	}); message != "" {
-		t.Fatal(message)
-	}
-	if now := handleGetProxies().Proxies["PROXY"].(groupView).Now; now != "node-b" {
-		t.Errorf("after reapply now = %q, want node-b", now)
-	}
-
-	handleStopListener()
-	if !handleStartListener() {
-		t.Fatal("listeners did not come back")
-	}
-	if now := handleGetProxies().Proxies["PROXY"].(groupView).Now; now != "node-b" {
-		t.Errorf("after restart now = %q, want node-b", now)
-	}
-}
-
-func TestReapplyDropsASelectionTheNewConfigNoLongerHas(t *testing.T) {
-	startEngine(t, groupedConfig)
-	handleChangeProxy(&ChangeProxyParams{GroupName: "PROXY", ProxyName: "node-b"})
-	next := strings.Replace(groupedConfig, `{"tag": "node-b", "protocol": "freedom"},`, "", 1)
-	if err := os.WriteFile(configPath(), []byte(next), 0o600); err != nil {
-		t.Fatal(err)
-	}
-
-	if message := handleSetupConfig(&SetupParams{SelectedMap: map[string]string{"PROXY": "node-b"}}); message != "" {
-		t.Fatal(message)
-	}
-
-	if now := handleGetProxies().Proxies["PROXY"].(groupView).Now; now != "" {
-		t.Errorf("now = %q, want the stale selection dropped", now)
-	}
-}
-
 func TestStopListenerClosesTheEngineAndStartBringsItBack(t *testing.T) {
-	startEngine(t, groupedConfig)
+	startEngine(t, nodesConfig)
 
 	handleStopListener()
 	if currentEngine.Load() != nil {
 		t.Fatal("engine still published after stopListener")
-	}
-	if len(handleGetProxies().All) != 0 {
-		t.Error("groups listed with the engine stopped")
 	}
 
 	if !handleStartListener() || currentEngine.Load() == nil {
@@ -291,7 +154,7 @@ func TestStopListenerClosesTheEngineAndStartBringsItBack(t *testing.T) {
 func TestSetupWithoutListenersDoesNotStartTheEngine(t *testing.T) {
 	resetEngineState()
 	dir := t.TempDir()
-	if err := os.WriteFile(filepath.Join(dir, configFileName), []byte(groupedConfig), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, configFileName), []byte(nodesConfig), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(resetEngineState)
@@ -307,7 +170,7 @@ func TestSetupWithoutListenersDoesNotStartTheEngine(t *testing.T) {
 }
 
 func TestSetupReportsABrokenConfigAndKeepsTheRunningEngine(t *testing.T) {
-	startEngine(t, groupedConfig)
+	startEngine(t, nodesConfig)
 	running := currentEngine.Load()
 	if err := os.WriteFile(configPath(), []byte(`{"outbounds":[{"tag":"x","protocol":"nope"}]}`), 0o600); err != nil {
 		t.Fatal(err)
@@ -334,7 +197,7 @@ func TestHandleValidateConfig(t *testing.T) {
 	dir := t.TempDir()
 	good := filepath.Join(dir, "good.json")
 	bad := filepath.Join(dir, "bad.json")
-	_ = os.WriteFile(good, []byte(groupedConfig), 0o600)
+	_ = os.WriteFile(good, []byte(nodesConfig), 0o600)
 	_ = os.WriteFile(bad, []byte(`{"outbounds":[{"protocol":"vless","settings":{}}]}`), 0o600)
 
 	if got := handleValidateConfig(good); got != "" {
@@ -491,25 +354,9 @@ func TestHandleProbePinsTheNamedProxy(t *testing.T) {
 	}
 }
 
-func TestHandleProbeResolvesAGroupToItsSelection(t *testing.T) {
+func TestHandleProbeRoutedByTheRulesEndsAtTheNodeTheRulesName(t *testing.T) {
 	server := probeServer(t, func(w http.ResponseWriter, _ *http.Request) {})
-	startEngine(t, groupedConfig)
-	handleChangeProxy(&ChangeProxyParams{GroupName: "PROXY", ProxyName: "node-b"})
-
-	result := handleProbe(&ProbeParams{Url: server.URL, ProxyName: "PROXY", Timeout: 2000})
-
-	if result == nil || result.Error != "" {
-		t.Fatalf("result = %+v", result)
-	}
-	if !slices.Equal(result.Chains, []string{"node-b"}) {
-		t.Errorf("chains = %v, want [node-b]", result.Chains)
-	}
-}
-
-func TestHandleProbeRoutedByTheRulesEndsAtTheSelectedNode(t *testing.T) {
-	server := probeServer(t, func(w http.ResponseWriter, _ *http.Request) {})
-	startEngine(t, groupedConfig)
-	handleChangeProxy(&ChangeProxyParams{GroupName: "PROXY", ProxyName: "node-a"})
+	startEngine(t, nodesConfig)
 
 	result := handleProbe(&ProbeParams{Url: server.URL, Timeout: 2000})
 
@@ -517,7 +364,7 @@ func TestHandleProbeRoutedByTheRulesEndsAtTheSelectedNode(t *testing.T) {
 		t.Fatalf("result = %+v", result)
 	}
 	if len(result.Chains) == 0 || result.Chains[len(result.Chains)-1] != "node-a" {
-		t.Errorf("chains = %v, want the route to end at the selected node", result.Chains)
+		t.Errorf("chains = %v, want the route to end at the node the rules name", result.Chains)
 	}
 }
 
@@ -588,7 +435,7 @@ func TestHandleProbeWithoutAnEngine(t *testing.T) {
 
 func TestProbeAnswersCarryTheRouteStamp(t *testing.T) {
 	server := probeServer(t, func(w http.ResponseWriter, _ *http.Request) {})
-	startEngine(t, groupedConfig)
+	startEngine(t, nodesConfig)
 	epoch, version := routeStamp()
 
 	result := handleProbe(&ProbeParams{Url: server.URL, Timeout: 2000})
@@ -599,7 +446,7 @@ func TestProbeAnswersCarryTheRouteStamp(t *testing.T) {
 }
 
 func TestRouteEpochFollowsStructuralChanges(t *testing.T) {
-	startEngine(t, groupedConfig)
+	startEngine(t, nodesConfig)
 	epoch, _ := routeStamp()
 
 	if message := handleSetupConfig(defaultSetupParams()); message != "" {
@@ -609,32 +456,32 @@ func TestRouteEpochFollowsStructuralChanges(t *testing.T) {
 	if next, _ := routeStamp(); next != epoch+1 {
 		t.Errorf("epoch = %d, want %d after an apply", next, epoch+1)
 	}
-	handleChangeProxy(&ChangeProxyParams{GroupName: "PROXY", ProxyName: "node-a"})
-	if next, _ := routeStamp(); next != epoch+1 {
-		t.Errorf("epoch = %d, a selection must not move it", next)
-	}
 }
 
 func TestWatchRoutePublishesOnlyWhileWatched(t *testing.T) {
-	startEngine(t, groupedConfig)
+	startEngine(t, nodesConfig)
 	var published []RouteState
 	original := publishRoute
 	publishRoute = func(state RouteState) { published = append(published, state) }
 	t.Cleanup(func() { publishRoute = original })
 
-	handleChangeProxy(&ChangeProxyParams{GroupName: "PROXY", ProxyName: "node-a"})
+	if message := handleSetupConfig(defaultSetupParams()); message != "" {
+		t.Fatal(message)
+	}
 	if len(published) != 0 {
 		t.Fatalf("published %d states while unwatched", len(published))
 	}
 	handleWatchRoute(true, methodCallSeq.Add(1))
-	handleChangeProxy(&ChangeProxyParams{GroupName: "PROXY", ProxyName: "node-b"})
-	if len(published) != 1 || published[0].Picks["PROXY"] != "node-b" {
-		t.Errorf("published = %+v", published)
+	if message := handleSetupConfig(defaultSetupParams()); message != "" {
+		t.Fatal(message)
+	}
+	if len(published) != 1 {
+		t.Errorf("published = %+v, want one state for the apply", published)
 	}
 }
 
 func TestWatchRouteIgnoresAnOlderIntent(t *testing.T) {
-	startEngine(t, groupedConfig)
+	startEngine(t, nodesConfig)
 	older := methodCallSeq.Add(1)
 	newer := methodCallSeq.Add(1)
 
@@ -650,7 +497,7 @@ func TestWatchRouteIgnoresAnOlderIntent(t *testing.T) {
 }
 
 func TestStopRouteWatchOutranksEarlierWatches(t *testing.T) {
-	startEngine(t, groupedConfig)
+	startEngine(t, nodesConfig)
 	pending := methodCallSeq.Add(1)
 
 	stopRouteWatch()
@@ -665,7 +512,7 @@ func TestStopRouteWatchOutranksEarlierWatches(t *testing.T) {
 }
 
 func TestHandleShutdownTearsDownTheEngine(t *testing.T) {
-	startEngine(t, groupedConfig)
+	startEngine(t, nodesConfig)
 	handleLogOn := logStreaming.Load()
 	handleStartLog()
 
@@ -690,41 +537,6 @@ func TestLevelRank(t *testing.T) {
 	for name, want := range map[string]int32{"debug": 4, "INFO": 3, "warning": 2, "error": 1, "silent": 0, "bogus": 3} {
 		if got := levelRank(name); got != want {
 			t.Errorf("levelRank(%q) = %d, want %d", name, got, want)
-		}
-	}
-}
-
-// The proxies page only lists a group whose type is one of the identifiers of
-// the host's GroupType enum, so a type the core invents never shows.
-func TestGroupTypeNamesMatchTheHostEnum(t *testing.T) {
-	source, err := os.ReadFile("../lib/enum/enum.dart")
-	if err != nil {
-		t.Fatal(err)
-	}
-	block := regexp.MustCompile(`(?s)enum GroupType \{(.*?)\n  final String value;`).FindSubmatch(source)
-	if block == nil {
-		t.Fatal("GroupType enum not found in enum.dart")
-	}
-	identifiers := map[string]bool{}
-	for _, match := range regexp.MustCompile(`\n  (\w+)\('`).FindAllSubmatch(block[1], -1) {
-		identifiers[string(match[1])] = true
-	}
-
-	for strategy, want := range map[string]string{
-		"":           "Selector",
-		"random":     "Selector",
-		"leastPing":  "URLTest",
-		"leastLoad":  "URLTest",
-		"roundRobin": "LoadBalance",
-	} {
-		balancer := balancerMeta{}
-		balancer.Strategy.Type = strategy
-		got := groupType(balancer)
-		if got != want {
-			t.Errorf("groupType(%q) = %q, want %q", strategy, got, want)
-		}
-		if !identifiers[got] {
-			t.Errorf("%q is not a GroupType identifier in enum.dart (%v)", got, identifiers)
 		}
 	}
 }

@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -25,7 +24,6 @@ class ProxiesTabView extends ConsumerStatefulWidget {
 class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
     with TickerProviderStateMixin {
   TabController? _tabController;
-  final _hasMoreButtonNotifier = ValueNotifier<bool>(false);
   final Map<String, ScrollController> _scrollControllers = {};
   int _columns = 1;
 
@@ -48,7 +46,6 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
   @override
   void dispose() {
     _destroyTabController();
-    _hasMoreButtonNotifier.dispose();
     for (final controller in _scrollControllers.values) {
       controller.dispose();
     }
@@ -114,92 +111,6 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
       return null;
     }
     return groups[index];
-  }
-
-  Widget _buildMoreButton() {
-    return Consumer(
-      builder: (_, ref, _) {
-        final isMobileView = ref.watch(isMobileViewProvider);
-        return IconButton(
-          tooltip: context.appLocalizations.more,
-          onPressed: _showMoreMenu,
-          iconSize: 20,
-          icon: isMobileView
-              ? const GlyphIcon(AppGlyphs.chevronDown)
-              : const GlyphIcon(AppGlyphs.chevronForward),
-        );
-      },
-    );
-  }
-
-  // A mask rather than a surface-colored cover holds on any page background;
-  // at full scroll the fade lands in the last tab's trailing label padding.
-  Shader _buildTabsMask(Rect bounds, bool hasMore) {
-    final coverStart = bounds.width - kMinInteractiveDimension;
-    final fadeStart = coverStart - kTabLabelPadding.right;
-    if (!hasMore || fadeStart <= 0) {
-      return const LinearGradient(
-        colors: [Colors.black, Colors.black],
-      ).createShader(bounds);
-    }
-    return LinearGradient(
-      begin: AlignmentDirectional.centerStart,
-      end: AlignmentDirectional.centerEnd,
-      colors: [Colors.black, Colors.transparent],
-      stops: [fadeStart / bounds.width, coverStart / bounds.width],
-    ).createShader(bounds, textDirection: Directionality.of(context));
-  }
-
-  void _showMoreMenu() {
-    showSheet(
-      context: context,
-      props: const SheetProps(isScrollControlled: false),
-      builder: (_) {
-        return CommonScaffold(
-          body: Builder(
-            builder: (context) => SingleChildScrollView(
-              padding: const EdgeInsets.all(
-                16,
-              ).copyWith(top: context.contentTopPadding),
-              child: Consumer(
-                builder: (_, ref, _) {
-                  final state = ref.watch(proxiesTabControllerStateProvider);
-                  final groupNames = state.groupNames;
-                  final currentGroupName = state.currentGroupName;
-                  return SizedBox(
-                    width: double.infinity,
-                    child: Wrap(
-                      alignment: WrapAlignment.center,
-                      runSpacing: 8,
-                      spacing: 8,
-                      children: [
-                        for (final groupName in groupNames)
-                          SettingTextCard(
-                            groupName,
-                            onPressed: () {
-                              final index = groupNames.indexWhere(
-                                (item) => item == groupName,
-                              );
-                              if (index == -1) return;
-                              _tabController?.animateTo(index);
-                              ref
-                                  .read(proxiesActionProvider.notifier)
-                                  .updateCurrentGroupName(groupName);
-                              Navigator.of(context).pop();
-                            },
-                            isSelected: groupName == currentGroupName,
-                          ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-          title: context.appLocalizations.proxyGroup,
-        );
-      },
-    );
   }
 
   void _tabControllerListener([int? index]) {
@@ -268,53 +179,6 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            NotificationListener<ScrollMetricsNotification>(
-              onNotification: (scrollNotification) {
-                _hasMoreButtonNotifier.value =
-                    scrollNotification.metrics.maxScrollExtent > 0;
-                return false;
-              },
-              child: ValueListenableBuilder(
-                valueListenable: _hasMoreButtonNotifier,
-                builder: (_, hasMore, moreButton) {
-                  return Stack(
-                    alignment: AlignmentDirectional.centerEnd,
-                    children: [
-                      ShaderMask(
-                        blendMode: BlendMode.dstIn,
-                        shaderCallback: (bounds) =>
-                            _buildTabsMask(bounds, hasMore),
-                        child: TabBar(
-                          controller: _tabController,
-                          padding: EdgeInsetsDirectional.only(
-                            start: 16,
-                            end: hasMore ? kMinInteractiveDimension : 16,
-                          ),
-                          dividerColor: Colors.transparent,
-                          isScrollable: true,
-                          tabAlignment: TabAlignment.start,
-                          tabs: [
-                            for (final group in groups)
-                              Tab(
-                                child: Builder(
-                                  builder: (context) {
-                                    return EmojiText(
-                                      group.name,
-                                      style: DefaultTextStyle.of(context).style,
-                                    );
-                                  },
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      if (hasMore) moreButton!,
-                    ],
-                  );
-                },
-                child: _buildMoreButton(),
-              ),
-            ),
             Expanded(
               child: LayoutBuilder(
                 builder: (_, constraints) {

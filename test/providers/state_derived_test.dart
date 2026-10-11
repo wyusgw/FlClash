@@ -275,10 +275,6 @@ void main() {
 
     final dashboard = container.read(dashboardStateProvider);
     expect(dashboard.dashboardWidgets, isNotEmpty);
-
-    final actions = container.read(proxiesActionsStateProvider);
-    expect(actions.pageLabel, PageLabel.dashboard);
-    expect(actions.type, ProxiesType.tab);
   });
 
   test(
@@ -326,10 +322,6 @@ void main() {
       container
           .read(queryProvider(QueryTag.proxies).notifier)
           .update((_) => 'ga');
-      final list = container.read(proxiesListStateProvider);
-      expect(list.groups.single.name, 'Group B');
-      expect(list.currentUnfoldSet, {'Group A'});
-
       final tab = container.read(proxiesTabStateProvider);
       expect(tab.currentGroupName, 'Group B');
       expect(tab.groups.single.all.single.name, 'Gamma');

@@ -589,7 +589,7 @@ as List<String>,
 /// @nodoc
 mixin _$CoreConfig {
 
-@JsonKey(name: 'mixed-port') int get mixedPort; Mode get mode;@JsonKey(name: 'allow-lan') bool get allowLan;@JsonKey(name: 'log-level') LogLevel get logLevel; bool get ipv6;@JsonKey(fromJson: Tun.safeFormJson) Tun get tun;@JsonKey(name: 'proxy-dns', fromJson: _proxyDnsFromJson) List<String> get proxyDns;@JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson) List<String> get directDns;@JsonKey(name: 'auto-select') bool get autoSelect;
+@JsonKey(name: 'mixed-port') int get mixedPort; Mode get mode;@JsonKey(name: 'allow-lan') bool get allowLan;@JsonKey(name: 'log-level') LogLevel get logLevel; bool get ipv6;@JsonKey(fromJson: Tun.safeFormJson) Tun get tun;@JsonKey(name: 'proxy-dns', fromJson: _proxyDnsFromJson) List<String> get proxyDns;@JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson) List<String> get directDns;
 /// Create a copy of CoreConfig
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -603,20 +603,20 @@ $CoreConfigCopyWith<CoreConfig> get copyWith => _$CoreConfigCopyWithImpl<CoreCon
 @override
 bool operator ==(Object other) {
   final _this = this as CoreConfig;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CoreConfig&&(identical(other.mixedPort, _this.mixedPort) || other.mixedPort == _this.mixedPort)&&(identical(other.mode, _this.mode) || other.mode == _this.mode)&&(identical(other.allowLan, _this.allowLan) || other.allowLan == _this.allowLan)&&(identical(other.logLevel, _this.logLevel) || other.logLevel == _this.logLevel)&&(identical(other.ipv6, _this.ipv6) || other.ipv6 == _this.ipv6)&&(identical(other.tun, _this.tun) || other.tun == _this.tun)&&const DeepCollectionEquality().equals(other.proxyDns, _this.proxyDns)&&const DeepCollectionEquality().equals(other.directDns, _this.directDns)&&(identical(other.autoSelect, _this.autoSelect) || other.autoSelect == _this.autoSelect));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CoreConfig&&(identical(other.mixedPort, _this.mixedPort) || other.mixedPort == _this.mixedPort)&&(identical(other.mode, _this.mode) || other.mode == _this.mode)&&(identical(other.allowLan, _this.allowLan) || other.allowLan == _this.allowLan)&&(identical(other.logLevel, _this.logLevel) || other.logLevel == _this.logLevel)&&(identical(other.ipv6, _this.ipv6) || other.ipv6 == _this.ipv6)&&(identical(other.tun, _this.tun) || other.tun == _this.tun)&&const DeepCollectionEquality().equals(other.proxyDns, _this.proxyDns)&&const DeepCollectionEquality().equals(other.directDns, _this.directDns));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as CoreConfig;
-  return Object.hash(runtimeType,_this.mixedPort,_this.mode,_this.allowLan,_this.logLevel,_this.ipv6,_this.tun,const DeepCollectionEquality().hash(_this.proxyDns),const DeepCollectionEquality().hash(_this.directDns),_this.autoSelect);
+  return Object.hash(runtimeType,_this.mixedPort,_this.mode,_this.allowLan,_this.logLevel,_this.ipv6,_this.tun,const DeepCollectionEquality().hash(_this.proxyDns),const DeepCollectionEquality().hash(_this.directDns));
 }
 
 @override
 String toString() {
   final _this = this as CoreConfig;
-  return 'CoreConfig(mixedPort: ${_this.mixedPort}, mode: ${_this.mode}, allowLan: ${_this.allowLan}, logLevel: ${_this.logLevel}, ipv6: ${_this.ipv6}, tun: ${_this.tun}, proxyDns: ${_this.proxyDns}, directDns: ${_this.directDns}, autoSelect: ${_this.autoSelect})';
+  return 'CoreConfig(mixedPort: ${_this.mixedPort}, mode: ${_this.mode}, allowLan: ${_this.allowLan}, logLevel: ${_this.logLevel}, ipv6: ${_this.ipv6}, tun: ${_this.tun}, proxyDns: ${_this.proxyDns}, directDns: ${_this.directDns})';
 }
 
 
@@ -627,7 +627,7 @@ abstract mixin class $CoreConfigCopyWith<$Res>  {
   factory $CoreConfigCopyWith(CoreConfig value, $Res Function(CoreConfig) _then) = _$CoreConfigCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'mixed-port') int mixedPort, Mode mode,@JsonKey(name: 'allow-lan') bool allowLan,@JsonKey(name: 'log-level') LogLevel logLevel, bool ipv6,@JsonKey(fromJson: Tun.safeFormJson) Tun tun,@JsonKey(name: 'proxy-dns', fromJson: _proxyDnsFromJson) List<String> proxyDns,@JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson) List<String> directDns,@JsonKey(name: 'auto-select') bool autoSelect
+@JsonKey(name: 'mixed-port') int mixedPort, Mode mode,@JsonKey(name: 'allow-lan') bool allowLan,@JsonKey(name: 'log-level') LogLevel logLevel, bool ipv6,@JsonKey(fromJson: Tun.safeFormJson) Tun tun,@JsonKey(name: 'proxy-dns', fromJson: _proxyDnsFromJson) List<String> proxyDns,@JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson) List<String> directDns
 });
 
 
@@ -644,7 +644,7 @@ class _$CoreConfigCopyWithImpl<$Res>
 
 /// Create a copy of CoreConfig
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? mixedPort = null,Object? mode = null,Object? allowLan = null,Object? logLevel = null,Object? ipv6 = null,Object? tun = null,Object? proxyDns = null,Object? directDns = null,Object? autoSelect = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? mixedPort = null,Object? mode = null,Object? allowLan = null,Object? logLevel = null,Object? ipv6 = null,Object? tun = null,Object? proxyDns = null,Object? directDns = null,}) {
   return _then(CoreConfig(
 mixedPort: null == mixedPort ? _self.mixedPort : mixedPort // ignore: cast_nullable_to_non_nullable
 as int,mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
@@ -654,8 +654,7 @@ as LogLevel,ipv6: null == ipv6 ? _self.ipv6 : ipv6 // ignore: cast_nullable_to_n
 as bool,tun: null == tun ? _self.tun : tun // ignore: cast_nullable_to_non_nullable
 as Tun,proxyDns: null == proxyDns ? _self.proxyDns : proxyDns // ignore: cast_nullable_to_non_nullable
 as List<String>,directDns: null == directDns ? _self.directDns : directDns // ignore: cast_nullable_to_non_nullable
-as List<String>,autoSelect: null == autoSelect ? _self.autoSelect : autoSelect // ignore: cast_nullable_to_non_nullable
-as bool,
+as List<String>,
   ));
 }
 /// Create a copy of CoreConfig
@@ -749,10 +748,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'mixed-port')  int mixedPort,  Mode mode, @JsonKey(name: 'allow-lan')  bool allowLan, @JsonKey(name: 'log-level')  LogLevel logLevel,  bool ipv6, @JsonKey(fromJson: Tun.safeFormJson)  Tun tun, @JsonKey(name: 'proxy-dns', fromJson: _proxyDnsFromJson)  List<String> proxyDns, @JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson)  List<String> directDns, @JsonKey(name: 'auto-select')  bool autoSelect)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'mixed-port')  int mixedPort,  Mode mode, @JsonKey(name: 'allow-lan')  bool allowLan, @JsonKey(name: 'log-level')  LogLevel logLevel,  bool ipv6, @JsonKey(fromJson: Tun.safeFormJson)  Tun tun, @JsonKey(name: 'proxy-dns', fromJson: _proxyDnsFromJson)  List<String> proxyDns, @JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson)  List<String> directDns)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CoreConfig() when $default != null:
-return $default(_that.mixedPort,_that.mode,_that.allowLan,_that.logLevel,_that.ipv6,_that.tun,_that.proxyDns,_that.directDns,_that.autoSelect);case _:
+return $default(_that.mixedPort,_that.mode,_that.allowLan,_that.logLevel,_that.ipv6,_that.tun,_that.proxyDns,_that.directDns);case _:
   return orElse();
 
 }
@@ -770,10 +769,10 @@ return $default(_that.mixedPort,_that.mode,_that.allowLan,_that.logLevel,_that.i
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'mixed-port')  int mixedPort,  Mode mode, @JsonKey(name: 'allow-lan')  bool allowLan, @JsonKey(name: 'log-level')  LogLevel logLevel,  bool ipv6, @JsonKey(fromJson: Tun.safeFormJson)  Tun tun, @JsonKey(name: 'proxy-dns', fromJson: _proxyDnsFromJson)  List<String> proxyDns, @JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson)  List<String> directDns, @JsonKey(name: 'auto-select')  bool autoSelect)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'mixed-port')  int mixedPort,  Mode mode, @JsonKey(name: 'allow-lan')  bool allowLan, @JsonKey(name: 'log-level')  LogLevel logLevel,  bool ipv6, @JsonKey(fromJson: Tun.safeFormJson)  Tun tun, @JsonKey(name: 'proxy-dns', fromJson: _proxyDnsFromJson)  List<String> proxyDns, @JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson)  List<String> directDns)  $default,) {final _that = this;
 switch (_that) {
 case _CoreConfig():
-return $default(_that.mixedPort,_that.mode,_that.allowLan,_that.logLevel,_that.ipv6,_that.tun,_that.proxyDns,_that.directDns,_that.autoSelect);case _:
+return $default(_that.mixedPort,_that.mode,_that.allowLan,_that.logLevel,_that.ipv6,_that.tun,_that.proxyDns,_that.directDns);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -790,10 +789,10 @@ return $default(_that.mixedPort,_that.mode,_that.allowLan,_that.logLevel,_that.i
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'mixed-port')  int mixedPort,  Mode mode, @JsonKey(name: 'allow-lan')  bool allowLan, @JsonKey(name: 'log-level')  LogLevel logLevel,  bool ipv6, @JsonKey(fromJson: Tun.safeFormJson)  Tun tun, @JsonKey(name: 'proxy-dns', fromJson: _proxyDnsFromJson)  List<String> proxyDns, @JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson)  List<String> directDns, @JsonKey(name: 'auto-select')  bool autoSelect)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'mixed-port')  int mixedPort,  Mode mode, @JsonKey(name: 'allow-lan')  bool allowLan, @JsonKey(name: 'log-level')  LogLevel logLevel,  bool ipv6, @JsonKey(fromJson: Tun.safeFormJson)  Tun tun, @JsonKey(name: 'proxy-dns', fromJson: _proxyDnsFromJson)  List<String> proxyDns, @JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson)  List<String> directDns)?  $default,) {final _that = this;
 switch (_that) {
 case _CoreConfig() when $default != null:
-return $default(_that.mixedPort,_that.mode,_that.allowLan,_that.logLevel,_that.ipv6,_that.tun,_that.proxyDns,_that.directDns,_that.autoSelect);case _:
+return $default(_that.mixedPort,_that.mode,_that.allowLan,_that.logLevel,_that.ipv6,_that.tun,_that.proxyDns,_that.directDns);case _:
   return null;
 
 }
@@ -805,7 +804,7 @@ return $default(_that.mixedPort,_that.mode,_that.allowLan,_that.logLevel,_that.i
 @JsonSerializable()
 
 class _CoreConfig implements CoreConfig {
-  const _CoreConfig({@JsonKey(name: 'mixed-port') this.mixedPort = defaultMixedPort, this.mode = Mode.rule, @JsonKey(name: 'allow-lan') this.allowLan = false, @JsonKey(name: 'log-level') this.logLevel = LogLevel.error, this.ipv6 = false, @JsonKey(fromJson: Tun.safeFormJson) this.tun = defaultTun, @JsonKey(name: 'proxy-dns', fromJson: _proxyDnsFromJson)  List<String> proxyDns = defaultProxyDnsServers, @JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson)  List<String> directDns = defaultDirectDnsServers, @JsonKey(name: 'auto-select') this.autoSelect = false}): _proxyDns = proxyDns,_directDns = directDns;
+  const _CoreConfig({@JsonKey(name: 'mixed-port') this.mixedPort = defaultMixedPort, this.mode = Mode.rule, @JsonKey(name: 'allow-lan') this.allowLan = false, @JsonKey(name: 'log-level') this.logLevel = LogLevel.error, this.ipv6 = false, @JsonKey(fromJson: Tun.safeFormJson) this.tun = defaultTun, @JsonKey(name: 'proxy-dns', fromJson: _proxyDnsFromJson)  List<String> proxyDns = defaultProxyDnsServers, @JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson)  List<String> directDns = defaultDirectDnsServers}): _proxyDns = proxyDns,_directDns = directDns;
   factory _CoreConfig.fromJson(Map<String, dynamic> json) => _$CoreConfigFromJson(json);
 
 @override@JsonKey(name: 'mixed-port') final  int mixedPort;
@@ -828,7 +827,6 @@ class _CoreConfig implements CoreConfig {
   return EqualUnmodifiableListView(_directDns);
 }
 
-@override@JsonKey(name: 'auto-select') final  bool autoSelect;
 
 /// Create a copy of CoreConfig
 /// with the given fields replaced by the non-null parameter values.
@@ -843,18 +841,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CoreConfig&&(identical(other.mixedPort, mixedPort) || other.mixedPort == mixedPort)&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.allowLan, allowLan) || other.allowLan == allowLan)&&(identical(other.logLevel, logLevel) || other.logLevel == logLevel)&&(identical(other.ipv6, ipv6) || other.ipv6 == ipv6)&&(identical(other.tun, tun) || other.tun == tun)&&const DeepCollectionEquality().equals(other.proxyDns, _proxyDns)&&const DeepCollectionEquality().equals(other.directDns, _directDns)&&(identical(other.autoSelect, autoSelect) || other.autoSelect == autoSelect));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CoreConfig&&(identical(other.mixedPort, mixedPort) || other.mixedPort == mixedPort)&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.allowLan, allowLan) || other.allowLan == allowLan)&&(identical(other.logLevel, logLevel) || other.logLevel == logLevel)&&(identical(other.ipv6, ipv6) || other.ipv6 == ipv6)&&(identical(other.tun, tun) || other.tun == tun)&&const DeepCollectionEquality().equals(other.proxyDns, _proxyDns)&&const DeepCollectionEquality().equals(other.directDns, _directDns));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,mixedPort,mode,allowLan,logLevel,ipv6,tun,const DeepCollectionEquality().hash(_proxyDns),const DeepCollectionEquality().hash(_directDns),autoSelect);
+    return Object.hash(runtimeType,mixedPort,mode,allowLan,logLevel,ipv6,tun,const DeepCollectionEquality().hash(_proxyDns),const DeepCollectionEquality().hash(_directDns));
 }
 
 @override
 String toString() {
-    return 'CoreConfig(mixedPort: $mixedPort, mode: $mode, allowLan: $allowLan, logLevel: $logLevel, ipv6: $ipv6, tun: $tun, proxyDns: $proxyDns, directDns: $directDns, autoSelect: $autoSelect)';
+    return 'CoreConfig(mixedPort: $mixedPort, mode: $mode, allowLan: $allowLan, logLevel: $logLevel, ipv6: $ipv6, tun: $tun, proxyDns: $proxyDns, directDns: $directDns)';
 }
 
 
@@ -865,7 +863,7 @@ abstract mixin class _$CoreConfigCopyWith<$Res> implements $CoreConfigCopyWith<$
   factory _$CoreConfigCopyWith(_CoreConfig value, $Res Function(_CoreConfig) _then) = __$CoreConfigCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'mixed-port') int mixedPort, Mode mode,@JsonKey(name: 'allow-lan') bool allowLan,@JsonKey(name: 'log-level') LogLevel logLevel, bool ipv6,@JsonKey(fromJson: Tun.safeFormJson) Tun tun,@JsonKey(name: 'proxy-dns', fromJson: _proxyDnsFromJson) List<String> proxyDns,@JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson) List<String> directDns,@JsonKey(name: 'auto-select') bool autoSelect
+@JsonKey(name: 'mixed-port') int mixedPort, Mode mode,@JsonKey(name: 'allow-lan') bool allowLan,@JsonKey(name: 'log-level') LogLevel logLevel, bool ipv6,@JsonKey(fromJson: Tun.safeFormJson) Tun tun,@JsonKey(name: 'proxy-dns', fromJson: _proxyDnsFromJson) List<String> proxyDns,@JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson) List<String> directDns
 });
 
 
@@ -882,7 +880,7 @@ class __$CoreConfigCopyWithImpl<$Res>
 
 /// Create a copy of CoreConfig
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? mixedPort = null,Object? mode = null,Object? allowLan = null,Object? logLevel = null,Object? ipv6 = null,Object? tun = null,Object? proxyDns = null,Object? directDns = null,Object? autoSelect = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? mixedPort = null,Object? mode = null,Object? allowLan = null,Object? logLevel = null,Object? ipv6 = null,Object? tun = null,Object? proxyDns = null,Object? directDns = null,}) {
   return _then(_CoreConfig(
 mixedPort: null == mixedPort ? _self.mixedPort : mixedPort // ignore: cast_nullable_to_non_nullable
 as int,mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
@@ -892,8 +890,7 @@ as LogLevel,ipv6: null == ipv6 ? _self.ipv6 : ipv6 // ignore: cast_nullable_to_n
 as bool,tun: null == tun ? _self.tun : tun // ignore: cast_nullable_to_non_nullable
 as Tun,proxyDns: null == proxyDns ? _self._proxyDns : proxyDns // ignore: cast_nullable_to_non_nullable
 as List<String>,directDns: null == directDns ? _self._directDns : directDns // ignore: cast_nullable_to_non_nullable
-as List<String>,autoSelect: null == autoSelect ? _self.autoSelect : autoSelect // ignore: cast_nullable_to_non_nullable
-as bool,
+as List<String>,
   ));
 }
 

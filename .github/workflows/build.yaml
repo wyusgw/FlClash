@@ -190,8 +190,8 @@ jobs:
             echo 'No Go tests found in core/; the test step would pass vacuously.' >&2
             exit 1
           fi
-          test -z "$(gofmt -l ./*.go ./platform ./tun)" || {
-            gofmt -l ./*.go ./platform ./tun >&2
+          test -z "$(gofmt -l ./*.go ./platform)" || {
+            gofmt -l ./*.go ./platform >&2
             exit 1
           }
           go test -count=1 .

@@ -350,11 +350,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Upload`
-  String get upload {
-    return Intl.message('Upload', name: 'upload', desc: '', args: []);
-  }
-
   /// `Download`
   String get download {
     return Intl.message('Download', name: 'download', desc: '', args: []);
@@ -733,36 +728,6 @@ class AppLocalizations {
   /// `Auto update`
   String get autoUpdate {
     return Intl.message('Auto update', name: 'autoUpdate', desc: '', args: []);
-  }
-
-  /// `Auto-update interval (minutes)`
-  String get autoUpdateInterval {
-    return Intl.message(
-      'Auto-update interval (minutes)',
-      name: 'autoUpdateInterval',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Please enter the auto-update interval`
-  String get profileAutoUpdateIntervalNullValidationDesc {
-    return Intl.message(
-      'Please enter the auto-update interval',
-      name: 'profileAutoUpdateIntervalNullValidationDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Please enter a valid interval`
-  String get profileAutoUpdateIntervalInvalidValidationDesc {
-    return Intl.message(
-      'Please enter a valid interval',
-      name: 'profileAutoUpdateIntervalInvalidValidationDesc',
-      desc: '',
-      args: [],
-    );
   }
 
   /// `Theme mode`
@@ -1455,14 +1420,49 @@ class AppLocalizations {
     );
   }
 
-  /// `Other contributors`
-  String get otherContributors {
+  /// `Sidebar`
+  String get sidebar {
+    return Intl.message('Sidebar', name: 'sidebar', desc: '', args: []);
+  }
+
+  /// `Menu bar`
+  String get menuBar {
+    return Intl.message('Menu bar', name: 'menuBar', desc: '', args: []);
+  }
+
+  /// `Embedded`
+  String get menuBarEmbedded {
     return Intl.message(
-      'Other contributors',
-      name: 'otherContributors',
+      'Embedded',
+      name: 'menuBarEmbedded',
       desc: '',
       args: [],
     );
+  }
+
+  /// `Standalone`
+  String get menuBarStandalone {
+    return Intl.message(
+      'Standalone',
+      name: 'menuBarStandalone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On`
+  String get on {
+    return Intl.message('On', name: 'on', desc: '', args: []);
+  }
+
+  /// `Off`
+  String get off {
+    return Intl.message('Off', name: 'off', desc: '', args: []);
+  }
+
+  /// `Version`
+  String get version {
+    return Intl.message('Version', name: 'version', desc: '', args: []);
   }
 
   /// `App icon design`
@@ -1470,6 +1470,56 @@ class AppLocalizations {
     return Intl.message(
       'App icon design',
       name: 'appIconDesign',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Star on GitHub`
+  String get starOnGithub {
+    return Intl.message(
+      'Star on GitHub',
+      name: 'starOnGithub',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Feedback`
+  String get feedback {
+    return Intl.message('Feedback', name: 'feedback', desc: '', args: []);
+  }
+
+  /// `FlClash is only a proxy tool and does not provide any proxy servers. For problems with a server or its subscription, contact your server provider.`
+  String get feedbackDesc {
+    return Intl.message(
+      'FlClash is only a proxy tool and does not provide any proxy servers. For problems with a server or its subscription, contact your server provider.',
+      name: 'feedbackDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `URL Schemes`
+  String get urlSchemes {
+    return Intl.message('URL Schemes', name: 'urlSchemes', desc: '', args: []);
+  }
+
+  /// `Acknowledgements`
+  String get acknowledgements {
+    return Intl.message(
+      'Acknowledgements',
+      name: 'acknowledgements',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tap a scheme to copy it.`
+  String get copyScheme {
+    return Intl.message(
+      'Tap a scheme to copy it.',
+      name: 'copyScheme',
       desc: '',
       args: [],
     );
@@ -2315,6 +2365,56 @@ class AppLocalizations {
     );
   }
 
+  /// `Reset core settings`
+  String get resetCoreSettings {
+    return Intl.message(
+      'Reset core settings',
+      name: 'resetCoreSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This restores the core, network and VPN settings to their defaults. It usually fixes connection failures and VPN problems.`
+  String get resetCoreSettingsDesc {
+    return Intl.message(
+      'This restores the core, network and VPN settings to their defaults. It usually fixes connection failures and VPN problems.',
+      name: 'resetCoreSettingsDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reset user settings`
+  String get resetUserSettings {
+    return Intl.message(
+      'Reset user settings',
+      name: 'resetUserSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Erases every saved preference and profile to clear faults or unexpected behavior. The app exits when it is done.`
+  String get resetUserSettingsDesc {
+    return Intl.message(
+      'Erases every saved preference and profile to clear faults or unexpected behavior. The app exits when it is done.',
+      name: 'resetUserSettingsDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reset successful`
+  String get resetSuccess {
+    return Intl.message(
+      'Reset successful',
+      name: 'resetSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Icon`
   String get icon {
     return Intl.message('Icon', name: 'icon', desc: '', args: []);
@@ -2530,41 +2630,156 @@ class AppLocalizations {
     return Intl.message('Cancel', name: 'cancel', desc: '', args: []);
   }
 
-  /// `The file has been modified. Save the changes?`
-  String get fileIsUpdate {
-    return Intl.message(
-      'The file has been modified. Save the changes?',
-      name: 'fileIsUpdate',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The profile has been modified. Turn off auto update?`
-  String get profileHasUpdate {
-    return Intl.message(
-      'The profile has been modified. Turn off auto update?',
-      name: 'profileHasUpdate',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Cache the changes?`
-  String get hasCacheChange {
-    return Intl.message(
-      'Cache the changes?',
-      name: 'hasCacheChange',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Copied successfully`
   String get copySuccess {
     return Intl.message(
       'Copied successfully',
       name: 'copySuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Updated successfully`
+  String get updateSuccess {
+    return Intl.message(
+      'Updated successfully',
+      name: 'updateSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Saved successfully`
+  String get saveSuccess {
+    return Intl.message(
+      'Saved successfully',
+      name: 'saveSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit server`
+  String get editServer {
+    return Intl.message('Edit server', name: 'editServer', desc: '', args: []);
+  }
+
+  /// `Statistics`
+  String get statistics {
+    return Intl.message('Statistics', name: 'statistics', desc: '', args: []);
+  }
+
+  /// `Start time`
+  String get startTime {
+    return Intl.message('Start time', name: 'startTime', desc: '', args: []);
+  }
+
+  /// `Connected for`
+  String get connectedTime {
+    return Intl.message(
+      'Connected for',
+      name: 'connectedTime',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Traffic`
+  String get traffic {
+    return Intl.message('Traffic', name: 'traffic', desc: '', args: []);
+  }
+
+  /// `All`
+  String get trafficAll {
+    return Intl.message('All', name: 'trafficAll', desc: '', args: []);
+  }
+
+  /// `Proxy`
+  String get trafficProxy {
+    return Intl.message('Proxy', name: 'trafficProxy', desc: '', args: []);
+  }
+
+  /// `Distribution`
+  String get distribution {
+    return Intl.message(
+      'Distribution',
+      name: 'distribution',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Keep an archive`
+  String get archiveStats {
+    return Intl.message(
+      'Keep an archive',
+      name: 'archiveStats',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Archive`
+  String get archive {
+    return Intl.message('Archive', name: 'archive', desc: '', args: []);
+  }
+
+  /// `Nothing archived yet`
+  String get archiveEmpty {
+    return Intl.message(
+      'Nothing archived yet',
+      name: 'archiveEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Each run of the core is kept here when it ends.`
+  String get archiveDesc {
+    return Intl.message(
+      'Each run of the core is kept here when it ends.',
+      name: 'archiveDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reset statistics`
+  String get resetStatistics {
+    return Intl.message(
+      'Reset statistics',
+      name: 'resetStatistics',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear archive`
+  String get clearArchive {
+    return Intl.message(
+      'Clear archive',
+      name: 'clearArchive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Deleted successfully`
+  String get deleteSuccess {
+    return Intl.message(
+      'Deleted successfully',
+      name: 'deleteSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Added successfully`
+  String get addSuccess {
+    return Intl.message(
+      'Added successfully',
+      name: 'addSuccess',
       desc: '',
       args: [],
     );
@@ -3190,6 +3405,16 @@ class AppLocalizations {
     return Intl.message(
       'Disconnected',
       name: 'disconnected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not connected`
+  String get notConnected {
+    return Intl.message(
+      'Not connected',
+      name: 'notConnected',
       desc: '',
       args: [],
     );

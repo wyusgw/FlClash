@@ -167,23 +167,6 @@ class _Spring extends ChangeNotifier implements ValueListenable<double> {
   }
 }
 
-// A soft, wide drop in the manner of iOS rather than a Material elevation.
-List<BoxShadow> _dockShadows(ColorScheme colorScheme) {
-  final strength = colorScheme.brightness == Brightness.dark ? 3.0 : 1.0;
-  return [
-    BoxShadow(
-      color: colorScheme.shadow.withValues(alpha: 0.08 * strength),
-      blurRadius: 24,
-      offset: const Offset(0, 8),
-    ),
-    BoxShadow(
-      color: colorScheme.shadow.withValues(alpha: 0.04 * strength),
-      blurRadius: 3,
-      offset: const Offset(0, 1),
-    ),
-  ];
-}
-
 ({double width, double height}) _measureLabel(
   BuildContext context,
   String label,
@@ -367,7 +350,6 @@ class _DockTrailing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final child = this.child;
     return AnimatedSize(
       duration: _slotDuration,
@@ -403,10 +385,7 @@ class _DockTrailing extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.only(start: _fabGap),
                 child: ElasticButton(
                   child: DecoratedBox(
-                    decoration: ShapeDecoration(
-                      shape: AppShape.full,
-                      shadows: _dockShadows(theme.colorScheme),
-                    ),
+                    decoration: const ShapeDecoration(shape: AppShape.full),
                     child: Builder(
                       builder: (context) => Theme(
                         data: _dockedTheme(Theme.of(context)),
@@ -959,10 +938,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
       (height, label) => math.max(height, label.height),
     );
     final bar = DecoratedBox(
-      decoration: ShapeDecoration(
-        shape: AppShape.full,
-        shadows: _dockShadows(colorScheme),
-      ),
+      decoration: const ShapeDecoration(shape: AppShape.full),
       child: Material(
         color: colorScheme.surfaceContainer,
         shape: AppShape.full,

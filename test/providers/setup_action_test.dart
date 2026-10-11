@@ -287,6 +287,7 @@ void main() {
       );
       addTearDown(scoped.dispose);
       globalState.container = scoped;
+      scoped.listen(appSettingProvider, (_, _) {});
       scoped
           .read(appSettingProvider.notifier)
           .update((state) => state.copyWith(showTrayTitle: false));

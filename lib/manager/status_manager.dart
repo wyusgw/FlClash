@@ -7,8 +7,6 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/widgets/navigation_dock.dart';
 import 'package:fl_clash/widgets/theme.dart';
 import 'package:material_ui/material_ui.dart';
@@ -16,19 +14,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _actionMinDuration = Duration(seconds: 6);
 const _maxBufferedMessages = 8;
-const _mobileMaxVisibleMessages = 2;
-const _desktopMaxVisibleMessages = 4;
+const _maxVisibleMessages = 1;
 const _messageEnterDuration = Duration(milliseconds: 450);
 const _messageExitDuration = Duration(milliseconds: 300);
-const _messageCollapseDuration = Duration(milliseconds: 200);
 const _messageSwipeOutDuration = Duration(milliseconds: 200);
 const _messageSwipeBackDuration = Duration(milliseconds: 300);
-const _messageEnterShift = -16.0;
 const _messageEnterScale = 0.94;
 const _swipeDismissFraction = 0.35;
 const _swipeDismissVelocity = 700.0;
-const _messageMaxWidth = 500.0;
-const _messageMinHeight = 52.0;
+const _messageMinWidth = 132.0;
+const _messageMaxWidth = 280.0;
+const _messageGlyphSize = 34.0;
+const _messageColor = Color(0xE62C2C2E);
+const _messageContentColor = Color(0xFFFFFFFF);
 
 class StatusManager extends ConsumerStatefulWidget {
   final Widget child;
@@ -55,10 +53,6 @@ class StatusManagerState extends ConsumerState<StatusManager> {
     _entriesNotifier.dispose();
     super.dispose();
   }
-
-  int get _maxVisibleMessages => ref.read(isMobileViewProvider)
-      ? _mobileMaxVisibleMessages
-      : _desktopMaxVisibleMessages;
 
   List<_MessageEntry> get _entries => _entriesNotifier.value;
 
@@ -242,45 +236,28 @@ class StatusManagerState extends ConsumerState<StatusManager> {
     return Stack(
       children: [
         widget.child,
-        Consumer(
-          builder: (_, ref, child) {
-            final top = ref.watch(overlayTopOffsetProvider);
-            return Container(
-              margin: EdgeInsets.only(
-                top: top + MediaQuery.viewPaddingOf(context).top + 8,
-              ),
-              child: child,
-            );
-          },
-          child: Align(
-            alignment: Alignment.topRight,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: ValueListenableBuilder(
-                valueListenable: _entriesNotifier,
-                builder: (_, entries, _) {
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (final entry in entries)
-                        _MessageTransition(
-                          key: Key(entry.id),
-                          visible: entry.visible,
-                          swiped: entry.swiped,
-                          onHidden: () => _removeMessage(entry.id),
-                          child: _MessageCard(
-                            message: entry.message,
-                            onDismiss: _cancelMessage,
-                            onDragging: _setDragging,
-                          ),
-                        ),
-                    ],
-                  );
-                },
-              ),
-            ),
+        Positioned.fill(
+          child: ValueListenableBuilder(
+            valueListenable: _entriesNotifier,
+            builder: (_, entries, _) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  for (final entry in entries)
+                    _MessageTransition(
+                      key: Key(entry.id),
+                      visible: entry.visible,
+                      swiped: entry.swiped,
+                      onHidden: () => _removeMessage(entry.id),
+                      child: _MessageCard(
+                        message: entry.message,
+                        onDismiss: _cancelMessage,
+                        onDragging: _setDragging,
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
         ),
       ],
@@ -335,7 +312,6 @@ class _MessageTransition extends StatefulWidget {
 class _MessageTransitionState extends State<_MessageTransition>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final CurvedAnimation _size;
   late final CurvedAnimation _opacity;
   late final CurvedAnimation _settle;
 
@@ -347,11 +323,6 @@ class _MessageTransitionState extends State<_MessageTransition>
       reverseDuration: _messageExitDuration,
       vsync: this,
     )..addStatusListener(_handleAnimationStatus);
-    _size = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0, 0.8, curve: Easing.emphasizedDecelerate),
-      reverseCurve: const Interval(0, 0.6, curve: Easing.emphasizedAccelerate),
-    );
     _opacity = CurvedAnimation(
       parent: _controller,
       curve: const Interval(0, 0.5, curve: Curves.easeOut),
@@ -383,10 +354,6 @@ class _MessageTransitionState extends State<_MessageTransition>
       _controller.forward();
       return;
     }
-    if (widget.swiped) {
-      _size.reverseCurve = Easing.emphasizedAccelerate;
-      _controller.reverseDuration = _messageCollapseDuration;
-    }
     _controller.reverse();
   }
 
@@ -399,7 +366,6 @@ class _MessageTransitionState extends State<_MessageTransition>
   @override
   void dispose() {
     _controller.removeStatusListener(_handleAnimationStatus);
-    _size.dispose();
     _opacity.dispose();
     _settle.dispose();
     _controller.dispose();
@@ -412,19 +378,9 @@ class _MessageTransitionState extends State<_MessageTransition>
       animation: _controller,
       builder: (_, child) {
         final settle = widget.swiped ? 1.0 : _settle.value;
-        // Align rather than SizeTransition: its clip would cut the card's
-        // shadow and the card itself as a swipe carries it out of the row.
-        return Align(
-          alignment: AlignmentDirectional.topEnd,
-          widthFactor: 1,
-          heightFactor: _size.value,
-          child: Transform.translate(
-            offset: Offset(0, _messageEnterShift * (1 - settle)),
-            child: Transform.scale(
-              scale: _messageEnterScale + (1 - _messageEnterScale) * settle,
-              child: child,
-            ),
-          ),
+        return Transform.scale(
+          scale: _messageEnterScale + (1 - _messageEnterScale) * settle,
+          child: child,
         );
       },
       child: FadeTransition(
@@ -517,52 +473,39 @@ class _MessageCardState extends State<_MessageCard>
   @override
   Widget build(BuildContext context) {
     final message = widget.message;
-    final colorScheme = context.colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(left: 8, right: 8, top: 2, bottom: 8),
-      child: AnimatedBuilder(
-        animation: _drag,
-        builder: (_, child) {
-          final offset = _drag.value;
-          final progress = _width > 0 ? offset.abs() / _width : 0.0;
-          return Transform.translate(
-            offset: Offset(offset, 0),
-            child: Opacity(opacity: 1 - progress.clamp(0.0, 1.0), child: child),
-          );
+    return AnimatedBuilder(
+      animation: _drag,
+      builder: (_, child) {
+        final offset = _drag.value;
+        final progress = _width > 0 ? offset.abs() / _width : 0.0;
+        return Transform.translate(
+          offset: Offset(offset, 0),
+          child: Opacity(opacity: 1 - progress.clamp(0.0, 1.0), child: child),
+        );
+      },
+      child: GestureDetector(
+        onHorizontalDragStart: _handleDragStart,
+        onHorizontalDragUpdate: _handleDragUpdate,
+        onHorizontalDragEnd: (details) {
+          _release(details.primaryVelocity ?? 0);
         },
-        child: GestureDetector(
-          onHorizontalDragStart: _handleDragStart,
-          onHorizontalDragUpdate: _handleDragUpdate,
-          onHorizontalDragEnd: (details) {
-            _release(details.primaryVelocity ?? 0);
-          },
-          onHorizontalDragCancel: () {
-            _release(0);
-          },
-          child: Material(
-            color: message.level.containerColor(context),
-            surfaceTintColor: Colors.transparent,
-            shadowColor: colorScheme.shadow.withValues(alpha: 0.6),
-            elevation: 3,
-            shape: AppShape.lg.copyWith(
-              side: BorderSide(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.6),
-              ),
+        onHorizontalDragCancel: () {
+          _release(0);
+        },
+        child: Material(
+          color: _messageColor,
+          surfaceTintColor: Colors.transparent,
+          shape: AppShape.lg,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minWidth: _messageMinWidth,
+              maxWidth: _messageMaxWidth,
             ),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                minHeight: _messageMinHeight,
-                maxWidth: _messageMaxWidth,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                child: _MessageContent(
-                  message: message,
-                  onDismiss: widget.onDismiss,
-                ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              child: _MessageContent(
+                message: message,
+                onDismiss: widget.onDismiss,
               ),
             ),
           ),
@@ -581,27 +524,27 @@ class _MessageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actionState = message.actionState;
-    final level = message.level;
-    final glyph = level.glyph;
-    return Row(
+    return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (glyph != null) ...[
-          GlyphIcon(glyph, size: 20, color: level.iconColor(context)),
-          const SizedBox(width: 12),
-        ],
-        Flexible(
-          child: Text(
-            message.text,
-            maxLines: 3,
-            style: context.textTheme.labelLarge?.copyWith(
-              color: level.contentColor(context),
-            ),
-            overflow: TextOverflow.ellipsis,
+        GlyphIcon(
+          message.level.glyph,
+          size: _messageGlyphSize,
+          color: _messageContentColor,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          message.text,
+          maxLines: 5,
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+          style: context.textTheme.labelLarge?.copyWith(
+            color: _messageContentColor,
+            fontWeight: FontWeight.w600,
           ),
         ),
         if (actionState != null) ...[
-          const SizedBox(width: 16),
+          const SizedBox(height: 14),
           CommonMinFilledButtonTheme(
             child: ElasticButton(
               child: FilledButton.tonal(

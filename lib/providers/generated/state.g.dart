@@ -130,7 +130,7 @@ final class TrayStateProvider
   }
 }
 
-String _$trayStateHash() => r'8392875d205b3b6d32bf65da0145a12fe4036666';
+String _$trayStateHash() => r'3cd9b1df0010f77a9ff58027c46d9160a671c23f';
 
 /// Measured delays of the proxies the tray lists, by group and then proxy
 /// name. Resolved like a proxy card, so a nested group shows its selection.
@@ -2083,7 +2083,7 @@ final class CurrentNavigationItemsStateProvider
 }
 
 String _$currentNavigationItemsStateHash() =>
-    r'06fbdc194f4527b945695fe3b72b16e0585fa440';
+    r'f71c17561314133c5a395654f2010fb6fcb3e4b6';
 
 @ProviderFor(navigationState)
 final navigationStateProvider = NavigationStateProvider._();

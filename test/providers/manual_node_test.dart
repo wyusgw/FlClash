@@ -62,6 +62,7 @@ Map<String, dynamic> _node(String tag) => {
 };
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late Directory home;
   late _MockCore core;
   late ProviderContainer container;
@@ -172,5 +173,79 @@ void main() {
         .firstWhere((profile) => profile.id == local.id);
     expect((await outboundsOf(saved)).map((node) => node['tag']), ['typed']);
     expect(container.read(currentProfileIdProvider), subscription.id);
+  });
+
+  group('replaceNode', () {
+    Future<Profile> twoNodes() async {
+      build();
+      await add(_node('first'));
+      await add(_node('second'));
+      return container.read(profilesProvider).single;
+    }
+
+    Future<void> replace(
+      Profile profile,
+      String tag,
+      Map<String, dynamic> outbound,
+    ) {
+      return container
+          .read(profilesActionProvider.notifier)
+          .replaceNode(profile, tag, outbound);
+    }
+
+    test('changes the one node and leaves the rest', () async {
+      final profile = await twoNodes();
+      final changed = _node('first')
+        ..['settings'] = {..._node('first')['settings'] as Map, 'port': 9999};
+
+      await replace(profile, 'first', changed);
+
+      final nodes = await outboundsOf(profile);
+      expect(nodes.map((node) => node['tag']), ['first', 'second']);
+      expect((nodes.first['settings'] as Map)['port'], 9999);
+      expect((nodes.last['settings'] as Map)['port'], 8388);
+    });
+
+    test('a renamed node stays the chosen one', () async {
+      final profile = await twoNodes();
+      container
+          .read(profilesProvider.notifier)
+          .put(profile.copyWith(selectedMap: {nodeGroupName: 'second'}));
+
+      await replace(
+        container.read(profilesProvider).single,
+        'second',
+        _node('renamed'),
+      );
+
+      final saved = container.read(profilesProvider).single;
+      expect(saved.selectedMap[nodeGroupName], 'renamed');
+      expect((await outboundsOf(saved)).map((node) => node['tag']), [
+        'first',
+        'renamed',
+      ]);
+    });
+
+    test('a name another node has is refused and nothing changes', () async {
+      final profile = await twoNodes();
+
+      await replace(profile, 'second', _node('first'));
+
+      expect((await outboundsOf(profile)).map((node) => node['tag']), [
+        'first',
+        'second',
+      ]);
+    });
+
+    test('reads a node back by its name', () async {
+      final profile = await twoNodes();
+      final actions = container.read(profilesActionProvider.notifier);
+
+      expect(
+        (await actions.readNodeOutbound(profile, 'second'))?['tag'],
+        'second',
+      );
+      expect(await actions.readNodeOutbound(profile, 'gone'), isNull);
+    });
   });
 }

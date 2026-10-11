@@ -119,6 +119,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Настройки контроля доступа",
     ),
     "account": MessageLookupByLibrary.simpleMessage("Аккаунт"),
+    "acknowledgements": MessageLookupByLibrary.simpleMessage("Благодарности"),
     "action": MessageLookupByLibrary.simpleMessage("Действие"),
     "actionDelayTest": MessageLookupByLibrary.simpleMessage(
       "Проверить все задержки",
@@ -139,6 +140,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "add": MessageLookupByLibrary.simpleMessage("Добавить"),
     "addProfile": MessageLookupByLibrary.simpleMessage("Добавить профиль"),
     "addSsid": MessageLookupByLibrary.simpleMessage("Добавить SSID"),
+    "addSuccess": MessageLookupByLibrary.simpleMessage("Добавлено"),
     "addWidget": MessageLookupByLibrary.simpleMessage("Добавить виджет"),
     "address": MessageLookupByLibrary.simpleMessage("Адрес"),
     "addressHelp": MessageLookupByLibrary.simpleMessage("Адрес сервера WebDAV"),
@@ -162,6 +164,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "appIconDesign": MessageLookupByLibrary.simpleMessage(
       "Дизайн значка приложения",
     ),
+    "archive": MessageLookupByLibrary.simpleMessage("Архив"),
+    "archiveDesc": MessageLookupByLibrary.simpleMessage(
+      "Каждый запуск ядра сохраняется здесь после его завершения.",
+    ),
+    "archiveEmpty": MessageLookupByLibrary.simpleMessage("В архиве пока пусто"),
+    "archiveStats": MessageLookupByLibrary.simpleMessage("Вести архив"),
     "authentication": MessageLookupByLibrary.simpleMessage("Аутентификация"),
     "authenticationDesc": MessageLookupByLibrary.simpleMessage(
       "Требовать учётные данные для локального порта прокси, чтобы другие приложения не могли использовать его",
@@ -187,9 +195,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Автонастройка системного DNS",
     ),
     "autoUpdate": MessageLookupByLibrary.simpleMessage("Автообновление"),
-    "autoUpdateInterval": MessageLookupByLibrary.simpleMessage(
-      "Интервал автообновления (минуты)",
-    ),
     "back": MessageLookupByLibrary.simpleMessage("Назад"),
     "backup": MessageLookupByLibrary.simpleMessage("Резервное копирование"),
     "backupAndRestore": MessageLookupByLibrary.simpleMessage(
@@ -266,6 +271,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "У вас уже последняя версия",
     ),
     "chooseType": MessageLookupByLibrary.simpleMessage("Выберите тип"),
+    "clearArchive": MessageLookupByLibrary.simpleMessage("Очистить архив"),
     "clearData": MessageLookupByLibrary.simpleMessage("Очистить данные"),
     "clearSearch": MessageLookupByLibrary.simpleMessage("Очистить поиск"),
     "clipboardExport": MessageLookupByLibrary.simpleMessage(
@@ -296,6 +302,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Проверка URL-запроса через прокси-сервер.",
     ),
     "connected": MessageLookupByLibrary.simpleMessage("Подключено"),
+    "connectedTime": MessageLookupByLibrary.simpleMessage("Время работы"),
     "connecting": MessageLookupByLibrary.simpleMessage("Подключение…"),
     "connection": MessageLookupByLibrary.simpleMessage("Соединение"),
     "connections": MessageLookupByLibrary.simpleMessage("Соединения"),
@@ -311,6 +318,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "copyJson": MessageLookupByLibrary.simpleMessage("Копировать JSON"),
     "copyLink": MessageLookupByLibrary.simpleMessage("Копировать ссылку"),
     "copyName": MessageLookupByLibrary.simpleMessage("Копировать имя"),
+    "copyScheme": MessageLookupByLibrary.simpleMessage(
+      "Нажмите на схему, чтобы скопировать её.",
+    ),
     "copySuccess": MessageLookupByLibrary.simpleMessage("Скопировано"),
     "core": MessageLookupByLibrary.simpleMessage("Ядро"),
     "coreBlockedByPolicyTip": m1,
@@ -353,6 +363,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteAllProfiles": MessageLookupByLibrary.simpleMessage(
       "Удалить все профили",
     ),
+    "deleteSuccess": MessageLookupByLibrary.simpleMessage("Удалено"),
     "deleteTip": m5,
     "desc": MessageLookupByLibrary.simpleMessage(
       "Многоплатформенный прокси-клиент на основе Xray-core: простой и удобный, с открытым исходным кодом и без рекламы.",
@@ -375,6 +386,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "discoverNewVersion": MessageLookupByLibrary.simpleMessage(
       "Доступна новая версия",
     ),
+    "distribution": MessageLookupByLibrary.simpleMessage("Распределение"),
     "dnsHijacking": MessageLookupByLibrary.simpleMessage("Перехват DNS"),
     "dnsQueries": MessageLookupByLibrary.simpleMessage("DNS-запросы"),
     "docked": MessageLookupByLibrary.simpleMessage("Закреплённая"),
@@ -385,6 +397,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Скорость загрузки (Мбит/с)",
     ),
     "edit": MessageLookupByLibrary.simpleMessage("Редактировать"),
+    "editServer": MessageLookupByLibrary.simpleMessage("Изменить сервер"),
     "editSsid": MessageLookupByLibrary.simpleMessage("Изменить SSID"),
     "editorUnavailable": MessageLookupByLibrary.simpleMessage(
       "Редактор недоступен",
@@ -416,13 +429,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "externalLink": MessageLookupByLibrary.simpleMessage("Внешняя ссылка"),
     "extraLarge": MessageLookupByLibrary.simpleMessage("Очень крупный"),
     "fade": MessageLookupByLibrary.simpleMessage("Растворение"),
+    "feedback": MessageLookupByLibrary.simpleMessage("Обратная связь"),
+    "feedbackDesc": MessageLookupByLibrary.simpleMessage(
+      "FlClash — это только инструмент для прокси и он не предоставляет прокси-серверы. По вопросам работы сервера или продления подписки обращайтесь к вашему поставщику.",
+    ),
     "fidelityScheme": MessageLookupByLibrary.simpleMessage("Точная передача"),
     "file": MessageLookupByLibrary.simpleMessage("Файл"),
     "fileDesc": MessageLookupByLibrary.simpleMessage(
       "Загрузить файл профиля напрямую",
-    ),
-    "fileIsUpdate": MessageLookupByLibrary.simpleMessage(
-      "Файл изменён. Сохранить изменения?",
     ),
     "filter": MessageLookupByLibrary.simpleMessage("Фильтр"),
     "fingerprint": MessageLookupByLibrary.simpleMessage("Отпечаток"),
@@ -447,9 +461,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "go": MessageLookupByLibrary.simpleMessage("Перейти"),
     "goDownload": MessageLookupByLibrary.simpleMessage("Скачать"),
     "handshake": MessageLookupByLibrary.simpleMessage("Рукопожатие"),
-    "hasCacheChange": MessageLookupByLibrary.simpleMessage(
-      "Кэшировать изменения?",
-    ),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
       "Служба Helper недоступна, поэтому TUN-режим включить нельзя. Переустановите FlClash.",
     ),
@@ -491,9 +502,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "inbound": MessageLookupByLibrary.simpleMessage("Входящие"),
     "infiniteTime": MessageLookupByLibrary.simpleMessage("Бессрочно"),
     "init": MessageLookupByLibrary.simpleMessage("Инициализация"),
-    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
-      "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
-    ),
+    "installedAppsPermissionDeniedMessage":
+        MessageLookupByLibrary.simpleMessage(
+          "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
+        ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "Эта система не выдаёт список установленных приложений без разрешения. Предоставьте его, чтобы настроить прокси для отдельных приложений.",
     ),
@@ -630,6 +642,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Память освобождена",
     ),
     "memoryReleasedSize": m15,
+    "menuBar": MessageLookupByLibrary.simpleMessage("Строка меню"),
+    "menuBarEmbedded": MessageLookupByLibrary.simpleMessage("Встроенный"),
+    "menuBarStandalone": MessageLookupByLibrary.simpleMessage("Отдельный"),
     "messageTest": MessageLookupByLibrary.simpleMessage("Тест сообщения"),
     "messageTestTip": MessageLookupByLibrary.simpleMessage("Это сообщение."),
     "min": MessageLookupByLibrary.simpleMessage("Минимальный"),
@@ -690,6 +705,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Эти значения не образуют рабочий сервер.",
     ),
     "none": MessageLookupByLibrary.simpleMessage("Нет"),
+    "notConnected": MessageLookupByLibrary.simpleMessage("Не подключено"),
     "notSelectedTip": MessageLookupByLibrary.simpleMessage(
       "Текущую группу прокси нельзя выбрать",
     ),
@@ -699,6 +715,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "nullTip": m23,
     "numberTip": m24,
     "obfsPassword": MessageLookupByLibrary.simpleMessage("Пароль обфускации"),
+    "off": MessageLookupByLibrary.simpleMessage("Выкл."),
+    "on": MessageLookupByLibrary.simpleMessage("Вкл."),
     "onDemand": MessageLookupByLibrary.simpleMessage("По условию"),
     "onDemandDesc": MessageLookupByLibrary.simpleMessage(
       "Настройте состояние работы приложения для определённых сценариев",
@@ -709,9 +727,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "optional": MessageLookupByLibrary.simpleMessage("Необязательно"),
     "options": MessageLookupByLibrary.simpleMessage("Опции"),
     "other": MessageLookupByLibrary.simpleMessage("Другое"),
-    "otherContributors": MessageLookupByLibrary.simpleMessage(
-      "Другие участники",
-    ),
     "outboundIp": MessageLookupByLibrary.simpleMessage("Исходящий IP"),
     "outboundMode": MessageLookupByLibrary.simpleMessage(
       "Режим исходящего трафика",
@@ -745,13 +760,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "process": MessageLookupByLibrary.simpleMessage("Процесс"),
     "profile": MessageLookupByLibrary.simpleMessage("Профиль"),
-    "profileAutoUpdateIntervalInvalidValidationDesc":
-        MessageLookupByLibrary.simpleMessage("Введите корректный интервал"),
-    "profileAutoUpdateIntervalNullValidationDesc":
-        MessageLookupByLibrary.simpleMessage("Введите интервал автообновления"),
-    "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
-      "Профиль изменён. Отключить автообновление?",
-    ),
     "profileInUseTip": MessageLookupByLibrary.simpleMessage(
       "Галочка отмечает используемый профиль.",
     ),
@@ -798,11 +806,27 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "required": MessageLookupByLibrary.simpleMessage("Обязательно"),
     "reset": MessageLookupByLibrary.simpleMessage("Сброс"),
+    "resetCoreSettings": MessageLookupByLibrary.simpleMessage(
+      "Сбросить настройки ядра",
+    ),
+    "resetCoreSettingsDesc": MessageLookupByLibrary.simpleMessage(
+      "Возвращает настройки ядра, сети и VPN к значениям по умолчанию. Часто помогает при сбоях подключения и проблемах VPN.",
+    ),
     "resetPageChangesTip": MessageLookupByLibrary.simpleMessage(
       "На этой странице есть изменения. Вы уверены, что хотите выполнить сброс?",
     ),
+    "resetStatistics": MessageLookupByLibrary.simpleMessage(
+      "Сбросить статистику",
+    ),
+    "resetSuccess": MessageLookupByLibrary.simpleMessage("Сброс выполнен"),
     "resetTip": MessageLookupByLibrary.simpleMessage(
       "Вы уверены, что хотите выполнить сброс?",
+    ),
+    "resetUserSettings": MessageLookupByLibrary.simpleMessage(
+      "Сбросить пользовательские настройки",
+    ),
+    "resetUserSettingsDesc": MessageLookupByLibrary.simpleMessage(
+      "Удаляет все сохранённые настройки и профили, чтобы устранить сбои и неожиданное поведение. По завершении приложение закроется.",
     ),
     "resources": MessageLookupByLibrary.simpleMessage("Ресурсы"),
     "restart": MessageLookupByLibrary.simpleMessage("Перезапустить"),
@@ -849,6 +873,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "safeModeAppTitle": m26,
     "save": MessageLookupByLibrary.simpleMessage("Сохранить"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("Сохранить изменения?"),
+    "saveSuccess": MessageLookupByLibrary.simpleMessage("Сохранено"),
     "script": MessageLookupByLibrary.simpleMessage("Скрипт"),
     "scrollToSelected": MessageLookupByLibrary.simpleMessage(
       "Прокрутить к выбранному",
@@ -897,6 +922,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "showPassword": MessageLookupByLibrary.simpleMessage("Показать пароль"),
     "shrink": MessageLookupByLibrary.simpleMessage("Компактный"),
+    "sidebar": MessageLookupByLibrary.simpleMessage("Боковая панель"),
     "sidebarBlur": MessageLookupByLibrary.simpleMessage(
       "Размытие боковой панели",
     ),
@@ -918,11 +944,16 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "ssidsEmpty": MessageLookupByLibrary.simpleMessage("Список SSID пуст"),
     "standard": MessageLookupByLibrary.simpleMessage("Стандартный"),
+    "starOnGithub": MessageLookupByLibrary.simpleMessage(
+      "Поставить звезду на GitHub",
+    ),
     "start": MessageLookupByLibrary.simpleMessage("Старт"),
+    "startTime": MessageLookupByLibrary.simpleMessage("Время запуска"),
     "startVpn": MessageLookupByLibrary.simpleMessage("Запуск VPN…"),
     "startupAndBackground": MessageLookupByLibrary.simpleMessage(
       "Запуск и фоновая работа",
     ),
+    "statistics": MessageLookupByLibrary.simpleMessage("Статистика"),
     "status": MessageLookupByLibrary.simpleMessage("Статус"),
     "stop": MessageLookupByLibrary.simpleMessage("Стоп"),
     "stopVpn": MessageLookupByLibrary.simpleMessage("Остановка VPN…"),
@@ -974,6 +1005,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "torch": MessageLookupByLibrary.simpleMessage("Фонарик"),
     "total": MessageLookupByLibrary.simpleMessage("Всего"),
     "totalTraffic": MessageLookupByLibrary.simpleMessage("Общий трафик"),
+    "traffic": MessageLookupByLibrary.simpleMessage("Трафик"),
+    "trafficAll": MessageLookupByLibrary.simpleMessage("Всего"),
+    "trafficProxy": MessageLookupByLibrary.simpleMessage("Прокси"),
     "trafficUsage": MessageLookupByLibrary.simpleMessage("Статистика трафика"),
     "transportMode": MessageLookupByLibrary.simpleMessage("Транспорт"),
     "tun": MessageLookupByLibrary.simpleMessage("TUN"),
@@ -992,12 +1026,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "unpinWindow": MessageLookupByLibrary.simpleMessage("Открепить окно"),
     "update": MessageLookupByLibrary.simpleMessage("Обновить"),
     "updateAll": MessageLookupByLibrary.simpleMessage("Обновить все"),
-    "upload": MessageLookupByLibrary.simpleMessage("Отдача"),
+    "updateSuccess": MessageLookupByLibrary.simpleMessage("Обновлено"),
     "uploadSpeed": MessageLookupByLibrary.simpleMessage(
       "Скорость отправки (Мбит/с)",
     ),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("Получить профиль по URL"),
+    "urlSchemes": MessageLookupByLibrary.simpleMessage("URL-схемы"),
     "urlTestSettings": MessageLookupByLibrary.simpleMessage(
       "Настройки проверки URL",
     ),
@@ -1009,6 +1044,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "username": MessageLookupByLibrary.simpleMessage("Имя пользователя"),
     "uuid": MessageLookupByLibrary.simpleMessage("UUID"),
     "value": MessageLookupByLibrary.simpleMessage("Значение"),
+    "version": MessageLookupByLibrary.simpleMessage("Версия"),
     "vibrantScheme": MessageLookupByLibrary.simpleMessage("Яркая"),
     "view": MessageLookupByLibrary.simpleMessage("Просмотр"),
     "vpnConfigChangeDetected": MessageLookupByLibrary.simpleMessage(

@@ -86,8 +86,6 @@ class AddProfileView extends ConsumerStatefulWidget {
 class _AddProfileViewState extends ConsumerState<AddProfileView> {
   final _url = TextEditingController();
   final _label = TextEditingController();
-  final _controllers = <String, TextEditingController>{};
-  final _revealed = <String>{};
   NodeKind? _kind;
   Map<String, String> _values = {};
 
@@ -102,22 +100,11 @@ class _AddProfileViewState extends ConsumerState<AddProfileView> {
   void dispose() {
     _url.dispose();
     _label.dispose();
-    for (final controller in _controllers.values) {
-      controller.dispose();
-    }
     super.dispose();
   }
 
   void _setKind(NodeKind? kind) {
-    final retired = _controllers.values.toList();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      for (final controller in retired) {
-        controller.dispose();
-      }
-    });
     setState(() {
-      _controllers.clear();
-      _revealed.clear();
       _kind = kind;
       _values = kind == null ? {} : nodeDefaults(kind);
     });
@@ -158,79 +145,6 @@ class _AddProfileViewState extends ConsumerState<AddProfileView> {
     final profilesAction = ref.read(profilesActionProvider.notifier);
     Navigator.of(context).pop();
     unawaited(profilesAction.addProfileFormFile());
-  }
-
-  Widget _field(NodeField field) {
-    final appLocalizations = context.appLocalizations;
-    final palette = GroupedPalette.of(context);
-    final label = nodeFieldLabel(appLocalizations, field.key);
-    switch (field.type) {
-      case NodeFieldType.text:
-      case NodeFieldType.secret:
-      case NodeFieldType.number:
-        final secret = field.type == NodeFieldType.secret;
-        final revealed = _revealed.contains(field.key);
-        final controller = _controllers.putIfAbsent(
-          field.key,
-          () => TextEditingController(text: _values[field.key] ?? ''),
-        );
-        return GroupedFieldRow(
-          key: ValueKey('field.${field.key}'),
-          label: label,
-          hint: field.required
-              ? appLocalizations.required
-              : appLocalizations.optional,
-          controller: controller,
-          obscure: secret && !revealed,
-          keyboardType: field.type == NodeFieldType.number
-              ? TextInputType.number
-              : null,
-          inputFormatters: field.type == NodeFieldType.number
-              ? [FilteringTextInputFormatter.digitsOnly]
-              : null,
-          trailing: secret
-              ? InkResponse(
-                  onTap: () => setState(() {
-                    if (!_revealed.add(field.key)) _revealed.remove(field.key);
-                  }),
-                  radius: 14,
-                  child: GlyphIcon(
-                    revealed ? AppGlyphs.eyeOff : AppGlyphs.eye,
-                    size: 19,
-                    color: palette.secondary,
-                  ),
-                )
-              : null,
-          onChanged: (value) => _setValue(field.key, value),
-        );
-      case NodeFieldType.choice:
-        return GroupedRow(
-          key: ValueKey('field.${field.key}'),
-          title: label,
-          value: _values[field.key],
-          chevron: true,
-          onTap: () async {
-            final picked = await BaseNavigator.push<String>(
-              context,
-              ChoiceView(
-                title: label,
-                options: field.options,
-                selected: _values[field.key] ?? field.initial,
-              ),
-            );
-            if (picked != null) _setValue(field.key, picked);
-          },
-        );
-      case NodeFieldType.toggle:
-        return GroupedRow(
-          key: ValueKey('field.${field.key}'),
-          title: label,
-          trailing: GroupedSwitch(
-            value: _values[field.key] == 'true',
-            onChanged: (value) => _setValue(field.key, '$value'),
-          ),
-        );
-    }
   }
 
   @override
@@ -288,11 +202,11 @@ class _AddProfileViewState extends ConsumerState<AddProfileView> {
               ],
             )
           else
-            GroupedSection(
-              children: [
-                for (final field in nodeFields(kind))
-                  if (field.visible(_values)) _field(field),
-              ],
+            NodeFormFields(
+              key: ValueKey(kind),
+              kind: kind,
+              values: _values,
+              onChanged: _setValue,
             ),
           const SizedBox(height: groupedSectionGap),
           GroupedSection(
@@ -440,6 +354,124 @@ class ChoiceView extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The inputs of one protocol's server form, in a grouped card. It keeps the
+/// text being typed; [values] is what the parent holds of it.
+class NodeFormFields extends StatefulWidget {
+  const NodeFormFields({
+    super.key,
+    required this.kind,
+    required this.values,
+    required this.onChanged,
+  });
+
+  final NodeKind kind;
+  final Map<String, String> values;
+  final void Function(String key, String value) onChanged;
+
+  @override
+  State<NodeFormFields> createState() => _NodeFormFieldsState();
+}
+
+class _NodeFormFieldsState extends State<NodeFormFields> {
+  final _controllers = <String, TextEditingController>{};
+  final _revealed = <String>{};
+
+  @override
+  void dispose() {
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  Map<String, String> get _values => widget.values;
+
+  void _setValue(String key, String value) => widget.onChanged(key, value);
+
+  Widget _field(NodeField field) {
+    final appLocalizations = context.appLocalizations;
+    final palette = GroupedPalette.of(context);
+    final label = nodeFieldLabel(appLocalizations, field.key);
+    switch (field.type) {
+      case NodeFieldType.text:
+      case NodeFieldType.secret:
+      case NodeFieldType.number:
+        final secret = field.type == NodeFieldType.secret;
+        final revealed = _revealed.contains(field.key);
+        final controller = _controllers.putIfAbsent(
+          field.key,
+          () => TextEditingController(text: _values[field.key] ?? ''),
+        );
+        return GroupedFieldRow(
+          key: ValueKey('field.${field.key}'),
+          label: label,
+          hint: field.required
+              ? appLocalizations.required
+              : appLocalizations.optional,
+          controller: controller,
+          obscure: secret && !revealed,
+          keyboardType: field.type == NodeFieldType.number
+              ? TextInputType.number
+              : null,
+          inputFormatters: field.type == NodeFieldType.number
+              ? [FilteringTextInputFormatter.digitsOnly]
+              : null,
+          trailing: secret
+              ? InkResponse(
+                  onTap: () => setState(() {
+                    if (!_revealed.add(field.key)) _revealed.remove(field.key);
+                  }),
+                  radius: 14,
+                  child: GlyphIcon(
+                    revealed ? AppGlyphs.eyeOff : AppGlyphs.eye,
+                    size: 19,
+                    color: palette.secondary,
+                  ),
+                )
+              : null,
+          onChanged: (value) => _setValue(field.key, value),
+        );
+      case NodeFieldType.choice:
+        return GroupedRow(
+          key: ValueKey('field.${field.key}'),
+          title: label,
+          value: _values[field.key],
+          chevron: true,
+          onTap: () async {
+            final picked = await BaseNavigator.push<String>(
+              context,
+              ChoiceView(
+                title: label,
+                options: field.options,
+                selected: _values[field.key] ?? field.initial,
+              ),
+            );
+            if (picked != null) _setValue(field.key, picked);
+          },
+        );
+      case NodeFieldType.toggle:
+        return GroupedRow(
+          key: ValueKey('field.${field.key}'),
+          title: label,
+          trailing: GroupedSwitch(
+            value: _values[field.key] == 'true',
+            onChanged: (value) => _setValue(field.key, '$value'),
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GroupedSection(
+      children: [
+        for (final field in nodeFields(widget.kind))
+          if (field.visible(_values)) _field(field),
+      ],
     );
   }
 }

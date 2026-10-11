@@ -102,6 +102,23 @@ class GroupedPalette {
       TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: secondary);
 }
 
+/// The rounded surface of a grouped section.
+class GroupedCard extends StatelessWidget {
+  const GroupedCard({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: GroupedPalette.of(context).fill,
+      shape: _cardShape,
+      clipBehavior: Clip.antiAlias,
+      child: child,
+    );
+  }
+}
+
 /// A rounded card of rows with hairlines between them; the hairline starts
 /// where the row's text does.
 class GroupedSection extends StatelessWidget {
@@ -132,20 +149,16 @@ class GroupedSection extends StatelessWidget {
             ),
             child: Text(header!, style: palette.sectionLabel),
           ),
-        Material(
-          color: palette.fill,
-          shape: _cardShape,
-          clipBehavior: Clip.antiAlias,
+        GroupedCard(
           child: Column(
             children: [
               for (final (index, child) in children.indexed) ...[
                 if (index > 0)
-                  _Hairline(
+                  GroupedHairline(
                     inset: switch (children[index]) {
-                      final GroupedItem item => item.separatorInset,
+                      final GroupedInset item => item.separatorInset,
                       _ => 0,
                     },
-                    color: palette.separator,
                   ),
                 child,
               ],
@@ -167,11 +180,11 @@ class GroupedSection extends StatelessWidget {
   }
 }
 
-class _Hairline extends StatelessWidget {
-  const _Hairline({required this.inset, required this.color});
+/// The line between two rows, starting [inset] in.
+class GroupedHairline extends StatelessWidget {
+  const GroupedHairline({super.key, required this.inset});
 
   final double inset;
-  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -179,16 +192,31 @@ class _Hairline extends StatelessWidget {
       padding: EdgeInsetsDirectional.only(start: inset),
       child: SizedBox(
         height: 1,
-        child: ColoredBox(color: color, child: const SizedBox.expand()),
+        child: ColoredBox(
+          color: GroupedPalette.of(context).separator,
+          child: const SizedBox.expand(),
+        ),
       ),
     );
   }
 }
 
-/// A row of a [GroupedSection]; it says where the hairline above it starts.
-abstract class GroupedItem extends StatelessWidget {
+/// What says where the hairline above a row of a [GroupedSection] starts.
+abstract interface class GroupedInset {
+  double get separatorInset;
+}
+
+/// For a widget that builds a plain [GroupedRow], without a leading icon.
+mixin GroupedPlainInset implements GroupedInset {
+  @override
+  double get separatorInset => groupedRowPadding + 1;
+}
+
+/// A row of a [GroupedSection].
+abstract class GroupedItem extends StatelessWidget implements GroupedInset {
   const GroupedItem({super.key});
 
+  @override
   double get separatorInset;
 }
 
@@ -203,12 +231,16 @@ class GroupedRow extends GroupedItem {
     this.chevron = false,
     this.onTap,
     this.titleWidget,
+    this.subtitleWidget,
     this.leadingWidth = groupedLeadingSize,
   });
 
   final String title;
   final Widget? titleWidget;
   final String? subtitle;
+
+  /// A subtitle that is more than a line of text; it takes [subtitle]'s place.
+  final Widget? subtitleWidget;
   final Widget? leading;
   final Widget? trailing;
   final String? value;
@@ -231,65 +263,84 @@ class GroupedRow extends GroupedItem {
       type: MaterialType.transparency,
       child: InkWell(
         onTap: onTap,
-        hoverColor: palette.hover,
+        hoverColor: Colors.transparent,
         highlightColor: palette.hover,
         splashColor: Colors.transparent,
         child: SizedBox(
           height: groupedRowHeight,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: groupedRowPadding),
-            child: Row(
-              children: [
-                if (leading != null) ...[
-                  SizedBox(
-                    width: leadingWidth,
-                    height: groupedLeadingSize,
-                    child: Center(child: leading),
-                  ),
-                  const SizedBox(width: groupedLeadingGap),
-                ],
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      titleWidget ??
-                          Text(
-                            title,
+            child: LayoutBuilder(
+              builder: (context, box) => Row(
+                children: [
+                  if (leading != null) ...[
+                    SizedBox(
+                      width: leadingWidth,
+                      height: groupedLeadingSize,
+                      child: Center(child: leading),
+                    ),
+                    const SizedBox(width: groupedLeadingGap),
+                  ],
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        titleWidget ??
+                            Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: palette.rowTitle,
+                            ),
+                        if (subtitleWidget != null)
+                          DefaultTextStyle.merge(
+                            style: palette.rowSubtitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: palette.rowTitle,
+                            child: subtitleWidget!,
+                          )
+                        else if (subtitle != null)
+                          Text(
+                            subtitle!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: palette.rowSubtitle,
                           ),
-                      if (subtitle != null)
-                        Text(
-                          subtitle!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: palette.rowSubtitle,
-                        ),
-                    ],
-                  ),
-                ),
-                if (value != null)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: Text(value!, style: palette.rowValue),
-                  ),
-                if (trailing != null)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: trailing,
-                  ),
-                if (chevron)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: GlyphIcon(
-                      AppGlyphs.chevronForward,
-                      size: 15,
-                      color: palette.tertiary,
+                      ],
                     ),
                   ),
-              ],
+                  if (value != null)
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: box.maxWidth * 0.55,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Text(
+                          value!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: palette.rowValue,
+                        ),
+                      ),
+                    ),
+                  if (trailing != null)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: trailing,
+                    ),
+                  if (chevron)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: GlyphIcon(
+                        AppGlyphs.chevronForward,
+                        size: 15,
+                        color: palette.tertiary,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -321,7 +372,7 @@ class GroupedButtonRow extends GroupedItem {
       type: MaterialType.transparency,
       child: InkWell(
         onTap: onTap,
-        hoverColor: palette.hover,
+        hoverColor: Colors.transparent,
         highlightColor: palette.hover,
         splashColor: Colors.transparent,
         child: SizedBox(
@@ -465,17 +516,227 @@ class GroupedSwitch extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Color(0xFFFFFFFF),
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0x33000000),
-                    blurRadius: 2,
-                    offset: Offset(0, 1),
-                  ),
-                ],
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The ring at the start of a row that can be ticked, filled once it is.
+class GroupedSelectMark extends StatelessWidget {
+  const GroupedSelectMark({super.key, required this.selected});
+
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    return SizedBox.square(
+      dimension: groupedLeadingSize,
+      child: DecoratedBox(
+        decoration: ShapeDecoration(
+          color: selected ? palette.icon : Colors.transparent,
+          shape: CircleBorder(
+            side: selected
+                ? BorderSide.none
+                : BorderSide(color: palette.tertiary, width: 1.5),
+          ),
+        ),
+        child: selected
+            ? const GlyphIcon(
+                AppGlyphs.check,
+                size: 13,
+                color: Color(0xFFFFFFFF),
+              )
+            : null,
+      ),
+    );
+  }
+}
+
+/// A search field of the grouped look: a glyph, the input, and a way to clear.
+class GroupedSearchField extends StatelessWidget {
+  const GroupedSearchField({
+    super.key,
+    required this.controller,
+    required this.hint,
+    required this.clearTooltip,
+    this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final String hint;
+  final String clearTooltip;
+  final ValueChanged<String>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    return GroupedCard(
+      child: SizedBox(
+        height: groupedRowHeight,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: groupedRowPadding),
+          child: Row(
+            children: [
+              GlyphIcon(AppGlyphs.search, size: 17, color: palette.secondary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  onChanged: onChanged,
+                  cursorColor: palette.accent,
+                  style: palette.rowTitle.copyWith(fontWeight: FontWeight.w500),
+                  decoration: InputDecoration.collapsed(
+                    hintText: hint,
+                    hintStyle: palette.rowTitle.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: palette.tertiary,
+                    ),
+                  ),
+                ),
+              ),
+              ListenableBuilder(
+                listenable: controller,
+                builder: (_, _) {
+                  if (controller.text.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return Tooltip(
+                    message: clearTooltip,
+                    child: InkResponse(
+                      radius: 14,
+                      onTap: () {
+                        controller.clear();
+                        onChanged?.call('');
+                      },
+                      child: GlyphIcon(
+                        AppGlyphs.close,
+                        size: 16,
+                        color: palette.secondary,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A section whose body is free-form content rather than rows: its [header],
+/// with [actions] at the end, over a card holding [child].
+class GroupedBlock extends StatelessWidget {
+  const GroupedBlock({
+    super.key,
+    required this.header,
+    required this.child,
+    this.actions = const [],
+    this.footer,
+    this.padding = const EdgeInsets.all(groupedRowPadding),
+  });
+
+  final String header;
+  final List<Widget> actions;
+  final String? footer;
+  final EdgeInsetsGeometry padding;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            groupedRowPadding + 1,
+            0,
+            groupedRowPadding,
+            6,
+          ),
+          child: Row(
+            spacing: 12,
+            children: [
+              Expanded(child: Text(header, style: palette.sectionLabel)),
+              ...actions,
+            ],
+          ),
+        ),
+        GroupedCard(
+          child: Padding(padding: padding, child: child),
+        ),
+        if (footer != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              groupedRowPadding + 1,
+              6,
+              groupedRowPadding,
+              0,
+            ),
+            child: Text(footer!, style: palette.sectionLabel),
+          ),
+      ],
+    );
+  }
+}
+
+/// A word in the accent colour, for an action at the end of a block's header.
+class GroupedTextAction extends StatelessWidget {
+  const GroupedTextAction({
+    super.key,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    return InkResponse(
+      onTap: onPressed,
+      radius: 18,
+      child: Text(
+        label,
+        style: palette.sectionLabel.copyWith(
+          color: onPressed == null ? palette.tertiary : palette.accent,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+/// An icon at the end of a block's header.
+class GroupedIconAction extends StatelessWidget {
+  const GroupedIconAction({
+    super.key,
+    required this.glyph,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final Glyph glyph;
+  final String tooltip;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    return Tooltip(
+      message: tooltip,
+      child: InkResponse(
+        onTap: onPressed,
+        radius: 16,
+        child: GlyphIcon(glyph, size: 16, color: palette.accent),
       ),
     );
   }

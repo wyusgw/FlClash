@@ -1,19 +1,17 @@
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/widgets/dialog.dart';
-import 'package:fl_clash/widgets/inherited.dart';
 import 'package:fl_clash/widgets/null_status.dart';
 import 'package:fl_clash/widgets/pop_scope.dart';
-import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'effect.dart';
+import 'grouped_list.dart';
+import 'grouped_page.dart';
 import 'list.dart';
 import 'theme.dart';
 part 'edit_view.dart';

@@ -46,9 +46,10 @@ class CommonAction extends _$CommonAction {
       final onlyStatisticsProxy = ref.read(
         appSettingProvider.select((state) => state.onlyStatisticsProxy),
       );
-      final [traffic, totalTraffic] = await Future.wait([
+      final [traffic, totalTraffic, otherTraffic] = await Future.wait([
         _readTraffic(() => _core.getTraffic(onlyStatisticsProxy)),
         _readTraffic(() => _core.getTotalTraffic(onlyStatisticsProxy)),
+        _readTraffic(() => _core.getTotalTraffic(!onlyStatisticsProxy)),
       ]);
       if (traffic != null) {
         ref.read(trafficsProvider.notifier).addTraffic(traffic);
@@ -56,9 +57,56 @@ class CommonAction extends _$CommonAction {
       if (totalTraffic != null) {
         ref.read(totalTrafficProvider.notifier).value = totalTraffic;
       }
+      if (totalTraffic != null && otherTraffic != null) {
+        ref.read(statsSnapshotProvider.notifier).value = onlyStatisticsProxy
+            ? TrafficStats(all: otherTraffic, proxy: totalTraffic)
+            : TrafficStats(all: totalTraffic, proxy: otherTraffic);
+      }
     } finally {
       _isUpdatingTraffic = false;
     }
+  }
+
+  Future<void> loadStatsArchive() async {
+    ref.read(statsRecordsProvider.notifier).value = await const StatsArchive()
+        .load();
+  }
+
+  /// Keeps the run that is ending, when archiving is on and it carried
+  /// something. Called before the counters are cleared.
+  Future<void> archiveSession() async {
+    final runTime = ref.read(runTimeProvider);
+    final stats = ref.read(statsSnapshotProvider);
+    if (!ref.read(appSettingProvider).archiveStats ||
+        runTime == null ||
+        stats.all.up + stats.all.down <= 0) {
+      return;
+    }
+    final end = DateTime.now();
+    final record = StatsRecord(
+      start: end.subtract(Duration(milliseconds: runTime)),
+      end: end,
+      stats: stats,
+    );
+    final records = [record, ...await const StatsArchive().load()];
+    ref.read(statsRecordsProvider.notifier).value = records;
+    await const StatsArchive().save(records);
+  }
+
+  Future<void> removeStatsRecords(Iterable<StatsRecord> removed) async {
+    final gone = removed.toSet();
+    final records = [
+      for (final record in await const StatsArchive().load())
+        if (!gone.any((item) => item.start == record.start)) record,
+    ];
+    ref.read(statsRecordsProvider.notifier).value = records;
+    await const StatsArchive().save(records);
+  }
+
+  void resetStatistics() {
+    _core.resetTraffic();
+    ref.read(statsSnapshotProvider.notifier).value = const TrafficStats();
+    ref.read(totalTrafficProvider.notifier).value = const Traffic();
   }
 
   Future<Traffic?> _readTraffic(Future<Traffic> Function() request) async {

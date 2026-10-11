@@ -724,7 +724,7 @@ void main() {
     expect(childWidth, greaterThanOrEqualTo(parentWidth));
   });
 
-  testWidgets('the open sub menu casts the stronger shadow', (tester) async {
+  testWidgets('no menu level casts a shadow', (tester) async {
     final open = await pumpMenu(tester, [
       const CommonPopupMenuItem(
         label: 'parent',
@@ -733,36 +733,14 @@ void main() {
     ]);
     open();
     await tester.pumpAndSettle();
+    expect(shadowOf(tester, surfaces), 0);
+
     await tester.tap(find.text('parent'));
     await tester.pumpAndSettle();
 
     expect(surfaces, findsNWidgets(2));
-    expect(
-      shadowOf(tester, surfaces.first),
-      lessThan(shadowOf(tester, surfaces.last)),
-    );
-  });
-
-  testWidgets('a sub menu settles wider than the parent it opened from', (
-    tester,
-  ) async {
-    final open = await pumpMenu(tester, [
-      const CommonPopupMenuItem(
-        label: 'parent',
-        subItems: [CommonPopupMenuItem(label: 'child')],
-      ),
-    ]);
-    open();
-    await tester.pumpAndSettle();
-    final parentWidth = tester.getSize(surfaces).width;
-
-    await tester.tap(find.text('parent'));
-    await tester.pumpAndSettle();
-
-    expect(
-      tester.getSize(surfaces.last).width,
-      closeTo(parentWidth * 1.12, 0.01),
-    );
+    expect(shadowOf(tester, surfaces.first), 0);
+    expect(shadowOf(tester, surfaces.last), 0);
   });
 
   testWidgets('a sub menu grows out of its item instead of snapping open', (
@@ -783,7 +761,6 @@ void main() {
 
     final active = surfaces.last;
     expect(tester.getSize(active).width, parentWidth);
-    expect(shadowOf(tester, active), 0);
 
     await tester.pump(const Duration(milliseconds: 40));
     final midWidth = tester.getSize(active).width;
@@ -879,33 +856,6 @@ void main() {
         .map((surface) => surface.animationDuration)
         .toSet();
     expect(durations, {Duration.zero});
-  });
-
-  testWidgets('the parent hands its shadow over without a step', (
-    tester,
-  ) async {
-    final open = await pumpMenu(tester, [
-      const CommonPopupMenuItem(
-        label: 'parent',
-        subItems: [CommonPopupMenuItem(label: 'child')],
-      ),
-    ]);
-    open();
-    await tester.pumpAndSettle();
-    final restingShadow = shadowOf(tester, surfaces);
-
-    await tester.tap(find.text('parent'));
-    await tester.pump();
-    expect(shadowOf(tester, surfaces.first), restingShadow);
-    expect(shadowOf(tester, surfaces.last), 0);
-
-    await tester.pumpAndSettle();
-    expect(shadowOf(tester, surfaces.first), lessThan(restingShadow));
-    expect(shadowOf(tester, surfaces.last), restingShadow);
-
-    await tester.tap(find.text('parent').last);
-    await tester.pumpAndSettle();
-    expect(shadowOf(tester, surfaces), restingShadow);
   });
 
   testWidgets('a parent keeps its scroll offset while a sub menu is open', (

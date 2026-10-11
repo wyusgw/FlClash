@@ -3,7 +3,6 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/access.dart';
-import 'package:fl_clash/views/logs.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -208,42 +207,6 @@ void main() {
 
     expect(find.byType(TextField), findsNothing);
     expect(rootBackCount, 0);
-  });
-
-  testWidgets('inactive page scope exits the kept search layer', (
-    tester,
-  ) async {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-    globalState.container = container;
-    final isActive = ValueNotifier(true);
-    addTearDown(isActive.dispose);
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            ...GlobalMaterialLocalizations.delegates,
-          ],
-          supportedLocales: AppLocalizations.delegate.supportedLocales,
-          home: _PageActivityTestScope(
-            isActive: isActive,
-            child: const LogsView(),
-          ),
-        ),
-      ),
-    );
-
-    await tester.tap(find.byGlyph(AppGlyphs.search));
-    await tester.pumpAndSettle();
-    expect(find.byType(TextField), findsOneWidget);
-
-    isActive.value = false;
-    await tester.pumpAndSettle();
-
-    expect(find.byType(TextField), findsNothing);
   });
 
   testWidgets('inactive page scope exits access search layer', (tester) async {

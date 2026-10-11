@@ -8,6 +8,7 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/about.dart';
+import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -85,13 +86,11 @@ void main() {
 
     expect(find.byType(AboutView), findsOneWidget);
     expect(find.text('Telegram'), findsOneWidget);
-    final hero = find.byWidgetPredicate(
-      (widget) => widget.runtimeType.toString() == '_AboutHero',
-    );
-    expect(
-      tester.getRect(hero).top,
-      tester.getRect(find.byType(AppBar)).bottom + 12,
-    );
+    expect(find.text('Version'), findsOneWidget);
+    expect(find.text('0.0.0 (1)'), findsOneWidget);
+    expect(find.text('Star on GitHub'), findsOneWidget);
+    expect(find.text('Feedback'), findsNWidgets(2));
+    expect(find.text('URL Schemes'), findsNWidgets(2));
     expect(tester.takeException(), null);
 
     final scrollables = find.byType(Scrollable);
@@ -102,6 +101,33 @@ void main() {
       }
     }
     expect(tester.takeException(), null);
+  });
+
+  testWidgets('about view lists the credits and the URL schemes page', (
+    tester,
+  ) async {
+    final container = _containerFor(tester);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const TestApp(child: AboutView()),
+      ),
+    );
+    await tester.pump();
+    await tester.scrollUntilVisible(
+      find.text('Xray-core'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Xray-core'), findsOneWidget);
+    expect(find.text('June2'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(GroupedRow, 'URL Schemes'));
+    await tester.pumpAndSettle();
+    expect(find.byType(UrlSchemesView), findsOneWidget);
+    expect(find.text('clash://'), findsOneWidget);
+    expect(find.text('flclash://'), findsOneWidget);
   });
 
   testWidgets('about view shows progress while checking for updates', (
@@ -120,11 +146,11 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
 
     await tester.tap(find.text('Check for updates'));
     await tester.pump();
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
     await tester.tap(find.text('Check for updates'));
     await tester.pump(const Duration(milliseconds: 100));

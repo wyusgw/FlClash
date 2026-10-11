@@ -136,38 +136,12 @@ extension RecordToneExt on RecordTone {
 enum MessageLevel { info, success, warning, error }
 
 extension MessageLevelExt on MessageLevel {
-  Glyph? get glyph {
+  Glyph get glyph {
     return switch (this) {
-      MessageLevel.info => null,
-      MessageLevel.success => AppGlyphs.checkCircle,
+      MessageLevel.info => AppGlyphs.info,
+      MessageLevel.success => AppGlyphs.check,
       MessageLevel.warning => AppGlyphs.warning,
-      MessageLevel.error => AppGlyphs.error,
-    };
-  }
-
-  Color containerColor(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return switch (this) {
-      MessageLevel.error => colorScheme.errorContainer,
-      _ => colorScheme.surfaceContainerHigh,
-    };
-  }
-
-  Color contentColor(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return switch (this) {
-      MessageLevel.error => colorScheme.onErrorContainer,
-      _ => colorScheme.onSurfaceVariant,
-    };
-  }
-
-  Color iconColor(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return switch (this) {
-      MessageLevel.info => colorScheme.onSurfaceVariant,
-      MessageLevel.success => colorScheme.primary,
-      MessageLevel.warning => colorScheme.tertiary,
-      MessageLevel.error => colorScheme.onErrorContainer,
+      MessageLevel.error => AppGlyphs.close,
     };
   }
 
@@ -342,6 +316,10 @@ enum CoreStatus { connecting, connected, disconnected }
 /// How a node's latency is measured: a TCP connect to its server, or a URL
 /// request through it.
 enum DelayTestMethod { tcp, url }
+
+/// How the app shows itself in the menu bar: with a Dock icon while its
+/// window is open, as the menu bar item alone, or not at all.
+enum TrayMode { embedded, standalone, off }
 
 enum UpdatingScope { core, local }
 

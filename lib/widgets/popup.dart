@@ -40,24 +40,6 @@ const _itemArrowPadding = EdgeInsets.only(
 
 const _dividerHeight = _cardInset * 2 + 1;
 
-// Soft and wide like HyperOS menus rather than a Material elevation.
-List<BoxShadow> _cardShadows(ColorScheme colorScheme, [double depth = 1]) {
-  final strength = colorScheme.brightness == Brightness.dark ? 3.0 : 1.0;
-  final alpha = strength * depth;
-  return [
-    BoxShadow(
-      color: colorScheme.shadow.withValues(alpha: 0.05 * alpha),
-      blurRadius: 10,
-      offset: const Offset(0, 2),
-    ),
-    BoxShadow(
-      color: colorScheme.shadow.withValues(alpha: 0.04 * alpha),
-      blurRadius: 30,
-      offset: const Offset(0, 4),
-    ),
-  ];
-}
-
 const _maxContentBlur = 8.0;
 
 const _openDuration = Duration(milliseconds: 750);
@@ -288,7 +270,7 @@ class CommonPopupRoute<T> extends PopupRoute<T> {
               sourceColor: sourceColor,
               sourceImage: sourceImage,
               surfaceColor: colorScheme.surfaceContainer,
-              shadows: _cardShadows(colorScheme),
+              shadows: const [],
               child: child,
             ),
           ),
@@ -973,8 +955,6 @@ class _CommonPopupMenuState extends State<CommonPopupMenu>
   static const _levelWidthScale = 1.12;
   static const _levelScaleStep = 0.05;
   static const _levelFadeStep = 0.2;
-  static const _levelShadowStep = 1 / 3;
-  static const _minShadow = 1 / 6;
   static final _arrowTween = Tween(begin: 0.0, end: 0.25);
 
   late final AnimationController _controller = AnimationController(
@@ -1255,9 +1235,6 @@ class _CommonPopupMenuState extends State<CommonPopupMenu>
               final frame = receding ? 1.0 : _frame.value;
               final distance = receding ? depth - 1 + _frame.value : 0.0;
               final scale = math.max(0.0, 1 - _levelScaleStep * distance);
-              final shadow = receding
-                  ? math.max(_minShadow, 1 - distance * _levelShadowStep)
-                  : frame;
               return Transform(
                 transform: Matrix4.diagonal3Values(scale, scale, 1),
                 alignment: Alignment.topRight,
@@ -1273,7 +1250,7 @@ class _CommonPopupMenuState extends State<CommonPopupMenu>
                   child: DecoratedBox(
                     decoration: ShapeDecoration(
                       shape: shape,
-                      shadows: _cardShadows(colorScheme, shadow),
+                      shadows: const [],
                     ),
                     child: Material(
                       type: MaterialType.card,

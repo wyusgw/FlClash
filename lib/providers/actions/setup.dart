@@ -150,6 +150,9 @@ class SetupAction extends _$SetupAction {
       previousStartTime: _startTime,
     );
     _latestRunRequest = request;
+    if (!running) {
+      unawaited(ref.read(commonActionProvider.notifier).archiveSession());
+    }
     _setLocalRunning(running);
     if (request.initialize) {
       globalState.needInitStatus = false;
@@ -199,6 +202,7 @@ class SetupAction extends _$SetupAction {
     resetCoreTraffic();
     ref.read(trafficsProvider.notifier).clear();
     ref.read(totalTrafficProvider.notifier).value = const Traffic();
+    ref.read(statsSnapshotProvider.notifier).value = const TrafficStats();
     return true;
   }
 

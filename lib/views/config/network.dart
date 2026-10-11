@@ -61,7 +61,7 @@ ConfigToggleItem _networkToggle({
   );
 }
 
-class VPNItem extends ConsumerWidget {
+class VPNItem extends ConsumerWidget with GroupedPlainInset {
   const VPNItem({super.key});
 
   @override
@@ -75,7 +75,7 @@ class VPNItem extends ConsumerWidget {
   }
 }
 
-class TUNItem extends ConsumerWidget {
+class TUNItem extends ConsumerWidget with GroupedPlainInset {
   const TUNItem({super.key});
 
   @override
@@ -91,7 +91,7 @@ class TUNItem extends ConsumerWidget {
   }
 }
 
-class AllowBypassItem extends ConsumerWidget {
+class AllowBypassItem extends ConsumerWidget with GroupedPlainInset {
   const AllowBypassItem({super.key});
 
   @override
@@ -104,7 +104,7 @@ class AllowBypassItem extends ConsumerWidget {
   }
 }
 
-class VpnSystemProxyItem extends ConsumerWidget {
+class VpnSystemProxyItem extends ConsumerWidget with GroupedPlainInset {
   const VpnSystemProxyItem({super.key});
 
   @override
@@ -123,7 +123,7 @@ class VpnSystemProxyItem extends ConsumerWidget {
   }
 }
 
-class SystemProxyItem extends ConsumerWidget {
+class SystemProxyItem extends ConsumerWidget with GroupedPlainInset {
   const SystemProxyItem({super.key});
 
   @override
@@ -136,7 +136,7 @@ class SystemProxyItem extends ConsumerWidget {
   }
 }
 
-class Ipv6Item extends ConsumerWidget {
+class Ipv6Item extends ConsumerWidget with GroupedPlainInset {
   const Ipv6Item({super.key});
 
   @override
@@ -150,7 +150,7 @@ class Ipv6Item extends ConsumerWidget {
   }
 }
 
-class AutoSetSystemDnsItem extends ConsumerWidget {
+class AutoSetSystemDnsItem extends ConsumerWidget with GroupedPlainInset {
   const AutoSetSystemDnsItem({super.key});
 
   @override
@@ -163,7 +163,7 @@ class AutoSetSystemDnsItem extends ConsumerWidget {
   }
 }
 
-class DNSHijackingItem extends ConsumerWidget {
+class DNSHijackingItem extends ConsumerWidget with GroupedPlainInset {
   const DNSHijackingItem({super.key});
 
   @override
@@ -176,7 +176,7 @@ class DNSHijackingItem extends ConsumerWidget {
   }
 }
 
-class RouteModeItem extends ConsumerWidget {
+class RouteModeItem extends ConsumerWidget with GroupedPlainInset {
   const RouteModeItem({super.key});
 
   @override
@@ -193,7 +193,7 @@ class RouteModeItem extends ConsumerWidget {
   }
 }
 
-class BypassDomainItem extends ConsumerWidget {
+class BypassDomainItem extends ConsumerWidget with GroupedPlainInset {
   const BypassDomainItem({super.key});
 
   @override
@@ -210,7 +210,7 @@ class BypassDomainItem extends ConsumerWidget {
   }
 }
 
-class RouteAddressItem extends ConsumerWidget {
+class RouteAddressItem extends ConsumerWidget with GroupedPlainInset {
   const RouteAddressItem({super.key});
 
   @override
@@ -226,13 +226,13 @@ class RouteAddressItem extends ConsumerWidget {
   }
 }
 
-class LoopbackItem extends StatelessWidget {
+class LoopbackItem extends StatelessWidget with GroupedPlainInset {
   const LoopbackItem({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ListItem(
-      title: Text(context.appLocalizations.loopback),
+    return GroupedRow(
+      title: context.appLocalizations.loopback,
       onTap: () {
         windows?.runas(
           '"${join(dirname(Platform.resolvedExecutable), "EnableLoopback.exe")}"',
@@ -258,6 +258,13 @@ List<Widget> networkOptionsItems({
   ];
 }
 
+Widget _section(String? header, List<Widget> children) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: groupedSectionGap),
+    child: GroupedSection(header: header, children: children),
+  );
+}
+
 class VpnSections extends StatelessWidget {
   const VpnSections({super.key});
 
@@ -265,17 +272,14 @@ class VpnSections extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        generateSectionV3(items: const [VPNItem()]),
-        generateSectionV3(
-          title: 'VPN',
-          items: const [
-            VpnSystemProxyItem(),
-            BypassDomainItem(),
-            AllowBypassItem(),
-            Ipv6Item(),
-            DNSHijackingItem(),
-          ],
-        ),
+        _section(null, const [VPNItem()]),
+        _section('VPN', const [
+          VpnSystemProxyItem(),
+          BypassDomainItem(),
+          AllowBypassItem(),
+          Ipv6Item(),
+          DNSHijackingItem(),
+        ]),
       ],
     );
   }
@@ -286,14 +290,11 @@ class SystemProxySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return generateSectionV3(
-      title: context.appLocalizations.system,
-      items: [
-        const SystemProxyItem(),
-        const BypassDomainItem(),
-        if (system.isWindows) const LoopbackItem(),
-      ],
-    );
+    return _section(context.appLocalizations.system, [
+      const SystemProxyItem(),
+      const BypassDomainItem(),
+      if (system.isWindows) const LoopbackItem(),
+    ]);
   }
 }
 
@@ -307,9 +308,9 @@ class NetworkOptionsSection extends ConsumerWidget {
         (state) => state.routeMode == RouteMode.bypassPrivate,
       ),
     );
-    return generateSectionV3(
-      title: context.appLocalizations.options,
-      items: networkOptionsItems(
+    return _section(
+      context.appLocalizations.options,
+      networkOptionsItems(
         isDesktop: system.isDesktop,
         isMacOS: system.isMacOS,
         isBypassPrivateRoute: isBypassPrivateRoute,
@@ -323,10 +324,7 @@ class NetworkListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-      ).copyWith(top: context.contentTopPadding, bottom: 16),
+    return GroupedBody(
       children: [
         if (system.isAndroid) const VpnSections(),
         if (system.isDesktop) const SystemProxySection(),

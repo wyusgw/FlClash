@@ -6,7 +6,9 @@ import 'dart:ui' show Locale;
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/providers/config.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:wifi_ssid/wifi_ssid.dart';
 
@@ -94,6 +96,22 @@ class TotalTraffic extends _$TotalTraffic with AutoDisposeNotifierMixin {
 }
 
 @Riverpod(keepAlive: true)
+class StatsSnapshot extends _$StatsSnapshot with AutoDisposeNotifierMixin {
+  @override
+  TrafficStats build() {
+    return const TrafficStats();
+  }
+}
+
+@Riverpod(keepAlive: true)
+class StatsRecords extends _$StatsRecords with AutoDisposeNotifierMixin {
+  @override
+  List<StatsRecord> build() {
+    return const [];
+  }
+}
+
+@Riverpod(keepAlive: true)
 class LoadedLocale extends _$LoadedLocale with AutoDisposeNotifierMixin {
   @override
   Locale? build() {
@@ -159,6 +177,12 @@ double viewWidth(Ref ref) {
 
 @Riverpod(keepAlive: true)
 ViewMode viewMode(Ref ref) {
+  final showSidebar = ref.watch(
+    appSettingProvider.select((state) => state.showSidebar),
+  );
+  if (!showSidebar && system.isDesktop) {
+    return ViewMode.mobile;
+  }
   return getViewMode(ref.watch(viewWidthProvider));
 }
 

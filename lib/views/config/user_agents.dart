@@ -1,13 +1,10 @@
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-const _defaultValue = '';
 
 List<String> _visibleUserAgents(List<String> saved, String? selected) =>
     {...saved, ?selected}.toList();
@@ -100,38 +97,45 @@ class _UserAgentsViewState extends ConsumerState<UserAgentsView> {
     }
   }
 
-  Widget _buildRadioGroup(String? selected, Widget child) {
-    return RadioGroup<String>(
-      groupValue: selected ?? _defaultValue,
-      onChanged: (value) {
-        if (value == null) {
-          return;
-        }
-        _select(value == _defaultValue ? null : value);
-      },
-      child: child,
+  Widget _buildRow({
+    required int index,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onSelected,
+    Widget? menu,
+  }) {
+    final palette = GroupedPalette.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (index > 0) const GroupedHairline(inset: groupedRowPadding + 1),
+        GroupedRow(
+          title: label,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 8,
+            children: [
+              if (isSelected)
+                GlyphIcon(AppGlyphs.check, size: 18, color: palette.icon),
+              ?menu,
+            ],
+          ),
+          onTap: onSelected,
+        ),
+      ],
     );
   }
 
   Widget _buildItem(List<String> entries, int index, String? selected) {
     final userAgent = entries[index];
-    return ItemPositionProvider(
-      position: ItemPosition.get(index + 1, entries.length + 1),
-      child: _UserAgentItem(
-        value: userAgent,
-        label: userAgent,
-        isSelected: userAgent == selected,
-        onSelected: () {
-          _select(userAgent);
-        },
-        trailing: _UserAgentItemMenu(
-          onEdit: () {
-            _handleEdit(userAgent);
-          },
-          onDelete: () {
-            _handleDelete(userAgent);
-          },
-        ),
+    return _buildRow(
+      index: index + 1,
+      label: userAgent,
+      isSelected: userAgent == selected,
+      onSelected: () => _select(userAgent),
+      menu: _UserAgentItemMenu(
+        onEdit: () => _handleEdit(userAgent),
+        onDelete: () => _handleDelete(userAgent),
       ),
     );
   }
@@ -146,95 +150,46 @@ class _UserAgentsViewState extends ConsumerState<UserAgentsView> {
       appSettingProvider.select((state) => state.globalUa),
     );
     final entries = _visibleUserAgents(userAgents, selected);
-    return BaseScaffold(
+    return GroupedPage(
       title: appLocalizations.userAgent,
-      actions: [
-        FilledButton.tonal(
-          onPressed: _handleAdd,
-          child: Text(appLocalizations.add),
-        ),
-      ],
-      body: _buildRadioGroup(
-        selected,
-        ReorderableListView.builder(
-          padding: const EdgeInsets.all(
-            16,
-          ).copyWith(top: context.contentTopPadding),
-          buildDefaultDragHandles: false,
-          header: ItemPositionProvider(
-            position: ItemPosition.get(0, entries.length + 1),
-            child: _UserAgentItem(
-              value: _defaultValue,
-              label: appLocalizations.defaultText,
-              isSelected: selected == null,
-              onSelected: () {
-                _select(null);
+      onBack: () => Navigator.of(context).maybePop(),
+      trailing: GroupedBarAction(
+        label: appLocalizations.add,
+        tooltip: appLocalizations.add,
+        onPressed: _handleAdd,
+      ),
+      body: GroupedBody(
+        children: [
+          GroupedCard(
+            child: ReorderableListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              buildDefaultDragHandles: false,
+              header: _buildRow(
+                index: 0,
+                label: appLocalizations.defaultText,
+                isSelected: selected == null,
+                onSelected: () => _select(null),
+              ),
+              itemCount: entries.length,
+              itemBuilder: (_, index) {
+                return ReorderableDelayedDragStartListener(
+                  key: ValueKey(entries[index]),
+                  index: index,
+                  child: _buildItem(entries, index, selected),
+                );
+              },
+              proxyDecorator: (_, index, animation) => Material(
+                type: MaterialType.transparency,
+                child: _buildItem(entries, index, selected),
+              ),
+              onReorderItem: (oldIndex, newIndex) {
+                _save(entries.copyAndReorder(oldIndex, newIndex));
               },
             ),
           ),
-          itemCount: entries.length,
-          itemBuilder: (_, index) {
-            return ReorderableDelayedDragStartListener(
-              key: ValueKey(entries[index]),
-              index: index,
-              child: _buildItem(entries, index, selected),
-            );
-          },
-          // The drag proxy is built in the navigator overlay, outside the
-          // page's RadioGroup.
-          proxyDecorator: (_, index, animation) {
-            return commonProxyDecorator(
-              _buildRadioGroup(selected, _buildItem(entries, index, selected)),
-              index,
-              animation,
-            );
-          },
-          onReorderItem: (oldIndex, newIndex) {
-            _save(entries.copyAndReorder(oldIndex, newIndex));
-          },
-        ),
+        ],
       ),
-    );
-  }
-}
-
-class _UserAgentItem extends StatelessWidget {
-  const _UserAgentItem({
-    required this.value,
-    required this.label,
-    required this.isSelected,
-    required this.onSelected,
-    this.trailing,
-  });
-
-  final String value;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onSelected;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecorationListItem(
-      isSelected: isSelected,
-      horizontalTitleGap: 8,
-      contentPadding: EdgeInsets.only(
-        left: 14,
-        right: trailing == null ? 16 : 6,
-      ),
-      leading: SizedBox.square(
-        dimension: 24,
-        child: ExcludeFocus(
-          child: Radio<String>(
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            visualDensity: VisualDensity.compact,
-            value: value,
-          ),
-        ),
-      ),
-      title: Text(label, maxLines: 2, overflow: TextOverflow.ellipsis),
-      trailing: trailing,
-      onPressed: onSelected,
     );
   }
 }
@@ -248,6 +203,7 @@ class _UserAgentItemMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
+    final palette = GroupedPalette.of(context);
     return CommonPopupBox(
       popupBuilder: (_) => CommonPopupMenu(
         items: [
@@ -265,16 +221,13 @@ class _UserAgentItemMenu extends StatelessWidget {
         ],
       ),
       targetBuilder: (open) {
-        return IconButton(
-          style: IconButton.styleFrom(
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            visualDensity: VisualDensity.standard,
+        return Tooltip(
+          message: appLocalizations.more,
+          child: InkResponse(
+            onTap: open,
+            radius: 16,
+            child: GlyphIcon(AppGlyphs.more, size: 19, color: palette.icon),
           ),
-          tooltip: appLocalizations.more,
-          onPressed: () {
-            open();
-          },
-          icon: const GlyphIcon(AppGlyphs.more),
         );
       },
     );

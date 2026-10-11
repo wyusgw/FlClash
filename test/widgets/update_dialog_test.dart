@@ -2,6 +2,7 @@ import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/widgets/dialog.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -59,7 +60,14 @@ Future<ProviderContainer> pumpApp(WidgetTester tester, {Locale? locale}) async {
 /// The dialog blocks until the user answers, so tests must close it before
 /// awaiting the call that opened it.
 Future<void> tapCancel(WidgetTester tester) async {
-  await tester.tap(find.byType(TextButton).first);
+  await tester.tap(
+    find
+        .descendant(
+          of: find.byType(ConfirmDialog),
+          matching: find.byType(InkWell),
+        )
+        .first,
+  );
   await tester.pumpAndSettle();
 }
 

@@ -7,6 +7,7 @@ import 'package:fl_clash/views/backup_and_restore.dart';
 import 'package:fl_clash/views/logs.dart';
 import 'package:fl_clash/views/profiles/add.dart';
 import 'package:fl_clash/views/profiles/profiles.dart';
+import 'package:fl_clash/views/stats.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -56,16 +57,25 @@ class DataView extends ConsumerWidget {
         ),
         children: [
           GroupedSection(
+            children: [
+              GroupedRow(
+                leading: const GroupedIcon(AppGlyphs.dataUsage),
+                title: appLocalizations.statistics,
+                chevron: true,
+                onTap: () => BaseNavigator.push(context, const StatsView()),
+              ),
+            ],
+          ),
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
             footer: appLocalizations.backupAndRestoreDesc,
             children: [
               GroupedRow(
                 leading: const GroupedIcon(AppGlyphs.cloudSync),
                 title: appLocalizations.backupAndRestore,
                 chevron: true,
-                onTap: () => showExtend(
-                  context,
-                  builder: (_) => const BackupAndRestore(),
-                ),
+                onTap: () =>
+                    BaseNavigator.push(context, const BackupAndRestore()),
               ),
             ],
           ),

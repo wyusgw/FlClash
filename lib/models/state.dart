@@ -103,6 +103,7 @@ abstract class TrayState with _$TrayState {
     required Map<String, String> selectedMap,
     required bool showTrayTitle,
     required bool safeMode,
+    @Default(TrayMode.embedded) TrayMode trayMode,
     @Default({}) Map<HotAction, HotKeyAction> hotKeys,
   }) = _TrayState;
 }

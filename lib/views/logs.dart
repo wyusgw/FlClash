@@ -52,6 +52,7 @@ class LogsView extends ConsumerStatefulWidget {
 class _LogsViewState extends ConsumerState<LogsView>
     with RouteMotionHoldMixin<LogsView> {
   final _listController = LogListController();
+  final _searchController = TextEditingController();
   late final ScrollController _scrollController;
 
   @override
@@ -64,19 +65,10 @@ class _LogsViewState extends ConsumerState<LogsView>
     });
   }
 
-  List<IconButtonData> _buildActions() {
-    return [
-      IconButtonData(
-        glyph: AppGlyphs.export,
-        tooltip: context.appLocalizations.exportLogs,
-        onPressed: _handleExport,
-      ),
-    ];
-  }
-
   @override
   void dispose() {
     _listController.dispose();
+    _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -87,12 +79,25 @@ class _LogsViewState extends ConsumerState<LogsView>
       return ref.read(logsProvider.notifier).exportLogs();
     }, title: appLocalizations.exportLogs);
     if (res != true) return;
-    unawaited(
-      dialogs.showMessage(
-        title: appLocalizations.tip,
-        message: TextSpan(text: appLocalizations.exportSuccess),
-      ),
+    dialogs.showNotifier(
+      appLocalizations.exportSuccess,
+      level: MessageLevel.success,
     );
+  }
+
+  void _addKeyword(String keyword) {
+    final keywords = _listController.value.keywords;
+    if (keywords.contains(keyword)) {
+      return;
+    }
+    _listController.updateKeywords([...keywords, keyword]);
+  }
+
+  void _removeKeyword(String keyword) {
+    _listController.updateKeywords([
+      for (final item in _listController.value.keywords)
+        if (item != keyword) item,
+    ]);
   }
 
   void updateLogsThrottler() {
@@ -109,68 +114,145 @@ class _LogsViewState extends ConsumerState<LogsView>
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    return CommonScaffold(
-      iconActions: _buildActions(),
-      onKeywordsUpdate: _listController.updateKeywords,
-      searchState: AppBarSearchState(onSearch: _listController.search),
+    return GroupedPage(
       title: appLocalizations.logs,
+      onBack: () => Navigator.of(context).maybePop(),
+      trailing: GroupedBarAction(
+        glyph: AppGlyphs.export,
+        tooltip: appLocalizations.exportLogs,
+        onPressed: _handleExport,
+      ),
       body: ValueListenableBuilder<LogsState>(
         valueListenable: _listController,
         builder: (context, state, _) {
           final logs = state.list;
-          return NullStatusSwitcher(
-            isEmpty: logs.isEmpty,
-            isSearching: state.isSearching,
-            nullStatus: NullStatus(
-              illustration: NullStatusIllustration.logs,
-              label: appLocalizations.nullTip(appLocalizations.logs),
-            ),
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: FloatingScrollbar(
-                controller: _scrollController,
-                hintBuilder: (fraction) {
-                  final index = (fraction * (logs.length - 1)).round();
-                  return logs[index].dateTime;
-                },
-                child: ScrollToEndBox(
-                  onCancelToEnd: () {
-                    _listController.setAutoScrollToEnd(false);
-                  },
-                  onResumeToEnd: () {
-                    _listController.resumeAutoScrollToEnd(
-                      ref.read(logsProvider).list,
-                    );
-                  },
-                  controller: _scrollController,
-                  enable: state.autoScrollToEnd,
-                  dataSource: logs,
-                  child: SuperListView.separated(
-                    physics: const NextClampingScrollPhysics(),
-                    reverse: true,
-                    shrinkWrap: true,
-                    controller: _scrollController,
-                    padding: EdgeInsets.only(
-                      top: context.appBarInset,
-                      bottom: 16 + BottomInsetScope.of(context),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  groupedPageInset,
+                  13,
+                  groupedPageInset,
+                  10,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: 8,
+                  children: [
+                    GroupedSearchField(
+                      controller: _searchController,
+                      hint: appLocalizations.search,
+                      clearTooltip: appLocalizations.clearSearch,
+                      onChanged: _listController.search,
                     ),
-                    itemCount: logs.length,
-                    separatorBuilder: (_, _) => const Divider(height: 0),
-                    itemBuilder: (_, index) {
-                      final log = logs[index];
-                      return LogItem(
-                        log: log,
-                        onClick: (value) {
-                          context.commonScaffoldState?.addKeyword(value);
-                        },
-                      );
-                    },
+                    if (state.keywords.isNotEmpty)
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          for (final keyword in state.keywords)
+                            _KeywordChip(
+                              label: keyword,
+                              onDeleted: () => _removeKeyword(keyword),
+                            ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: NullStatusSwitcher(
+                  isEmpty: logs.isEmpty,
+                  isSearching: state.isSearching,
+                  nullStatus: NullStatus(
+                    illustration: NullStatusIllustration.logs,
+                    label: appLocalizations.nullTip(appLocalizations.logs),
+                  ),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        groupedPageInset,
+                        0,
+                        groupedPageInset,
+                        20 + BottomInsetScope.of(context),
+                      ),
+                      child: GroupedCard(
+                        child: FloatingScrollbar(
+                          controller: _scrollController,
+                          hintBuilder: (fraction) {
+                            final index = (fraction * (logs.length - 1))
+                                .round();
+                            return logs[index].dateTime;
+                          },
+                          child: ScrollToEndBox(
+                            onCancelToEnd: () {
+                              _listController.setAutoScrollToEnd(false);
+                            },
+                            onResumeToEnd: () {
+                              _listController.resumeAutoScrollToEnd(
+                                ref.read(logsProvider).list,
+                              );
+                            },
+                            controller: _scrollController,
+                            enable: state.autoScrollToEnd,
+                            dataSource: logs,
+                            child: SuperListView.separated(
+                              physics: const NextClampingScrollPhysics(),
+                              reverse: true,
+                              shrinkWrap: true,
+                              controller: _scrollController,
+                              itemCount: logs.length,
+                              separatorBuilder: (_, _) =>
+                                  const GroupedHairline(inset: 0),
+                              itemBuilder: (_, index) {
+                                return LogItem(
+                                  log: logs[index],
+                                  onClick: _addKeyword,
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _KeywordChip extends StatelessWidget {
+  const _KeywordChip({required this.label, required this.onDeleted});
+
+  final String label;
+  final VoidCallback onDeleted;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    return InkWell(
+      onTap: onDeleted,
+      customBorder: AppShape.full,
+      child: DecoratedBox(
+        decoration: ShapeDecoration(color: palette.fill, shape: AppShape.full),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 4, 6, 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 4,
+            children: [
+              Text(label, style: palette.rowValue),
+              GlyphIcon(AppGlyphs.close, size: 13, color: palette.secondary),
+            ],
+          ),
+        ),
       ),
     );
   }

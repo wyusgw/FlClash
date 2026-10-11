@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -23,17 +24,12 @@ class ToolsView extends ConsumerWidget {
     required Glyph glyph,
     required String title,
     required Widget page,
-    bool full = false,
   }) {
     return GroupedRow(
       leading: GroupedIcon(glyph),
       title: title,
       chevron: true,
-      onTap: () => showExtend(
-        context,
-        props: ExtendProps(forceFull: full),
-        builder: (_) => page,
-      ),
+      onTap: () => BaseNavigator.push(context, page),
     );
   }
 
@@ -46,6 +42,8 @@ class ToolsView extends ConsumerWidget {
           locale: state.locale,
           developerMode: state.developerMode,
           delayTestMethod: state.delayTestMethod,
+          trayMode: state.trayMode,
+          showSidebar: state.showSidebar,
         ),
       ),
     );
@@ -92,6 +90,24 @@ class ToolsView extends ConsumerWidget {
                 title: appLocalizations.theme,
                 page: const ThemeView(),
               ),
+              if (system.isMacOS)
+                GroupedRow(
+                  leading: const GroupedIcon(AppGlyphs.layoutTabs),
+                  title: appLocalizations.menuBar,
+                  value: _trayModeLabel(appLocalizations, appSetting.trayMode),
+                  chevron: true,
+                  onTap: () => BaseNavigator.push(context, const MenuBarView()),
+                ),
+              if (system.isDesktop)
+                GroupedRow(
+                  leading: const GroupedIcon(AppGlyphs.columnsTwo),
+                  title: appLocalizations.sidebar,
+                  value: appSetting.showSidebar
+                      ? appLocalizations.on
+                      : appLocalizations.off,
+                  chevron: true,
+                  onTap: () => BaseNavigator.push(context, const SidebarView()),
+                ),
               if (system.isDesktop)
                 _open(
                   context,
@@ -125,11 +141,17 @@ class ToolsView extends ConsumerWidget {
                   title: appLocalizations.developerMode,
                   page: const DeveloperView(),
                 ),
-              _open(
-                context,
-                glyph: AppGlyphs.info,
+              GroupedRow(
+                leading: const GroupedIcon(AppGlyphs.reset),
+                title: appLocalizations.reset,
+                chevron: true,
+                onTap: () => BaseNavigator.push(context, const ResetView()),
+              ),
+              GroupedRow(
+                leading: const GroupedIcon(AppGlyphs.info),
                 title: appLocalizations.about,
-                page: const AboutView(),
+                chevron: true,
+                onTap: () => BaseNavigator.push(context, const AboutView()),
               ),
             ],
           ),
@@ -180,6 +202,120 @@ class LanguageView extends ConsumerWidget {
               row(null),
               for (final locale in AppLocalizations.delegate.supportedLocales)
                 row(locale),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _trayModeLabel(AppLocalizations appLocalizations, TrayMode mode) {
+  return switch (mode) {
+    TrayMode.embedded => appLocalizations.menuBarEmbedded,
+    TrayMode.standalone => appLocalizations.menuBarStandalone,
+    TrayMode.off => appLocalizations.off,
+  };
+}
+
+/// How the app shows itself in the menu bar.
+class MenuBarView extends ConsumerWidget {
+  const MenuBarView({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    return GroupedChoicePage<TrayMode>(
+      title: appLocalizations.menuBar,
+      choices: {
+        for (final mode in TrayMode.values)
+          mode: _trayModeLabel(appLocalizations, mode),
+      },
+      selected: ref.watch(appSettingProvider.select((state) => state.trayMode)),
+      onSelected: (mode) => ref
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(trayMode: mode)),
+    );
+  }
+}
+
+/// Whether the window keeps its sidebar; without it the pages are reached
+/// from the bar at the bottom, as in a narrow window.
+class SidebarView extends ConsumerWidget {
+  const SidebarView({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    return GroupedChoicePage<bool>(
+      title: appLocalizations.sidebar,
+      choices: {true: appLocalizations.on, false: appLocalizations.off},
+      selected: ref.watch(
+        appSettingProvider.select((state) => state.showSidebar),
+      ),
+      onSelected: (show) => ref
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(showSidebar: show)),
+    );
+  }
+}
+
+/// The two ways back to a clean start: the core settings alone, or everything
+/// the app has saved.
+class ResetView extends ConsumerWidget {
+  const ResetView({super.key});
+
+  Future<bool> _confirm(BuildContext context) async {
+    final appLocalizations = context.appLocalizations;
+    final res = await dialogs.showMessage(
+      title: appLocalizations.confirm,
+      message: TextSpan(text: appLocalizations.resetTip),
+      confirmText: appLocalizations.reset,
+    );
+    return res == true;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    return GroupedPage(
+      title: appLocalizations.reset,
+      onBack: () => Navigator.of(context).maybePop(),
+      body: GroupedBody(
+        children: [
+          GroupedSection(
+            footer: appLocalizations.resetCoreSettingsDesc,
+            children: [
+              GroupedRow(
+                title: appLocalizations.resetCoreSettings,
+                chevron: true,
+                onTap: () async {
+                  if (!await _confirm(context)) {
+                    return;
+                  }
+                  ref.read(storeActionProvider.notifier).resetCoreSettings();
+                  dialogs.showNotifier(
+                    appLocalizations.resetSuccess,
+                    level: MessageLevel.success,
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
+            footer: appLocalizations.resetUserSettingsDesc,
+            children: [
+              GroupedRow(
+                title: appLocalizations.resetUserSettings,
+                chevron: true,
+                onTap: () async {
+                  if (!await _confirm(context)) {
+                    return;
+                  }
+                  await ref.read(storeActionProvider.notifier).handleClear();
+                },
+              ),
             ],
           ),
         ],

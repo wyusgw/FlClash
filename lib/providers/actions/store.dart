@@ -17,6 +17,15 @@ class StoreAction extends _$StoreAction {
     });
   }
 
+  /// Puts the core, network and VPN settings back to their defaults and has
+  /// the profile in use rebuilt from them.
+  void resetCoreSettings() {
+    ref.read(coreSettingProvider.notifier).value = defaultCoreConfig;
+    ref.read(networkSettingProvider.notifier).value = defaultNetworkProps;
+    ref.read(vpnSettingProvider.notifier).value = defaultVpnProps;
+    ref.read(setupActionProvider.notifier).applyProfileDebounce(force: true);
+  }
+
   Future handleClear() async {
     debouncer.cancel(FunctionTag.savePreferences);
 

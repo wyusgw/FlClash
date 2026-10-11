@@ -28,7 +28,7 @@ class LogLevelItem extends ConsumerWidget {
   }
 }
 
-class UaItem extends ConsumerWidget {
+class UaItem extends ConsumerWidget with GroupedPlainInset {
   const UaItem({super.key});
 
   @override
@@ -37,15 +37,16 @@ class UaItem extends ConsumerWidget {
     final globalUa = ref.watch(
       appSettingProvider.select((state) => state.globalUa),
     );
-    return ListItem.open(
-      title: Text(appLocalizations.userAgent),
-      subtitle: Text(globalUa ?? appLocalizations.defaultText),
-      widget: const UserAgentsView(),
+    return GroupedRow(
+      title: appLocalizations.userAgent,
+      value: globalUa ?? appLocalizations.defaultText,
+      chevron: true,
+      onTap: () => BaseNavigator.push(context, const UserAgentsView()),
     );
   }
 }
 
-class TestUrlItem extends ConsumerWidget {
+class TestUrlItem extends ConsumerWidget with GroupedPlainInset {
   const TestUrlItem({super.key});
 
   @override
@@ -54,23 +55,27 @@ class TestUrlItem extends ConsumerWidget {
     final testUrl = ref.watch(
       appSettingProvider.select((state) => state.testUrl),
     );
-    return ListItem.input(
-      title: Text(appLocalizations.testUrl),
-      subtitle: Text(testUrl),
-      resetValue: defaultTestUrl,
-      dialogTitle: appLocalizations.testUrl,
-      value: testUrl,
-      maxLength: TextInputLimits.url,
-      validator: (String? value) {
-        if (value == null || value.isEmpty) {
-          return appLocalizations.emptyTip(appLocalizations.testUrl);
-        }
-        if (!value.isUrl) {
-          return appLocalizations.urlTip(appLocalizations.testUrl);
-        }
-        return null;
-      },
-      onChanged: (String? value) {
+    return GroupedRow(
+      title: appLocalizations.testUrl,
+      subtitle: testUrl,
+      onTap: () async {
+        final value = await dialogs.showCommonDialog<String>(
+          child: InputDialog(
+            title: appLocalizations.testUrl,
+            value: testUrl,
+            resetValue: defaultTestUrl,
+            inputFormatters: TextInputLimits.limit(TextInputLimits.url),
+            validator: (String? value) {
+              if (value == null || value.isEmpty) {
+                return appLocalizations.emptyTip(appLocalizations.testUrl);
+              }
+              if (!value.isUrl) {
+                return appLocalizations.urlTip(appLocalizations.testUrl);
+              }
+              return null;
+            },
+          ),
+        );
         if (value == null) {
           return;
         }
@@ -82,7 +87,7 @@ class TestUrlItem extends ConsumerWidget {
   }
 }
 
-class PortItem extends ConsumerWidget {
+class PortItem extends ConsumerWidget with GroupedPlainInset {
   const PortItem({super.key});
 
   Future<void> handleShowPortDialog() async {
@@ -95,12 +100,10 @@ class PortItem extends ConsumerWidget {
     final mixedPort = ref.watch(
       coreSettingProvider.select((state) => state.mixedPort),
     );
-    return ListItem(
-      title: Text(appLocalizations.port),
-      subtitle: Text('$mixedPort'),
-      onTap: () {
-        handleShowPortDialog();
-      },
+    return GroupedRow(
+      title: appLocalizations.port,
+      value: '$mixedPort',
+      onTap: handleShowPortDialog,
     );
   }
 }
@@ -206,7 +209,10 @@ ConfigToggleItem _appSettingToggle({
 class GeneralView extends ConsumerWidget {
   const GeneralView({super.key});
 
-  List<Widget> _startupItems(AppLocalizations appLocalizations) {
+  List<Widget> _startupItems(
+    BuildContext context,
+    AppLocalizations appLocalizations,
+  ) {
     return [
       if (system.isDesktop) ...[
         _appSettingToggle(
@@ -228,10 +234,11 @@ class GeneralView extends ConsumerWidget {
         select: (state) => state.autoRun,
         update: (state, value) => state.copyWith(autoRun: value),
       ),
-      ListItem.open(
-        title: Text(appLocalizations.onDemand),
-        subtitle: Text(appLocalizations.onDemandDesc),
-        widget: const OnDemandView(),
+      GroupedRow(
+        title: appLocalizations.onDemand,
+        subtitle: appLocalizations.onDemandDesc,
+        chevron: true,
+        onTap: () => BaseNavigator.push(context, const OnDemandView()),
       ),
       _appSettingToggle(
         title: (l) => l.minimizeOnExit,
@@ -335,34 +342,27 @@ class GeneralView extends ConsumerWidget {
     final authentication = ref.watch(
       networkSettingProvider.select((state) => state.authentication.enable),
     );
-    return BaseScaffold(
+    Widget section(String header, List<Widget> children) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: groupedSectionGap),
+        child: GroupedSection(header: header, children: children),
+      );
+    }
+
+    return GroupedPage(
       title: appLocalizations.general,
-      body: ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-        ).copyWith(top: context.appBarInset, bottom: 16),
+      onBack: () => Navigator.of(context).maybePop(),
+      body: GroupedBody(
         children: [
-          generateSectionV3(
-            title: appLocalizations.startupAndBackground,
-            items: _startupItems(appLocalizations),
+          section(
+            appLocalizations.startupAndBackground,
+            _startupItems(context, appLocalizations),
           ),
-          generateSectionV3(
-            title: appLocalizations.requestsAndUpdates,
-            items: _requestItems(),
-          ),
-          generateSectionV3(
-            title: appLocalizations.inbound,
-            items: _inboundItems(authentication),
-          ),
-          generateSectionV3(
-            title: appLocalizations.connection,
-            items: _connectionItems(),
-          ),
-          generateSectionV3(title: appLocalizations.core, items: _coreItems()),
-          generateSectionV3(
-            title: appLocalizations.logsAndDiagnostics,
-            items: _logItems(),
-          ),
+          section(appLocalizations.requestsAndUpdates, _requestItems()),
+          section(appLocalizations.inbound, _inboundItems(authentication)),
+          section(appLocalizations.connection, _connectionItems()),
+          section(appLocalizations.core, _coreItems()),
+          section(appLocalizations.logsAndDiagnostics, _logItems()),
         ],
       ),
     );

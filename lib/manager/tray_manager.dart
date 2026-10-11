@@ -7,6 +7,7 @@ import 'package:fl_clash/common/window.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
+import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/state.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,6 +36,12 @@ class _TrayManagerState extends ConsumerState<TrayManager> {
         _requestUpdate();
       }
     });
+    ref.listenManual(
+      appSettingProvider.select((state) => state.trayMode),
+      (_, mode) =>
+          _reportFailure(window?.setStandalone(mode == TrayMode.standalone)),
+      fireImmediately: true,
+    );
     ref.listenManual(loadedLocaleProvider, (prev, next) {
       if (prev != null && prev != next) {
         _requestUpdate();

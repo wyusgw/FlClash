@@ -21,7 +21,7 @@ class AppTray implements TrayPort {
   final bool isWindows;
 
   bool _isShutDown = false;
-
+  bool _isHidden = false;
   AppTray._internal({required this.isMacOS, required this.isWindows});
 
   factory AppTray() {
@@ -80,6 +80,11 @@ class AppTray implements TrayPort {
     if (_isShutDown) {
       return;
     }
+    _isHidden = trayState.trayMode == TrayMode.off;
+    if (_isHidden) {
+      await Tray.instance.hide();
+      return;
+    }
     await Tray.instance.show(
       TraySpec(
         icon: TrayIcon.asset(
@@ -104,7 +109,7 @@ class AppTray implements TrayPort {
     required bool showTrayTitle,
     required Traffic traffic,
   }) async {
-    if (_isShutDown || !isMacOS) {
+    if (_isShutDown || _isHidden || !isMacOS) {
       return;
     }
     await Tray.instance.setTitle(showTrayTitle ? traffic.trayTitle : '');

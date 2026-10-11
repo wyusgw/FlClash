@@ -102,7 +102,7 @@ void main() {
     await pumpView(tester, ssids: ['Home', 'Office']);
     expect(find.byGlyph(AppGlyphs.delete), findsNothing);
 
-    await tester.tap(find.byType(CommonCheckBox).first);
+    await tester.tap(find.byType(GroupedSelectMark).first);
     await tester.pumpAndSettle();
 
     expect(find.byGlyph(AppGlyphs.delete), findsOneWidget);
@@ -114,7 +114,7 @@ void main() {
     tester,
   ) async {
     await pumpView(tester, ssids: ['Home', 'Office']);
-    await tester.tap(find.byType(CommonCheckBox).first);
+    await tester.tap(find.byType(GroupedSelectMark).first);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Select all'));
@@ -130,7 +130,7 @@ void main() {
     tester,
   ) async {
     await pumpView(tester, ssids: ['Home', 'Office']);
-    await tester.tap(find.byType(CommonCheckBox).first);
+    await tester.tap(find.byType(GroupedSelectMark).first);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byGlyph(AppGlyphs.delete));
@@ -150,8 +150,8 @@ void main() {
       isMacOS: true,
     );
 
-    expect(find.bySemanticsLabel('Tap to authorize'), findsOneWidget);
-    expect(find.bySemanticsLabel('Authorized'), findsNothing);
+    expect(find.text('Tap to authorize'), findsOneWidget);
+    expect(find.text('Authorized'), findsNothing);
   });
 
   testWidgets('the location prerequisite reflects a granted permission', (
@@ -163,8 +163,8 @@ void main() {
       isMacOS: true,
     );
 
-    expect(find.bySemanticsLabel('Authorized'), findsOneWidget);
-    expect(find.bySemanticsLabel('Tap to authorize'), findsNothing);
+    expect(find.text('Authorized'), findsOneWidget);
+    expect(find.text('Tap to authorize'), findsNothing);
   });
 
   testWidgets('a refused location request leaves the permission as it was', (
@@ -186,7 +186,7 @@ void main() {
       container.read(locationPermissionsProvider),
       WifiSsidPermission.denied,
     );
-    expect(find.bySemanticsLabel('Tap to authorize'), findsOneWidget);
+    expect(find.text('Tap to authorize'), findsOneWidget);
   });
 
   testWidgets('a second tap while the location request waits asks only once', (
@@ -233,7 +233,16 @@ void main() {
     final appLocalizations = AppLocalizations.of(
       tester.element(find.byType(OnDemandView)),
     );
-    expect(find.bySemanticsLabel(appLocalizations.tapToAuthorize), findsOne);
+    expect(
+      find.descendant(
+        of: find.widgetWithText(
+          GroupedRow,
+          appLocalizations.ignoreBatteryOptimization,
+        ),
+        matching: find.text(appLocalizations.tapToAuthorize),
+      ),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byTooltip(appLocalizations.tip));
     await tester.pumpAndSettle();
@@ -244,32 +253,22 @@ void main() {
     );
   });
 
-  testWidgets('the authorize action sits on its own line under the text', (
-    tester,
-  ) async {
+  testWidgets('the explanation sits under the authorize row', (tester) async {
     await pumpView(tester, isMacOS: true, locale: const Locale('ru'));
 
     final appLocalizations = AppLocalizations.of(
       tester.element(find.byType(OnDemandView)),
     );
     final desc = find.text(appLocalizations.locationPermissionDesc);
-    final button = find
-        .ancestor(
-          of: find.text(appLocalizations.tapToAuthorize),
-          matching: find.byType(FilledButton),
-        )
-        .first;
-
-    expect(
-      tester.getTopLeft(button).dy,
-      greaterThanOrEqualTo(tester.getBottomLeft(desc).dy),
+    final row = find.widgetWithText(
+      GroupedRow,
+      appLocalizations.locationPermission,
     );
+
+    expect(desc, findsOneWidget);
     expect(
-      tester.getRect(button).right,
-      closeTo(
-        tester.getRect(find.byType(DecorationListItem).first).right - 16,
-        1,
-      ),
+      tester.getTopLeft(desc).dy,
+      greaterThanOrEqualTo(tester.getBottomLeft(row).dy),
     );
   });
 
@@ -280,7 +279,7 @@ void main() {
 
     expect(find.text('Ignore battery optimization'), findsNothing);
     expect(find.text('Location permission'), findsNothing);
-    expect(find.bySemanticsLabel('Tap to authorize'), findsNothing);
+    expect(find.text('Tap to authorize'), findsNothing);
   });
 }
 

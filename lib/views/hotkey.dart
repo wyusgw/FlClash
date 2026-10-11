@@ -103,117 +103,101 @@ class HotKeyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
+    final palette = GroupedPalette.of(context);
     final labels = ShortcutLabels.host();
-    return BaseScaffold(
+    return GroupedPage(
       title: appLocalizations.hotkeyManagement,
-      body: ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-        ).copyWith(top: context.contentTopPadding, bottom: 20),
+      onBack: () => Navigator.of(context).maybePop(),
+      body: GroupedBody(
         children: [
-          const _HotKeyIntro(),
-          for (final (title, actions) in _sections(appLocalizations))
-            generateSectionV3(
-              title: title,
-              items: [
-                for (final action in actions)
-                  _HotKeyItem(action: action, labels: labels),
-              ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              groupedRowPadding + 1,
+              0,
+              groupedRowPadding,
+              10,
             ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HotKeyIntro extends StatelessWidget {
-  const _HotKeyIntro();
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: ShapeDecoration(
-        color: colorScheme.secondaryContainer.opacity50,
-        shape: AppShape.xl,
-      ),
-      child: Row(
-        spacing: 14,
-        children: [
-          GlyphIcon(
-            AppGlyphs.keyboard,
-            color: colorScheme.onSecondaryContainer,
-          ),
-          Expanded(
             child: Text(
-              context.appLocalizations.hotkeyDesc,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSecondaryContainer,
+              appLocalizations.hotkeyDesc,
+              style: palette.sectionLabel,
+            ),
+          ),
+          for (final (title, actions) in _sections(appLocalizations))
+            Padding(
+              padding: const EdgeInsets.only(bottom: groupedSectionGap),
+              child: GroupedSection(
+                header: title,
+                children: [
+                  for (final action in actions)
+                    _HotKeyItem(action: action, labels: labels),
+                ],
               ),
             ),
-          ),
         ],
       ),
     );
   }
 }
 
-class _HotKeyItem extends ConsumerWidget {
+class _HotKeyItem extends ConsumerWidget implements GroupedInset {
   const _HotKeyItem({required this.action, required this.labels});
 
   final HotAction action;
   final ShortcutLabels labels;
 
   @override
+  double get separatorInset =>
+      groupedRowPadding + groupedLeadingSize + groupedLeadingGap;
+
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
-    final colorScheme = context.colorScheme;
+    final palette = GroupedPalette.of(context);
     final hotKeyAction = ref.watch(getHotKeyActionProvider(action));
     final failure = ref.watch(
       hotKeyFailuresProvider.select((state) => state[action]),
     );
     final key = hotKeyAction.key;
-    return DecorationListItem(
-      contentPadding: EdgeInsets.only(left: 16, right: key == null ? 16 : 6),
-      leading: GlyphIcon(_glyphOf(action)),
-      title: Text(action.label, maxLines: 2, overflow: TextOverflow.ellipsis),
-      subtitle: failure == null
+    return GroupedRow(
+      leading: GroupedIcon(_glyphOf(action)),
+      title: action.label,
+      subtitleWidget: failure == null
           ? null
           : Tooltip(
               message: failure,
               child: Text(
                 appLocalizations.hotkeyUnavailable,
-                style: context.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.error,
+                style: palette.rowSubtitle.copyWith(
+                  color: context.colorScheme.error,
                 ),
               ),
             ),
       trailing: key == null
-          ? Text(
-              appLocalizations.hotkeyNotSet,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.outline,
-              ),
-            )
+          ? Text(appLocalizations.hotkeyNotSet, style: palette.rowValue)
           : Row(
               mainAxisSize: MainAxisSize.min,
-              spacing: 4,
+              spacing: 8,
               children: [
                 _KeyCaps(
                   parts: labels.parts(hotKeyAction.modifiers, key),
                   isError: failure != null,
                 ),
-                IconButton(
-                  tooltip: appLocalizations.remove,
-                  onPressed: () {
-                    _saveBinding(ref, HotKeyAction(action: action));
-                  },
-                  icon: const GlyphIcon(AppGlyphs.close, size: 20),
+                Tooltip(
+                  message: appLocalizations.remove,
+                  child: InkResponse(
+                    radius: 14,
+                    onTap: () =>
+                        _saveBinding(ref, HotKeyAction(action: action)),
+                    child: GlyphIcon(
+                      AppGlyphs.close,
+                      size: 16,
+                      color: palette.secondary,
+                    ),
+                  ),
                 ),
               ],
             ),
-      onPressed: () {
+      onTap: () {
         dialogs.showCommonDialog(
           child: HotKeyRecorder(hotKeyAction: hotKeyAction, labels: labels),
         );
@@ -263,24 +247,28 @@ class _KeyCap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
-    final side = isLarge ? 44.0 : 26.0;
+    final palette = GroupedPalette.of(context);
+    final side = isLarge ? 44.0 : 22.0;
     final foregroundColor = isError
         ? colorScheme.error
-        : colorScheme.onSurfaceVariant;
+        : (isLarge ? colorScheme.onSurfaceVariant : palette.label);
     final textStyle = isLarge
         ? context.textTheme.titleMedium
-        : context.textTheme.labelMedium;
+        : context.textTheme.labelSmall;
+    final fill = isLarge ? colorScheme.surfaceContainerHighest : palette.hover;
     return Container(
       constraints: BoxConstraints(minWidth: side, minHeight: side),
-      padding: EdgeInsets.symmetric(horizontal: isLarge ? 12 : 7),
+      padding: EdgeInsets.symmetric(horizontal: isLarge ? 12 : 6),
       decoration: ShapeDecoration(
-        color: isPlaceholder
-            ? Colors.transparent
-            : colorScheme.surfaceContainerHighest,
+        color: isPlaceholder ? Colors.transparent : fill,
         shape: (isLarge ? AppShape.md : AppShape.sm).copyWith(
-          side: BorderSide(
-            color: isError ? colorScheme.error : colorScheme.outlineVariant,
-          ),
+          side: isLarge || isError
+              ? BorderSide(
+                  color: isError
+                      ? colorScheme.error
+                      : colorScheme.outlineVariant,
+                )
+              : BorderSide.none,
         ),
       ),
       child: Align(

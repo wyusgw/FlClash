@@ -41,6 +41,11 @@ _AppSettingProps _$AppSettingPropsFromJson(
       $enumDecodeNullable(_$RestoreStrategyEnumMap, json['restoreStrategy']) ??
       RestoreStrategy.compatible,
   showTrayTitle: json['showTrayTitle'] as bool? ?? true,
+  trayMode:
+      $enumDecodeNullable(_$TrayModeEnumMap, json['trayMode']) ??
+      TrayMode.embedded,
+  showSidebar: json['showSidebar'] as bool? ?? true,
+  archiveStats: json['archiveStats'] as bool? ?? false,
   checkCertificate: json['checkCertificate'] as bool? ?? true,
   userAgents:
       (_readUserAgents(json, 'userAgents') as List<dynamic>?)
@@ -88,6 +93,9 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'developerMode': instance.developerMode,
       'restoreStrategy': _$RestoreStrategyEnumMap[instance.restoreStrategy]!,
       'showTrayTitle': instance.showTrayTitle,
+      'trayMode': _$TrayModeEnumMap[instance.trayMode]!,
+      'showSidebar': instance.showSidebar,
+      'archiveStats': instance.archiveStats,
       'checkCertificate': instance.checkCertificate,
       'userAgents': instance.userAgents,
       'globalUa': instance.globalUa,
@@ -112,6 +120,12 @@ const _$TabAnimationEnumMap = {
 const _$RestoreStrategyEnumMap = {
   RestoreStrategy.compatible: 'compatible',
   RestoreStrategy.override: 'override',
+};
+
+const _$TrayModeEnumMap = {
+  TrayMode.embedded: 'embedded',
+  TrayMode.standalone: 'standalone',
+  TrayMode.off: 'off',
 };
 
 const _$EditorFontSizeEnumMap = {

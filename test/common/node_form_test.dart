@@ -422,4 +422,122 @@ void main() {
       expect(outbound['tag'], contains('node.example.com'));
     });
   });
+
+  group('nodeFormOf', () {
+    Map<String, String> sample(NodeKind kind) {
+      final more = switch (kind) {
+        NodeKind.shadowsocks => {'password': 'pw', 'remark': 'ss node'},
+        NodeKind.vmess => {
+          'uuid': _uuid,
+          'network': 'ws',
+          'path': '/ws',
+          'host': 'cdn.example.com',
+          'tls': 'true',
+          'sni': 'node.example.com',
+          'remark': 'vm',
+        },
+        NodeKind.vless => {
+          'uuid': _uuid,
+          'security': 'reality',
+          'flow': 'xtls-rprx-vision',
+          'publicKey': 'AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA',
+          'shortId': '6ba85179',
+          'sni': 'www.microsoft.com',
+          'remark': 'vl',
+        },
+        NodeKind.trojan => {
+          'password': 'pw',
+          'network': 'grpc',
+          'serviceName': 'svc',
+          'sni': 'node.example.com',
+          'allowInsecure': 'true',
+        },
+        NodeKind.hysteria => {
+          'password': 'auth',
+          'obfsPassword': 'mask',
+          'uploadSpeed': '50',
+          'downloadSpeed': '200',
+        },
+        NodeKind.hysteria2 => {
+          'password': 'auth',
+          'obfsPassword': 'mask',
+          'sni': 'node.example.com',
+        },
+        NodeKind.tuic => {
+          'uuid': _uuid,
+          'password': 'pw',
+          'congestion': 'bbr',
+          'sni': 'node.example.com',
+        },
+        NodeKind.anytls => {'password': 'pw', 'sni': 'node.example.com'},
+        NodeKind.socks || NodeKind.http => {
+          'username': 'u',
+          'password': 'p',
+          'tls': 'true',
+          'sni': 'node.example.com',
+        },
+        NodeKind.mieru => {
+          'username': 'u',
+          'password': 'p',
+          'transport': 'UDP',
+          'multiplexing': 'high',
+          'handshake': 'no-wait',
+        },
+      };
+      return _values(kind, more);
+    }
+
+    for (final kind in NodeKind.values) {
+      test('${kind.name} gives back the values it was built from', () {
+        final values = sample(kind);
+        final form = nodeFormOf(_outbound(kind, values));
+
+        expect(form, isNotNull);
+        expect(form!.kind, kind);
+        for (final field in nodeFields(kind)) {
+          if (!field.visible(values)) continue;
+          // A node without a remark is named from its address.
+          if (field.key == 'remark' && (values['remark'] ?? '').isEmpty) {
+            continue;
+          }
+          expect(
+            form.values[field.key],
+            values[field.key] ?? field.initial,
+            reason: field.key,
+          );
+        }
+      });
+    }
+
+    test('a node with a setting the form has no field for is not editable', () {
+      final outbound = _outbound(NodeKind.vless, sample(NodeKind.vless))
+        ..['streamSettings'] = {
+          ..._stream(_outbound(NodeKind.vless, sample(NodeKind.vless))),
+          'sockopt': {'tcpFastOpen': true},
+        };
+
+      expect(nodeFormOf(outbound), isNull);
+    });
+
+    test('a protocol the form does not know is not editable', () {
+      expect(
+        nodeFormOf({'tag': 'x', 'protocol': 'wireguard', 'settings': {}}),
+        isNull,
+      );
+    });
+  });
+
+  group('nodeValuesFor', () {
+    test('keeps what means the same and defaults the rest', () {
+      final values = nodeValuesFor(NodeKind.trojan, {
+        ..._values(NodeKind.vless, {'uuid': _uuid, 'remark': 'keep'}),
+        'security': 'reality',
+      });
+
+      expect(values['address'], 'node.example.com');
+      expect(values['remark'], 'keep');
+      expect(values['password'], '');
+      expect(values.containsKey('security'), isFalse);
+    });
+  });
 }

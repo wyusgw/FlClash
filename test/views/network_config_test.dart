@@ -4,6 +4,7 @@ import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/config/network.dart';
+import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -103,11 +104,11 @@ void main() {
 
         expect(testCase.read(container), testCase.initial);
 
-        await tester.tap(find.byType(Switch));
+        await tester.tap(find.byType(GroupedSwitch));
         await tester.pumpAndSettle();
         expect(testCase.read(container), !testCase.initial);
 
-        await tester.tap(find.byType(Switch));
+        await tester.tap(find.byType(GroupedSwitch));
         await tester.pumpAndSettle();
         expect(testCase.read(container), testCase.initial);
       });
@@ -120,7 +121,7 @@ void main() {
       final initial = container.read(networkSettingProvider).routeMode;
       final target = RouteMode.values.firstWhere((item) => item != initial);
 
-      await tester.tap(find.byType(ListTile).first);
+      await tester.tap(find.byType(GroupedRow).first);
       await tester.pumpAndSettle();
       await tester.tap(find.text(_routeModeLabel(target)).last);
       await tester.pumpAndSettle();

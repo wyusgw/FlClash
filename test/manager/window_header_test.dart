@@ -705,6 +705,7 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
+      container.listen(appSettingProvider, (_, _) {});
       container.listen(overlayTopOffsetProvider, (_, _) {});
       globalState.container = container;
       tester.view.physicalSize = viewSize;

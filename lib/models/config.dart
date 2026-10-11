@@ -108,6 +108,9 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(false) bool developerMode,
     @Default(RestoreStrategy.compatible) RestoreStrategy restoreStrategy,
     @Default(true) bool showTrayTitle,
+    @Default(TrayMode.embedded) TrayMode trayMode,
+    @Default(true) bool showSidebar,
+    @Default(false) bool archiveStats,
     @Default(true) bool checkCertificate,
     @Default(defaultUserAgents)
     @JsonKey(readValue: _readUserAgents)

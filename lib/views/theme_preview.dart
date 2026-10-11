@@ -34,27 +34,21 @@ class PreviewChoiceGroup<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InfoHeader(info: info),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final choice in choices)
-                _ChoiceButton(
-                  label: choice.label,
-                  isSelected: choice.value == value,
-                  onPressed: () => onChanged(choice.value),
-                  pictogram: choice.pictogram,
-                ),
-            ],
-          ),
-        ),
-      ],
+    return GroupedBlock(
+      header: info.label,
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final choice in choices)
+            _ChoiceButton(
+              label: choice.label,
+              isSelected: choice.value == value,
+              onPressed: () => onChanged(choice.value),
+              pictogram: choice.pictogram,
+            ),
+        ],
+      ),
     );
   }
 }
@@ -76,28 +70,43 @@ class _ChoiceButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    final shape = AppShape.md.copyWith(
+      side: isSelected
+          ? BorderSide(color: palette.accent, width: 1.5)
+          : BorderSide.none,
+    );
     return Semantics(
       selected: isSelected,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: _height),
-        child: CommonCard(
-          isSelected: isSelected,
-          onPressed: onPressed,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 8,
-            children: [
-              ExcludeSemantics(child: pictogram),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                ),
+      child: Material(
+        color: palette.separator,
+        shape: shape,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: shape,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: _height),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 8,
+                children: [
+                  ExcludeSemantics(child: pictogram),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: palette.rowTitle.copyWith(
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -233,43 +242,41 @@ class _ThemeLivePreviewState extends ConsumerState<ThemeLivePreview>
       appSettingProvider.select((state) => state.tabAnimation),
     );
     final corner = AppCorner.fit(_phoneWidth);
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      alignment: Alignment.center,
-      decoration: ShapeDecoration(
-        color: context.colorScheme.surfaceContainerLow,
-        shape: AppShape.xxl,
-      ),
-      child: SizedBox(
-        width: _phoneWidth,
-        child: AspectRatio(
-          aspectRatio: 9 / 17,
-          child: DecoratedBox(
-            position: DecorationPosition.foreground,
-            decoration: ShapeDecoration(
-              shape: AppShape.all(corner).copyWith(
-                side: BorderSide(color: context.colorScheme.outlineVariant),
-              ),
-            ),
-            child: ClipRSuperellipse(
-              borderRadius: AppRadius.all(corner),
-              child: TweenAnimationBuilder<ColorScheme>(
-                tween: _ColorSchemeTween(end: colorScheme),
-                duration: _duration,
-                builder: (_, colorScheme, _) => AnimatedSwitcher(
-                  duration: _duration,
-                  child: AnimatedBuilder(
-                    key: ValueKey(floatingBar),
-                    animation: _slideCurve,
-                    builder: (_, _) => MiniScreen(
-                      colorScheme: colorScheme,
-                      floatingBar: floatingBar,
-                      selected: _selected,
-                      previous: _previous,
-                      progress: _previous == null ? 1 : _slideCurve.value,
-                      tabAnimation: tabAnimation,
-                      onSelect: _select,
+    return GroupedCard(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Center(
+          child: SizedBox(
+            width: _phoneWidth,
+            child: AspectRatio(
+              aspectRatio: 9 / 17,
+              child: DecoratedBox(
+                position: DecorationPosition.foreground,
+                decoration: ShapeDecoration(
+                  shape: AppShape.all(corner).copyWith(
+                    side: BorderSide(color: context.colorScheme.outlineVariant),
+                  ),
+                ),
+                child: ClipRSuperellipse(
+                  borderRadius: AppRadius.all(corner),
+                  child: TweenAnimationBuilder<ColorScheme>(
+                    tween: _ColorSchemeTween(end: colorScheme),
+                    duration: _duration,
+                    builder: (_, colorScheme, _) => AnimatedSwitcher(
+                      duration: _duration,
+                      child: AnimatedBuilder(
+                        key: ValueKey(floatingBar),
+                        animation: _slideCurve,
+                        builder: (_, _) => MiniScreen(
+                          colorScheme: colorScheme,
+                          floatingBar: floatingBar,
+                          selected: _selected,
+                          previous: _previous,
+                          progress: _previous == null ? 1 : _slideCurve.value,
+                          tabAnimation: tabAnimation,
+                          onSelect: _select,
+                        ),
+                      ),
                     ),
                   ),
                 ),

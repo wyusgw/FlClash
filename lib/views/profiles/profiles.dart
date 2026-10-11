@@ -55,10 +55,7 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
   }
 
   void _sort(List<Profile> profiles) {
-    showSheet(
-      context: context,
-      builder: (_) => ReorderableProfilesSheet(profiles: profiles),
-    );
+    BaseNavigator.push(context, ReorderableProfilesView(profiles: profiles));
   }
 
   @override
@@ -229,18 +226,7 @@ class ProfileActions {
   final Profile profile;
 
   Future<void> deleteProfile(BuildContext context, WidgetRef ref) async {
-    final profilesAction = ref.read(profilesActionProvider.notifier);
-    final appLocalizations = context.appLocalizations;
-    final res = await dialogs.showMessage(
-      title: appLocalizations.tip,
-      message: TextSpan(
-        text: appLocalizations.deleteTip(appLocalizations.profile),
-      ),
-    );
-    if (res != true) {
-      return;
-    }
-    await profilesAction.deleteProfile(profile.id);
+    await ref.read(profilesActionProvider.notifier).deleteProfile(profile.id);
   }
 
   Future<void> _handlePreview(BuildContext context) async {
@@ -403,18 +389,18 @@ class ProfileActions {
   }
 }
 
-class ReorderableProfilesSheet extends ConsumerStatefulWidget {
+class ReorderableProfilesView extends ConsumerStatefulWidget {
   final List<Profile> profiles;
 
-  const ReorderableProfilesSheet({super.key, required this.profiles});
+  const ReorderableProfilesView({super.key, required this.profiles});
 
   @override
-  ConsumerState<ReorderableProfilesSheet> createState() =>
-      _ReorderableProfilesSheetState();
+  ConsumerState<ReorderableProfilesView> createState() =>
+      _ReorderableProfilesViewState();
 }
 
-class _ReorderableProfilesSheetState
-    extends ConsumerState<ReorderableProfilesSheet> {
+class _ReorderableProfilesViewState
+    extends ConsumerState<ReorderableProfilesView> {
   late List<Profile> profiles;
 
   @override
@@ -424,17 +410,23 @@ class _ReorderableProfilesSheetState
   }
 
   Widget _buildItem(int index) {
-    final position = ItemPosition.get(index, profiles.length);
     final profile = profiles[index];
-    return ItemPositionProvider(
+    return ReorderableDelayedDragStartListener(
       key: Key(profile.id.toString()),
-      position: position,
-      child: ReorderableDelayedDragStartListener(
-        index: index,
-        child: DecorationListItem(
-          trailing: const GlyphIcon(AppGlyphs.dragHandle),
-          title: Text(profile.realLabel),
-        ),
+      index: index,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (index > 0) const GroupedHairline(inset: groupedRowPadding + 1),
+          GroupedRow(
+            title: profile.realLabel,
+            trailing: GlyphIcon(
+              AppGlyphs.dragHandle,
+              size: 21,
+              color: GroupedPalette.of(context).tertiary,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -447,38 +439,34 @@ class _ReorderableProfilesSheetState
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    return CommonScaffold(
-      actions: [
-        AppBarActionButton(
-          data: IconButtonData(
-            glyph: AppGlyphs.check,
-            onPressed: _handleSave,
-            tooltip: context.appLocalizations.save,
-          ),
-        ),
-      ],
-      body: Padding(
-        padding: const EdgeInsets.only(bottom: 32),
-        child: ReorderableListView.builder(
-          buildDefaultDragHandles: false,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-          ).copyWith(top: context.contentTopPadding),
-          proxyDecorator: (child, index, animation) {
-            return commonProxyDecorator(_buildItem(index), index, animation);
-          },
-          onReorderItem: (oldIndex, newIndex) {
-            setState(() {
-              profiles = profiles.copyAndReorder(oldIndex, newIndex);
-            });
-          },
-          itemBuilder: (_, index) {
-            return _buildItem(index);
-          },
-          itemCount: profiles.length,
-        ),
-      ),
+    return GroupedPage(
       title: appLocalizations.profilesSort,
+      onBack: () => Navigator.of(context).maybePop(),
+      trailing: GroupedBarAction(
+        label: appLocalizations.save,
+        tooltip: appLocalizations.save,
+        onPressed: _handleSave,
+      ),
+      body: GroupedBody(
+        children: [
+          GroupedCard(
+            child: ReorderableListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              buildDefaultDragHandles: false,
+              proxyDecorator: (child, index, animation) =>
+                  Material(type: MaterialType.transparency, child: child),
+              onReorderItem: (oldIndex, newIndex) {
+                setState(() {
+                  profiles = profiles.copyAndReorder(oldIndex, newIndex);
+                });
+              },
+              itemBuilder: (_, index) => _buildItem(index),
+              itemCount: profiles.length,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

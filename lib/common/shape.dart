@@ -249,17 +249,29 @@ class AppInputBorder extends InputBorder {
 
 extension AppShapeThemeExt on ThemeData {
   ThemeData get withAppShapes => copyWith(
-    cardTheme: cardTheme.copyWith(shape: AppShape.md),
-    dialogTheme: dialogTheme.copyWith(shape: AppShape.xxl),
+    cardTheme: cardTheme.copyWith(shape: AppShape.md, elevation: 0),
+    dialogTheme: dialogTheme.copyWith(
+      shape: AppShape.xxl,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+    ),
     bottomSheetTheme: bottomSheetTheme.copyWith(
       shape: AppShape.top(AppCorner.xxl),
+      elevation: 0,
+      shadowColor: Colors.transparent,
     ),
-    snackBarTheme: snackBarTheme.copyWith(shape: AppShape.xs),
+    snackBarTheme: snackBarTheme.copyWith(shape: AppShape.xs, elevation: 0),
     chipTheme: chipTheme.copyWith(shape: AppShape.sm),
-    popupMenuTheme: popupMenuTheme.copyWith(shape: AppShape.md),
+    popupMenuTheme: popupMenuTheme.copyWith(
+      shape: AppShape.md,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+    ),
     menuTheme: MenuThemeData(
       style: (menuTheme.style ?? const MenuStyle()).copyWith(
         shape: const WidgetStatePropertyAll(AppShape.md),
+        elevation: const WidgetStatePropertyAll(0),
+        shadowColor: const WidgetStatePropertyAll(Colors.transparent),
       ),
     ),
     inputDecorationTheme: inputDecorationTheme.copyWith(border: AppShape.input),

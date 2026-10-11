@@ -9,6 +9,7 @@ import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:super_sliver_list/super_sliver_list.dart';
 
 import '../helpers/scrollbar.dart';
 import '../helpers/test_app.dart';
@@ -51,13 +52,25 @@ void main() {
 
   Finder hintFinder() => find.byKey(hintKey);
 
+  // The log items hold scrollables of their own, so the list's is the first
+  // one below the list widget.
+  Finder listScrollable() => find
+      .descendant(
+        of: find.byType(SuperListView),
+        matching: find.byType(Scrollable),
+      )
+      .first;
+
   testWidgets('holding the scrollbar thumb floats the time hint beside it', (
     tester,
   ) async {
     await pumpLogsView(tester);
     expect(hintFinder(), findsNothing);
 
-    final thumb = await revealScrollbarThumb(tester);
+    final thumb = await revealScrollbarThumb(
+      tester,
+      scrollable: listScrollable(),
+    );
     final gesture = await tester.startGesture(thumb);
     await gesture.moveBy(const Offset(0, -1));
     await tester.pump();
@@ -68,20 +81,19 @@ void main() {
     );
     expect(seedLogs().map((log) => log.dateTime), contains(label.data));
 
-    final scrollableRect = tester.getRect(find.byType(Scrollable).first);
-    // The list runs under the bar, so the scrollbar track starts at the
-    // bar's foot. The minimum thumb length is 48, so at the newest end the
-    // thumb center rests 24px below the track's top edge.
-    final trackTop = tester.getRect(find.byType(AppBar)).bottom;
+    final scrollableRect = tester.getRect(listScrollable());
+    // The minimum thumb length is 48, so at the newest end the thumb center
+    // rests 24px below the track's top edge.
+    final trackTop = scrollableRect.top;
     expect(tester.getCenter(find.byKey(hintKey)).dy, closeTo(trackTop + 24, 6));
 
     await gesture.moveBy(const Offset(0, 2000));
     await tester.pump();
     // Nothing floats over the foot, so the pill follows the thumb all the
     // way down and rests centred on it, the thumb being the track's share of
-    // the content, both less the part under the bar.
+    // the content.
     final position = tester
-        .widget<Scrollable>(find.byType(Scrollable).first)
+        .widget<Scrollable>(listScrollable())
         .controller!
         .position;
     final underBar = trackTop - scrollableRect.top;
@@ -119,6 +131,59 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(hintFinder(), findsNothing);
+  });
+
+  testWidgets('the search field narrows the list and clears again', (
+    tester,
+  ) async {
+    await pumpLogsView(tester);
+
+    await tester.enterText(find.byType(TextField), 'log 19');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    Finder inList(String text) => find.descendant(
+      of: find.byType(SuperListView),
+      matching: find.text(text),
+    );
+    expect(inList('log 19'), findsOneWidget);
+    expect(inList('log 5'), findsNothing);
+
+    await tester.tap(find.byTooltip('Clear search'));
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsOneWidget);
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller!.text,
+      isEmpty,
+    );
+  });
+
+  testWidgets('tapping a level adds a keyword chip and the chip removes it', (
+    tester,
+  ) async {
+    await pumpLogsView(tester);
+    container
+        .read(logsProvider.notifier)
+        .add(
+          const Log(
+            logLevel: LogLevel.error,
+            payload: 'broken',
+            dateTime: '2024-01-01 12:01:00',
+          ),
+        );
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('error'));
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(find.text('broken'), findsOneWidget);
+    expect(find.text('log 5'), findsNothing);
+
+    await tester.tap(find.widgetWithText(InkWell, 'error').first);
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(find.text('error'), findsOneWidget);
   });
 
   testWidgets('a one-line log is only as tall as its content', (tester) async {

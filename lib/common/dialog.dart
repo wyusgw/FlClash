@@ -45,36 +45,13 @@ class Dialogs {
       child: Builder(
         builder: (context) {
           final appLocalizations = context.appLocalizations;
-          return CommonDialog(
+          return ConfirmDialog(
             title: title ?? appLocalizations.tip,
-            actions: [
-              if (cancelable)
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                  child: Text(cancelText ?? appLocalizations.cancel),
-                ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(true);
-                },
-                child: Text(confirmText ?? appLocalizations.confirm),
-              ),
-            ],
-            child: Container(
-              width: 300,
-              constraints: const BoxConstraints(maxHeight: 200),
-              child: SingleChildScrollView(
-                child: SelectableText.rich(
-                  TextSpan(
-                    style: Theme.of(context).textTheme.labelLarge,
-                    children: [message],
-                  ),
-                  style: const TextStyle(overflow: TextOverflow.visible),
-                ),
-              ),
-            ),
+            message: message,
+            confirmText: confirmText ?? appLocalizations.confirm,
+            cancelText: cancelable
+                ? (cancelText ?? appLocalizations.cancel)
+                : null,
           );
         },
       ),

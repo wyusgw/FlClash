@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/common/shape.dart';
+import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -68,6 +69,143 @@ class CommonModal extends ConsumerWidget {
         decoration: const ShapeDecoration(shape: AppShape.xxl),
         clipBehavior: Clip.antiAlias,
         child: child,
+      ),
+    );
+  }
+}
+
+/// A question with two answers: the app icon over [title] and [message], and
+/// the answers side by side, the one that proceeds in the accent colour.
+class ConfirmDialog extends StatelessWidget {
+  const ConfirmDialog({
+    super.key,
+    required this.title,
+    required this.message,
+    required this.confirmText,
+    this.cancelText,
+  });
+
+  static const _width = 280.0;
+  static const _icon = 56.0;
+
+  final String title;
+  final InlineSpan message;
+  final String confirmText;
+
+  /// Null where there is nothing to decline.
+  final String? cancelText;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    final cancelText = this.cancelText;
+    return Dialog(
+      backgroundColor: palette.bar,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      shape: AppShape.xxl,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: _width),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/images/icon.png',
+                width: _icon,
+                height: _icon,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: palette.rowTitle.copyWith(fontSize: 15),
+              ),
+              const SizedBox(height: 8),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: SelectableText.rich(
+                    TextSpan(
+                      style: palette.rowTitle.copyWith(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      children: [message],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                spacing: 10,
+                children: [
+                  if (cancelText != null)
+                    Expanded(
+                      child: _DialogButton(
+                        label: cancelText,
+                        color: palette.hover,
+                        foreground: palette.label,
+                        onPressed: () => Navigator.of(context).pop(false),
+                      ),
+                    ),
+                  Expanded(
+                    child: _DialogButton(
+                      label: confirmText,
+                      color: palette.accent,
+                      foreground: const Color(0xFFFFFFFF),
+                      onPressed: () => Navigator.of(context).pop(true),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DialogButton extends StatelessWidget {
+  const _DialogButton({
+    required this.label,
+    required this.color,
+    required this.foreground,
+    required this.onPressed,
+  });
+
+  final String label;
+  final Color color;
+  final Color foreground;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    const shape = AppShape.sm;
+    return Material(
+      color: color,
+      shape: shape,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onPressed,
+        customBorder: shape,
+        child: SizedBox(
+          height: 34,
+          child: Center(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GroupedPalette.of(
+                context,
+              ).rowTitle.copyWith(color: foreground),
+            ),
+          ),
+        ),
       ),
     );
   }

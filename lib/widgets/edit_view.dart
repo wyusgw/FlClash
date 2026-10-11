@@ -94,29 +94,37 @@ abstract class _EditViewState<W extends ConsumerStatefulWidget, T>
   Widget _buildEntry({
     required T entry,
     required int index,
-    required int length,
     required bool isSelected,
-    required bool isEditing,
   }) {
-    final position = ItemPosition.get(index, length);
+    final trailing = buildLeading(entry);
     return ReorderableDelayedDragStartListener(
       key: ValueKey(idOf(entry)),
       index: index,
-      child: ItemPositionProvider(
-        position: position,
-        child: SelectedDecorationListItem(
-          title: buildTitle(entry),
-          leading: buildLeading(entry),
-          subtitle: buildSubtitle(entry),
-          isSelected: isSelected,
-          isEditing: isEditing,
-          onSelected: () {
-            _handleSelected(entry);
-          },
-          onPressed: () {
-            _handleEdit(entry);
-          },
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (index > 0)
+            const GroupedHairline(
+              inset: groupedRowPadding + groupedLeadingSize + groupedLeadingGap,
+            ),
+          GroupedRow(
+            leading: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _handleSelected(entry),
+              child: GroupedSelectMark(selected: isSelected),
+            ),
+            title: idOf(entry),
+            titleWidget: DefaultTextStyle.merge(
+              style: GroupedPalette.of(context).rowTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              child: buildTitle(entry),
+            ),
+            subtitleWidget: buildSubtitle(entry),
+            trailing: trailing,
+            onTap: () => _handleEdit(entry),
+          ),
+        ],
       ),
     );
   }
@@ -126,6 +134,16 @@ abstract class _EditViewState<W extends ConsumerStatefulWidget, T>
     final appLocalizations = context.appLocalizations;
     final selected = ref.watch(itemsProvider(_selectionKey));
     final isEditing = selected.isNotEmpty;
+    final isChanged = !sameEntries(_entries, _initialEntries);
+    Widget row(int index) {
+      final entry = _entries[index];
+      return _buildEntry(
+        entry: entry,
+        index: index,
+        isSelected: selected.contains(idOf(entry)),
+      );
+    }
+
     return CommonPopScope(
       onPop: (_) {
         if (isEditing) {
@@ -135,69 +153,56 @@ abstract class _EditViewState<W extends ConsumerStatefulWidget, T>
         Navigator.of(context).pop(popResult(_entries));
         return false;
       },
-      child: CommonScaffold(
+      child: GroupedPage(
         title: title,
-        actions: [
+        leadingActions: [
+          GroupedBarAction(
+            glyph: AppGlyphs.chevronBack,
+            tooltip: appLocalizations.back,
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
           if (isEditing)
-            IconButton(
+            GroupedBarAction(
+              glyph: AppGlyphs.delete,
               tooltip: appLocalizations.delete,
               onPressed: _handleDelete,
-              icon: const GlyphIcon(AppGlyphs.delete),
             )
-          else if (!sameEntries(_entries, _initialEntries))
-            IconButton(
+          else if (isChanged)
+            GroupedBarAction(
+              glyph: AppGlyphs.reset,
               tooltip: appLocalizations.reset,
               onPressed: _handleReset,
-              icon: const GlyphIcon(AppGlyphs.reset),
-            ),
-          if (isEditing)
-            FilledButton(
-              onPressed: _handleSelectAll,
-              child: Text(appLocalizations.selectAll),
-            )
-          else
-            FilledButton.tonal(
-              onPressed: _handleAdd,
-              child: Text(appLocalizations.add),
             ),
         ],
+        trailing: isEditing
+            ? GroupedBarAction(
+                label: appLocalizations.selectAll,
+                tooltip: appLocalizations.selectAll,
+                onPressed: _handleSelectAll,
+              )
+            : GroupedBarAction(
+                label: appLocalizations.add,
+                tooltip: appLocalizations.add,
+                onPressed: _handleAdd,
+              ),
         body: NullStatusSwitcher(
           isEmpty: _entries.isEmpty,
           nullStatus: NullStatus(label: appLocalizations.noData),
-          child: ReorderableListView.builder(
-            padding: EdgeInsets.only(
-              bottom: 16 + 64,
-              top: context.contentTopPadding,
-              left: 16,
-              right: 16,
-            ),
-            buildDefaultDragHandles: false,
-            itemCount: _entries.length,
-            itemBuilder: (context, index) {
-              final entry = _entries[index];
-              return _buildEntry(
-                entry: entry,
-                index: index,
-                length: _entries.length,
-                isSelected: selected.contains(idOf(entry)),
-                isEditing: isEditing,
-              );
-            },
-            proxyDecorator: (child, index, animation) {
-              final entry = _entries[index];
-              return commonProxyDecorator(
-                _buildEntry(
-                  entry: entry,
-                  index: index,
-                  length: _entries.length,
-                  isSelected: selected.contains(idOf(entry)),
-                  isEditing: isEditing,
+          child: GroupedBody(
+            children: [
+              GroupedCard(
+                child: ReorderableListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  buildDefaultDragHandles: false,
+                  itemCount: _entries.length,
+                  itemBuilder: (context, index) => row(index),
+                  proxyDecorator: (child, index, animation) =>
+                      Material(type: MaterialType.transparency, child: child),
+                  onReorderItem: _handleReorder,
                 ),
-                index,
-                animation,
-              );
-            },
-            onReorderItem: _handleReorder,
+              ),
+            ],
           ),
         ),
       ),

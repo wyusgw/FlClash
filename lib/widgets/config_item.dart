@@ -4,8 +4,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/misc.dart' show ProviderListenable;
 
+import 'grouped_list.dart';
+import 'grouped_page.dart';
 import 'input.dart';
-import 'list.dart';
 
 export 'package:riverpod/misc.dart' show ProviderListenable;
 
@@ -13,7 +14,7 @@ typedef ConfigLabel = String Function(AppLocalizations appLocalizations);
 
 typedef ConfigWriter<T> = void Function(WidgetRef ref, T value);
 
-abstract class _ConfigItem<T> extends ConsumerWidget {
+abstract class _ConfigItem<T> extends ConsumerWidget implements GroupedInset {
   const _ConfigItem({
     super.key,
     required this.selector,
@@ -29,6 +30,11 @@ abstract class _ConfigItem<T> extends ConsumerWidget {
   final ConfigWriter<T> onChanged;
   final Widget? leading;
 
+  @override
+  double get separatorInset => leading == null
+      ? groupedRowPadding + 1
+      : groupedRowPadding + groupedLeadingSize + groupedLeadingGap;
+
   Widget buildItem(
     BuildContext context,
     WidgetRef ref,
@@ -42,9 +48,8 @@ abstract class _ConfigItem<T> extends ConsumerWidget {
     return buildItem(context, ref, appLocalizations, ref.watch(selector));
   }
 
-  Widget? buildSubtitle(AppLocalizations appLocalizations) {
-    final subtitle = this.subtitle;
-    return subtitle == null ? null : Text(subtitle(appLocalizations));
+  String? buildSubtitle(AppLocalizations appLocalizations) {
+    return subtitle?.call(appLocalizations);
   }
 }
 
@@ -65,12 +70,15 @@ class ConfigToggleItem extends _ConfigItem<bool> {
     AppLocalizations appLocalizations,
     bool value,
   ) {
-    return ListItem.toggle(
+    return GroupedRow(
       leading: leading,
-      title: Text(title(appLocalizations)),
+      title: title(appLocalizations),
       subtitle: buildSubtitle(appLocalizations),
-      value: value,
-      onChanged: (value) => onChanged(ref, value),
+      trailing: GroupedSwitch(
+        value: value,
+        onChanged: (value) => onChanged(ref, value),
+      ),
+      onTap: () => onChanged(ref, !value),
     );
   }
 }
@@ -97,20 +105,48 @@ class ConfigOptionsItem<T> extends _ConfigItem<T> {
     AppLocalizations appLocalizations,
     T value,
   ) {
-    return ListItem<T>.options(
+    return GroupedRow(
       leading: leading,
-      title: Text(title(appLocalizations)),
-      subtitle: Text(subtitle?.call(appLocalizations) ?? textBuilder(value)),
-      dialogTitle: title(appLocalizations),
-      options: options,
-      value: value,
-      textBuilder: textBuilder,
-      onChanged: (value) {
-        if (value == null) {
-          return;
-        }
-        onChanged(ref, value);
-      },
+      title: title(appLocalizations),
+      subtitle: buildSubtitle(appLocalizations),
+      value: textBuilder(value),
+      chevron: true,
+      onTap: () => BaseNavigator.push(
+        context,
+        _ConfigChoicePage<T>(
+          selector: selector,
+          title: title(appLocalizations),
+          options: options,
+          textBuilder: textBuilder,
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+}
+
+class _ConfigChoicePage<T> extends ConsumerWidget {
+  const _ConfigChoicePage({
+    required this.selector,
+    required this.title,
+    required this.options,
+    required this.textBuilder,
+    required this.onChanged,
+  });
+
+  final ProviderListenable<T> selector;
+  final String title;
+  final List<T> options;
+  final String Function(T value) textBuilder;
+  final ConfigWriter<T> onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GroupedChoicePage<T>(
+      title: title,
+      choices: {for (final option in options) option: textBuilder(option)},
+      selected: ref.watch(selector),
+      onSelected: (value) => onChanged(ref, value),
     );
   }
 }
@@ -153,25 +189,30 @@ class ConfigTextItem extends _ConfigItem<String> {
   ) {
     final label = title(appLocalizations);
     final validator = this.validator;
-    return ListItem.input(
+    return GroupedRow(
       leading: leading,
-      title: Text(label),
-      subtitle: showValueAsSubtitle
-          ? Text(value)
-          : buildSubtitle(appLocalizations),
-      dialogTitle: label,
-      value: value,
-      maxLength: maxLength,
-      keyboardType: keyboardType,
-      validator: (value) {
-        final normalized = _normalize(value);
-        if (normalized == null || normalized.isEmpty) {
-          return appLocalizations.emptyTip(label);
-        }
-        return validator?.call(normalized, appLocalizations);
-      },
-      onChanged: (value) {
-        final normalized = _normalize(value);
+      title: label,
+      subtitle: showValueAsSubtitle ? null : buildSubtitle(appLocalizations),
+      value: showValueAsSubtitle ? value : null,
+      onTap: () async {
+        final input = await dialogs.showCommonDialog<String>(
+          child: InputDialog(
+            title: label,
+            value: value,
+            inputFormatters: maxLength == null
+                ? null
+                : TextInputLimits.limit(maxLength!),
+            keyboardType: keyboardType,
+            validator: (value) {
+              final normalized = _normalize(value);
+              if (normalized == null || normalized.isEmpty) {
+                return appLocalizations.emptyTip(label);
+              }
+              return validator?.call(normalized, appLocalizations);
+            },
+          ),
+        );
+        final normalized = _normalize(input);
         if (normalized == null) {
           return;
         }
@@ -202,23 +243,26 @@ class ConfigListEditItem extends _ConfigItem<List<String>> {
     List<String> value,
   ) {
     final label = title(appLocalizations);
-    return ListItem.open(
+    return GroupedRow(
       leading: leading,
-      title: Text(label),
-      subtitle:
-          buildSubtitle(appLocalizations) ??
-          Text(
-            value.isEmpty ? appLocalizations.none : value.join(', '),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+      title: label,
+      subtitle: buildSubtitle(appLocalizations),
+      value: value.isEmpty ? appLocalizations.none : value.join(', '),
+      chevron: true,
+      onTap: () async {
+        final items = await BaseNavigator.push<Object>(
+          context,
+          ListEditView(
+            title: label,
+            items: value,
+            itemMaxLength: itemMaxLength,
+            titleBuilder: (item) => Text(item),
           ),
-      widget: ListEditView(
-        title: label,
-        items: value,
-        itemMaxLength: itemMaxLength,
-        titleBuilder: (item) => Text(item),
-      ),
-      onChanged: (items) => onChanged(ref, List<String>.from(items as List)),
+        );
+        if (items is List) {
+          onChanged(ref, List<String>.from(items));
+        }
+      },
     );
   }
 }

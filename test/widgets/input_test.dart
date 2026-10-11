@@ -487,7 +487,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('d'), findsNWidgets(3));
 
-    await tester.tap(find.byType(Checkbox).first);
+    await tester.tap(find.byType(GroupedSelectMark).first);
     await tester.pump();
     expect(find.byGlyph(AppGlyphs.delete), findsOneWidget);
     await tester.tap(find.text('Select all'));
@@ -540,7 +540,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('c'), findsNWidgets(2));
 
-    await tester.tap(find.byType(Checkbox).first);
+    await tester.tap(find.byType(GroupedSelectMark).first);
     await tester.pump();
     await tester.tap(find.text('Select all'));
     await tester.pump();

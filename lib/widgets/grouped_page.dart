@@ -3,6 +3,7 @@ import 'package:fl_clash/icons/icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'grouped_list.dart';
+import 'inherited.dart';
 
 const _barContentHeight = 40.0;
 const _desktopTitleStrip = 22.0;
@@ -157,6 +158,75 @@ class _BarButton extends StatelessWidget {
         onTap: action.onPressed,
         radius: _barButton / 2,
         child: _content(context, action),
+      ),
+    );
+  }
+}
+
+/// The scrolling body of a grouped page: [children] on the canvas, clear of
+/// the bar above and of whatever covers the bottom.
+class GroupedBody extends StatelessWidget {
+  const GroupedBody({super.key, required this.children, this.controller});
+
+  final List<Widget> children;
+  final ScrollController? controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      controller: controller,
+      padding: EdgeInsets.fromLTRB(
+        groupedPageInset,
+        13,
+        groupedPageInset,
+        20 + BottomInsetScope.of(context),
+      ),
+      children: children,
+    );
+  }
+}
+
+/// A page of choices with the one in use checked.
+class GroupedChoicePage<T> extends StatelessWidget {
+  const GroupedChoicePage({
+    super.key,
+    required this.title,
+    required this.choices,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final String title;
+  final Map<T, String> choices;
+  final T selected;
+  final ValueChanged<T> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    return GroupedPage(
+      title: title,
+      onBack: () => Navigator.of(context).maybePop(),
+      body: GroupedBody(
+        children: [
+          GroupedSection(
+            children: [
+              for (final entry in choices.entries)
+                GroupedRow(
+                  key: ValueKey(entry.key),
+                  title: entry.value,
+                  trailing: entry.key == selected
+                      ? GlyphIcon(
+                          AppGlyphs.check,
+                          size: 18,
+                          color: palette.icon,
+                        )
+                      : null,
+                  onTap: () => onSelected(entry.key),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -84,19 +84,11 @@ class _HomeViewState extends ConsumerState<HomeView> {
   }
 
   Future<void> _deleteSelected() async {
-    final appLocalizations = context.appLocalizations;
     final ids = [
       for (final profile in ref.read(profilesProvider))
         if (_edit.isSelected(_profileKey(profile.id))) profile.id,
     ];
     if (ids.isEmpty) return;
-    final confirmed = await dialogs.showMessage(
-      title: appLocalizations.tip,
-      message: TextSpan(
-        text: appLocalizations.deleteTip(appLocalizations.profile),
-      ),
-    );
-    if (confirmed != true) return;
     final profilesAction = ref.read(profilesActionProvider.notifier);
     for (final id in ids) {
       await profilesAction.deleteProfile(id);
@@ -315,7 +307,9 @@ class _ControlSection extends ConsumerWidget {
       children: [
         GroupedRow(
           leading: const GroupedIcon(AppGlyphs.rocket),
-          title: selected.takeFirstValid([firstNode ?? '', profile.realLabel]),
+          title: isStart
+              ? selected.takeFirstValid([firstNode ?? '', profile.realLabel])
+              : appLocalizations.notConnected,
           trailing: Opacity(
             opacity: editing ? 0.5 : 1,
             child: GroupedSwitch(
@@ -571,7 +565,7 @@ class _SubscriptionSection extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   spacing: _selectGap,
                   children: [
-                    _SelectMark(
+                    GroupedSelectMark(
                       selected: edit.isSelected(_profileKey(profile.id)),
                     ),
                     chevron,
@@ -624,6 +618,7 @@ class _SubscriptionSection extends ConsumerWidget {
         ),
         for (final node in nodes ?? const <Proxy>[])
           _NodeMenuTarget(
+            profile: profile,
             node: node,
             child: GroupedRow(
               key: ValueKey('${profile.id}.${node.name}'),
@@ -632,7 +627,7 @@ class _SubscriptionSection extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       spacing: _selectGap,
                       children: [
-                        _SelectMark(
+                        GroupedSelectMark(
                           selected: edit.isSelected(
                             _nodeKey(profile.id, node.name),
                           ),
@@ -666,7 +661,8 @@ class _SubscriptionSection extends ConsumerWidget {
                     _RoundAction(
                       glyph: AppGlyphs.info,
                       tooltip: appLocalizations.details(node.name),
-                      onPressed: () => showNodeDetail(context, node),
+                      onPressed: () =>
+                          showNodeDetail(context, ref, profile, node),
                     ),
                 ],
               ),
@@ -682,42 +678,15 @@ class _SubscriptionSection extends ConsumerWidget {
   }
 }
 
-/// The ring at the start of a row in edit mode, filled once it is ticked.
-class _SelectMark extends StatelessWidget {
-  const _SelectMark({required this.selected});
-
-  final bool selected;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = GroupedPalette.of(context);
-    return SizedBox.square(
-      dimension: groupedLeadingSize,
-      child: DecoratedBox(
-        decoration: ShapeDecoration(
-          color: selected ? palette.icon : Colors.transparent,
-          shape: CircleBorder(
-            side: selected
-                ? BorderSide.none
-                : BorderSide(color: palette.tertiary, width: 1.5),
-          ),
-        ),
-        child: selected
-            ? const GlyphIcon(
-                AppGlyphs.check,
-                size: 13,
-                color: Color(0xFFFFFFFF),
-              )
-            : null,
-      ),
-    );
-  }
-}
-
 /// Opens a node's menu where it was asked for: a right click, or a long press.
 class _NodeMenuTarget extends ConsumerWidget {
-  const _NodeMenuTarget({required this.node, required this.child});
+  const _NodeMenuTarget({
+    required this.profile,
+    required this.node,
+    required this.child,
+  });
 
+  final Profile profile;
   final Proxy node;
   final Widget child;
 
@@ -778,7 +747,7 @@ class _NodeMenuTarget extends ConsumerWidget {
               .proxyDelayTest(node, testUrl),
         );
       case _NodeAction.details:
-        showNodeDetail(context, node);
+        unawaited(showNodeDetail(context, ref, profile, node));
       case _NodeAction.copyName:
         await Clipboard.setData(ClipboardData(text: node.name));
       case _NodeAction.copyAddress:

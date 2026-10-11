@@ -413,9 +413,9 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Authorize'));
       await tester.pumpAndSettle();
 
-      expect(find.widgetWithText(TextButton, 'Settings'), findsOneWidget);
+      expect(find.text('Settings'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+      await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
 
       await teardownView(tester);

@@ -174,10 +174,13 @@ class ApplicationState extends ConsumerState<Application> {
             ...GlobalMaterialLocalizations.delegates,
           ],
           builder: (context, child) {
-            return buildManagerStack(
-              isDesktop: system.isDesktop,
-              onConnectivityChanged: _handleConnectivityChanged,
-              child: RemoteFocusAdapter(enabled: system.isTV, child: child!),
+            return TooltipVisibility(
+              visible: false,
+              child: buildManagerStack(
+                isDesktop: system.isDesktop,
+                onConnectivityChanged: _handleConnectivityChanged,
+                child: RemoteFocusAdapter(enabled: system.isTV, child: child!),
+              ),
             );
           },
           scrollBehavior: const BaseScrollBehavior(),

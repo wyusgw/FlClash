@@ -16,11 +16,11 @@ class DeveloperView extends ConsumerWidget {
 
   Widget _getDeveloperList(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
-    return generateSectionV3(
-      title: appLocalizations.options,
-      items: [
-        ListItem(
-          title: Text(appLocalizations.messageTest),
+    return GroupedSection(
+      header: appLocalizations.options,
+      children: [
+        GroupedRow(
+          title: appLocalizations.messageTest,
           onTap: () {
             for (final level in MessageLevel.values) {
               context.showNotifier(
@@ -30,8 +30,8 @@ class DeveloperView extends ConsumerWidget {
             }
           },
         ),
-        ListItem(
-          title: Text(appLocalizations.logsTest),
+        GroupedRow(
+          title: appLocalizations.logsTest,
           onTap: () {
             for (int i = 0; i < 1000; i++) {
               ref
@@ -45,8 +45,8 @@ class DeveloperView extends ConsumerWidget {
           },
         ),
         if (globalState.canCrashCore)
-          ListItem(
-            title: Text(appLocalizations.crashTest),
+          GroupedRow(
+            title: appLocalizations.crashTest,
             onTap: () async {
               final coreAction = ref.read(coreActionProvider.notifier);
               final res = await dialogs.showMessage(
@@ -58,8 +58,8 @@ class DeveloperView extends ConsumerWidget {
               unawaited(coreAction.crash());
             },
           ),
-        ListItem(
-          title: Text(appLocalizations.clearData),
+        GroupedRow(
+          title: appLocalizations.clearData,
           onTap: () async {
             final storeAction = ref.read(storeActionProvider.notifier);
             final res = await dialogs.showMessage(
@@ -71,8 +71,8 @@ class DeveloperView extends ConsumerWidget {
             await storeAction.handleClear();
           },
         ),
-        ListItem(
-          title: Text(appLocalizations.pruneCache),
+        GroupedRow(
+          title: appLocalizations.pruneCache,
           onTap: () async {
             await ref.read(storeActionProvider.notifier).shakingStore();
           },
@@ -87,26 +87,25 @@ class DeveloperView extends ConsumerWidget {
     final enable = ref.watch(
       appSettingProvider.select((state) => state.developerMode),
     );
-    return BaseScaffold(
+    return GroupedPage(
       title: appLocalizations.developerMode,
-      body: ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-        ).copyWith(top: context.contentTopPadding, bottom: 16),
+      onBack: () => Navigator.of(context).maybePop(),
+      body: GroupedBody(
         children: [
-          generateSectionV3(
-            items: [
-              ListItem.toggle(
-                title: Text(appLocalizations.developerMode),
-                value: enable,
-                onChanged: (value) {
-                  ref
+          GroupedSection(
+            children: [
+              GroupedRow(
+                title: appLocalizations.developerMode,
+                trailing: GroupedSwitch(
+                  value: enable,
+                  onChanged: (value) => ref
                       .read(appSettingProvider.notifier)
-                      .update((state) => state.copyWith(developerMode: value));
-                },
+                      .update((state) => state.copyWith(developerMode: value)),
+                ),
               ),
             ],
           ),
+          const SizedBox(height: groupedSectionGap),
           _getDeveloperList(context, ref),
         ],
       ),

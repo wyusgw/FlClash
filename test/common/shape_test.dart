@@ -45,4 +45,16 @@ void main() {
       );
     }
   });
+
+  test('menus, dialogs and sheets cast no shadow', () {
+    final theme = ThemeData(useMaterial3: true).withAppShapes;
+
+    expect(theme.dialogTheme.elevation, 0);
+    expect(theme.dialogTheme.shadowColor, Colors.transparent);
+    expect(theme.popupMenuTheme.elevation, 0);
+    expect(theme.popupMenuTheme.shadowColor, Colors.transparent);
+    expect(theme.bottomSheetTheme.elevation, 0);
+    expect(theme.cardTheme.elevation, 0);
+    expect(theme.menuTheme.style?.elevation?.resolve({}), 0);
+  });
 }

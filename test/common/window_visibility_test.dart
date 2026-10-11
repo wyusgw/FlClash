@@ -150,4 +150,17 @@ void main() {
 
     expect(calls, ['hide', 'dock:off', 'show', 'dock:on']);
   });
+
+  testWidgets('refreshing the taskbar follows whether the window is visible', (
+    tester,
+  ) async {
+    final native = _FakeNativeWindow();
+    final controller = native.controller();
+
+    await controller.refreshTaskbar();
+    native.visible = false;
+    await controller.refreshTaskbar();
+
+    expect(native.calls, ['dock:on', 'dock:off']);
+  });
 }

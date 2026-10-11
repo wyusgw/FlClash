@@ -467,3 +467,200 @@ Map<String, dynamic>? buildNodeOutbound(
   final link = buildNodeLink(kind, values);
   return link == null ? null : parseShareLink(link);
 }
+
+Map<String, dynamic> _map(Object? value) =>
+    value is Map ? Map<String, dynamic>.from(value) : const {};
+
+String _str(Object? value) => value == null ? '' : '$value';
+
+bool _sameJson(Object? a, Object? b) {
+  if (a is Map && b is Map) {
+    return a.length == b.length &&
+        a.keys.every((key) => b.containsKey(key) && _sameJson(a[key], b[key]));
+  }
+  if (a is List && b is List) {
+    return a.length == b.length &&
+        List.generate(a.length, (i) => _sameJson(a[i], b[i])).every((x) => x);
+  }
+  return a == b;
+}
+
+NodeKind? _kindOfProtocol(String protocol) => switch (protocol) {
+  'shadowsocks' => NodeKind.shadowsocks,
+  'vmess' => NodeKind.vmess,
+  'vless' => NodeKind.vless,
+  'socks' => NodeKind.socks,
+  'http' => NodeKind.http,
+  'trojan' => NodeKind.trojan,
+  'hysteria' => NodeKind.hysteria,
+  'hysteria2' => NodeKind.hysteria2,
+  'tuic' => NodeKind.tuic,
+  'anytls' => NodeKind.anytls,
+  'mieru' => NodeKind.mieru,
+  _ => null,
+};
+
+Map<String, String> _streamValues(Map<String, dynamic> outbound) {
+  final stream = _map(outbound['streamSettings']);
+  final network = _str(stream['network']);
+  final tls = _map(stream['tlsSettings']);
+  final reality = _map(stream['realitySettings']);
+  final ws = _map(stream['wsSettings']);
+  final grpc = _map(stream['grpcSettings']);
+  final security = _str(stream['security']);
+  return {
+    'network': network.isEmpty ? 'tcp' : network,
+    'path': _str(ws['path']),
+    'host': _str(ws['host']),
+    'serviceName': _str(grpc['serviceName']),
+    'tls': '${security == 'tls'}',
+    'security': security.isEmpty ? 'none' : security,
+    'sni': _str(tls['serverName'] ?? reality['serverName']),
+    'allowInsecure': '${tls['allowInsecure'] == true}',
+    'fingerprint': _str(reality['fingerprint']),
+    'publicKey': _str(reality['publicKey']),
+    'shortId': _str(reality['shortId']),
+  };
+}
+
+Map<String, String> _valuesOf(NodeKind kind, Map<String, dynamic> outbound) {
+  final settings = _map(outbound['settings']);
+  final stream = _map(outbound['streamSettings']);
+  final tls = _map(stream['tlsSettings']);
+  final common = {
+    'address': _str(settings['address']),
+    'port': _str(settings['port']),
+    'remark': _str(outbound['tag']),
+  };
+  switch (kind) {
+    case NodeKind.shadowsocks:
+      return {
+        ...common,
+        'password': _str(settings['password']),
+        'method': _str(settings['method']),
+      };
+    case NodeKind.vmess:
+      return {
+        ...common,
+        ..._streamValues(outbound),
+        'uuid': _str(settings['id']),
+        'security': _str(settings['security']),
+      };
+    case NodeKind.vless:
+      return {
+        ...common,
+        ..._streamValues(outbound),
+        'uuid': _str(settings['id']),
+        'flow': settings['flow'] == null ? 'none' : _str(settings['flow']),
+      };
+    case NodeKind.trojan:
+      return {
+        ...common,
+        ..._streamValues(outbound),
+        'password': _str(settings['password']),
+      };
+    case NodeKind.hysteria:
+      String mbps(Object? value) => _str(value).replaceAll('mbps', '');
+      return {
+        ...common,
+        'password': _str(settings['auth']),
+        'uploadSpeed': mbps(settings['up']),
+        'downloadSpeed': mbps(settings['down']),
+        'sni': _str(settings['serverName']),
+        'allowInsecure': '${settings['allowInsecure'] == true}',
+        'obfsPassword': _str(settings['obfsPassword']),
+      };
+    case NodeKind.hysteria2:
+      final udp = _map(stream['finalmask'])['udp'];
+      final salamander = udp is List
+          ? udp.whereType<Map>().where((m) => m['type'] == 'salamander')
+          : const <Map>[];
+      return {
+        ...common,
+        'password': _str(_map(stream['hysteria2Settings'])['auth']),
+        'sni': _str(tls['serverName']),
+        'allowInsecure': '${tls['allowInsecure'] == true}',
+        'obfsPassword': salamander.isEmpty
+            ? ''
+            : _str(_map(salamander.first['settings'])['password']),
+      };
+    case NodeKind.tuic:
+      return {
+        ...common,
+        'uuid': _str(settings['id']),
+        'password': _str(settings['password']),
+        'congestion': _str(settings['congestionControl']),
+        'sni': _str(tls['serverName']),
+        'allowInsecure': '${tls['allowInsecure'] == true}',
+      };
+    case NodeKind.anytls:
+      return {
+        ...common,
+        'password': _str(settings['password']),
+        'sni': _str(tls['serverName']),
+        'allowInsecure': '${tls['allowInsecure'] == true}',
+      };
+    case NodeKind.socks || NodeKind.http:
+      return {
+        ...common,
+        'username': _str(settings['user']),
+        'password': _str(settings['pass']),
+        'tls': '${stream.isNotEmpty}',
+        'sni': _str(tls['serverName']),
+        'allowInsecure': '${tls['allowInsecure'] == true}',
+      };
+    case NodeKind.mieru:
+      return {
+        ...common,
+        'username': _str(settings['username']),
+        'password': _str(settings['password']),
+        'transport': _str(settings['transport']),
+        'multiplexing': _str(
+          settings['multiplexing'],
+        ).replaceFirst('MULTIPLEXING_', '').toLowerCase(),
+        'handshake': _str(
+          settings['handshakeMode'],
+        ).replaceFirst('HANDSHAKE_', '').toLowerCase().replaceAll('_', '-'),
+      };
+  }
+}
+
+/// The form an [outbound] fills in, or null when the form cannot hold it
+/// exactly: whatever the form would build in its place must equal it, so that
+/// an edit never drops a setting the form has no field for.
+({NodeKind kind, Map<String, String> values})? nodeFormOf(
+  Map<String, dynamic> outbound,
+) {
+  final kind = _kindOfProtocol(_str(outbound['protocol']));
+  if (kind == null) return null;
+  final values = {...nodeDefaults(kind), ..._valuesOf(kind, outbound)};
+  final rebuilt = buildNodeOutbound(kind, values);
+  if (rebuilt == null) return null;
+  final original = {...outbound}..remove('tag');
+  if (!_sameJson(original, {...rebuilt}..remove('tag'))) return null;
+  return (kind: kind, values: values);
+}
+
+const _portableFields = {
+  'address',
+  'port',
+  'remark',
+  'password',
+  'uuid',
+  'username',
+  'sni',
+  'allowInsecure',
+  'obfsPassword',
+};
+
+/// The values a server of [kind] starts with when it takes over [from] from
+/// another kind: what means the same in both is kept, the rest is default.
+Map<String, String> nodeValuesFor(NodeKind kind, Map<String, String> from) {
+  final defaults = nodeDefaults(kind);
+  return {
+    for (final entry in defaults.entries)
+      entry.key: _portableFields.contains(entry.key) && from[entry.key] != null
+          ? from[entry.key]!
+          : entry.value,
+  };
+}

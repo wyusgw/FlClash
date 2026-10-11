@@ -4,6 +4,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/database.dart';
@@ -12,12 +13,14 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/home/delay_test.dart';
 import 'package:fl_clash/views/home/home.dart';
 import 'package:fl_clash/views/home/route_mode.dart';
+import 'package:fl_clash/views/profiles/edit_server.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:riverpod/misc.dart' show Override;
 
 import '../helpers/glyph_finders.dart';
 import '../helpers/test_app.dart';
@@ -37,6 +40,18 @@ const _nodes = [
   Proxy(name: '香港 02', type: 'vless', network: 'ws'),
 ];
 
+class _StoredNodeAction extends ProfilesAction {
+  _StoredNodeAction(this.outbound);
+
+  final Map<String, dynamic>? outbound;
+
+  @override
+  Future<Map<String, dynamic>?> readNodeOutbound(
+    Profile profile,
+    String tag,
+  ) async => outbound;
+}
+
 void main() {
   late ProviderContainer container;
 
@@ -45,6 +60,7 @@ void main() {
     Profile? profile,
     List<Proxy> nodes = const [],
     Widget page = const HomeView(),
+    List<Override> overrides = const [],
   }) async {
     tester.view.physicalSize = const Size(900, 900);
     tester.view.devicePixelRatio = 1;
@@ -52,6 +68,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     container = ProviderContainer(
       overrides: [
+        ...overrides,
         profilesProvider.overrideWith(() => TestProfiles([?profile])),
         currentProfileIdProvider.overrideWithBuild((_, _) => profile?.id),
       ],
@@ -92,7 +109,17 @@ void main() {
     expect(find.text('Connectivity test'), findsOneWidget);
   });
 
-  testWidgets('the switch row names the chosen node, not the subscription', (
+  Finder switchRow() => find.ancestor(
+    of: find.byType(GroupedSwitch),
+    matching: find.byType(GroupedRow),
+  );
+
+  Future<void> connect(WidgetTester tester) async {
+    container.read(runTimeProvider.notifier).value = 1;
+    await tester.pump();
+  }
+
+  testWidgets('the switch row says not connected until the proxy runs', (
     tester,
   ) async {
     await pumpHome(
@@ -101,49 +128,67 @@ void main() {
       nodes: _nodes,
     );
 
-    final row = find.ancestor(
-      of: find.byType(GroupedSwitch),
-      matching: find.byType(GroupedRow),
-    );
     expect(
-      find.descendant(of: row, matching: find.text('香港 02')),
+      find.descendant(of: switchRow(), matching: find.text('Not connected')),
       findsOneWidget,
     );
     expect(
-      find.descendant(of: row, matching: find.text('My subscription')),
+      find.descendant(of: switchRow(), matching: find.text('香港 02')),
       findsNothing,
     );
   });
 
-  testWidgets('with no choice yet the switch row names the first node', (
+  testWidgets('once connected the switch row names the chosen node', (
+    tester,
+  ) async {
+    await pumpHome(
+      tester,
+      profile: _profile(selected: '香港 02'),
+      nodes: _nodes,
+    );
+    await connect(tester);
+
+    expect(
+      find.descendant(of: switchRow(), matching: find.text('香港 02')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: switchRow(), matching: find.text('Not connected')),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: switchRow(), matching: find.text('My subscription')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('connected with no choice yet the row names the first node', (
     tester,
   ) async {
     await pumpHome(tester, profile: _profile(), nodes: _nodes);
+    await connect(tester);
 
-    final row = find.ancestor(
-      of: find.byType(GroupedSwitch),
-      matching: find.byType(GroupedRow),
-    );
     expect(
-      find.descendant(of: row, matching: find.text('日本 01')),
+      find.descendant(of: switchRow(), matching: find.text('日本 01')),
       findsOneWidget,
     );
   });
 
-  testWidgets('without nodes the switch row falls back to the subscription', (
-    tester,
-  ) async {
-    await pumpHome(tester, profile: _profile());
+  testWidgets(
+    'connected without nodes the row falls back to the subscription',
+    (tester) async {
+      await pumpHome(tester, profile: _profile());
+      await connect(tester);
 
-    final row = find.ancestor(
-      of: find.byType(GroupedSwitch),
-      matching: find.byType(GroupedRow),
-    );
-    expect(
-      find.descendant(of: row, matching: find.text('My subscription')),
-      findsOneWidget,
-    );
-  });
+      expect(
+        find.descendant(
+          of: switchRow(),
+          matching: find.text('My subscription'),
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('the switch follows whether the proxy is running', (
     tester,
@@ -380,6 +425,51 @@ void main() {
       expect(find.textContaining('ms'), findsOneWidget);
     });
 
+    testWidgets('the details button opens the node for editing', (
+      tester,
+    ) async {
+      final outbound = buildNodeOutbound(NodeKind.shadowsocks, {
+        ...nodeDefaults(NodeKind.shadowsocks),
+        'address': '1.2.3.4',
+        'port': '8388',
+        'password': 'pw',
+        'remark': '日本 01',
+      });
+      await pumpHome(
+        tester,
+        profile: _profile(),
+        nodes: _nodes,
+        overrides: [
+          profilesActionProvider.overrideWith(
+            () => _StoredNodeAction(outbound),
+          ),
+        ],
+      );
+
+      await tester.tap(find.byTooltip('日本 01 details'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(EditServerView), findsOneWidget);
+      expect(find.text('Edit server'), findsOneWidget);
+    });
+
+    testWidgets('a node the form cannot hold is only shown', (tester) async {
+      await pumpHome(
+        tester,
+        profile: _profile(),
+        nodes: _nodes,
+        overrides: [
+          profilesActionProvider.overrideWith(() => _StoredNodeAction(null)),
+        ],
+      );
+
+      await tester.tap(find.byTooltip('日本 01 details'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(EditServerView), findsNothing);
+      expect(find.text('SHADOWSOCKS'), findsWidgets);
+    });
+
     testWidgets('copying a node name puts it on the clipboard', (tester) async {
       String? copied;
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
@@ -562,7 +652,7 @@ void main() {
       expect(find.text('Confirm'), findsNothing);
     });
 
-    testWidgets('deleting a ticked profile asks and then removes it', (
+    testWidgets('deleting a ticked profile removes it without asking', (
       tester,
     ) async {
       await pumpHome(tester, profile: _profile(), nodes: _nodes);
@@ -571,10 +661,7 @@ void main() {
       await tester.tap(find.text('My subscription'));
       await tester.pump();
       await tester.tap(find.text('Delete'));
-      await tester.pumpAndSettle();
-      expect(container.read(profilesProvider), hasLength(1));
-
-      await tester.tap(find.text('Confirm'));
+      await tester.pump();
       for (var i = 0; i < 50; i++) {
         if (container.read(profilesProvider).isEmpty) break;
         await tester.runAsync(
@@ -583,6 +670,7 @@ void main() {
         await tester.pump();
       }
 
+      expect(find.text('Confirm'), findsNothing);
       expect(container.read(profilesProvider), isEmpty);
     });
 

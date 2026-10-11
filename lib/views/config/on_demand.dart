@@ -24,9 +24,6 @@ class OnDemandView extends ConsumerStatefulWidget {
 
 class _OnDemandViewState extends ConsumerState<OnDemandView>
     with UniqueKeyStateMixin {
-  static const _authorizeButtonPadding = 12.0;
-  static const _minAuthorizeButtonWidth = 80.0;
-
   bool _requestingLocation = false;
 
   bool get _isAndroid => widget.isAndroid ?? system.isAndroid;
@@ -145,43 +142,6 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
     });
   }
 
-  Widget _buildItem({
-    required String ssid,
-    required int index,
-    required int length,
-    required bool isSelected,
-    required bool isEditing,
-  }) {
-    final position = ItemPosition.get(index, length);
-    return ReorderableDelayedDragStartListener(
-      key: ValueKey(ssid),
-      index: index,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: ItemPositionProvider(
-          position: position,
-          child: SelectedDecorationListItem(
-            isEditing: isEditing,
-            minVerticalPadding: 8,
-            title: TooltipText(
-              text: Text(ssid, maxLines: 2, overflow: TextOverflow.ellipsis),
-            ),
-            isSelected: isSelected,
-            onSelected: () {
-              ref.read(itemsProvider(key).notifier).update((state) {
-                final newState = Set<String>.from(state)..addOrRemove(ssid);
-                return newState;
-              });
-            },
-            onPressed: () {
-              _handleAddOrUpdate(ssid);
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
   void _handleSelectAll() {
     final excludeSSIDs = ref.read(excludeSSIDsProvider).toSet();
     ref.read(itemsProvider(key).notifier).update((selected) {
@@ -199,73 +159,22 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
     ref.read(itemsProvider(key).notifier).value = {};
   }
 
-  Widget _buildAuthorizeButton({
-    required bool authorized,
-    required VoidCallback onPressed,
-  }) {
+  Widget _buildStatus({required bool authorized, bool muted = false}) {
+    final palette = GroupedPalette.of(context);
     final appLocalizations = context.appLocalizations;
-    return CommonMinFilledButtonTheme(
-      child: ElasticButton(
-        child: FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: authorized ? null : context.colorScheme.error,
-            padding: const EdgeInsets.symmetric(
-              horizontal: _authorizeButtonPadding,
-            ),
-            minimumSize: const Size(_minAuthorizeButtonWidth, 40),
-          ),
-          onPressed: onPressed,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              ExcludeSemantics(
-                child: Opacity(
-                  opacity: 0,
-                  child: Text(
-                    authorized
-                        ? appLocalizations.tapToAuthorize
-                        : appLocalizations.authorized,
-                  ),
-                ),
-              ),
-              Text(
-                authorized
-                    ? appLocalizations.authorized
-                    : appLocalizations.tapToAuthorize,
-              ),
-            ],
-          ),
-        ),
+    return Text(
+      authorized
+          ? appLocalizations.authorized
+          : appLocalizations.tapToAuthorize,
+      style: palette.rowValue.copyWith(
+        color: muted
+            ? palette.tertiary
+            : (authorized ? palette.secondary : context.colorScheme.error),
       ),
     );
   }
 
-  Widget _buildPrerequisiteItem({
-    required String title,
-    required String desc,
-    required Widget action,
-  }) {
-    return DecorationListItem(
-      minVerticalPadding: 0,
-      title: Padding(
-        padding: const EdgeInsets.only(top: 12),
-        child: TooltipLabel(title),
-      ),
-      subtitle: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: 8,
-          children: [
-            Text(desc),
-            Align(alignment: Alignment.centerRight, child: action),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBatteryOptimizationItem() {
+  Widget _buildBatteryOptimizationSection({String? header}) {
     final appLocalizations = context.appLocalizations;
     // HyperOS takes a running VPN app off the battery optimization whitelist,
     // so the status reads as not authorized until the VPN stops.
@@ -274,152 +183,190 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
       loadingProvider(LoadingTag.batteryOptimization),
     );
     final disabled = ref.watch(batteryOptimizationDisableProvider);
-    return _buildPrerequisiteItem(
-      title: appLocalizations.ignoreBatteryOptimization,
-      desc: appLocalizations.batteryOptimizationDesc,
-      action: Stack(
-        alignment: Alignment.centerRight,
-        children: [
-          Visibility(
-            visible: !isLoading && !isStart,
-            maintainSize: true,
-            maintainAnimation: true,
-            maintainState: true,
-            child: _buildAuthorizeButton(
-              authorized: disabled,
-              onPressed: _handleOpenBatteryOptimizationSettings,
-            ),
+    return GroupedSection(
+      header: header,
+      footer: appLocalizations.batteryOptimizationDesc,
+      children: [
+        GroupedRow(
+          title: appLocalizations.ignoreBatteryOptimization,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 8,
+            children: [
+              if (isStart)
+                InfoMessageButton(
+                  message: appLocalizations.batteryOptimizationStatusTip,
+                ),
+              if (!isStart && isLoading)
+                const SizedBox.square(
+                  dimension: 16,
+                  child: CommonCircleLoading(),
+                )
+              else
+                _buildStatus(authorized: disabled, muted: isStart),
+            ],
           ),
-          if (isStart)
-            InfoMessageButton(
-              message: appLocalizations.batteryOptimizationStatusTip,
-            ),
-          if (!isStart && isLoading)
-            const SizedBox.square(dimension: 32, child: CommonCircleLoading()),
-        ],
-      ),
+          onTap: isStart || isLoading
+              ? null
+              : _handleOpenBatteryOptimizationSettings,
+        ),
+      ],
     );
   }
 
-  Widget _buildLocationPermissionItem() {
+  Widget _buildLocationPermissionSection({String? header}) {
     final appLocalizations = context.appLocalizations;
     final granted = ref.watch(
       locationPermissionsProvider.select(
         (state) => state == WifiSsidPermission.granted,
       ),
     );
-    return _buildPrerequisiteItem(
-      title: appLocalizations.locationPermission,
-      desc: appLocalizations.locationPermissionDesc,
-      action: _buildAuthorizeButton(
-        authorized: granted,
-        onPressed: _handleRequestLocationPermission,
-      ),
-    );
-  }
-
-  Widget _buildPrerequisites() {
-    return generateSectionV3(
-      title: context.appLocalizations.prerequisites,
-      items: [
-        if (_isAndroid) _buildBatteryOptimizationItem(),
-        if (_isAndroid || _isMacOS) _buildLocationPermissionItem(),
-      ],
-    );
-  }
-
-  Widget _buildExcludeSsidsHeader() {
-    final appLocalizations = context.appLocalizations;
-    final hasSelection = ref.watch(itemsProvider(key)).isNotEmpty;
-    return ListHeader(
-      title: appLocalizations.excludeSsids,
-      subTitle: appLocalizations.excludeSsidsDesc,
-      actions: [
-        if (hasSelection)
-          CommonMinIconButtonTheme(
-            child: ElasticButton(
-              child: IconButton.filledTonal(
-                tooltip: context.appLocalizations.delete,
-                onPressed: _handleDelete,
-                icon: const GlyphIcon(AppGlyphs.delete, fill: 1),
-              ),
-            ),
-          ),
-        CommonMinFilledButtonTheme(
-          child: ElasticButton(
-            child: hasSelection
-                ? FilledButton(
-                    onPressed: _handleSelectAll,
-                    child: Text(appLocalizations.selectAll),
-                  )
-                : FilledButton.tonal(
-                    onPressed: _handleAddOrUpdate,
-                    child: Text(appLocalizations.add),
-                  ),
-          ),
+    return GroupedSection(
+      header: header,
+      footer: appLocalizations.locationPermissionDesc,
+      children: [
+        GroupedRow(
+          title: appLocalizations.locationPermission,
+          trailing: _buildStatus(authorized: granted),
+          onTap: _handleRequestLocationPermission,
         ),
       ],
     );
   }
 
-  Widget _buildExcludeSsidsList(
-    List<String> excludeSSIDs,
-    Set<dynamic> selectedItems,
-  ) {
-    if (excludeSSIDs.isEmpty) {
-      return SliverPadding(
-        padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(top: 12),
-        sliver: SliverToBoxAdapter(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 48),
+  Widget _buildEntry(String ssid, int index, bool isSelected) {
+    return ReorderableDelayedDragStartListener(
+      key: ValueKey(ssid),
+      index: index,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (index > 0)
+            const GroupedHairline(
+              inset: groupedRowPadding + groupedLeadingSize + groupedLeadingGap,
+            ),
+          GroupedRow(
+            leading: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                ref.read(itemsProvider(key).notifier).update((state) {
+                  return Set<String>.from(state)..addOrRemove(ssid);
+                });
+              },
+              child: GroupedSelectMark(selected: isSelected),
+            ),
+            title: ssid,
+            onTap: () => _handleAddOrUpdate(ssid),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExcludeSsids(List<String> excludeSSIDs, Set<dynamic> selected) {
+    final appLocalizations = context.appLocalizations;
+    final palette = GroupedPalette.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            groupedRowPadding + 1,
+            0,
+            groupedRowPadding,
+            6,
+          ),
+          child: Text(
+            appLocalizations.excludeSsids,
+            style: palette.sectionLabel,
+          ),
+        ),
+        if (excludeSSIDs.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 36),
             child: NullStatus(
-              label: context.appLocalizations.ssidsEmpty,
+              label: appLocalizations.ssidsEmpty,
               illustration: NullStatusIllustration.wifi,
             ),
+          )
+        else
+          GroupedCard(
+            child: ReorderableListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              buildDefaultDragHandles: false,
+              itemCount: excludeSSIDs.length,
+              itemBuilder: (_, index) => _buildEntry(
+                excludeSSIDs[index],
+                index,
+                selected.contains(excludeSSIDs[index]),
+              ),
+              proxyDecorator: (child, _, _) =>
+                  Material(type: MaterialType.transparency, child: child),
+              onReorderItem: _handleReorder,
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            groupedRowPadding + 1,
+            6,
+            groupedRowPadding,
+            0,
+          ),
+          child: Text(
+            appLocalizations.excludeSsidsDesc,
+            style: palette.sectionLabel,
           ),
         ),
-      );
-    }
-    Widget itemAt(int index) => _buildItem(
-      isEditing: selectedItems.isNotEmpty,
-      ssid: excludeSSIDs[index],
-      index: index,
-      isSelected: selectedItems.contains(excludeSSIDs[index]),
-      length: excludeSSIDs.length,
-    );
-    return SliverPadding(
-      padding: const EdgeInsets.only(top: 12),
-      sliver: SliverReorderableList(
-        itemBuilder: (_, index) => itemAt(index),
-        proxyDecorator: (child, index, animation) =>
-            commonProxyDecorator(itemAt(index), index, animation),
-        itemCount: excludeSSIDs.length,
-        onReorderItem: _handleReorder,
-      ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
     final excludeSSIDs = ref.watch(excludeSSIDsProvider);
     final selectedItems = ref.watch(itemsProvider(key));
-    return CommonScaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-            ).copyWith(top: context.appBarInset),
-            sliver: SliverToBoxAdapter(child: _buildPrerequisites()),
+    final hasSelection = selectedItems.isNotEmpty;
+    final prerequisites = [
+      if (_isAndroid) _buildBatteryOptimizationSection,
+      if (_isAndroid || _isMacOS) _buildLocationPermissionSection,
+    ];
+    return GroupedPage(
+      title: appLocalizations.onDemand,
+      leadingActions: [
+        GroupedBarAction(
+          glyph: AppGlyphs.chevronBack,
+          tooltip: appLocalizations.back,
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+        if (hasSelection)
+          GroupedBarAction(
+            glyph: AppGlyphs.delete,
+            tooltip: appLocalizations.delete,
+            onPressed: _handleDelete,
           ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverToBoxAdapter(child: _buildExcludeSsidsHeader()),
-          ),
-          _buildExcludeSsidsList(excludeSSIDs, selectedItems),
+      ],
+      trailing: hasSelection
+          ? GroupedBarAction(
+              label: appLocalizations.selectAll,
+              tooltip: appLocalizations.selectAll,
+              onPressed: _handleSelectAll,
+            )
+          : GroupedBarAction(
+              label: appLocalizations.add,
+              tooltip: appLocalizations.add,
+              onPressed: _handleAddOrUpdate,
+            ),
+      body: GroupedBody(
+        children: [
+          for (final (index, section) in prerequisites.indexed) ...[
+            section(header: index == 0 ? appLocalizations.prerequisites : null),
+            const SizedBox(height: groupedSectionGap),
+          ],
+          _buildExcludeSsids(excludeSSIDs, selectedItems),
         ],
       ),
-      title: context.appLocalizations.onDemand,
     );
   }
 }

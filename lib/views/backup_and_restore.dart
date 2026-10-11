@@ -9,14 +9,13 @@ import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/widgets/navigation_dock.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/widgets/fade_box.dart';
 import 'package:fl_clash/widgets/input.dart';
 import 'package:fl_clash/widgets/list.dart';
 import 'package:fl_clash/widgets/loading.dart';
-import 'package:fl_clash/widgets/scaffold.dart';
-import 'package:fl_clash/widgets/text.dart';
+import 'package:fl_clash/widgets/grouped_list.dart';
+import 'package:fl_clash/widgets/grouped_page.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -66,12 +65,7 @@ class _BackupAndRestoreState extends ConsumerState<BackupAndRestore>
       title: title,
     );
     if (res != true) return;
-    unawaited(
-      dialogs.showMessage(
-        title: title,
-        message: TextSpan(text: successMessage),
-      ),
-    );
+    dialogs.showNotifier(successMessage, level: MessageLevel.success);
   }
 
   Future<void> _backup(BackupDelivery deliver) {
@@ -138,7 +132,16 @@ class _BackupAndRestoreState extends ConsumerState<BackupAndRestore>
     await _restore(option, (_) async => path);
   }
 
-  void _handleChange(String? value, WidgetRef ref) {
+  Future<void> _handleEditFileName(String fileName) async {
+    final appLocalizations = context.appLocalizations;
+    final value = await dialogs.showCommonDialog<String>(
+      child: InputDialog(
+        title: appLocalizations.file,
+        value: fileName,
+        resetValue: defaultDavFileName,
+        inputFormatters: TextInputLimits.limit(TextInputLimits.fileName),
+      ),
+    );
     if (value == null) {
       return;
     }
@@ -147,134 +150,88 @@ class _BackupAndRestoreState extends ConsumerState<BackupAndRestore>
         .update((state) => state?.copyWith(fileName: value));
   }
 
-  Future<void> _handleUpdateRestoreStrategy() async {
-    final restoreStrategy = ref.read(
-      appSettingProvider.select((state) => state.restoreStrategy),
-    );
-    final res = await dialogs.showCommonDialog(
-      child: OptionsDialog<RestoreStrategy>(
-        title: currentAppLocalizations.restoreStrategy,
-        options: RestoreStrategy.values,
-        textBuilder: (mode) => mode.label,
-        value: restoreStrategy,
-      ),
-    );
-    if (res == null) {
-      return;
-    }
-    ref
-        .read(appSettingProvider.notifier)
-        .update((state) => state.copyWith(restoreStrategy: res));
+  void _handleUpdateRestoreStrategy() {
+    BaseNavigator.push(context, const _RestoreStrategyPage());
   }
 
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
+    final palette = GroupedPalette.of(context);
     final dav = ref.watch(davSettingProvider);
     final isLoading = ref.watch(loadingProvider(LoadingTag.backup_restore));
-    return CommonScaffold(
-      isLoading: isLoading,
+    Widget section(String header, List<Widget> children) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: groupedSectionGap),
+        child: GroupedSection(header: header, children: children),
+      );
+    }
+
+    Widget action(String label, VoidCallback onTap) {
+      return GroupedRow(title: label, chevron: true, onTap: onTap);
+    }
+
+    return GroupedPage(
       title: appLocalizations.backupAndRestore,
-      body: ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-        ).copyWith(top: context.appBarInset, bottom: 16),
+      onBack: () => Navigator.of(context).maybePop(),
+      body: Stack(
         children: [
-          generateSectionV3(
-            title: appLocalizations.remote,
-            items: [
-              if (dav == null)
-                ListItem(
-                  leading: const GlyphIcon(AppGlyphs.account),
-                  title: Text(appLocalizations.noInfo),
-                  subtitle: Text(appLocalizations.pleaseBindWebDAV),
-                  trailing: ElasticButton(
-                    child: FilledButton.tonal(
-                      onPressed: () {
-                        _showAddWebDAV(dav);
-                      },
-                      child: Text(appLocalizations.bind),
+          GroupedBody(
+            children: [
+              section(appLocalizations.remote, [
+                if (dav == null)
+                  GroupedRow(
+                    leading: const GroupedIcon(AppGlyphs.account),
+                    title: appLocalizations.noInfo,
+                    subtitle: appLocalizations.pleaseBindWebDAV,
+                    trailing: Text(
+                      appLocalizations.bind,
+                      style: palette.rowTitle.copyWith(color: palette.accent),
                     ),
-                  ),
-                )
-              else ...[
-                ListItem(
-                  leading: const GlyphIcon(AppGlyphs.account),
-                  title: TooltipText(
-                    text: Text(
-                      dav.user,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    onTap: () => _showAddWebDAV(dav),
+                  )
+                else ...[
+                  GroupedRow(
+                    leading: const GroupedIcon(AppGlyphs.account),
+                    title: dav.user,
+                    subtitleWidget: Row(
+                      spacing: 6,
                       children: [
                         Text(appLocalizations.connectivity),
                         _DavConnectionIndicator(connection: _davConnection),
                       ],
                     ),
-                  ),
-                  trailing: ElasticButton(
-                    child: FilledButton.tonal(
-                      onPressed: () {
-                        _showAddWebDAV(dav);
-                      },
-                      child: Text(appLocalizations.edit),
+                    trailing: Text(
+                      appLocalizations.edit,
+                      style: palette.rowTitle.copyWith(color: palette.accent),
                     ),
+                    onTap: () => _showAddWebDAV(dav),
                   ),
-                ),
-                ListItem.input(
-                  title: Text(appLocalizations.file),
-                  subtitle: Text(dav.fileName),
-                  dialogTitle: appLocalizations.file,
-                  value: dav.fileName,
-                  resetValue: defaultDavFileName,
-                  maxLength: TextInputLimits.fileName,
-                  onChanged: (value) {
-                    _handleChange(value, ref);
-                  },
-                ),
-                ListItem(
-                  onTap: () {
-                    _backupOnWebDAV();
-                  },
-                  title: Text(appLocalizations.backup),
-                ),
-                ListItem(
-                  onTap: () {
-                    _restoreOnWebDAV();
-                  },
-                  title: Text(appLocalizations.restore),
-                ),
-              ],
+                  GroupedRow(
+                    title: appLocalizations.file,
+                    value: dav.fileName,
+                    onTap: () => _handleEditFileName(dav.fileName),
+                  ),
+                  action(appLocalizations.backup, _backupOnWebDAV),
+                  action(appLocalizations.restore, _restoreOnWebDAV),
+                ],
+              ]),
+              section(appLocalizations.local, [
+                action(appLocalizations.backup, _backupOnLocal),
+                action(appLocalizations.restore, _restoreOnLocal),
+              ]),
+              section(appLocalizations.options, [
+                _RestoreStrategyItem(onPressed: _handleUpdateRestoreStrategy),
+              ]),
             ],
           ),
-          generateSectionV3(
-            title: appLocalizations.local,
-            items: [
-              ListItem(
-                onTap: () {
-                  _backupOnLocal();
-                },
-                title: Text(appLocalizations.backup),
-              ),
-              ListItem(
-                onTap: () {
-                  _restoreOnLocal();
-                },
-                title: Text(appLocalizations.restore),
-              ),
-            ],
-          ),
-          generateSectionV3(
-            title: appLocalizations.options,
-            items: [
-              _RestoreStrategyItem(onPressed: _handleUpdateRestoreStrategy),
-            ],
-          ),
+          if (isLoading)
+            const Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: LinearProgressIndicator(minHeight: 2),
+            ),
         ],
       ),
     );
@@ -316,7 +273,7 @@ class _DavConnectionIndicator extends StatelessWidget {
   }
 }
 
-class _RestoreStrategyItem extends ConsumerWidget {
+class _RestoreStrategyItem extends ConsumerWidget with GroupedPlainInset {
   const _RestoreStrategyItem({required this.onPressed});
 
   final VoidCallback onPressed;
@@ -326,15 +283,31 @@ class _RestoreStrategyItem extends ConsumerWidget {
     final restoreStrategy = ref.watch(
       appSettingProvider.select((state) => state.restoreStrategy),
     );
-    return ListItem(
+    return GroupedRow(
+      title: context.appLocalizations.restoreStrategy,
+      value: restoreStrategy.label,
+      chevron: true,
       onTap: onPressed,
-      title: Text(context.appLocalizations.restoreStrategy),
-      trailing: ElasticButton(
-        child: FilledButton(
-          onPressed: onPressed,
-          child: Text(restoreStrategy.label),
-        ),
+    );
+  }
+}
+
+class _RestoreStrategyPage extends ConsumerWidget {
+  const _RestoreStrategyPage();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GroupedChoicePage<RestoreStrategy>(
+      title: context.appLocalizations.restoreStrategy,
+      choices: {
+        for (final strategy in RestoreStrategy.values) strategy: strategy.label,
+      },
+      selected: ref.watch(
+        appSettingProvider.select((state) => state.restoreStrategy),
       ),
+      onSelected: (strategy) => ref
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(restoreStrategy: strategy)),
     );
   }
 }

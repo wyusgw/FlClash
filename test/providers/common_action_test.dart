@@ -90,6 +90,9 @@ void main() {
       when(
         () => core.getTotalTraffic(true),
       ).thenAnswer((_) async => const Traffic(up: 100, down: 200));
+      when(
+        () => core.getTotalTraffic(false),
+      ).thenAnswer((_) async => const Traffic(up: 1000, down: 2000));
 
       await container.read(commonActionProvider.notifier).updateTraffic();
 
@@ -102,6 +105,29 @@ void main() {
       verify(() => core.getTraffic(true)).called(1);
       verify(() => core.getTotalTraffic(true)).called(1);
     });
+
+    test(
+      'splits the total into what went through a proxy and the rest',
+      () async {
+        final container = buildContainer();
+        when(
+          () => core.getTraffic(any()),
+        ).thenAnswer((_) async => const Traffic());
+        when(
+          () => core.getTotalTraffic(false),
+        ).thenAnswer((_) async => const Traffic(up: 1000, down: 2000));
+        when(
+          () => core.getTotalTraffic(true),
+        ).thenAnswer((_) async => const Traffic(up: 100, down: 200));
+
+        await container.read(commonActionProvider.notifier).updateTraffic();
+
+        final stats = container.read(statsSnapshotProvider);
+        expect(stats.all, const Traffic(up: 1000, down: 2000));
+        expect(stats.proxy, const Traffic(up: 100, down: 200));
+        expect(stats.direct, const Traffic(up: 900, down: 1800));
+      },
+    );
 
     test('swallows a core failure and leaves the total untouched', () async {
       final container = buildContainer();
@@ -151,7 +177,7 @@ void main() {
         await first;
 
         verify(() => core.getTraffic(any())).called(1);
-        verify(() => core.getTotalTraffic(any())).called(1);
+        verify(() => core.getTotalTraffic(any())).called(2);
       },
     );
   });

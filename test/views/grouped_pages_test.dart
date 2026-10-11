@@ -3,20 +3,25 @@ import 'dart:io';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/views/about.dart';
 import 'package:fl_clash/views/backup_and_restore.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/views/data.dart';
 import 'package:fl_clash/views/home/delay_test.dart';
 import 'package:fl_clash/views/profiles/profiles.dart';
 import 'package:fl_clash/views/tools.dart';
+import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 
 import '../helpers/glyph_finders.dart';
@@ -36,6 +41,11 @@ class _FakePathProvider extends PathProviderPlatform {
 
   @override
   Future<String?> getApplicationCachePath() async => root;
+}
+
+class _NoopSetupAction extends SetupAction {
+  @override
+  void applyProfileDebounce({bool silence = false, bool force = false}) {}
 }
 
 Profile _profile(int id, String label) => Profile(
@@ -62,6 +72,7 @@ void main() {
     WidgetTester tester,
     Widget page, {
     List<Profile> profiles = const [],
+    List<Override> overrides = const [],
   }) async {
     tester.view.physicalSize = const Size(900, 900);
     tester.view.devicePixelRatio = 1;
@@ -69,6 +80,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     container = ProviderContainer(
       overrides: [
+        ...overrides,
         profilesProvider.overrideWith(() => TestProfiles(profiles)),
         currentProfileIdProvider.overrideWithBuild(
           (_, _) => profiles.firstOrNull?.id,
@@ -279,6 +291,27 @@ void main() {
       );
     });
 
+    testWidgets('the about page fills the page and goes back', (tester) async {
+      globalState.packageInfo = PackageInfo(
+        appName: 'FlClash',
+        packageName: 'com.follow.clash',
+        version: '0.0.0',
+        buildNumber: '1',
+      );
+      await pumpPage(tester, const ToolsView());
+
+      await tester.tap(find.text('About'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AboutView), findsOneWidget);
+      expect(find.byType(ToolsView), findsNothing);
+      expect(find.byTooltip('Back'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AboutView), findsNothing);
+      expect(find.byType(ToolsView), findsOneWidget);
+    });
+
     testWidgets('the delay test method opens its page and a pick sticks', (
       tester,
     ) async {
@@ -312,6 +345,172 @@ void main() {
 
       expect(find.byType(LanguageView), findsNothing);
       expect(find.byType(ToolsView), findsOneWidget);
+    });
+  });
+
+  group('window settings', () {
+    testWidgets(
+      'the sidebar row opens its page and Off takes the sidebar away',
+      (tester) async {
+        await pumpPage(tester, const ToolsView());
+        expect(find.text('Sidebar'), findsOneWidget);
+        expect(find.text('On'), findsOneWidget);
+        expect(container.read(viewModeProvider), ViewMode.desktop);
+
+        await tester.tap(find.text('Sidebar'));
+        await tester.pumpAndSettle();
+        expect(find.byType(SidebarView), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.widgetWithText(GroupedRow, 'On'),
+            matching: find.byGlyph(AppGlyphs.check),
+          ),
+          findsOneWidget,
+        );
+
+        await tester.tap(find.text('Off'));
+        await tester.pump();
+
+        expect(container.read(appSettingProvider).showSidebar, isFalse);
+        expect(container.read(viewModeProvider), ViewMode.mobile);
+        expect(
+          find.descendant(
+            of: find.widgetWithText(GroupedRow, 'Off'),
+            matching: find.byGlyph(AppGlyphs.check),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets('the menu bar page lists three modes and a pick sticks', (
+      tester,
+    ) async {
+      await pumpPage(tester, const MenuBarView());
+
+      expect(find.text('Embedded'), findsOneWidget);
+      expect(find.text('Standalone'), findsOneWidget);
+      expect(find.text('Off'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.widgetWithText(GroupedRow, 'Embedded'),
+          matching: find.byGlyph(AppGlyphs.check),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Standalone'));
+      await tester.pump();
+
+      expect(container.read(appSettingProvider).trayMode, TrayMode.standalone);
+      expect(
+        find.descendant(
+          of: find.widgetWithText(GroupedRow, 'Standalone'),
+          matching: find.byGlyph(AppGlyphs.check),
+        ),
+        findsOneWidget,
+      );
+    });
+  });
+
+  group('reset page', () {
+    testWidgets('the settings page lists it', (tester) async {
+      await pumpPage(tester, const ToolsView());
+
+      expect(find.widgetWithText(GroupedRow, 'Reset'), findsOneWidget);
+    });
+
+    testWidgets('resetting the core settings asks first, then does it', (
+      tester,
+    ) async {
+      await pumpPage(
+        tester,
+        const ResetView(),
+        overrides: [setupActionProvider.overrideWith(_NoopSetupAction.new)],
+      );
+      container.listen(coreSettingProvider, (_, _) {});
+      container
+          .read(coreSettingProvider.notifier)
+          .update((state) => state.copyWith(allowLan: true));
+
+      await tester.tap(find.text('Reset core settings'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ConfirmDialog), findsOneWidget);
+      expect(find.text('Are you sure you want to reset?'), findsOneWidget);
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(container.read(coreSettingProvider).allowLan, isTrue);
+
+      await tester.tap(find.text('Reset core settings'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(ConfirmDialog),
+          matching: find.text('Reset'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(container.read(coreSettingProvider).allowLan, isFalse);
+    });
+
+    testWidgets('declining the user settings reset leaves everything', (
+      tester,
+    ) async {
+      await pumpPage(tester, const ResetView());
+
+      await tester.tap(find.text('Reset user settings'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ConfirmDialog), findsNothing);
+    });
+  });
+
+  group('no hover or shadow', () {
+    testWidgets('a grouped row shows nothing under the pointer', (
+      tester,
+    ) async {
+      await pumpPage(tester, const ToolsView());
+
+      final row = find.ancestor(
+        of: find.text('Language'),
+        matching: find.byType(InkWell),
+      );
+      expect(tester.widget<InkWell>(row.first).hoverColor, Colors.transparent);
+    });
+
+    testWidgets('the confirm dialog has no shadow', (tester) async {
+      await pumpPage(tester, const ResetView());
+
+      await tester.tap(find.text('Reset core settings'));
+      await tester.pumpAndSettle();
+
+      final dialog = tester.widget<Dialog>(find.byType(Dialog));
+      expect(dialog.elevation, 0);
+      expect(dialog.shadowColor, Colors.transparent);
+    });
+
+    testWidgets('a switch thumb has no shadow', (tester) async {
+      await tester.pumpWidget(
+        const TestApp(child: Scaffold(body: GroupedSwitch(value: true))),
+      );
+
+      final thumb = tester.widgetList<DecoratedBox>(
+        find.descendant(
+          of: find.byType(GroupedSwitch),
+          matching: find.byType(DecoratedBox),
+        ),
+      );
+      expect(
+        thumb.where(
+          (box) =>
+              box.decoration is BoxDecoration &&
+              (box.decoration as BoxDecoration).boxShadow != null,
+        ),
+        isEmpty,
+      );
     });
   });
 }

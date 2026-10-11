@@ -33,6 +33,11 @@ class ProfilesAction extends _$ProfilesAction {
         unawaited(ref.read(setupActionProvider.notifier).setRunning(false));
       }
     }
+    _notifySuccess(currentAppLocalizations.deleteSuccess);
+  }
+
+  void _notifySuccess(String text) {
+    dialogs.showNotifier(text, level: MessageLevel.success);
   }
 
   Future<String> validateConfigWithData(String data) async {
@@ -87,6 +92,9 @@ class ProfilesAction extends _$ProfilesAction {
             .read(setupActionProvider.notifier)
             .applyProfileDebounce(silence: true);
       }
+      if (showLoading) {
+        _notifySuccess(currentAppLocalizations.updateSuccess);
+      }
     } finally {
       if (operation != null) {
         ref
@@ -134,6 +142,67 @@ class ProfilesAction extends _$ProfilesAction {
     if (saved.id == ref.read(currentProfileIdProvider)) {
       ref.read(setupActionProvider.notifier).applyProfileDebounce();
     }
+    _notifySuccess(currentAppLocalizations.addSuccess);
+  }
+
+  /// The outbound of the node [tag] in [profile], as the profile stores it.
+  Future<Map<String, dynamic>?> readNodeOutbound(
+    Profile profile,
+    String tag,
+  ) async {
+    final text = await readTextFileTask(
+      await appPath.getProfilePath(profile.id.toString()),
+    );
+    if (text == null) return null;
+    for (final node in parseSubscription(text)) {
+      if (node['tag'] == tag) return node;
+    }
+    return null;
+  }
+
+  /// Puts [outbound] where the node [tag] of [profile] stood. A node that is
+  /// renamed keeps being the one chosen when it was.
+  Future<void> replaceNode(
+    Profile profile,
+    String tag,
+    Map<String, dynamic> outbound,
+  ) async {
+    final appLocalizations = currentAppLocalizations;
+    final text = await readTextFileTask(
+      await appPath.getProfilePath(profile.id.toString()),
+    );
+    final nodes = text == null
+        ? <Map<String, dynamic>>[]
+        : parseSubscription(text);
+    final index = nodes.indexWhere((node) => node['tag'] == tag);
+    final newTag = '${outbound['tag']}';
+    if (index == -1) return;
+    if (newTag != tag && nodes.any((node) => node['tag'] == newTag)) {
+      dialogs.showNotifier(
+        appLocalizations.existsTip(appLocalizations.name),
+        level: MessageLevel.error,
+      );
+      return;
+    }
+    nodes[index] = outbound;
+    final saved = await globalState.loadingRun(
+      tag: LoadingTag.profiles,
+      () => profile.saveFile(
+        Uint8List.fromList(utf8.encode(json.encode({'outbounds': nodes}))),
+        validate: (path) => _core.validateConfig(path),
+      ),
+      title: appLocalizations.save,
+    );
+    if (saved == null) return;
+    final selectedMap = {...saved.selectedMap};
+    if (selectedMap[nodeGroupName] == tag) {
+      selectedMap[nodeGroupName] = newTag;
+    }
+    putProfile(saved.copyWith(selectedMap: selectedMap));
+    if (saved.id == ref.read(currentProfileIdProvider)) {
+      ref.read(setupActionProvider.notifier).applyProfileDebounce();
+    }
+    _notifySuccess(appLocalizations.saveSuccess);
   }
 
   Future<void> addProfileFormFile() async {
@@ -153,6 +222,7 @@ class ProfilesAction extends _$ProfilesAction {
     );
     if (profile != null) {
       putProfile(profile);
+      _notifySuccess(currentAppLocalizations.addSuccess);
     }
   }
 
@@ -173,6 +243,7 @@ class ProfilesAction extends _$ProfilesAction {
     );
     if (profile != null) {
       putProfile(profile);
+      _notifySuccess(currentAppLocalizations.addSuccess);
     }
   }
 

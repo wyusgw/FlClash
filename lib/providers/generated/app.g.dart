@@ -361,6 +361,110 @@ abstract class _$TotalTraffic extends $Notifier<Traffic> {
   }
 }
 
+@ProviderFor(StatsSnapshot)
+final statsSnapshotProvider = StatsSnapshotProvider._();
+
+final class StatsSnapshotProvider
+    extends $NotifierProvider<StatsSnapshot, TrafficStats> {
+  StatsSnapshotProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'statsSnapshotProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$statsSnapshotHash();
+
+  @$internal
+  @override
+  StatsSnapshot create() => StatsSnapshot();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TrafficStats value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TrafficStats>(value),
+    );
+  }
+}
+
+String _$statsSnapshotHash() => r'0181088a928ad8dbf3b1e505f7ddb8f936a7b7f7';
+
+abstract class _$StatsSnapshot extends $Notifier<TrafficStats> {
+  TrafficStats build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<TrafficStats, TrafficStats>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<TrafficStats, TrafficStats>,
+              TrafficStats,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(StatsRecords)
+final statsRecordsProvider = StatsRecordsProvider._();
+
+final class StatsRecordsProvider
+    extends $NotifierProvider<StatsRecords, List<StatsRecord>> {
+  StatsRecordsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'statsRecordsProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$statsRecordsHash();
+
+  @$internal
+  @override
+  StatsRecords create() => StatsRecords();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(List<StatsRecord> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<List<StatsRecord>>(value),
+    );
+  }
+}
+
+String _$statsRecordsHash() => r'805273874aa9bfcc74856d94c8c29df0042accd3';
+
+abstract class _$StatsRecords extends $Notifier<List<StatsRecord>> {
+  List<StatsRecord> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<List<StatsRecord>, List<StatsRecord>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<List<StatsRecord>, List<StatsRecord>>,
+              List<StatsRecord>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(LoadedLocale)
 final loadedLocaleProvider = LoadedLocaleProvider._();
 
@@ -815,7 +919,7 @@ final class ViewModeProvider
   }
 }
 
-String _$viewModeHash() => r'56f81d519e3835bddef4a3905182991169c17619';
+String _$viewModeHash() => r'2df36908fab5e5be44656f557f2cfa50c7e3cb08';
 
 @ProviderFor(isMobileView)
 final isMobileViewProvider = IsMobileViewProvider._();

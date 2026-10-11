@@ -11,13 +11,15 @@ import 'package:window/window.dart';
 class Window implements WindowPort {
   static Window? _instance;
   bool _supportsPosition = false;
+  bool _standalone = false;
   WindowEffect? _blurEffect;
   late final WindowVisibilityController _visibility =
       WindowVisibilityController(
         showWindow: _showWindow,
         hideWindow: _hideWindow,
         isWindowVisible: _isWindowVisible,
-        setSkipTaskbar: (skip) => desktopWindow.setSkipTaskbar(skip),
+        setSkipTaskbar: (skip) =>
+            desktopWindow.setSkipTaskbar(skip || _standalone),
         dockSettleDuration: system.isMacOS
             ? const Duration(seconds: 1)
             : Duration.zero,
@@ -190,6 +192,13 @@ class Window implements WindowPort {
   @override
   Future<void> toggle() => _visibility.toggle();
 
+  /// Keeps the Dock icon or taskbar entry away even while the window is open,
+  /// for a menu bar item that stands alone.
+  Future<void> setStandalone(bool standalone) {
+    _standalone = standalone;
+    return _visibility.refreshTaskbar();
+  }
+
   Future<void> _showWindow() async {
     await desktopWindow.show();
     await desktopWindow.focus();
@@ -245,6 +254,10 @@ class WindowVisibilityController {
   Future<void> show() => _enqueue(_show);
 
   Future<void> hide() => _enqueue(_hide);
+
+  Future<void> refreshTaskbar() => _enqueue(() async {
+    await _setSkipTaskbar(!await _isWindowVisible());
+  });
 
   Future<void> toggle() => _enqueue(() async {
     if (await _isWindowVisible()) {

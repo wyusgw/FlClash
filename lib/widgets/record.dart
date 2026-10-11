@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'chip.dart';
+import 'grouped_list.dart';
 import 'list.dart';
 
 class RecordTextStyles {
@@ -14,15 +15,13 @@ class RecordTextStyles {
   const RecordTextStyles._({this.primary, this.secondary, this.muted});
 
   factory RecordTextStyles.of(BuildContext context) {
-    final colorScheme = context.colorScheme;
+    final palette = GroupedPalette.of(context);
     final textTheme = context.textTheme;
-    final secondary = textTheme.bodySmall?.copyWith(
-      color: colorScheme.onSurfaceVariant,
-    );
+    final secondary = textTheme.bodySmall?.copyWith(color: palette.secondary);
     return RecordTextStyles._(
-      primary: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
+      primary: textTheme.bodyMedium?.copyWith(color: palette.label),
       secondary: secondary,
-      muted: secondary?.copyWith(color: colorScheme.outline),
+      muted: secondary?.copyWith(color: palette.tertiary),
     );
   }
 }
@@ -43,16 +42,25 @@ class RecordListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = ListItem(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-      minVerticalPadding: 0,
-      minTileHeight: 0,
-      horizontalTitleGap: 12,
-      tileTitleAlignment: ListTileTitleAlignment.top,
-      color: tone.tintColor(context),
-      onTap: onTap,
-      title: header,
-      subtitle: Padding(padding: const EdgeInsets.only(top: 6), child: body),
+    final item = Material(
+      color: tone.tintColor(context) ?? Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        hoverColor: GroupedPalette.of(context).hover,
+        highlightColor: GroupedPalette.of(context).hover,
+        splashColor: Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              header,
+              Padding(padding: const EdgeInsets.only(top: 6), child: body),
+            ],
+          ),
+        ),
+      ),
     );
     final accentColor = tone.accentColor(context);
     if (accentColor == null) {

@@ -5,9 +5,9 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/widgets/list.dart';
-import 'package:fl_clash/widgets/scaffold.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 @immutable
@@ -17,6 +17,8 @@ class Contributor {
 
   const Contributor({required this.avatar, required this.name});
 }
+
+const _heroLogoSize = 72.0;
 
 class AboutView extends ConsumerWidget {
   const AboutView({super.key});
@@ -37,40 +39,45 @@ class AboutView extends ConsumerWidget {
     unawaited(commonAction.checkUpdateResultHandle(data: data, isUser: true));
   }
 
-  Widget _buildLinkItem({
+  Widget _link({
     required Glyph glyph,
     required String title,
     required String url,
-    required String label,
   }) {
-    return ListItem(
-      leading: _LinkBadge(glyph: glyph),
-      title: Text(title),
-      subtitle: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
-      trailing: const GlyphIcon(AppGlyphs.openExternal),
-      onTap: () {
-        dialogs.openUrl(url);
-      },
+    return GroupedRow(
+      leading: GroupedIcon(glyph),
+      title: title,
+      chevron: true,
+      onTap: () => dialogs.openUrl(url),
+    );
+  }
+
+  GroupedRow _credit(String name, String url) {
+    return GroupedRow(
+      title: name,
+      chevron: true,
+      onTap: () => dialogs.openUrl(url),
     );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
+    final palette = GroupedPalette.of(context);
     final isLoading = ref.watch(loadingProvider(LoadingTag.checkUpdate));
-    return CommonScaffold(
-      isLoading: isLoading,
+    final packageInfo = globalState.packageInfo;
+    return GroupedPage(
       title: appLocalizations.about,
+      onBack: () => Navigator.of(context).maybePop(),
       body: ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-        ).copyWith(top: context.contentTopPadding, bottom: 32),
+        padding: EdgeInsets.fromLTRB(
+          groupedPageInset,
+          13,
+          groupedPageInset,
+          20 + BottomInsetScope.of(context),
+        ),
         children: [
           _AboutHero(
-            isCheckingUpdate: isLoading,
-            onCheckUpdate: () {
-              _checkUpdate(context, ref);
-            },
             onEnterDeveloperMode: () {
               ref
                   .read(appSettingProvider.notifier)
@@ -81,40 +88,125 @@ class AboutView extends ConsumerWidget {
               );
             },
           ),
-          const SizedBox(height: 8),
-          generateSectionV3(
-            title: appLocalizations.more,
-            items: [
-              _buildLinkItem(
-                glyph: AppGlyphs.code,
-                title: appLocalizations.project,
-                url: 'https://github.com/$repository',
-                label: 'github.com/$repository',
+          const SizedBox(height: 16),
+          GroupedSection(
+            children: [
+              GroupedRow(
+                title: appLocalizations.version,
+                value: '${packageInfo.version} (${packageInfo.buildNumber})',
               ),
-              _buildLinkItem(
-                glyph: AppGlyphs.cpu,
-                title: appLocalizations.core,
-                url: 'https://github.com/chen08209/Clash.Meta/tree/FlClash',
-                label: 'github.com/chen08209/Clash.Meta',
-              ),
-              _buildLinkItem(
-                glyph: AppGlyphs.send,
-                title: 'Telegram',
-                url: 'https://t.me/FlClash',
-                label: 't.me/FlClash',
+              GroupedRow(
+                leading: const GroupedIcon(AppGlyphs.sync),
+                title: appLocalizations.checkUpdate,
+                trailing: isLoading
+                    ? SizedBox.square(
+                        dimension: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: palette.secondary,
+                        ),
+                      )
+                    : null,
+                chevron: !isLoading,
+                onTap: isLoading ? null : () => _checkUpdate(context, ref),
               ),
             ],
           ),
-          generateSectionV3(
-            title: appLocalizations.otherContributors,
-            items: [
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
+            children: [
+              _link(
+                glyph: AppGlyphs.star,
+                title: appLocalizations.starOnGithub,
+                url: 'https://github.com/$repository',
+              ),
+              _link(
+                glyph: AppGlyphs.send,
+                title: 'Telegram',
+                url: 'https://t.me/FlClash',
+              ),
+            ],
+          ),
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
+            header: appLocalizations.feedback,
+            footer: appLocalizations.feedbackDesc,
+            children: [
+              _link(
+                glyph: AppGlyphs.compose,
+                title: appLocalizations.feedback,
+                url: 'https://github.com/$repository/issues',
+              ),
+            ],
+          ),
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
+            header: appLocalizations.urlSchemes,
+            children: [
+              GroupedRow(
+                title: appLocalizations.urlSchemes,
+                chevron: true,
+                onTap: () =>
+                    BaseNavigator.push(context, const UrlSchemesView()),
+              ),
+            ],
+          ),
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
+            header: appLocalizations.acknowledgements,
+            footer: appLocalizations.appIconDesign,
+            children: [
+              _credit('FlClash', 'https://github.com/chen08209/FlClash'),
+              _credit('Xray-core', 'https://github.com/XTLS/Xray-core'),
               for (final contributor in _contributors)
-                ListItem(
+                GroupedRow(
                   leading: CircleAvatar(
+                    radius: groupedLeadingSize / 2,
                     foregroundImage: AssetImage(contributor.avatar),
                   ),
-                  title: Text(contributor.name),
-                  subtitle: Text(appLocalizations.appIconDesign),
+                  title: contributor.name,
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The link schemes the app opens, each copied with a tap.
+class UrlSchemesView extends StatelessWidget {
+  const UrlSchemesView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
+    return GroupedPage(
+      title: appLocalizations.urlSchemes,
+      onBack: () => Navigator.of(context).maybePop(),
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(
+          groupedPageInset,
+          13,
+          groupedPageInset,
+          20 + BottomInsetScope.of(context),
+        ),
+        children: [
+          GroupedSection(
+            footer: appLocalizations.copyScheme,
+            children: [
+              for (final scheme in protocolSchemes)
+                GroupedRow(
+                  title: '$scheme://',
+                  onTap: () async {
+                    await Clipboard.setData(ClipboardData(text: '$scheme://'));
+                    if (context.mounted) {
+                      context.showNotifier(
+                        appLocalizations.copySuccess,
+                        level: MessageLevel.success,
+                      );
+                    }
+                  },
                 ),
             ],
           ),
@@ -125,143 +217,21 @@ class AboutView extends ConsumerWidget {
 }
 
 class _AboutHero extends StatelessWidget {
-  final bool isCheckingUpdate;
-  final VoidCallback onCheckUpdate;
   final VoidCallback onEnterDeveloperMode;
 
-  const _AboutHero({
-    required this.isCheckingUpdate,
-    required this.onCheckUpdate,
-    required this.onEnterDeveloperMode,
-  });
-
-  static const _logoSize = 96.0;
-  static const _logoInset = 14.0;
+  const _AboutHero({required this.onEnterDeveloperMode});
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
-    final textTheme = context.textTheme;
-    final appLocalizations = context.appLocalizations;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-      child: Column(
-        children: [
-          _DeveloperModeDetector(
-            onEnterDeveloperMode: onEnterDeveloperMode,
-            child: DecoratedBox(
-              decoration: ShapeDecoration(
-                color: colorScheme.surfaceContainerHigh,
-                shape: AppShape.all(AppCorner.fit(_logoSize)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(_logoInset),
-                child: Image.asset(
-                  'assets/images/icon.png',
-                  width: _logoSize - _logoInset * 2,
-                  height: _logoSize - _logoInset * 2,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            appName,
-            style: textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            alignment: WrapAlignment.center,
-            children: [
-              _Pill(
-                label: 'v${globalState.packageInfo.version}',
-                color: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
-              ),
-              _Pill(
-                label: 'GPL-3.0',
-                color: colorScheme.surfaceContainerHighest,
-                foregroundColor: colorScheme.onSurfaceVariant,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: Text(
-              appLocalizations.desc,
-              textAlign: TextAlign.center,
-              style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                height: 1.5,
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          FilledButton.tonalIcon(
-            onPressed: isCheckingUpdate ? null : onCheckUpdate,
-            icon: const GlyphIcon(AppGlyphs.sync, fill: 1),
-            label: Text(appLocalizations.checkUpdate),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Pill extends StatelessWidget {
-  final String label;
-  final Color color;
-  final Color foregroundColor;
-
-  const _Pill({
-    required this.label,
-    required this.color,
-    required this.foregroundColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: ShapeDecoration(color: color, shape: AppShape.full),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: Text(
-          label,
-          style: context.textTheme.labelMedium?.copyWith(
-            color: foregroundColor,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LinkBadge extends StatelessWidget {
-  final Glyph glyph;
-
-  const _LinkBadge({required this.glyph});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
-    return DecoratedBox(
-      decoration: ShapeDecoration(
-        color: colorScheme.secondaryContainer,
-        shape: AppShape.md,
-      ),
-      child: SizedBox.square(
-        dimension: 40,
-        child: Center(
-          child: GlyphIcon(
-            glyph,
-            size: 20,
-            color: colorScheme.onSecondaryContainer,
+      padding: const EdgeInsets.only(top: 8),
+      child: Center(
+        child: _DeveloperModeDetector(
+          onEnterDeveloperMode: onEnterDeveloperMode,
+          child: Image.asset(
+            'assets/images/icon.png',
+            width: _heroLogoSize,
+            height: _heroLogoSize,
           ),
         ),
       ),

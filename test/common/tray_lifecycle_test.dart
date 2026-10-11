@@ -11,7 +11,10 @@ import 'package:tray/tray.dart';
 
 const _channel = MethodChannel('tray');
 
-TrayState _trayState({bool isStart = false}) {
+TrayState _trayState({
+  bool isStart = false,
+  TrayMode trayMode = TrayMode.embedded,
+}) {
   return TrayState(
     mode: Mode.rule,
     port: 7890,
@@ -23,6 +26,7 @@ TrayState _trayState({bool isStart = false}) {
     selectedMap: const {},
     showTrayTitle: false,
     safeMode: false,
+    trayMode: trayMode,
   );
 }
 
@@ -75,5 +79,31 @@ void main() {
     await AppTray().updateTitle(showTrayTitle: true, traffic: const Traffic());
 
     expect(calls, isEmpty);
+  });
+
+  test('the menu bar item goes away when the mode is off', () async {
+    final tray = AppTray.forPlatform(isMacOS: true, isWindows: false);
+    Future<void> update(TrayMode mode) {
+      return tray.update(
+        trayState: _trayState(trayMode: mode),
+        traffic: const Traffic(),
+        read: container.read,
+      );
+    }
+
+    int count(String method) =>
+        calls.where((call) => call.method == method).length;
+
+    await update(TrayMode.embedded);
+    expect(count('show'), 1);
+
+    await update(TrayMode.off);
+    await tray.updateTitle(showTrayTitle: true, traffic: const Traffic());
+    expect(count('hide'), 1);
+    expect(count('show'), 1);
+    expect(count('setTitle'), 0);
+
+    await update(TrayMode.standalone);
+    expect(count('show'), 2);
   });
 }

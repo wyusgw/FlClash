@@ -126,6 +126,16 @@ void main() {
     expect(find.text(l10n.delete), findsOneWidget);
   });
 
+  testWidgets('the page offers no editing of the file and no upload', (
+    tester,
+  ) async {
+    await openEdit(tester);
+
+    expect(find.widgetWithText(GroupedRow, 'Edit'), findsNothing);
+    expect(find.widgetWithText(GroupedRow, 'Upload'), findsNothing);
+    expect(find.text(currentAppLocalizations.exportFile), findsOneWidget);
+  });
+
   testWidgets('a file profile has no address and no link to copy', (
     tester,
   ) async {
@@ -138,17 +148,24 @@ void main() {
     expect(find.text(l10n.autoUpdate), findsNothing);
   });
 
-  testWidgets('the interval shows only while auto update is on', (
+  testWidgets('auto update is a switch alone, with no interval to type', (
     tester,
   ) async {
-    await openEdit(tester);
-    final l10n = currentAppLocalizations;
-    expect(find.text(l10n.autoUpdateInterval), findsNothing);
+    final profile = await openEdit(tester);
+    final fields = find.byType(TextField);
+    final before = fields.evaluate().length;
 
     await tester.tap(find.byType(GroupedSwitch));
     await tester.pumpAndSettle();
 
-    expect(find.text(l10n.autoUpdateInterval), findsOneWidget);
+    expect(fields.evaluate().length, before);
+
+    await tester.tap(find.text(currentAppLocalizations.save));
+    await tester.pumpAndSettle();
+
+    final saved = container.read(profilesProvider).single;
+    expect(saved.autoUpdate, !profile.autoUpdate);
+    expect(saved.autoUpdateDuration, profile.autoUpdateDuration);
   });
 
   testWidgets('saving stores the new name and closes the page', (tester) async {
@@ -222,17 +239,13 @@ void main() {
     expect(copied, 'https://example.com/sub');
   });
 
-  testWidgets('deleting asks first, then removes the profile and closes', (
+  testWidgets('deleting removes the profile without asking and closes', (
     tester,
   ) async {
     await openEdit(tester);
 
     await tester.tap(find.text(currentAppLocalizations.delete));
-    await tester.pumpAndSettle();
-    expect(container.read(profilesProvider), hasLength(1));
-    expect(find.byType(EditProfileView), findsOneWidget);
-
-    await tester.tap(find.text(currentAppLocalizations.confirm));
+    await tester.pump();
     for (var i = 0; i < 50; i++) {
       if (find.byType(EditProfileView).evaluate().isEmpty) break;
       await tester.runAsync(
@@ -242,6 +255,7 @@ void main() {
     }
     await tester.pumpAndSettle();
 
+    expect(find.text(currentAppLocalizations.confirm), findsNothing);
     expect(container.read(profilesProvider), isEmpty);
     expect(find.byType(EditProfileView), findsNothing);
   });

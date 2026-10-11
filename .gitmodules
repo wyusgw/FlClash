@@ -1,4 +1,4 @@
 [submodule "core/Xray-core"]
 	path = core/Xray-core
 	url = git@github.com:wyusgw/Xray-core.git
-	branch = main
+	branch = flclash

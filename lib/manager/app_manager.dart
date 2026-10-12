@@ -157,7 +157,14 @@ class _Sidebar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final version = ref.watch(versionProvider);
+    final width = ref.watch(
+      appSettingProvider.select((state) => state.sidebarWidth),
+    );
     return NavigationSidebar(
+      width: width,
+      onResize: (value) => ref
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(sidebarWidth: value)),
       destinations: [
         for (final item in items)
           SidebarDestination(glyph: item.glyph, label: item.label.label),

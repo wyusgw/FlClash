@@ -1,3 +1,4 @@
+import 'package:fl_clash/common/constant.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:fl_clash/widgets/sidebar.dart';
@@ -47,7 +48,10 @@ void main() {
       expect(find.text(destination.label), findsOneWidget);
       expect(find.byGlyph(destination.glyph), findsOneWidget);
     }
-    expect(tester.getSize(find.byType(NavigationSidebar)).width, sidebarWidth);
+    expect(
+      tester.getSize(find.byType(NavigationSidebar)).width,
+      defaultSidebarWidth,
+    );
   });
 
   testWidgets('the selected destination sits on the accent', (tester) async {
@@ -147,6 +151,105 @@ void main() {
     );
 
     expect(tester.takeException(), isNull);
-    expect(tester.getSize(find.byType(NavigationSidebar)).width, sidebarWidth);
+    expect(
+      tester.getSize(find.byType(NavigationSidebar)).width,
+      defaultSidebarWidth,
+    );
+  });
+
+  group('resizing', () {
+    Widget resizable({double width = defaultSidebarWidth, List<double>? out}) {
+      return TestApp(
+        child: Scaffold(
+          body: StatefulBuilder(
+            builder: (context, setState) => Row(
+              children: [
+                SizedBox(
+                  height: 400,
+                  child: NavigationSidebar(
+                    destinations: _destinations,
+                    selectedIndex: 0,
+                    onSelected: (_) {},
+                    width: width,
+                    onResize: (value) {
+                      out?.add(value);
+                      setState(() => width = value);
+                    },
+                  ),
+                ),
+                const Expanded(child: SizedBox.expand()),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    Future<void> drag(WidgetTester tester, double dx) async {
+      await tester.drag(
+        find.byKey(const ValueKey('sidebar-grip')),
+        Offset(dx, 0),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    double widthOf(WidgetTester tester) =>
+        tester.getSize(find.byType(NavigationSidebar)).width;
+
+    testWidgets('has no grip while nothing listens', (tester) async {
+      await tester.pumpWidget(_sidebar());
+
+      expect(find.byKey(const ValueKey('sidebar-grip')), findsNothing);
+    });
+
+    testWidgets('dragging the edge follows the pointer and reports once', (
+      tester,
+    ) async {
+      final out = <double>[];
+      await tester.pumpWidget(resizable(out: out));
+
+      await drag(tester, 30);
+
+      expect(widthOf(tester), defaultSidebarWidth + 30);
+      expect(out, [defaultSidebarWidth + 30]);
+    });
+
+    testWidgets('stops at the narrowest and the widest', (tester) async {
+      final out = <double>[];
+      await tester.pumpWidget(resizable(out: out));
+
+      await drag(tester, 1000);
+      expect(widthOf(tester), maxSidebarWidth);
+
+      await tester.pumpWidget(resizable(width: maxSidebarWidth, out: out));
+      await drag(tester, -1000);
+      expect(widthOf(tester), minSidebarWidth);
+      expect(out, [maxSidebarWidth, minSidebarWidth]);
+    });
+
+    testWidgets('a width outside the bounds is drawn inside them', (
+      tester,
+    ) async {
+      await tester.pumpWidget(resizable(width: 10));
+      expect(widthOf(tester), minSidebarWidth);
+
+      await tester.pumpWidget(resizable(width: 5000));
+      expect(widthOf(tester), maxSidebarWidth);
+    });
+
+    testWidgets('a double tap on the edge asks for the default width', (
+      tester,
+    ) async {
+      final out = <double>[];
+      await tester.pumpWidget(resizable(width: 300, out: out));
+
+      final grip = find.byKey(const ValueKey('sidebar-grip'));
+      await tester.tap(grip);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(grip);
+      await tester.pumpAndSettle();
+
+      expect(out, [defaultSidebarWidth]);
+    });
   });
 }

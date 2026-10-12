@@ -110,6 +110,7 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(false) bool showTrayTitle,
     @Default(TrayMode.embedded) TrayMode trayMode,
     @Default(true) bool showSidebar,
+    @Default(defaultSidebarWidth) double sidebarWidth,
     @Default(false) bool archiveStats,
     @Default(true) bool geoRegion,
     @Default(true) bool checkCertificate,

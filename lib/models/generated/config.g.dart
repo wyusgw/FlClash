@@ -45,6 +45,8 @@ _AppSettingProps _$AppSettingPropsFromJson(
       $enumDecodeNullable(_$TrayModeEnumMap, json['trayMode']) ??
       TrayMode.embedded,
   showSidebar: json['showSidebar'] as bool? ?? true,
+  sidebarWidth:
+      (json['sidebarWidth'] as num?)?.toDouble() ?? defaultSidebarWidth,
   archiveStats: json['archiveStats'] as bool? ?? false,
   geoRegion: json['geoRegion'] as bool? ?? true,
   checkCertificate: json['checkCertificate'] as bool? ?? true,
@@ -99,6 +101,7 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'showTrayTitle': instance.showTrayTitle,
       'trayMode': _$TrayModeEnumMap[instance.trayMode]!,
       'showSidebar': instance.showSidebar,
+      'sidebarWidth': instance.sidebarWidth,
       'archiveStats': instance.archiveStats,
       'geoRegion': instance.geoRegion,
       'checkCertificate': instance.checkCertificate,

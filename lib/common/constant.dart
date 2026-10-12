@@ -160,3 +160,8 @@ const ruleProviderTemplate = 'payload: []\n';
 
 const backupDatabaseName = 'database.sqlite';
 const configJsonName = 'config.json';
+
+/// The sidebar's width when the user has not dragged it, and how far they can.
+const defaultSidebarWidth = 241.0;
+const minSidebarWidth = 180.0;
+const maxSidebarWidth = 360.0;

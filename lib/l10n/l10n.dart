@@ -710,10 +710,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Gives a light tap when you switch pages from the bottom bar or drag the scrollbar`
+  /// `Vibrates when you turn the proxy on or off, switch pages from the bottom bar or drag the scrollbar`
   String get hapticFeedbackDesc {
     return Intl.message(
-      'Gives a light tap when you switch pages from the bottom bar or drag the scrollbar',
+      'Vibrates when you turn the proxy on or off, switch pages from the bottom bar or drag the scrollbar',
       name: 'hapticFeedbackDesc',
       desc: '',
       args: [],

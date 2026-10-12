@@ -389,7 +389,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "handshake": MessageLookupByLibrary.simpleMessage("握手"),
     "hapticFeedback": MessageLookupByLibrary.simpleMessage("触觉反馈"),
     "hapticFeedbackDesc": MessageLookupByLibrary.simpleMessage(
-      "从底部栏切换页面或拖动滚动条时轻微振动",
+      "开启或关闭代理、从底部栏切换页面或拖动滚动条时振动",
     ),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
       "Helper 服务不可用，无法启用 TUN 模式，请重新安装 FlClash。",

@@ -8,6 +8,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/views/profiles/add.dart';
 import 'package:fl_clash/views/profiles/edit.dart';
 import 'package:fl_clash/views/home/route_mode.dart';
+import 'package:fl_clash/widgets/haptics.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -316,8 +317,10 @@ class _ControlSection extends ConsumerWidget {
               value: isStart,
               onChanged: editing
                   ? null
-                  : (_) =>
-                        ref.read(commonActionProvider.notifier).toggleRunning(),
+                  : (_) {
+                      toggleHaptic(context);
+                      ref.read(commonActionProvider.notifier).toggleRunning();
+                    },
             ),
           ),
         ),

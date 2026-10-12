@@ -83,7 +83,7 @@
   "more": "More",
   "other": "Other",
   "hapticFeedback": "Haptic feedback",
-  "hapticFeedbackDesc": "Gives a light tap when you switch pages from the bottom bar or drag the scrollbar",
+  "hapticFeedbackDesc": "Vibrates when you turn the proxy on or off, switch pages from the bottom bar or drag the scrollbar",
   "about": "About",
   "en": "English",
   "ja": "Japanese",

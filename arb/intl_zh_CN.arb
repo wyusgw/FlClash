@@ -83,7 +83,7 @@
   "more": "更多",
   "other": "其他",
   "hapticFeedback": "触觉反馈",
-  "hapticFeedbackDesc": "从底部栏切换页面或拖动滚动条时轻微振动",
+  "hapticFeedbackDesc": "开启或关闭代理、从底部栏切换页面或拖动滚动条时振动",
   "about": "关于",
   "en": "英语",
   "ja": "日语",

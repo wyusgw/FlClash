@@ -35,6 +35,44 @@ class CommonAction extends _$CommonAction {
     );
   }
 
+  void runLinkAction(AppLinkAction action) {
+    switch (action) {
+      case AppLinkAction.start:
+        start();
+      case AppLinkAction.stop:
+        stop();
+      case AppLinkAction.toggle:
+        toggleRunning();
+      case AppLinkAction.connectivityTest:
+        unawaited(
+          ref
+              .read(proxiesActionProvider.notifier)
+              .delayTestPageGroup(nodeGroupName),
+        );
+      case AppLinkAction.updateProfiles:
+        unawaited(ref.read(profilesActionProvider.notifier).updateProfiles());
+      case AppLinkAction.routeRule:
+        ref.read(setupActionProvider.notifier).changeMode(Mode.rule);
+      case AppLinkAction.routeGlobal:
+        ref.read(setupActionProvider.notifier).changeMode(Mode.global);
+      case AppLinkAction.routeDirect:
+        ref.read(setupActionProvider.notifier).changeMode(Mode.direct);
+    }
+  }
+
+  /// A name that is not one of the nodes leaves the selection alone.
+  void switchServer(String name) {
+    final group = ref.read(groupsProvider).getGroup(nodeGroupName);
+    if (group == null || !group.all.any((proxy) => proxy.name == name)) {
+      return;
+    }
+    unawaited(
+      ref
+          .read(proxiesActionProvider.notifier)
+          .changeProxy(groupName: nodeGroupName, proxyName: name),
+    );
+  }
+
   void updateSpeedStatistics() {
     ref
         .read(appSettingProvider.notifier)

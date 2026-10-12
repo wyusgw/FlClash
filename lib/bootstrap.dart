@@ -43,11 +43,12 @@ class Bootstrap {
     windowPort = window;
     trayPort = appTray;
     navigationPort = navigation;
-    final dynamicColor = await _initDynamicColor();
+    final dynamicColor = await initDynamicColor();
     return _initData(version, dynamicColor);
   }
 
-  Future<DynamicColorSeeds> _initDynamicColor() async {
+  @visibleForTesting
+  Future<DynamicColorSeeds> initDynamicColor() async {
     TonalPalette? primaryPalette;
     Color? accentColor;
     try {

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:fl_clash/common/link.dart';
+import 'package:fl_clash/common/xray_config.dart';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/interface.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -24,6 +26,33 @@ class _RecordingSetupAction extends SetupAction {
   Future<bool> setRunning(bool running, {bool initialize = false}) async {
     runs.add(running);
     return true;
+  }
+}
+
+class _RecordingProxiesAction extends ProxiesAction {
+  final delayTests = <String>[];
+  final changes = <(String, String)>[];
+
+  @override
+  Future<void> delayTestPageGroup(String groupName) async {
+    delayTests.add(groupName);
+  }
+
+  @override
+  Future<void> changeProxy({
+    required String groupName,
+    required String proxyName,
+  }) async {
+    changes.add((groupName, proxyName));
+  }
+}
+
+class _RecordingProfilesAction extends ProfilesAction {
+  var updates = 0;
+
+  @override
+  Future<void> updateProfiles() async {
+    updates++;
   }
 }
 
@@ -249,6 +278,92 @@ void main() {
         container.read(commonActionProvider.notifier).autoCheckUpdate(),
         completion(isFalse),
       );
+    });
+  });
+
+  group('CommonAction app links', () {
+    late _RecordingSetupAction setup;
+    late _RecordingProxiesAction proxies;
+    late _RecordingProfilesAction profiles;
+    late ProviderContainer container;
+
+    setUp(() {
+      setup = _RecordingSetupAction();
+      proxies = _RecordingProxiesAction();
+      profiles = _RecordingProfilesAction();
+      container = ProviderContainer(
+        overrides: [
+          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+          setupActionProvider.overrideWith(() => setup),
+          proxiesActionProvider.overrideWith(() => proxies),
+          profilesActionProvider.overrideWith(() => profiles),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.listen(isStartProvider, (_, _) {});
+    });
+
+    CommonAction action() => container.read(commonActionProvider.notifier);
+
+    test('start, stop and toggle drive the core', () {
+      action().runLinkAction(AppLinkAction.start);
+      container.read(runTimeProvider.notifier).value = 1;
+      action().runLinkAction(AppLinkAction.stop);
+      action().runLinkAction(AppLinkAction.toggle);
+
+      expect(setup.runs, [true, false, false]);
+    });
+
+    test('the connectivity test runs on the node group', () {
+      action().runLinkAction(AppLinkAction.connectivityTest);
+
+      expect(proxies.delayTests, [nodeGroupName]);
+    });
+
+    test('update-subs updates the profiles', () {
+      action().runLinkAction(AppLinkAction.updateProfiles);
+
+      expect(profiles.updates, 1);
+    });
+
+    test('each route link switches to its mode', () {
+      final modes = {
+        AppLinkAction.routeGlobal: Mode.global,
+        AppLinkAction.routeDirect: Mode.direct,
+        AppLinkAction.routeRule: Mode.rule,
+      };
+      for (final MapEntry(key: link, value: mode) in modes.entries) {
+        action().runLinkAction(link);
+        expect(container.read(coreSettingProvider).mode, mode, reason: '$link');
+      }
+    });
+
+    test('switchServer picks a node of the node group by name', () {
+      container
+          .read(groupsProvider.notifier)
+          .update(
+            (_) => const [
+              Group(
+                name: nodeGroupName,
+                type: GroupType.Selector,
+                all: [
+                  Proxy(name: 'Tokyo', type: 'vless'),
+                  Proxy(name: 'Osaka', type: 'vless'),
+                ],
+              ),
+            ],
+          );
+
+      action().switchServer('Osaka');
+      action().switchServer('Nowhere');
+
+      expect(proxies.changes, [(nodeGroupName, 'Osaka')]);
+    });
+
+    test('switchServer does nothing before the node group exists', () {
+      action().switchServer('Osaka');
+
+      expect(proxies.changes, isEmpty);
     });
   });
 }

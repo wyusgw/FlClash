@@ -396,6 +396,25 @@ void main() {
       expect(find.textContaining('ms'), findsNothing);
     });
 
+    testWidgets('the buttons carry no hover or press shade', (tester) async {
+      await pumpHome(tester, profile: _profile(), nodes: _nodes);
+
+      for (final tooltip in ['Update', 'Delay test', 'Edit', '日本 01 details']) {
+        final inks = tester.widgetList<InkResponse>(
+          find.descendant(
+            of: find.byTooltip(tooltip),
+            matching: find.byType(InkResponse),
+          ),
+        );
+        expect(inks, isNotEmpty, reason: tooltip);
+        for (final ink in inks) {
+          expect(ink.hoverColor, Colors.transparent, reason: tooltip);
+          expect(ink.highlightColor, Colors.transparent, reason: tooltip);
+          expect(ink.splashFactory, NoSplash.splashFactory, reason: tooltip);
+        }
+      }
+    });
+
     testWidgets('a right click on a node opens its menu', (tester) async {
       await pumpHome(tester, profile: _profile(), nodes: _nodes);
 

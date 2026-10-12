@@ -370,6 +370,9 @@ class _ConnectivityRow extends ConsumerWidget {
                 onTap: () =>
                     BaseNavigator.push(context, const DelayMethodView()),
                 radius: 18,
+                splashFactory: NoSplash.splashFactory,
+                hoverColor: Colors.transparent,
+                highlightColor: Colors.transparent,
                 child: GroupedIcon(delayMethodGlyph(method)),
               ),
             ),
@@ -520,6 +523,9 @@ class _ToolbarButton extends StatelessWidget {
       child: InkResponse(
         onTap: onPressed,
         radius: 16,
+        splashFactory: NoSplash.splashFactory,
+        hoverColor: Colors.transparent,
+        highlightColor: Colors.transparent,
         child: GlyphIcon(
           glyph,
           size: 18,
@@ -820,6 +826,9 @@ class _RoundAction extends StatelessWidget {
       child: InkResponse(
         onTap: busy ? null : onPressed,
         radius: 16,
+        splashFactory: NoSplash.splashFactory,
+        hoverColor: Colors.transparent,
+        highlightColor: Colors.transparent,
         child: busy
             ? SizedBox.square(
                 dimension: 19,

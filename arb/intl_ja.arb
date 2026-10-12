@@ -248,6 +248,8 @@
   "deleteAllNodes": "すべてのノードを削除",
   "deleteAllNodesTip": "削除してもよろしいですか？",
   "advanced": "詳細",
+  "tunnel": "トンネル",
+  "permissions": "権限",
   "required": "必須",
   "profileType": "種類",
   "subscribe": "購読",

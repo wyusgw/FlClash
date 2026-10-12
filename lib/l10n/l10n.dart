@@ -1920,6 +1920,16 @@ class AppLocalizations {
     return Intl.message('Advanced', name: 'advanced', desc: '', args: []);
   }
 
+  /// `Tunnel`
+  String get tunnel {
+    return Intl.message('Tunnel', name: 'tunnel', desc: '', args: []);
+  }
+
+  /// `Permissions`
+  String get permissions {
+    return Intl.message('Permissions', name: 'permissions', desc: '', args: []);
+  }
+
   /// `Required`
   String get required {
     return Intl.message('Required', name: 'required', desc: '', args: []);

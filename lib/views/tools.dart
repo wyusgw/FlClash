@@ -5,6 +5,7 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/views/about.dart';
 import 'package:fl_clash/views/access.dart';
+import 'package:fl_clash/views/config/on_demand.dart';
 import 'package:fl_clash/views/config/general.dart';
 import 'package:fl_clash/views/home/delay_test.dart';
 import 'package:fl_clash/views/hotkey.dart';
@@ -91,33 +92,6 @@ class ToolsView extends ConsumerWidget {
                 title: appLocalizations.appearance,
                 page: const ThemeView(),
               ),
-              if (system.isMacOS)
-                GroupedRow(
-                  leading: const GroupedIcon(AppGlyphs.layoutTabs),
-                  title: appLocalizations.menuBar,
-                  value: _trayModeLabel(appLocalizations, appSetting.trayMode),
-                  chevron: true,
-                  onTap: () => BaseNavigator.push(context, const MenuBarView()),
-                ),
-              GroupedRow(
-                leading: const GroupedIcon(AppGlyphs.paste),
-                title: appLocalizations.clipboard,
-                value: appSetting.clipboardDetection
-                    ? appLocalizations.on
-                    : appLocalizations.off,
-                chevron: true,
-                onTap: () => BaseNavigator.push(context, const ClipboardView()),
-              ),
-              if (system.isDesktop)
-                GroupedRow(
-                  leading: const GroupedIcon(AppGlyphs.columnsTwo),
-                  title: appLocalizations.sidebar,
-                  value: appSetting.showSidebar
-                      ? appLocalizations.on
-                      : appLocalizations.off,
-                  chevron: true,
-                  onTap: () => BaseNavigator.push(context, const SidebarView()),
-                ),
               if (system.isDesktop)
                 _open(
                   context,
@@ -125,6 +99,25 @@ class ToolsView extends ConsumerWidget {
                   title: appLocalizations.hotkeyManagement,
                   page: const HotKeyView(),
                 ),
+              if (appSetting.developerMode)
+                _open(
+                  context,
+                  glyph: AppGlyphs.cpu,
+                  title: appLocalizations.developerMode,
+                  page: const DeveloperView(),
+                ),
+            ],
+          ),
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
+            header: appLocalizations.tunnel,
+            children: [
+              _open(
+                context,
+                glyph: AppGlyphs.wifi,
+                title: appLocalizations.onDemand,
+                page: const OnDemandView(),
+              ),
               if (system.isAndroid)
                 _open(
                   context,
@@ -142,21 +135,64 @@ class ToolsView extends ConsumerWidget {
           ),
           const SizedBox(height: groupedSectionGap),
           GroupedSection(
-            header: appLocalizations.other,
+            header: appLocalizations.permissions,
             children: [
-              if (appSetting.developerMode)
-                _open(
-                  context,
-                  glyph: AppGlyphs.cpu,
-                  title: appLocalizations.developerMode,
-                  page: const DeveloperView(),
+              GroupedRow(
+                leading: const GroupedIcon(AppGlyphs.paste),
+                title: appLocalizations.clipboard,
+                value: appSetting.clipboardDetection
+                    ? appLocalizations.on
+                    : appLocalizations.off,
+                chevron: true,
+                onTap: () => BaseNavigator.push(context, const ClipboardView()),
+              ),
+            ],
+          ),
+          if (system.isDesktop) ...[
+            const SizedBox(height: groupedSectionGap),
+            GroupedSection(
+              header: _platformName,
+              children: [
+                GroupedRow(
+                  leading: const GroupedIcon(AppGlyphs.columnsTwo),
+                  title: appLocalizations.sidebar,
+                  value: appSetting.showSidebar
+                      ? appLocalizations.on
+                      : appLocalizations.off,
+                  chevron: true,
+                  onTap: () => BaseNavigator.push(context, const SidebarView()),
                 ),
+                if (system.isMacOS)
+                  GroupedRow(
+                    leading: const GroupedIcon(AppGlyphs.layoutTabs),
+                    title: appLocalizations.menuBar,
+                    value: _trayModeLabel(
+                      appLocalizations,
+                      appSetting.trayMode,
+                    ),
+                    chevron: true,
+                    onTap: () =>
+                        BaseNavigator.push(context, const MenuBarView()),
+                  ),
+              ],
+            ),
+          ],
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
+            header: appLocalizations.reset,
+            children: [
               GroupedRow(
                 leading: const GroupedIcon(AppGlyphs.reset),
                 title: appLocalizations.reset,
                 chevron: true,
                 onTap: () => BaseNavigator.push(context, const ResetView()),
               ),
+            ],
+          ),
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
+            header: appLocalizations.about,
+            children: [
               GroupedRow(
                 leading: const GroupedIcon(AppGlyphs.info),
                 title: appLocalizations.about,
@@ -170,6 +206,14 @@ class ToolsView extends ConsumerWidget {
     );
   }
 }
+
+/// The heading over the rows only a desktop window has, as its system is
+/// written.
+String get _platformName => system.isMacOS
+    ? 'MACOS'
+    : system.isWindows
+    ? 'WINDOWS'
+    : 'LINUX';
 
 /// Every language the app has, with the one in use checked; the first entry
 /// follows the system.

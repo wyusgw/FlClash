@@ -248,6 +248,8 @@
   "deleteAllNodes": "删除所有节点",
   "deleteAllNodesTip": "你确定要删除？",
   "advanced": "高级",
+  "tunnel": "隧道",
+  "permissions": "权限",
   "required": "必填",
   "profileType": "类型",
   "subscribe": "订阅",

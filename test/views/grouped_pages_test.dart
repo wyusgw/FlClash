@@ -18,6 +18,7 @@ import 'package:fl_clash/views/about.dart';
 import 'package:fl_clash/views/backup_and_restore.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/features/ip_quality/ip_quality.dart';
+import 'package:fl_clash/views/config/on_demand.dart';
 import 'package:fl_clash/views/data.dart';
 import 'package:fl_clash/views/home/delay_test.dart';
 import 'package:fl_clash/views/profiles/profiles.dart';
@@ -496,8 +497,99 @@ void main() {
       expect(find.text('Default'), findsOneWidget);
       expect(find.text('Appearance'), findsOneWidget);
       expect(find.text('General'), findsOneWidget);
-      expect(find.text('About'), findsOneWidget);
+      expect(find.widgetWithText(GroupedRow, 'About'), findsOneWidget);
       expect(find.text('Developer mode'), findsNothing);
+    });
+
+    testWidgets('groups the rows under their own headings, in order', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(900, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await pumpPage(tester, const ToolsView());
+      final l10n = AppLocalizations.current;
+
+      final order = [
+        l10n.language,
+        l10n.advanced,
+        l10n.tunnel,
+        l10n.permissions,
+        l10n.reset,
+        l10n.about,
+      ];
+      double top(String text) => tester.getTopLeft(find.text(text).first).dy;
+      for (var i = 1; i < order.length; i++) {
+        expect(top(order[i - 1]), lessThan(top(order[i])), reason: order[i]);
+      }
+
+      Finder rowIn(String header, String title) => find.byWidgetPredicate(
+        (widget) => widget is GroupedSection && widget.header == header,
+        description: 'section $header',
+      );
+      Finder sectionOf(String header) => rowIn(header, '');
+      bool holds(String header, String title) => find
+          .descendant(
+            of: sectionOf(header),
+            matching: find.widgetWithText(GroupedRow, title),
+          )
+          .evaluate()
+          .isNotEmpty;
+
+      expect(holds(l10n.advanced, l10n.delayTestMethod), isTrue);
+      expect(holds(l10n.advanced, l10n.appearance), isTrue);
+      expect(holds(l10n.tunnel, l10n.onDemand), isTrue);
+      expect(holds(l10n.tunnel, l10n.general), isTrue);
+      expect(holds(l10n.permissions, l10n.clipboard), isTrue);
+      expect(holds(l10n.reset, l10n.reset), isTrue);
+      expect(holds(l10n.about, l10n.about), isTrue);
+    });
+
+    testWidgets('the desktop rows sit under the name of the system', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(900, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await pumpPage(tester, const ToolsView());
+      final l10n = AppLocalizations.current;
+
+      final heading = system.isMacOS
+          ? 'MACOS'
+          : system.isWindows
+          ? 'WINDOWS'
+          : 'LINUX';
+      final section = find.byWidgetPredicate(
+        (widget) => widget is GroupedSection && widget.header == heading,
+      );
+      expect(section, findsOneWidget);
+      expect(
+        find.descendant(
+          of: section,
+          matching: find.widgetWithText(GroupedRow, l10n.sidebar),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: section,
+          matching: find.widgetWithText(GroupedRow, l10n.menuBar),
+        ),
+        system.isMacOS ? findsOneWidget : findsNothing,
+      );
+    });
+
+    testWidgets('the on demand row opens its page from the settings', (
+      tester,
+    ) async {
+      await pumpPage(tester, const ToolsView());
+
+      await tester.tap(find.widgetWithText(GroupedRow, 'On demand'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(OnDemandView), findsOneWidget);
     });
 
     testWidgets('the developer page shows once developer mode is on', (
@@ -543,7 +635,7 @@ void main() {
       );
       await pumpPage(tester, const ToolsView());
 
-      await tester.tap(find.text('About'));
+      await tester.tap(find.widgetWithText(GroupedRow, 'About'));
       await tester.pumpAndSettle();
       expect(find.byType(AboutView), findsOneWidget);
       expect(find.byType(ToolsView), findsNothing);

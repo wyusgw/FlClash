@@ -248,6 +248,8 @@
   "deleteAllNodes": "Удалить все узлы",
   "deleteAllNodesTip": "Вы уверены, что хотите удалить?",
   "advanced": "Дополнительно",
+  "tunnel": "Туннель",
+  "permissions": "Разрешения",
   "required": "Обязательно",
   "profileType": "Тип",
   "subscribe": "Подписка",

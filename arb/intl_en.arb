@@ -248,6 +248,8 @@
   "deleteAllNodes": "Delete all nodes",
   "deleteAllNodesTip": "Are you sure you want to delete?",
   "advanced": "Advanced",
+  "tunnel": "Tunnel",
+  "permissions": "Permissions",
   "required": "Required",
   "profileType": "Type",
   "subscribe": "Subscribe",

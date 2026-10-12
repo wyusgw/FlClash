@@ -72,7 +72,7 @@ void main() {
   }
 
   final toolDestinations = <String, Type>{
-    'Theme': ThemeView,
+    'Appearance': ThemeView,
     'General': GeneralView,
   };
 

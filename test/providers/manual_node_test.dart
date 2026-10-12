@@ -147,16 +147,85 @@ void main() {
     );
   });
 
-  test('a server with a name already taken is renamed, not replaced', () async {
-    build();
-    await add(_node('same'));
-    final profile = container.read(profilesProvider).single;
+  group('a name already taken', () {
+    Future<(Profile, List<Object?>)> addDuplicate({
+      bool overwrite = false,
+      bool rename = false,
+      Map<String, dynamic>? second,
+    }) async {
+      build();
+      container.listen(appSettingProvider, (_, _) {});
+      container
+          .read(appSettingProvider.notifier)
+          .update(
+            (state) => state.copyWith(
+              overwriteExistingNodes: overwrite,
+              autoRenameNodes: rename,
+            ),
+          );
+      await add(_node('same'));
+      final profile = container.read(profilesProvider).single;
 
-    await add(_node('same'));
+      await add(second ?? _node('same'));
 
-    final tags = (await outboundsOf(profile)).map((node) => node['tag']);
-    expect(tags.toSet(), hasLength(2));
-    expect(tags, contains('same'));
+      final tags = (await outboundsOf(profile)).map((node) => node['tag']);
+      return (profile, tags.toList());
+    }
+
+    test('is refused while both switches are off', () async {
+      final (_, tags) = await addDuplicate();
+
+      expect(tags, ['same']);
+    });
+
+    test('is replaced in place when overwriting is on', () async {
+      final changed = _node('same')
+        ..['settings'] = {..._node('same')['settings'] as Map, 'port': 9999};
+      final (profile, tags) = await addDuplicate(
+        overwrite: true,
+        second: changed,
+      );
+
+      expect(tags, ['same']);
+      final stored = (await outboundsOf(profile)).single;
+      expect((stored['settings'] as Map)['port'], 9999);
+    });
+
+    test('gets a number when renaming is on', () async {
+      final (profile, tags) = await addDuplicate(rename: true);
+
+      expect(tags, ['same', 'same(1)']);
+      expect(profile.type, ProfileType.file);
+    });
+
+    test('keeps counting past a number already taken', () async {
+      final (_, tags) = await addDuplicate(rename: true);
+      expect(tags, ['same', 'same(1)']);
+
+      await add(_node('same'));
+
+      final profile = container.read(profilesProvider).single;
+      expect((await outboundsOf(profile)).map((node) => node['tag']), [
+        'same',
+        'same(1)',
+        'same(2)',
+      ]);
+    });
+
+    test('overwriting wins when both switches are on', () async {
+      final (_, tags) = await addDuplicate(overwrite: true, rename: true);
+
+      expect(tags, ['same']);
+    });
+
+    test('a new name is just added whatever the switches say', () async {
+      final (_, tags) = await addDuplicate(
+        overwrite: true,
+        second: _node('other'),
+      );
+
+      expect(tags, ['same', 'other']);
+    });
   });
 
   test('a subscription in use is left alone for the local profile', () async {

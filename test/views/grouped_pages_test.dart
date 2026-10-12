@@ -1,25 +1,35 @@
 import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/core/controller.dart';
+import 'package:fl_clash/core/interface.dart';
 import 'package:fl_clash/icons/icons.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/config.dart';
+import 'package:fl_clash/providers/core.dart';
+import 'package:fl_clash/providers/ip_quality.dart';
+import 'package:fl_clash/providers/route_state.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/about.dart';
 import 'package:fl_clash/views/backup_and_restore.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/features/ip_quality/ip_quality.dart';
 import 'package:fl_clash/views/data.dart';
 import 'package:fl_clash/views/home/delay_test.dart';
 import 'package:fl_clash/views/profiles/profiles.dart';
 import 'package:fl_clash/views/tools.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
+import 'package:fl_clash/widgets/grouped_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/misc.dart' show Override;
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
@@ -43,6 +53,16 @@ class _FakePathProvider extends PathProviderPlatform {
   Future<String?> getApplicationCachePath() async => root;
 }
 
+class _MockCore extends Mock implements CoreHandlerInterface {}
+
+const _outboundAnswer = OutboundIpResult(
+  url: 'https://www.cloudflare.com/cdn-cgi/trace',
+  body: 'ip=2.2.2.2\nloc=US\n',
+  chains: ['HK-01'],
+  coreEpoch: 1,
+  picksVersion: 1,
+);
+
 class _NoopSetupAction extends SetupAction {
   @override
   void applyProfileDebounce({bool silence = false, bool force = false}) {}
@@ -59,6 +79,14 @@ Profile _profile(int id, String label) => Profile(
 void main() {
   late Directory home;
   late ProviderContainer container;
+  late _MockCore core;
+
+  setUpAll(() => registerFallbackValue(const OutboundIpParams(timeout: 0)));
+
+  setUp(() {
+    core = _MockCore();
+    when(() => core.outboundIp(any())).thenAnswer((_) async => _outboundAnswer);
+  });
 
   setUpAll(() async {
     home = Directory.systemTemp.createTempSync('grouped_pages_test');
@@ -80,6 +108,17 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     container = ProviderContainer(
       overrides: [
+        routeTrackerProvider.overrideWithBuild(
+          (_, _) => const RouteState(
+            coreEpoch: 1,
+            picksVersion: 1,
+            hostEpoch: 1,
+            proxied: true,
+            synced: true,
+            live: true,
+          ),
+        ),
+        coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
         ...overrides,
         profilesProvider.overrideWith(() => TestProfiles(profiles)),
         currentProfileIdProvider.overrideWithBuild(
@@ -181,21 +220,172 @@ void main() {
       expect(find.text('Sync data via WebDAV or files'), findsOneWidget);
       expect(find.text('Logs'), findsWidgets);
       expect(find.text('Export file'), findsOneWidget);
-      expect(find.text('Delete all profiles'), findsOneWidget);
+      expect(find.text('Delete all nodes'), findsOneWidget);
+    });
+
+    testWidgets('shows the outbound address and opens its details', (
+      tester,
+    ) async {
+      await pumpPage(
+        tester,
+        const DataView(),
+        overrides: [
+          ipQualityProvider('2.2.2.2').overrideWith(
+            (ref) async => const IpQuality(
+              ip: '2.2.2.2',
+              source: IpQualitySource.ipQuery,
+              type: IpType.hosting,
+            ),
+          ),
+        ],
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Network detection'), findsOneWidget);
+      expect(find.text('2.2.2.2'), findsOneWidget);
+      expect(find.byGlyph(AppGlyphs.networkCheck), findsOneWidget);
+
+      await tester.tap(find.text('Network detection'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(IpQualityPage), findsOneWidget);
+      expect(find.text('AS—'), findsNothing);
+      expect(find.text(AppLocalizations.current.ipTypeHosting), findsOneWidget);
+    });
+
+    testWidgets('a hidden address is masked on the row', (tester) async {
+      await pumpPage(tester, const DataView());
+      container
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(hideIp: true));
+      await tester.pumpAndSettle();
+
+      expect(find.text('2.2.2.2'), findsNothing);
+      expect(find.text(ipMask), findsOneWidget);
+    });
+
+    testWidgets('a failed lookup shows a dash and retries on tap', (
+      tester,
+    ) async {
+      when(() => core.outboundIp(any())).thenAnswer((_) async => null);
+      await pumpPage(tester, const DataView());
+      await tester.pumpAndSettle();
+
+      expect(find.text('—'), findsOneWidget);
+      verify(() => core.outboundIp(any())).called(1);
+
+      when(
+        () => core.outboundIp(any()),
+      ).thenAnswer((_) async => _outboundAnswer);
+      await tester.tap(find.text('Network detection'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('2.2.2.2'), findsOneWidget);
+    });
+
+    testWidgets('the statistics section comes last', (tester) async {
+      await pumpPage(
+        tester,
+        const DataView(),
+        profiles: [_profile(1, 'first')],
+      );
+      await tester.pumpAndSettle();
+
+      final statistics = tester.getTopLeft(find.text('Statistics')).dy;
+      for (final label in [
+        'Network detection',
+        'Backup and restore',
+        'Delete all nodes',
+      ]) {
+        expect(
+          tester.getTopLeft(find.text(label)).dy,
+          lessThan(statistics),
+          reason: label,
+        );
+      }
+    });
+
+    testWidgets('the server node options show Off and open a choice page', (
+      tester,
+    ) async {
+      await pumpPage(tester, const DataView());
+      final l10n = AppLocalizations.current;
+      Finder valueOf(String title) => find.descendant(
+        of: find.widgetWithText(GroupedRow, title),
+        matching: find.text(l10n.off),
+      );
+      Finder checkIn(String choice) => find.descendant(
+        of: find.widgetWithText(GroupedRow, choice),
+        matching: find.byGlyph(AppGlyphs.check),
+      );
+
+      expect(find.text(l10n.serverNodes), findsOneWidget);
+      expect(valueOf(l10n.overwriteExisting), findsOneWidget);
+      expect(valueOf(l10n.autoRenameNodes), findsOneWidget);
+      expect(find.byType(GroupedSwitch), findsOneWidget, reason: 'logcat only');
+
+      for (final (title, description) in [
+        (l10n.overwriteExisting, l10n.overwriteExistingDesc),
+        (l10n.autoRenameNodes, l10n.autoRenameNodesDesc),
+      ]) {
+        await tester.tap(find.text(title));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(GroupedTogglePage), findsOneWidget);
+        expect(find.text(description), findsOneWidget);
+        expect(checkIn(l10n.off), findsOneWidget);
+        expect(checkIn(l10n.on), findsNothing);
+
+        await tester.tap(find.widgetWithText(GroupedRow, l10n.on).last);
+        await tester.pumpAndSettle();
+        expect(checkIn(l10n.on), findsOneWidget);
+        expect(checkIn(l10n.off), findsNothing);
+
+        await tester.tap(find.byTooltip(l10n.back));
+        await tester.pumpAndSettle();
+      }
+
+      final setting = container.read(appSettingProvider);
+      expect(setting.overwriteExistingNodes, isTrue);
+      expect(setting.autoRenameNodes, isTrue);
+      expect(find.text(l10n.on), findsNWidgets(2));
+      expect(find.text(l10n.off), findsNothing);
+    });
+
+    testWidgets('choosing Off on the page turns the option back off', (
+      tester,
+    ) async {
+      await pumpPage(tester, const DataView());
+      container
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(overwriteExistingNodes: true));
+      await tester.pumpAndSettle();
+      final l10n = AppLocalizations.current;
+
+      await tester.tap(find.text(l10n.overwriteExisting));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(GroupedRow, l10n.off).last);
+      await tester.pumpAndSettle();
+
+      expect(
+        container.read(appSettingProvider).overwriteExistingNodes,
+        isFalse,
+      );
     });
 
     testWidgets('the logcat switch flips the setting', (tester) async {
       await pumpPage(tester, const DataView());
       expect(container.read(appSettingProvider).openLogs, isFalse);
 
-      await tester.tap(find.byType(GroupedSwitch));
+      final logcat = find.descendant(
+        of: find.widgetWithText(GroupedRow, 'Logcat'),
+        matching: find.byType(GroupedSwitch),
+      );
+      await tester.tap(logcat);
       await tester.pumpAndSettle();
 
       expect(container.read(appSettingProvider).openLogs, isTrue);
-      expect(
-        tester.widget<GroupedSwitch>(find.byType(GroupedSwitch)).value,
-        true,
-      );
+      expect(tester.widget<GroupedSwitch>(logcat).value, true);
     });
 
     testWidgets('the backup row opens the backup page', (tester) async {
@@ -216,11 +406,18 @@ void main() {
         profiles: [_profile(1, 'first'), _profile(2, 'second')],
       );
 
-      await tester.tap(find.text('Delete all profiles'));
+      await tester.tap(find.text('Delete all nodes'));
       await tester.pumpAndSettle();
       expect(container.read(profilesProvider), hasLength(2));
 
-      await tester.tap(find.text('Confirm'));
+      await tester.tap(
+        find
+            .descendant(
+              of: find.byType(ConfirmDialog),
+              matching: find.text('Confirm'),
+            )
+            .last,
+      );
       for (var i = 0; i < 50; i++) {
         if (container.read(profilesProvider).isEmpty) break;
         await tester.runAsync(
@@ -233,10 +430,56 @@ void main() {
       expect(container.read(profilesProvider), isEmpty);
     });
 
+    testWidgets('the delete row icon matches its neighbours', (tester) async {
+      await pumpPage(
+        tester,
+        const DataView(),
+        profiles: [_profile(1, 'first')],
+      );
+
+      Color? colorOf(Glyph glyph) =>
+          tester.widget<GlyphIcon>(find.byGlyph(glyph)).color;
+
+      expect(colorOf(AppGlyphs.delete), isNotNull);
+      expect(colorOf(AppGlyphs.delete), colorOf(AppGlyphs.export));
+    });
+
+    testWidgets('the delete confirmation names the nodes', (tester) async {
+      await pumpPage(
+        tester,
+        const DataView(),
+        profiles: [_profile(1, 'first')],
+      );
+
+      await tester.tap(find.text('Delete all nodes'));
+      await tester.pumpAndSettle();
+
+      final dialog = find.byType(ConfirmDialog);
+      expect(
+        find.descendant(
+          of: dialog,
+          matching: find.text(AppLocalizations.current.confirm),
+        ),
+        findsNWidgets(2),
+        reason: 'the title and the answer',
+      );
+      expect(
+        find.descendant(
+          of: dialog,
+          matching: find.text(AppLocalizations.current.tip),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.text(AppLocalizations.current.deleteAllNodesTip),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('with no profile the profile rows do nothing', (tester) async {
       await pumpPage(tester, const DataView());
 
-      await tester.tap(find.text('Delete all profiles'));
+      await tester.tap(find.text('Delete all nodes'));
       await tester.pumpAndSettle();
 
       expect(find.text('Confirm'), findsNothing);
@@ -251,7 +494,7 @@ void main() {
 
       expect(find.text('Language'), findsOneWidget);
       expect(find.text('Default'), findsOneWidget);
-      expect(find.text('Theme'), findsOneWidget);
+      expect(find.text('Appearance'), findsOneWidget);
       expect(find.text('General'), findsOneWidget);
       expect(find.text('About'), findsOneWidget);
       expect(find.text('Developer mode'), findsNothing);
@@ -413,6 +656,44 @@ void main() {
     });
   });
 
+  group('clipboard setting', () {
+    testWidgets('the settings row shows Off and opens the choice page', (
+      tester,
+    ) async {
+      await pumpPage(tester, const ToolsView());
+      final l10n = AppLocalizations.current;
+
+      expect(
+        find.descendant(
+          of: find.widgetWithText(GroupedRow, l10n.clipboard),
+          matching: find.text(l10n.off),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text(l10n.clipboard));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ClipboardView), findsOneWidget);
+      expect(find.text(l10n.clipboardDesc(appName)), findsOneWidget);
+      expect(find.textContaining(appName), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(GroupedRow, l10n.on).last);
+      await tester.pumpAndSettle();
+
+      expect(container.read(appSettingProvider).clipboardDetection, isTrue);
+      await tester.tap(find.byTooltip(l10n.back));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.widgetWithText(GroupedRow, l10n.clipboard),
+          matching: find.text(l10n.on),
+        ),
+        findsOneWidget,
+      );
+    });
+  });
+
   group('reset page', () {
     testWidgets('the settings page lists it', (tester) async {
       await pumpPage(tester, const ToolsView());
@@ -468,8 +749,60 @@ void main() {
     });
   });
 
-  group('no hover or shadow', () {
-    testWidgets('a grouped row shows nothing under the pointer', (
+  group('confirm dialog', () {
+    Color? confirmColor(WidgetTester tester) => tester
+        .widget<Text>(
+          find
+              .descendant(
+                of: find.byType(ConfirmDialog),
+                matching: find.text('Confirm'),
+              )
+              .last,
+        )
+        .style
+        ?.color;
+
+    Future<void> pumpDialog(WidgetTester tester, {required bool destructive}) {
+      return pumpPage(
+        tester,
+        ConfirmDialog(
+          title: 'Title',
+          message: const TextSpan(text: 'Message'),
+          confirmText: 'Confirm',
+          cancelText: 'Cancel',
+          destructive: destructive,
+        ),
+      );
+    }
+
+    testWidgets('a destructive answer reads in red', (tester) async {
+      await pumpDialog(tester, destructive: true);
+
+      expect(confirmColor(tester), groupedDanger);
+    });
+
+    testWidgets('an ordinary answer keeps the white on accent', (tester) async {
+      await pumpDialog(tester, destructive: false);
+
+      expect(confirmColor(tester), const Color(0xFFFFFFFF));
+    });
+
+    testWidgets('deleting all nodes asks with a red answer', (tester) async {
+      await pumpPage(
+        tester,
+        const DataView(),
+        profiles: [_profile(1, 'first')],
+      );
+
+      await tester.tap(find.text('Delete all nodes'));
+      await tester.pumpAndSettle();
+
+      expect(confirmColor(tester), groupedDanger);
+    });
+  });
+
+  group('hover shade and no shadow', () {
+    testWidgets('a grouped row dims under the pointer, translucently', (
       tester,
     ) async {
       await pumpPage(tester, const ToolsView());
@@ -478,7 +811,39 @@ void main() {
         of: find.text('Language'),
         matching: find.byType(InkWell),
       );
-      expect(tester.widget<InkWell>(row.first).hoverColor, Colors.transparent);
+      final hover = tester.widget<InkWell>(row.first).hoverColor!;
+      final palette = GroupedPalette.of(tester.element(row.first));
+      expect(hover, palette.hoverShade);
+      expect(hover.a, greaterThan(0));
+      expect(hover.a, lessThan(1));
+    });
+
+    testWidgets('a mouse resting on a row paints the shade under it', (
+      tester,
+    ) async {
+      await pumpPage(tester, const ToolsView());
+      final row = find.ancestor(
+        of: find.text('Language'),
+        matching: find.byType(InkWell),
+      );
+      final shade = GroupedPalette.of(tester.element(row.first)).hoverShade;
+      final material = find.ancestor(
+        of: row.first,
+        matching: find.byType(Material),
+      );
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: Offset.zero);
+      addTearDown(mouse.removePointer);
+
+      expect(
+        tester.renderObject(material.first),
+        isNot(paints..rect(color: shade)),
+      );
+
+      await mouse.moveTo(tester.getCenter(row.first));
+      await tester.pumpAndSettle();
+
+      expect(tester.renderObject(material.first), paints..rect(color: shade));
     });
 
     testWidgets('the confirm dialog has no shadow', (tester) async {

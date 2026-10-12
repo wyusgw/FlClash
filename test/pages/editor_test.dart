@@ -32,8 +32,8 @@ void main() {
     for (final glyph in [AppGlyphs.search, AppGlyphs.check]) {
       expect(
         tester
-            .widget<IconButton>(find.widgetWithGlyph(IconButton, glyph))
-            .onPressed,
+            .widget<InkResponse>(find.widgetWithGlyph(InkResponse, glyph))
+            .onTap,
         isNull,
       );
     }
@@ -71,8 +71,10 @@ void main() {
     await tester.pump();
     expect(
       tester
-          .widget<IconButton>(find.widgetWithGlyph(IconButton, AppGlyphs.check))
-          .onPressed,
+          .widget<InkResponse>(
+            find.widgetWithGlyph(InkResponse, AppGlyphs.check),
+          )
+          .onTap,
       isNotNull,
     );
     await pressSave();

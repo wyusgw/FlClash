@@ -250,7 +250,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
                 children: [
                   GroupedButtonRow(
                     label: appLocalizations.delete,
-                    color: const Color(0xFFFF453A),
+                    color: groupedDanger,
                     onTap: _delete,
                   ),
                 ],

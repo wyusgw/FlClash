@@ -4,6 +4,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/common/dav_client.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
@@ -11,7 +12,7 @@ import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/widgets/fade_box.dart';
-import 'package:fl_clash/widgets/input.dart';
+import 'package:fl_clash/widgets/grouped_input.dart';
 import 'package:fl_clash/widgets/list.dart';
 import 'package:fl_clash/widgets/loading.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
@@ -49,8 +50,9 @@ class _BackupAndRestoreState extends ConsumerState<BackupAndRestore>
   }
 
   Future<void> _showAddWebDAV(DAVProps? dav) async {
-    await dialogs.showCommonDialog<String>(
-      child: WebDAVFormDialog(dav: dav?.copyWith()),
+    await BaseNavigator.push<void>(
+      context,
+      WebDAVFormPage(dav: dav?.copyWith()),
     );
   }
 
@@ -132,24 +134,6 @@ class _BackupAndRestoreState extends ConsumerState<BackupAndRestore>
     await _restore(option, (_) async => path);
   }
 
-  Future<void> _handleEditFileName(String fileName) async {
-    final appLocalizations = context.appLocalizations;
-    final value = await dialogs.showCommonDialog<String>(
-      child: InputDialog(
-        title: appLocalizations.file,
-        value: fileName,
-        resetValue: defaultDavFileName,
-        inputFormatters: TextInputLimits.limit(TextInputLimits.fileName),
-      ),
-    );
-    if (value == null) {
-      return;
-    }
-    ref
-        .read(davSettingProvider.notifier)
-        .update((state) => state?.copyWith(fileName: value));
-  }
-
   void _handleUpdateRestoreStrategy() {
     BaseNavigator.push(context, const _RestoreStrategyPage());
   }
@@ -207,10 +191,19 @@ class _BackupAndRestoreState extends ConsumerState<BackupAndRestore>
                     ),
                     onTap: () => _showAddWebDAV(dav),
                   ),
-                  GroupedRow(
+                  GroupedInputRow(
                     title: appLocalizations.file,
                     value: dav.fileName,
-                    onTap: () => _handleEditFileName(dav.fileName),
+                    resetValue: defaultDavFileName,
+                    inputFormatters: TextInputLimits.limit(
+                      TextInputLimits.fileName,
+                    ),
+                    validator: (value) => value.isEmpty
+                        ? appLocalizations.emptyTip(appLocalizations.file)
+                        : null,
+                    onSubmitted: (value) => ref
+                        .read(davSettingProvider.notifier)
+                        .update((state) => state?.copyWith(fileName: value)),
                   ),
                   action(appLocalizations.backup, _backupOnWebDAV),
                   action(appLocalizations.restore, _restoreOnWebDAV),
@@ -351,21 +344,21 @@ class _RestoreOptionsDialogState extends State<RestoreOptionsDialog> {
   }
 }
 
-class WebDAVFormDialog extends ConsumerStatefulWidget {
+class WebDAVFormPage extends ConsumerStatefulWidget {
   final DAVProps? dav;
 
-  const WebDAVFormDialog({super.key, this.dav});
+  const WebDAVFormPage({super.key, this.dav});
 
   @override
-  ConsumerState<WebDAVFormDialog> createState() => _WebDAVFormDialogState();
+  ConsumerState<WebDAVFormPage> createState() => _WebDAVFormPageState();
 }
 
-class _WebDAVFormDialogState extends ConsumerState<WebDAVFormDialog> {
+class _WebDAVFormPageState extends ConsumerState<WebDAVFormPage> {
   late TextEditingController _uriController;
   late TextEditingController _userController;
   late TextEditingController _passwordController;
-  final _obscureController = ValueNotifier<bool>(true);
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _obscure = true;
+  String? _error;
 
   @override
   void initState() {
@@ -375,8 +368,26 @@ class _WebDAVFormDialogState extends ConsumerState<WebDAVFormDialog> {
     _passwordController = TextEditingController(text: widget.dav?.password);
   }
 
+  String? _validate(AppLocalizations appLocalizations) {
+    final uri = _uriController.text;
+    if (uri.isEmpty || !uri.isUrl) {
+      return appLocalizations.addressTip;
+    }
+    if (_userController.text.isEmpty) {
+      return appLocalizations.emptyTip(appLocalizations.account);
+    }
+    if (_passwordController.text.isEmpty) {
+      return appLocalizations.emptyTip(appLocalizations.password);
+    }
+    return null;
+  }
+
   void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+    final error = _validate(context.appLocalizations);
+    if (error != null) {
+      setState(() => _error = error);
+      return;
+    }
     ref
         .read(davSettingProvider.notifier)
         .update(
@@ -397,7 +408,6 @@ class _WebDAVFormDialogState extends ConsumerState<WebDAVFormDialog> {
 
   @override
   void dispose() {
-    _obscureController.dispose();
     _uriController.dispose();
     _userController.dispose();
     _passwordController.dispose();
@@ -407,92 +417,96 @@ class _WebDAVFormDialogState extends ConsumerState<WebDAVFormDialog> {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    return CommonDialog(
+    final palette = GroupedPalette.of(context);
+    final error = _error;
+    return GroupedPage(
       title: appLocalizations.webDAVConfiguration,
-      actions: [
-        if (widget.dav != null)
-          TextButton(onPressed: _delete, child: Text(appLocalizations.delete)),
-        TextButton(onPressed: _submit, child: Text(appLocalizations.save)),
-      ],
-      child: Form(
-        key: _formKey,
-        child: Wrap(
-          runSpacing: 16,
-          children: [
-            TextFormField(
-              controller: _uriController,
-              inputFormatters: TextInputLimits.limit(TextInputLimits.uri),
-              maxLines: 5,
-              minLines: 1,
-              textInputAction: TextInputAction.next,
-              decoration: InputDecoration(
-                prefixIcon: const GlyphIcon(AppGlyphs.link),
-                labelText: appLocalizations.address,
-                helperText: appLocalizations.addressHelp,
+      onBack: () => Navigator.of(context).maybePop(),
+      trailing: GroupedBarAction(
+        label: appLocalizations.save,
+        tooltip: appLocalizations.save,
+        onPressed: _submit,
+      ),
+      body: GroupedBody(
+        children: [
+          GroupedSection(
+            footer: error == null ? appLocalizations.addressHelp : null,
+            children: [
+              GroupedFieldRow(
+                label: appLocalizations.address,
+                hint: appLocalizations.addressHelp,
+                controller: _uriController,
+                keyboardType: TextInputType.url,
+                textInputAction: TextInputAction.next,
+                inputFormatters: TextInputLimits.limit(TextInputLimits.uri),
               ),
-              validator: (String? value) {
-                if (value == null || value.isEmpty || !value.isUrl) {
-                  return appLocalizations.addressTip;
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              controller: _userController,
-              inputFormatters: TextInputLimits.limit(TextInputLimits.userName),
-              textInputAction: TextInputAction.next,
-              decoration: InputDecoration(
-                prefixIcon: const GlyphIcon(AppGlyphs.account),
-                labelText: appLocalizations.account,
+              GroupedFieldRow(
+                label: appLocalizations.account,
+                hint: appLocalizations.account,
+                controller: _userController,
+                textInputAction: TextInputAction.next,
+                inputFormatters: TextInputLimits.limit(
+                  TextInputLimits.userName,
+                ),
               ),
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return appLocalizations.emptyTip(appLocalizations.account);
-                }
-                return null;
-              },
-            ),
-            ValueListenableBuilder(
-              valueListenable: _obscureController,
-              builder: (_, obscure, _) {
-                return TextFormField(
-                  controller: _passwordController,
-                  inputFormatters: TextInputLimits.limit(
-                    TextInputLimits.password,
-                  ),
-                  obscureText: obscure,
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) {
-                    _submit();
-                  },
-                  decoration: InputDecoration(
-                    prefixIcon: const GlyphIcon(AppGlyphs.password),
-                    suffixIcon: IconButton(
-                      tooltip: obscure
-                          ? context.appLocalizations.showPassword
-                          : context.appLocalizations.hidePassword,
-                      icon: GlyphIcon(
-                        obscure ? AppGlyphs.eye : AppGlyphs.eyeOff,
-                      ),
-                      onPressed: () {
-                        _obscureController.value = !obscure;
-                      },
+              GroupedFieldRow(
+                label: appLocalizations.password,
+                hint: appLocalizations.password,
+                controller: _passwordController,
+                obscure: _obscure,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _submit(),
+                inputFormatters: TextInputLimits.limit(
+                  TextInputLimits.password,
+                ),
+                trailing: Tooltip(
+                  message: _obscure
+                      ? appLocalizations.showPassword
+                      : appLocalizations.hidePassword,
+                  child: InkResponse(
+                    radius: 14,
+                    onTap: () => setState(() => _obscure = !_obscure),
+                    child: GlyphIcon(
+                      _obscure ? AppGlyphs.eye : AppGlyphs.eyeOff,
+                      size: 17,
+                      color: palette.secondary,
                     ),
-                    labelText: appLocalizations.password,
                   ),
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return appLocalizations.emptyTip(
-                        appLocalizations.password,
-                      );
-                    }
-                    return null;
-                  },
-                );
-              },
+                ),
+              ),
+            ],
+          ),
+          if (error != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                groupedRowPadding + 1,
+                6,
+                groupedRowPadding,
+                0,
+              ),
+              child: Text(
+                error,
+                style: palette.sectionLabel.copyWith(
+                  color: context.colorScheme.error,
+                ),
+              ),
+            ),
+          if (widget.dav != null) ...[
+            const SizedBox(height: groupedSectionGap),
+            GroupedSection(
+              children: [
+                GroupedRow(
+                  leading: GroupedIcon(
+                    AppGlyphs.delete,
+                    color: context.colorScheme.error,
+                  ),
+                  title: appLocalizations.delete,
+                  onTap: _delete,
+                ),
+              ],
             ),
           ],
-        ),
+        ],
       ),
     );
   }

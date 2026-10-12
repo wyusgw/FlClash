@@ -122,16 +122,14 @@ class ProfilesAction extends _$ProfilesAction {
           await appPath.getProfilePath(target.id.toString()),
         );
         final nodes = text == null
-            ? const <Map<String, dynamic>>[]
+            ? <Map<String, dynamic>>[]
             : parseSubscription(text);
+        final merged = _mergeManualNode(nodes, outbound);
+        if (merged == null) {
+          return null;
+        }
         return target.saveFile(
-          Uint8List.fromList(
-            utf8.encode(
-              json.encode({
-                'outbounds': [...nodes, outbound],
-              }),
-            ),
-          ),
+          Uint8List.fromList(utf8.encode(json.encode({'outbounds': merged}))),
           validate: (path) => _core.validateConfig(path),
         );
       },
@@ -143,6 +141,41 @@ class ProfilesAction extends _$ProfilesAction {
       ref.read(setupActionProvider.notifier).applyProfileDebounce();
     }
     _notifySuccess(currentAppLocalizations.addSuccess);
+  }
+
+  /// [nodes] with [outbound] added. A name already taken replaces that node
+  /// when overwriting is on, else gets a number when renaming is on, else the
+  /// add is refused with null.
+  List<Map<String, dynamic>>? _mergeManualNode(
+    List<Map<String, dynamic>> nodes,
+    Map<String, dynamic> outbound,
+  ) {
+    final settings = ref.read(appSettingProvider);
+    final tag = '${outbound['tag']}';
+    final index = nodes.indexWhere((node) => node['tag'] == tag);
+    if (index == -1) {
+      return [...nodes, outbound];
+    }
+    if (settings.overwriteExistingNodes) {
+      return [...nodes]..[index] = outbound;
+    }
+    if (!settings.autoRenameNodes) {
+      final appLocalizations = currentAppLocalizations;
+      dialogs.showNotifier(
+        appLocalizations.existsTip(appLocalizations.name),
+        level: MessageLevel.error,
+      );
+      return null;
+    }
+    final renamed = uniqueLabelFor(
+      tag,
+      fallback: '${outbound['protocol']}',
+      taken: (label) => nodes.any((node) => node['tag'] == label),
+    );
+    return [
+      ...nodes,
+      {...outbound, 'tag': renamed},
+    ];
   }
 
   /// The outbound of the node [tag] in [profile], as the profile stores it.
@@ -247,6 +280,19 @@ class ProfilesAction extends _$ProfilesAction {
     if (profile != null) {
       putProfile(profile);
       _notifySuccess(currentAppLocalizations.addSuccess);
+    }
+  }
+
+  /// Takes in what [readClipboardImport] found: a subscription by its address,
+  /// or each share link as a server added by hand.
+  Future<void> importFromClipboard(ClipboardImport source) async {
+    switch (source) {
+      case ClipboardSubscription(:final url):
+        await addProfileFormURL(url);
+      case ClipboardNodes(:final outbounds):
+        for (final outbound in outbounds) {
+          await addManualNode(outbound);
+        }
     }
   }
 

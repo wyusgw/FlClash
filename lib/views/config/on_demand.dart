@@ -25,6 +25,8 @@ class OnDemandView extends ConsumerStatefulWidget {
 class _OnDemandViewState extends ConsumerState<OnDemandView>
     with UniqueKeyStateMixin {
   bool _requestingLocation = false;
+  bool _adding = false;
+  String? _editing;
 
   bool get _isAndroid => widget.isAndroid ?? system.isAndroid;
 
@@ -103,37 +105,54 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
     app?.openBatteryOptimizationSettings();
   }
 
-  Future<void> _handleAddOrUpdate([String? ssid]) async {
-    final ssids = ref.read(excludeSSIDsProvider);
+  void _handleAdd() => setState(() {
+    _adding = true;
+    _editing = null;
+  });
+
+  void _handleEdit(String ssid) => setState(() {
+    _adding = false;
+    _editing = ssid;
+  });
+
+  void _handleEndInput() => setState(() {
+    _adding = false;
+    _editing = null;
+  });
+
+  String? _validateSsid(String value, {String? current}) {
     final appLocalizations = context.appLocalizations;
-    final newSSID = await dialogs.showCommonDialog<String>(
-      child: InputDialog(
-        title: ssid == null
-            ? appLocalizations.addSsid
-            : appLocalizations.editSsid,
-        value: ssid ?? '',
-        maxLength: 32,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return appLocalizations.emptyTip('SSID').trim();
-          }
-          if (ssids.contains(value) && ssid != value) {
-            return appLocalizations.existsTip('SSID').trim();
-          }
-          return null;
-        },
-      ),
-    );
-    if (newSSID == null || ssid == newSSID) {
-      return;
+    if (value.isEmpty) {
+      return appLocalizations.emptyTip('SSID').trim();
     }
+    if (value != current && ref.read(excludeSSIDsProvider).contains(value)) {
+      return appLocalizations.existsTip('SSID').trim();
+    }
+    return null;
+  }
+
+  void _commitSsid(String? ssid, String newSSID) {
     ref.read(excludeSSIDsProvider.notifier).update((state) {
-      final newSSIDS = state.toSet();
-      if (ssid != null) {
-        newSSIDS.remove(ssid);
+      if (ssid == null) {
+        return [...state.toSet(), newSSID];
       }
-      return [...newSSIDS, newSSID];
+      return [for (final item in state) item == ssid ? newSSID : item];
     });
+    _handleEndInput();
+  }
+
+  Widget _buildInput({String? ssid, Widget? leading}) {
+    return GroupedInputRow(
+      key: ValueKey(ssid ?? #add),
+      leading: leading,
+      title: 'SSID',
+      value: ssid ?? '',
+      startEditing: true,
+      inputFormatters: TextInputLimits.limit(32),
+      validator: (value) => _validateSsid(value, current: ssid),
+      onSubmitted: (value) => _commitSsid(ssid, value),
+      onCancel: _handleEndInput,
+    );
   }
 
   void _handleReorder(int oldIndex, newIndex) {
@@ -235,6 +254,15 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
   }
 
   Widget _buildEntry(String ssid, int index, bool isSelected) {
+    final mark = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        ref.read(itemsProvider(key).notifier).update((state) {
+          return Set<String>.from(state)..addOrRemove(ssid);
+        });
+      },
+      child: GroupedSelectMark(selected: isSelected),
+    );
     return ReorderableDelayedDragStartListener(
       key: ValueKey(ssid),
       index: index,
@@ -245,19 +273,14 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
             const GroupedHairline(
               inset: groupedRowPadding + groupedLeadingSize + groupedLeadingGap,
             ),
-          GroupedRow(
-            leading: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                ref.read(itemsProvider(key).notifier).update((state) {
-                  return Set<String>.from(state)..addOrRemove(ssid);
-                });
-              },
-              child: GroupedSelectMark(selected: isSelected),
+          if (_editing == ssid)
+            _buildInput(ssid: ssid, leading: mark)
+          else
+            GroupedRow(
+              leading: mark,
+              title: ssid,
+              onTap: () => _handleEdit(ssid),
             ),
-            title: ssid,
-            onTap: () => _handleAddOrUpdate(ssid),
-          ),
         ],
       ),
     );
@@ -281,7 +304,7 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
             style: palette.sectionLabel,
           ),
         ),
-        if (excludeSSIDs.isEmpty)
+        if (excludeSSIDs.isEmpty && !_adding)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 36),
             child: NullStatus(
@@ -291,19 +314,34 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
           )
         else
           GroupedCard(
-            child: ReorderableListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              buildDefaultDragHandles: false,
-              itemCount: excludeSSIDs.length,
-              itemBuilder: (_, index) => _buildEntry(
-                excludeSSIDs[index],
-                index,
-                selected.contains(excludeSSIDs[index]),
-              ),
-              proxyDecorator: (child, _, _) =>
-                  Material(type: MaterialType.transparency, child: child),
-              onReorderItem: _handleReorder,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ReorderableListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  buildDefaultDragHandles: false,
+                  itemCount: excludeSSIDs.length,
+                  itemBuilder: (_, index) => _buildEntry(
+                    excludeSSIDs[index],
+                    index,
+                    selected.contains(excludeSSIDs[index]),
+                  ),
+                  proxyDecorator: (child, _, _) =>
+                      Material(type: MaterialType.transparency, child: child),
+                  onReorderItem: _handleReorder,
+                ),
+                if (_adding) ...[
+                  if (excludeSSIDs.isNotEmpty)
+                    const GroupedHairline(
+                      inset:
+                          groupedRowPadding +
+                          groupedLeadingSize +
+                          groupedLeadingGap,
+                    ),
+                  _buildInput(),
+                ],
+              ],
             ),
           ),
         Padding(
@@ -356,7 +394,7 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
           : GroupedBarAction(
               label: appLocalizations.add,
               tooltip: appLocalizations.add,
-              onPressed: _handleAddOrUpdate,
+              onPressed: _handleAdd,
             ),
       body: GroupedBody(
         children: [

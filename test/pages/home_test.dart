@@ -692,14 +692,14 @@ void main() {
     );
     await tester.pump();
     expect(find.byType(FloatingNavigationBar), findsNothing);
-    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(DockedTabBar), findsOneWidget);
     expect(find.text('page:dashboard docked:false inset:0.0'), findsOneWidget);
 
     await tester.tap(_glyph(AppGlyphs.tools));
     await tester.pumpAndSettle();
     expect(container.read(currentPageLabelProvider), PageLabel.tools);
     expect(
-      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      tester.widget<DockedTabBar>(find.byType(DockedTabBar)).selectedIndex,
       1,
     );
 
@@ -707,7 +707,7 @@ void main() {
         .read(appSettingProvider.notifier)
         .update((state) => state.copyWith(floatingNavigationBar: true));
     await tester.pumpAndSettle();
-    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byType(DockedTabBar), findsNothing);
     expect(find.byType(FloatingNavigationBar), findsOneWidget);
     expect(find.textContaining('page:tools docked:true'), findsOneWidget);
     expect(tester.takeException(), isNull);

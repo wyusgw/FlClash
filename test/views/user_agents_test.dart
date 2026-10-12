@@ -3,8 +3,10 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/config/user_agents.dart';
+import 'package:fl_clash/widgets/grouped_input.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -54,8 +56,8 @@ void main() {
   }
 
   Future<void> submitInput(WidgetTester tester, String text) async {
-    await tester.enterText(find.byType(TextFormField), text);
-    await tester.tap(find.text(currentAppLocalizations.submit));
+    await tester.enterText(find.byType(EditableText), text);
+    await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
   }
 
@@ -170,5 +172,60 @@ void main() {
 
     expect(saved(), [defaultUserAgents.last, 'Legacy/1.0']);
     expect(selected(), 'Legacy/1.0');
+  });
+
+  testWidgets('adding types in a row of the list, with no dialog', (
+    tester,
+  ) async {
+    await pumpView(tester);
+
+    await tester.tap(find.text(currentAppLocalizations.add));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(Dialog), findsNothing);
+    expect(find.byType(TextField), findsNothing);
+    expect(find.byType(EditableText), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(GroupedInputRow),
+        matching: find.text(currentAppLocalizations.userAgent),
+      ),
+      findsOneWidget,
+      reason: 'the row is named',
+    );
+  });
+
+  testWidgets('Escape drops a row that was being added', (tester) async {
+    await pumpView(tester);
+    await tester.tap(find.text(currentAppLocalizations.add));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(EditableText), 'Half/1.0');
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(EditableText), findsNothing);
+    expect(saved(), defaultUserAgents);
+  });
+
+  testWidgets('editing opens the value itself for typing', (tester) async {
+    await pumpView(tester);
+
+    await tester.tap(menuOf(defaultUserAgents.first));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(currentAppLocalizations.edit));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(Dialog), findsNothing);
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText)).controller.text,
+      defaultUserAgents.first,
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(EditableText), findsNothing);
+    expect(saved(), defaultUserAgents);
   });
 }

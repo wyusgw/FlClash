@@ -1,21 +1,16 @@
+import 'dart:async';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/state.dart';
-import 'package:fl_clash/views/theme_preview.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:flutter/foundation.dart' show mapEquals;
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:material_color_utilities/hct/hct.dart';
-
-class FontFamilyItem {
-  final FontFamily fontFamily;
-  final String label;
-
-  const FontFamilyItem({required this.fontFamily, required this.label});
-}
 
 class ThemeView extends StatelessWidget {
   const ThemeView({super.key});
@@ -28,7 +23,7 @@ class ThemeView extends StatelessWidget {
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     return GroupedPage(
-      title: appLocalizations.theme,
+      title: appLocalizations.appearance,
       onBack: () => Navigator.of(context).maybePop(),
       body: CustomScrollView(
         slivers: [
@@ -41,19 +36,10 @@ class ThemeView extends StatelessWidget {
             ),
             sliver: const SliverMainAxisGroup(
               slivers: [
-                SliverToBoxAdapter(child: ThemeLivePreview()),
+                _AppearanceItem(),
                 _gap,
-                _ThemeModeItem(),
+                _ColorsItem(),
                 _gap,
-                _PureBlackItem(),
-                _gap,
-                _PrimaryColorItem(),
-                _gap,
-                _NavigationBarItem(),
-                _gap,
-                _TabAnimationItem(),
-                _gap,
-                _SidebarBlurItem(),
                 _TextScaleFactorItem(),
               ],
             ),
@@ -64,34 +50,17 @@ class ThemeView extends StatelessWidget {
   }
 }
 
-class ItemCard extends StatelessWidget {
-  final Widget child;
-  final Info info;
-  final List<Widget> actions;
-  final double? space;
-
-  const ItemCard({
-    super.key,
-    required this.info,
-    required this.child,
-    this.actions = const [],
-    this.space,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      runSpacing: 16,
-      children: [
-        InfoHeader(info: info, actions: actions, space: space),
-        child,
-      ],
-    );
-  }
+String _themeModeLabel(AppLocalizations appLocalizations, ThemeMode mode) {
+  return switch (mode) {
+    ThemeMode.system => appLocalizations.auto,
+    ThemeMode.light => appLocalizations.light,
+    ThemeMode.dark => appLocalizations.dark,
+  };
 }
 
-class _ThemeModeItem extends ConsumerWidget {
-  const _ThemeModeItem();
+/// Whether the app follows the system, or stays light or dark.
+class _AppearanceItem extends ConsumerWidget {
+  const _AppearanceItem();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -99,532 +68,363 @@ class _ThemeModeItem extends ConsumerWidget {
     final themeMode = ref.watch(
       themeSettingProvider.select((state) => state.themeMode),
     );
-    final floatingBar = ref.watch(_floatingBarProvider);
-    final light = MiniScreen(
-      colorScheme: ref.watch(genColorSchemeProvider(Brightness.light)),
-      floatingBar: floatingBar,
-    );
-    final dark = MiniScreen(
-      colorScheme: ref.watch(genColorSchemeProvider(Brightness.dark)),
-      floatingBar: floatingBar,
-    );
     return SliverToBoxAdapter(
-      child: PreviewChoiceGroup<ThemeMode>(
-        info: Info(label: appLocalizations.themeMode, glyph: AppGlyphs.sun),
-        value: themeMode,
-        choices: [
-          PreviewChoice(
-            value: ThemeMode.system,
-            label: appLocalizations.auto,
-            pictogram: MiniScreenThumb(
-              screen: MiniSplitScreen(light: light, dark: dark),
-            ),
-          ),
-          PreviewChoice(
-            value: ThemeMode.light,
-            label: appLocalizations.light,
-            pictogram: MiniScreenThumb(screen: light),
-          ),
-          PreviewChoice(
-            value: ThemeMode.dark,
-            label: appLocalizations.dark,
-            pictogram: MiniScreenThumb(screen: dark),
+      child: GroupedSection(
+        children: [
+          GroupedRow(
+            title: appLocalizations.appearance,
+            value: _themeModeLabel(appLocalizations, themeMode),
+            chevron: true,
+            onTap: () => BaseNavigator.push(context, const _ThemeModeView()),
           ),
         ],
-        onChanged: (value) {
-          ref
-              .read(themeSettingProvider.notifier)
-              .update((state) => state.copyWith(themeMode: value));
-        },
       ),
     );
   }
 }
 
-class _PrimaryColorItem extends ConsumerStatefulWidget {
-  const _PrimaryColorItem();
+class _ThemeModeView extends ConsumerWidget {
+  const _ThemeModeView();
 
   @override
-  ConsumerState<_PrimaryColorItem> createState() => _PrimaryColorItemState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    return GroupedChoicePage<ThemeMode>(
+      title: appLocalizations.appearance,
+      choices: {
+        for (final mode in ThemeMode.values)
+          mode: _themeModeLabel(appLocalizations, mode),
+      },
+      selected: ref.watch(
+        themeSettingProvider.select((state) => state.themeMode),
+      ),
+      onSelected: (mode) => ref
+          .read(themeSettingProvider.notifier)
+          .update((state) => state.copyWith(themeMode: mode)),
+    );
+  }
 }
 
-class _PrimaryColorItemState extends ConsumerState<_PrimaryColorItem> {
-  int? _removablePrimaryColor;
+/// The colors of the grouped pages: change them, set them back, or hand them
+/// to another install as a link.
+class _ColorsItem extends ConsumerWidget {
+  const _ColorsItem();
 
-  Future<void> _handleReset() async {
+  Future<void> _reset(BuildContext context, WidgetRef ref) async {
     final res = await dialogs.showMessage(
+      title: context.appLocalizations.confirm,
       message: TextSpan(text: context.appLocalizations.resetTip),
+      confirmText: context.appLocalizations.reset,
+      destructive: true,
     );
     if (res != true) {
       return;
     }
-    ref.read(themeSettingProvider.notifier).update((state) {
-      return state.copyWith(
-        primaryColors: defaultPrimaryColors,
-        primaryColor: defaultPrimaryColor,
-        schemeVariant: DynamicSchemeVariant.content,
-      );
-    });
+    ref
+        .read(themeSettingProvider.notifier)
+        .update((state) => state.copyWith(paletteColors: const {}));
   }
 
-  Future<void> _handleDel() async {
-    final appLocalizations = context.appLocalizations;
-    if (_removablePrimaryColor == null) {
-      return;
-    }
-    final res = await dialogs.showMessage(
-      message: TextSpan(
-        text: appLocalizations.deleteTip(appLocalizations.colorSchemes),
+  Future<void> _copyLink(BuildContext context, WidgetRef ref) async {
+    final stored = ref.read(
+      themeSettingProvider.select((state) => state.paletteColors),
+    );
+    final link = buildColorLink(
+      protocolSchemes.last,
+      dark: GroupedPalette.dark.withOverrides(
+        paletteOverridesFor(stored, Brightness.dark),
+      ),
+      light: GroupedPalette.light.withOverrides(
+        paletteOverridesFor(stored, Brightness.light),
       ),
     );
-    if (res != true) {
-      return;
-    }
-    ref.read(themeSettingProvider.notifier).update((state) {
-      final newPrimaryColors = List<int>.from(state.primaryColors)
-        ..remove(_removablePrimaryColor);
-      int? newPrimaryColor = state.primaryColor;
-      if (state.primaryColor == _removablePrimaryColor) {
-        if (newPrimaryColors.contains(defaultPrimaryColor)) {
-          newPrimaryColor = defaultPrimaryColor;
-        } else {
-          newPrimaryColor = null;
-        }
-      }
-      return state.copyWith(
-        primaryColors: newPrimaryColors,
-        primaryColor: newPrimaryColor,
+    await Clipboard.setData(ClipboardData(text: link.toString()));
+    if (context.mounted) {
+      context.showNotifier(
+        context.appLocalizations.copySuccess,
+        level: MessageLevel.success,
       );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    return SliverToBoxAdapter(
+      child: GroupedSection(
+        header: appLocalizations.colors,
+        children: [
+          GroupedRow(
+            title: appLocalizations.colors,
+            chevron: true,
+            onTap: () =>
+                BaseNavigator.push(context, const AppearanceColorsView()),
+          ),
+          GroupedRow(
+            title: appLocalizations.resetColors,
+            chevron: true,
+            onTap: () => unawaited(_reset(context, ref)),
+          ),
+          GroupedRow(
+            title: appLocalizations.copyColorLink,
+            chevron: true,
+            onTap: () => unawaited(_copyLink(context, ref)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Every color of the grouped pages for the look in use, as its hex value and
+/// name beside a swatch; a tap changes one and Save keeps the lot.
+class AppearanceColorsView extends ConsumerStatefulWidget {
+  const AppearanceColorsView({super.key});
+
+  @override
+  ConsumerState<AppearanceColorsView> createState() =>
+      _AppearanceColorsViewState();
+}
+
+const _colorGroups = [
+  [
+    GroupedColorToken.bar,
+    GroupedColorToken.sidebarBar,
+    GroupedColorToken.sidebar,
+  ],
+  [
+    GroupedColorToken.canvas,
+    GroupedColorToken.fill,
+    GroupedColorToken.hover,
+    GroupedColorToken.separator,
+    GroupedColorToken.switchOff,
+  ],
+  [
+    GroupedColorToken.label,
+    GroupedColorToken.secondary,
+    GroupedColorToken.tertiary,
+  ],
+  [GroupedColorToken.accent, GroupedColorToken.icon],
+];
+
+class _AppearanceColorsViewState extends ConsumerState<AppearanceColorsView> {
+  late Brightness _brightness;
+  Map<GroupedColorToken, int>? _initialColors;
+  late Map<GroupedColorToken, int> _draft;
+  final _hex = TextEditingController();
+  final _focus = FocusNode();
+  GroupedColorToken? _editing;
+
+  Map<GroupedColorToken, int> get _initial => _initialColors!;
+
+  @override
+  void initState() {
+    super.initState();
+    _hex.addListener(() {
+      if (_editing != null) {
+        setState(() {});
+      }
     });
-    setState(() {
-      _removablePrimaryColor = null;
+    // Moving to another row hands the field over within a frame, so a lost
+    // focus only ends editing if nothing took it back by the end of it.
+    _focus.addListener(() {
+      if (_focus.hasFocus) {
+        return;
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_focus.hasFocus) {
+          _commitEdit();
+        }
+      });
     });
   }
 
-  Future<void> _handleAdd() async {
+  @override
+  void dispose() {
+    _focus.dispose();
+    _hex.dispose();
+    super.dispose();
+  }
+
+  // The colors shown are the ones in force when the page opens; later changes
+  // to the theme must not overwrite what is being edited.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialColors != null) {
+      return;
+    }
+    _brightness = Theme.of(context).brightness;
+    final palette = _base.withOverrides(
+      paletteOverridesFor(
+        ref.read(themeSettingProvider.select((state) => state.paletteColors)),
+        _brightness,
+      ),
+    );
+    _initialColors = {
+      for (final token in GroupedColorToken.values)
+        token: palette.colorOf(token).toARGB32(),
+    };
+    _draft = {..._initialColors!};
+  }
+
+  /// The colors with the value being typed counted in, once it is one.
+  Map<GroupedColorToken, int> get _current {
+    final token = _editing;
+    final color = token == null ? null : parseColorHex(_hex.text);
+    return color == null ? _draft : {..._draft, token!: color};
+  }
+
+  bool get _changed => !mapEquals(_current, _initial);
+
+  GroupedPalette get _base => _brightness == Brightness.dark
+      ? GroupedPalette.dark
+      : GroupedPalette.light;
+
+  /// Puts the value of the row in hand, if it is a color, and leaves editing.
+  /// A value that is not one leaves the color as it was.
+  void _commitEdit() {
+    final token = _editing;
+    if (token == null) {
+      return;
+    }
+    final color = parseColorHex(_hex.text);
+    setState(() {
+      _editing = null;
+      if (color != null) {
+        _draft = {..._draft, token: color};
+      }
+    });
+  }
+
+  void _startEdit(GroupedColorToken token) {
+    if (_editing == token) {
+      return;
+    }
+    _commitEdit();
+    _hex.value = TextEditingValue(
+      text: colorHex(_draft[token]!),
+      selection: TextSelection.collapsed(
+        offset: colorHex(_draft[token]!).length,
+      ),
+    );
+    setState(() => _editing = token);
+  }
+
+  void _save() {
+    _commitEdit();
+    ref.read(themeSettingProvider.notifier).update((state) {
+      final colors = {...state.paletteColors};
+      for (final token in GroupedColorToken.values) {
+        final key = paletteKey(_brightness, token);
+        if (_draft[token] == _base.colorOf(token).toARGB32()) {
+          colors.remove(key);
+        } else {
+          colors[key] = _draft[token]!;
+        }
+      }
+      return state.copyWith(paletteColors: colors);
+    });
+    Navigator.of(context).pop();
+  }
+
+  Future<void> _handleBack() async {
     final appLocalizations = context.appLocalizations;
-    final res = await dialogs.showCommonDialog<int>(
-      child: const _PaletteDialog(),
+    final res = await dialogs.showMessage(
+      title: appLocalizations.tip,
+      message: TextSpan(text: appLocalizations.saveChanges),
     );
     if (res == null) {
       return;
     }
-    final isExists = ref.read(
-      themeSettingProvider.select((state) => state.primaryColors.contains(res)),
-    );
-    if (isExists && mounted) {
-      context.showNotifier(
-        appLocalizations.existsTip(appLocalizations.colorSchemes),
-        level: MessageLevel.warning,
-      );
+    if (res) {
+      _save();
       return;
     }
-    ref.read(themeSettingProvider.notifier).update((state) {
-      return state.copyWith(
-        primaryColors: List.from(state.primaryColors)..add(res),
-      );
-    });
-  }
-
-  Future<void> _handleChangeSchemeVariant() async {
-    final schemeVariant = ref.read(
-      themeSettingProvider.select((state) => state.schemeVariant),
-    );
-    final value = await dialogs.showCommonDialog<DynamicSchemeVariant>(
-      child: OptionsDialog<DynamicSchemeVariant>(
-        title: context.appLocalizations.colorSchemes,
-        options: DynamicSchemeVariant.values,
-        textBuilder: (item) => item.label,
-        value: schemeVariant,
-      ),
-    );
-    if (value == null) {
-      return;
+    if (mounted) {
+      Navigator.of(context).pop();
     }
-    ref.read(themeSettingProvider.notifier).update((state) {
-      return state.copyWith(schemeVariant: value);
-    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final appLocalizations = context.appLocalizations;
-    final themeColors = ref.watch(
-      themeSettingProvider.select(
-        (state) => ThemeColorsSelectorState(
-          primaryColor: state.primaryColor,
-          primaryColors: state.primaryColors,
-          schemeVariant: state.schemeVariant,
-          isDefault:
-              state.primaryColor == defaultPrimaryColor &&
-              intListEquality.equals(
-                state.primaryColors,
-                defaultPrimaryColors,
-              ) &&
-              state.schemeVariant == DynamicSchemeVariant.content,
-        ),
-      ),
-    );
-    final primaryColor = themeColors.primaryColor;
-    final primaryColors = [null, ...themeColors.primaryColors];
-    final schemeVariant = themeColors.schemeVariant;
-    final isEquals = themeColors.isDefault;
-
-    return SliverToBoxAdapter(
-      child: CommonPopScope(
-        onPop: _removablePrimaryColor == null
-            ? null
-            : (_) {
-                _clearRemovable();
-                return false;
-              },
-        child: GroupedBlock(
-          header: appLocalizations.themeColor,
-          actions: [
-            if (_removablePrimaryColor == null)
-              GroupedTextAction(
-                label: schemeVariant.label,
-                onPressed: _handleChangeSchemeVariant,
-              ),
-            if (_removablePrimaryColor != null)
-              GroupedTextAction(
-                label: appLocalizations.cancel,
-                onPressed: _clearRemovable,
-              ),
-            if (_removablePrimaryColor == null && !isEquals)
-              GroupedIconAction(
-                glyph: AppGlyphs.reset,
-                tooltip: appLocalizations.reset,
-                onPressed: _handleReset,
-              ),
-          ],
-          child: _PrimaryColorGrid(
-            colors: primaryColors,
-            selectedColor: primaryColor,
-            removableColor: _removablePrimaryColor,
-            onSelect: _handleSelectColor,
-            onRequestRemove: _markRemovable,
-            onDelete: _handleDel,
-            onAdd: _handleAdd,
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _clearRemovable() {
-    setState(() {
-      _removablePrimaryColor = null;
-    });
-  }
-
-  void _markRemovable(int? color) {
-    setState(() {
-      _removablePrimaryColor = color;
-    });
-  }
-
-  void _handleSelectColor(int? color) {
-    _clearRemovable();
-    ref
-        .read(themeSettingProvider.notifier)
-        .update((state) => state.copyWith(primaryColor: color));
-  }
-}
-
-class _PrimaryColorGrid extends StatelessWidget {
-  const _PrimaryColorGrid({
-    required this.colors,
-    required this.selectedColor,
-    required this.removableColor,
-    required this.onSelect,
-    required this.onRequestRemove,
-    required this.onDelete,
-    required this.onAdd,
-  });
-
-  static const double _size = 48;
-
-  final List<int?> colors;
-  final int? selectedColor;
-  final int? removableColor;
-  final void Function(int? color) onSelect;
-  final void Function(int? color) onRequestRemove;
-  final VoidCallback onDelete;
-  final VoidCallback onAdd;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: [
-        for (final color in colors)
-          _PrimaryColorTile(
-            color: color,
-            isSelected: color == selectedColor,
-            isRemovable: removableColor != null && removableColor == color,
-            onSelect: () => onSelect(color),
-            onRequestRemove: () => onRequestRemove(color),
-            onDelete: onDelete,
-          ),
-        if (removableColor == null)
-          Tooltip(
-            message: context.appLocalizations.add,
-            child: Material(
-              color: GroupedPalette.of(context).separator,
-              shape: AppShape.circle,
-              clipBehavior: Clip.antiAlias,
-              child: InkWell(
-                customBorder: AppShape.circle,
-                onTap: onAdd,
-                child: SizedBox.square(
-                  dimension: _size,
-                  child: Center(
-                    child: GlyphIcon(
-                      AppGlyphs.add,
-                      color: GroupedPalette.of(context).icon,
+  Widget _row(GroupedColorToken token) {
+    final palette = GroupedPalette.of(context);
+    final color = _draft[token]!;
+    final editing = _editing == token;
+    final style = palette.rowTitle.toJetBrainsMono.copyWith(height: 1.4);
+    final strut = StrutStyle.fromTextStyle(style, forceStrutHeight: true);
+    return ColoredBox(
+      color: editing ? palette.hover : Colors.transparent,
+      child: GroupedRow(
+        titleWidget: editing
+            ? Row(
+                children: [
+                  Text('#', style: style, strutStyle: strut),
+                  Expanded(
+                    child: EditableText(
+                      controller: _hex,
+                      focusNode: _focus,
+                      autofocus: true,
+                      style: style,
+                      strutStyle: strut,
+                      cursorColor: palette.accent,
+                      backgroundCursorColor: palette.tertiary,
+                      selectionColor: palette.accent.withValues(alpha: 0.3),
+                      textCapitalization: TextCapitalization.characters,
+                      textInputAction: TextInputAction.done,
+                      keyboardType: TextInputType.visiblePassword,
+                      maxLines: 1,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp('[0-9a-fA-F]'),
+                        ),
+                        LengthLimitingTextInputFormatter(8),
+                      ],
+                      onSubmitted: (_) => _commitEdit(),
                     ),
                   ),
-                ),
-              ),
-            ),
+                ],
+              )
+            : Text('#${colorHex(color)}', style: style, strutStyle: strut),
+        title: token.id,
+        subtitle: token.id,
+        trailing: DecoratedBox(
+          decoration: ShapeDecoration(
+            color: Color(color),
+            shape: CircleBorder(side: BorderSide(color: palette.tertiary)),
           ),
-      ],
+          child: const SizedBox.square(dimension: 20),
+        ),
+        onTap: () => _startEdit(token),
+      ),
     );
   }
-}
-
-class _PrimaryColorTile extends StatelessWidget {
-  const _PrimaryColorTile({
-    required this.color,
-    required this.isSelected,
-    required this.isRemovable,
-    required this.onSelect,
-    required this.onRequestRemove,
-    required this.onDelete,
-  });
-
-  final int? color;
-  final bool isSelected;
-  final bool isRemovable;
-  final VoidCallback onSelect;
-  final VoidCallback onRequestRemove;
-  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
-    return Stack(
-      children: [
-        EffectGestureDetector(
-          onLongPress: onRequestRemove,
-          child: ColorSchemeBox(
-            isSelected: isSelected,
-            primaryColor: color != null ? Color(color!) : null,
-            onPressed: onSelect,
-            size: _PrimaryColorGrid._size,
-          ),
-        ),
-        if (isRemovable)
-          Positioned.fill(
-            child: Tooltip(
-              message: context.appLocalizations.delete,
-              child: Material(
-                color: colorScheme.errorContainer.withValues(alpha: 0.9),
-                shape: AppShape.circle,
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  customBorder: AppShape.circle,
-                  onTap: onDelete,
-                  child: Center(
-                    child: GlyphIcon(
-                      AppGlyphs.delete,
-                      color: colorScheme.onErrorContainer,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-final _floatingBarProvider = appSettingProvider.select(
-  (state) => state.floatingNavigationBar,
-);
-
-class _PureBlackItem extends ConsumerWidget {
-  const _PureBlackItem();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
-    final pureBlack = ref.watch(
-      themeSettingProvider.select((state) => state.pureBlack),
-    );
-    final floatingBar = ref.watch(_floatingBarProvider);
-    Widget preview(bool pureBlack) => MiniScreenThumb(
-      screen: MiniScreen(
-        colorScheme: ref.watch(
-          genColorSchemeProvider(Brightness.dark, pureBlack: pureBlack),
+    return CommonPopScope(
+      onPop: _changed
+          ? (_) {
+              unawaited(_handleBack());
+              return false;
+            }
+          : null,
+      child: GroupedPage(
+        title: appLocalizations.colors,
+        onBack: () => Navigator.of(context).maybePop(),
+        trailing: GroupedBarAction(
+          label: appLocalizations.save,
+          tooltip: appLocalizations.save,
+          onPressed: _changed ? _save : null,
         ),
-        floatingBar: floatingBar,
-      ),
-    );
-    return SliverToBoxAdapter(
-      child: PreviewChoiceGroup<bool>(
-        info: Info(
-          label: appLocalizations.pureBlackMode,
-          glyph: AppGlyphs.pureBlack,
-        ),
-        value: pureBlack,
-        choices: [
-          PreviewChoice(
-            value: false,
-            label: appLocalizations.standard,
-            pictogram: preview(false),
-          ),
-          PreviewChoice(
-            value: true,
-            label: appLocalizations.pureBlack,
-            pictogram: preview(true),
-          ),
-        ],
-        onChanged: (value) {
-          ref
-              .read(themeSettingProvider.notifier)
-              .update((state) => state.copyWith(pureBlack: value));
-        },
-      ),
-    );
-  }
-}
-
-class _NavigationBarItem extends ConsumerWidget {
-  const _NavigationBarItem();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final appLocalizations = context.appLocalizations;
-    final floatingBar = ref.watch(_floatingBarProvider);
-    final colorScheme = context.colorScheme;
-    return SliverToBoxAdapter(
-      child: PreviewChoiceGroup<bool>(
-        info: Info(
-          label: appLocalizations.navigationBarStyle,
-          glyph: AppGlyphs.layers,
-        ),
-        value: floatingBar,
-        choices: [
-          PreviewChoice(
-            value: true,
-            label: appLocalizations.floating,
-            pictogram: MiniScreenThumb(
-              screen: MiniScreen(colorScheme: colorScheme, floatingBar: true),
-            ),
-          ),
-          PreviewChoice(
-            value: false,
-            label: appLocalizations.docked,
-            pictogram: MiniScreenThumb(
-              screen: MiniScreen(colorScheme: colorScheme, floatingBar: false),
-            ),
-          ),
-        ],
-        onChanged: (value) {
-          ref
-              .read(appSettingProvider.notifier)
-              .update((state) => state.copyWith(floatingNavigationBar: value));
-        },
-      ),
-    );
-  }
-}
-
-class _TabAnimationItem extends ConsumerWidget {
-  const _TabAnimationItem();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final appLocalizations = context.appLocalizations;
-    final tabAnimation = ref.watch(
-      appSettingProvider.select((state) => state.tabAnimation),
-    );
-    final floatingBar = ref.watch(_floatingBarProvider);
-    final colorScheme = context.colorScheme;
-    Widget switching(TabAnimation tabAnimation) => MiniScreenThumb(
-      screen: MiniScreen(
-        colorScheme: colorScheme,
-        floatingBar: floatingBar,
-        selected: 1,
-        previous: 0,
-        progress: 0.55,
-        tabAnimation: tabAnimation,
-      ),
-    );
-    return SliverToBoxAdapter(
-      child: PreviewChoiceGroup<TabAnimation>(
-        info: Info(
-          label: appLocalizations.tabAnimation,
-          glyph: AppGlyphs.motion,
-        ),
-        value: tabAnimation,
-        choices: [
-          PreviewChoice(
-            value: TabAnimation.slide,
-            label: appLocalizations.slide,
-            pictogram: switching(TabAnimation.slide),
-          ),
-          PreviewChoice(
-            value: TabAnimation.fade,
-            label: appLocalizations.fade,
-            pictogram: switching(TabAnimation.fade),
-          ),
-        ],
-        onChanged: (value) {
-          ref
-              .read(appSettingProvider.notifier)
-              .update((state) => state.copyWith(tabAnimation: value));
-        },
-      ),
-    );
-  }
-}
-
-class _SidebarBlurItem extends ConsumerWidget {
-  const _SidebarBlurItem();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (!feature.sidebarBlur || (!system.isMacOS && !system.isWindows)) {
-      return const SliverToBoxAdapter(child: SizedBox.shrink());
-    }
-    final appLocalizations = context.appLocalizations;
-    final sidebarBlur = ref.watch(
-      themeSettingProvider.select((state) => state.sidebarBlur),
-    );
-    return SliverPadding(
-      padding: const EdgeInsets.only(bottom: groupedSectionGap),
-      sliver: SliverToBoxAdapter(
-        child: GroupedSection(
-          footer: appLocalizations.sidebarBlurDesc,
+        body: GroupedBody(
           children: [
-            GroupedRow(
-              leading: const GroupedIcon(AppGlyphs.blur),
-              title: appLocalizations.sidebarBlur,
-              trailing: GroupedSwitch(
-                value: sidebarBlur,
-                onChanged: (value) => ref
-                    .read(themeSettingProvider.notifier)
-                    .update((state) => state.copyWith(sidebarBlur: value)),
+            for (final (index, group) in _colorGroups.indexed) ...[
+              if (index > 0) const SizedBox(height: groupedSectionGap),
+              GroupedSection(
+                children: [for (final token in group) _row(token)],
               ),
-              onTap: () => ref
-                  .read(themeSettingProvider.notifier)
-                  .update((state) => state.copyWith(sidebarBlur: !sidebarBlur)),
-            ),
+            ],
           ],
         ),
       ),
@@ -880,51 +680,6 @@ class _SegmentedToggle extends StatelessWidget {
                 ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PaletteDialog extends StatefulWidget {
-  const _PaletteDialog();
-
-  @override
-  State<_PaletteDialog> createState() => _PaletteDialogState();
-}
-
-class _PaletteDialogState extends State<_PaletteDialog> {
-  final _controller = ValueNotifier<Color>(Color(Hct.from(0, 0, 60).toInt()));
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final appLocalizations = context.appLocalizations;
-    return CommonDialog(
-      title: appLocalizations.palette,
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text(appLocalizations.cancel),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop(_controller.value.toARGB32());
-          },
-          child: Text(appLocalizations.confirm),
-        ),
-      ],
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(width: 300, child: Palette(controller: _controller)),
         ],
       ),
     );

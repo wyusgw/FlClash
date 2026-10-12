@@ -35,6 +35,7 @@ class StatsView extends ConsumerWidget {
       title: appLocalizations.confirm,
       message: TextSpan(text: appLocalizations.resetTip),
       confirmText: appLocalizations.reset,
+      destructive: true,
     );
     if (res != true) return;
     ref.read(commonActionProvider.notifier).resetStatistics();
@@ -246,6 +247,7 @@ class _ArchiveViewState extends ConsumerState<ArchiveView> {
       title: appLocalizations.confirm,
       message: TextSpan(text: appLocalizations.resetTip),
       confirmText: appLocalizations.clearArchive,
+      destructive: true,
     );
     if (res != true || !mounted) return;
     await ref

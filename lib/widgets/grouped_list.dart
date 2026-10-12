@@ -11,8 +11,51 @@ const groupedBarHeight = 62.0;
 const groupedPageInset = 14.0;
 const groupedSectionGap = 27.0;
 
+/// What marks a row or an answer that destroys something.
+const groupedDanger = Color(0xFFFF453A);
+
 /// A grouped card's own corner: it sits between `sm` and `md` on a 37 tall row.
 final _cardShape = AppShape.all(10);
+
+/// Every color of a [GroupedPalette], named as the colors page and the color
+/// link name it.
+enum GroupedColorToken {
+  bar('NavigationBarColor'),
+  sidebarBar('SidebarBarColor'),
+  sidebar('SidebarColor'),
+  canvas('CanvasColor'),
+  fill('CellBackgroundColor'),
+  hover('CellSelectedBackgroundColor'),
+  separator('SeparatorColor'),
+  label('TextLabelColor'),
+  secondary('DetailLabelTextColor'),
+  tertiary('PlaceholderColor'),
+  accent('AccentColor'),
+  icon('IconColor'),
+  switchOff('SwitchOffColor');
+
+  const GroupedColorToken(this.id);
+
+  final String id;
+}
+
+/// Hands the pages below it the palettes the user has adjusted.
+class GroupedPaletteScope extends InheritedWidget {
+  const GroupedPaletteScope({
+    super.key,
+    required this.dark,
+    required this.light,
+    required super.child,
+  });
+
+  final GroupedPalette dark;
+  final GroupedPalette light;
+
+  @override
+  bool updateShouldNotify(GroupedPaletteScope oldWidget) {
+    return dark != oldWidget.dark || light != oldWidget.light;
+  }
+}
 
 /// The black-and-blue palette of the grouped pages, measured from the design
 /// reference rather than derived from the Material seed, so the pages keep
@@ -68,7 +111,64 @@ class GroupedPalette {
   );
 
   static GroupedPalette of(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark ? dark : light;
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<GroupedPaletteScope>();
+    return Theme.of(context).brightness == Brightness.dark
+        ? scope?.dark ?? dark
+        : scope?.light ?? light;
+  }
+
+  /// This palette with the colors in [overrides] in place of its own, keyed by
+  /// [GroupedColorToken.id].
+  GroupedPalette withOverrides(Map<String, int> overrides) {
+    Color pick(GroupedColorToken token) {
+      final value = overrides[token.id];
+      return value == null ? colorOf(token) : Color(value);
+    }
+
+    return GroupedPalette._(
+      canvas: pick(GroupedColorToken.canvas),
+      bar: pick(GroupedColorToken.bar),
+      sidebar: pick(GroupedColorToken.sidebar),
+      sidebarBar: pick(GroupedColorToken.sidebarBar),
+      fill: pick(GroupedColorToken.fill),
+      separator: pick(GroupedColorToken.separator),
+      hover: pick(GroupedColorToken.hover),
+      label: pick(GroupedColorToken.label),
+      secondary: pick(GroupedColorToken.secondary),
+      tertiary: pick(GroupedColorToken.tertiary),
+      accent: pick(GroupedColorToken.accent),
+      icon: pick(GroupedColorToken.icon),
+      switchOff: pick(GroupedColorToken.switchOff),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is GroupedPalette &&
+      GroupedColorToken.values.every(
+        (token) => colorOf(token) == other.colorOf(token),
+      );
+
+  @override
+  int get hashCode => Object.hashAll(GroupedColorToken.values.map(colorOf));
+
+  Color colorOf(GroupedColorToken token) {
+    return switch (token) {
+      GroupedColorToken.canvas => canvas,
+      GroupedColorToken.bar => bar,
+      GroupedColorToken.sidebar => sidebar,
+      GroupedColorToken.sidebarBar => sidebarBar,
+      GroupedColorToken.fill => fill,
+      GroupedColorToken.separator => separator,
+      GroupedColorToken.hover => hover,
+      GroupedColorToken.label => label,
+      GroupedColorToken.secondary => secondary,
+      GroupedColorToken.tertiary => tertiary,
+      GroupedColorToken.accent => accent,
+      GroupedColorToken.icon => icon,
+      GroupedColorToken.switchOff => switchOff,
+    };
   }
 
   final Color canvas;
@@ -84,6 +184,10 @@ class GroupedPalette {
   final Color accent;
   final Color icon;
   final Color switchOff;
+
+  /// What lies over a tappable row under the pointer: the pressed grey, thin
+  /// enough to let the row's own fill show through.
+  Color get hoverShade => hover.withValues(alpha: 0.55);
 
   TextStyle get rowTitle =>
       TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: label);
@@ -263,7 +367,7 @@ class GroupedRow extends GroupedItem {
       type: MaterialType.transparency,
       child: InkWell(
         onTap: onTap,
-        hoverColor: Colors.transparent,
+        hoverColor: palette.hoverShade,
         highlightColor: palette.hover,
         splashColor: Colors.transparent,
         child: SizedBox(
@@ -372,7 +476,7 @@ class GroupedButtonRow extends GroupedItem {
       type: MaterialType.transparency,
       child: InkWell(
         onTap: onTap,
-        hoverColor: Colors.transparent,
+        hoverColor: palette.hoverShade,
         highlightColor: palette.hover,
         splashColor: Colors.transparent,
         child: SizedBox(
@@ -401,6 +505,8 @@ class GroupedFieldRow extends GroupedItem {
     required this.hint,
     required this.controller,
     this.onChanged,
+    this.onSubmitted,
+    this.textInputAction,
     this.keyboardType,
     this.inputFormatters,
     this.suffix,
@@ -417,6 +523,8 @@ class GroupedFieldRow extends GroupedItem {
   final Widget? trailing;
   final TextEditingController controller;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
+  final TextInputAction? textInputAction;
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
 
@@ -438,6 +546,8 @@ class GroupedFieldRow extends GroupedItem {
               child: TextField(
                 controller: controller,
                 onChanged: onChanged,
+                onSubmitted: onSubmitted,
+                textInputAction: textInputAction,
                 keyboardType: keyboardType,
                 inputFormatters: inputFormatters,
                 obscureText: obscure,

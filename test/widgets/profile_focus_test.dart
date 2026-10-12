@@ -6,6 +6,7 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/profiles.dart';
+import 'package:fl_clash/views/profiles/subscription_info.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -106,7 +107,7 @@ void main() {
     expect(find.text(currentAppLocalizations.delete), findsOneWidget);
   });
 
-  testWidgets('subscription menu item opens the usage dialog', (tester) async {
+  testWidgets('subscription menu item opens the usage page', (tester) async {
     await pumpProfiles(tester, profiles: [urlProfile('url')]);
 
     await tester.tap(_infoOf('url'));
@@ -117,8 +118,7 @@ void main() {
     await tester.tap(find.text(currentAppLocalizations.subscriptionInfo));
     await tester.pumpAndSettle();
 
-    expect(find.byType(CommonDialog), findsOneWidget);
-    expect(find.byType(SubscriptionInfoDetailView), findsOneWidget);
+    expect(find.byType(SubscriptionInfoPage), findsOneWidget);
     expect(find.text(currentAppLocalizations.subscriptionInfo), findsOneWidget);
   });
 }

@@ -17,6 +17,9 @@ class UserAgentsView extends ConsumerStatefulWidget {
 }
 
 class _UserAgentsViewState extends ConsumerState<UserAgentsView> {
+  bool _adding = false;
+  String? _editing;
+
   String? get _selected => ref.read(appSettingProvider).globalUa;
 
   List<String> get _entries =>
@@ -34,51 +37,64 @@ class _UserAgentsViewState extends ConsumerState<UserAgentsView> {
         .update((state) => state.copyWith(globalUa: userAgent));
   }
 
-  Future<String?> _showInputDialog([String? userAgent]) async {
+  String? _validate(String value, {String? current}) {
     final appLocalizations = context.appLocalizations;
-    final entries = _entries;
-    final res = await dialogs.showCommonDialog<String>(
-      child: InputDialog(
-        title: userAgent == null ? appLocalizations.add : appLocalizations.edit,
-        value: userAgent ?? '',
-        labelText: appLocalizations.userAgent,
-        inputFormatters: [
-          FilteringTextInputFormatter.singleLineFormatter,
-          ...TextInputLimits.limit(TextInputLimits.userAgent),
-        ],
-        validator: (value) {
-          final next = value?.trim() ?? '';
-          if (next.isEmpty) {
-            return appLocalizations.emptyTip(appLocalizations.userAgent);
+    if (value.isEmpty) {
+      return appLocalizations.emptyTip(appLocalizations.userAgent);
+    }
+    if (value != current && _entries.contains(value)) {
+      return appLocalizations.existsTip(appLocalizations.userAgent);
+    }
+    return null;
+  }
+
+  Widget _buildInput({String? userAgent}) {
+    final appLocalizations = context.appLocalizations;
+    final row = GroupedInputRow(
+      key: ValueKey(userAgent ?? #add),
+      title: appLocalizations.userAgent,
+      value: userAgent ?? '',
+      startEditing: true,
+      inputFormatters: [
+        FilteringTextInputFormatter.singleLineFormatter,
+        ...TextInputLimits.limit(TextInputLimits.userAgent),
+      ],
+      validator: (value) => _validate(value, current: userAgent),
+      onSubmitted: (value) {
+        if (userAgent == null) {
+          _save([..._entries, value]);
+        } else {
+          _save([
+            for (final item in _entries) item == userAgent ? value : item,
+          ]);
+          if (_selected == userAgent) {
+            _select(value);
           }
-          if (next != userAgent && entries.contains(next)) {
-            return appLocalizations.existsTip(appLocalizations.userAgent);
-          }
-          return null;
-        },
-      ),
+        }
+      },
+      onCancel: () => setState(() {
+        _adding = false;
+        _editing = null;
+      }),
     );
-    return res?.trim();
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const GroupedHairline(inset: groupedRowPadding + 1),
+        row,
+      ],
+    );
   }
 
-  Future<void> _handleAdd() async {
-    final userAgent = await _showInputDialog();
-    if (!mounted || userAgent == null) {
-      return;
-    }
-    _save([..._entries, userAgent]);
-  }
+  void _handleAdd() => setState(() {
+    _adding = true;
+    _editing = null;
+  });
 
-  Future<void> _handleEdit(String userAgent) async {
-    final next = await _showInputDialog(userAgent);
-    if (!mounted || next == null || next == userAgent) {
-      return;
-    }
-    _save([for (final item in _entries) item == userAgent ? next : item]);
-    if (_selected == userAgent) {
-      _select(next);
-    }
-  }
+  void _handleEdit(String userAgent) => setState(() {
+    _adding = false;
+    _editing = userAgent;
+  });
 
   Future<void> _handleDelete(String userAgent) async {
     final appLocalizations = context.appLocalizations;
@@ -87,6 +103,7 @@ class _UserAgentsViewState extends ConsumerState<UserAgentsView> {
       message: TextSpan(
         text: appLocalizations.deleteTip(appLocalizations.userAgent),
       ),
+      destructive: true,
     );
     if (!mounted || res != true) {
       return;
@@ -128,6 +145,9 @@ class _UserAgentsViewState extends ConsumerState<UserAgentsView> {
 
   Widget _buildItem(List<String> entries, int index, String? selected) {
     final userAgent = entries[index];
+    if (_editing == userAgent) {
+      return _buildInput(userAgent: userAgent);
+    }
     return _buildRow(
       index: index + 1,
       label: userAgent,
@@ -171,6 +191,7 @@ class _UserAgentsViewState extends ConsumerState<UserAgentsView> {
                 isSelected: selected == null,
                 onSelected: () => _select(null),
               ),
+              footer: _adding ? _buildInput() : null,
               itemCount: entries.length,
               itemBuilder: (_, index) {
                 return ReorderableDelayedDragStartListener(

@@ -420,6 +420,19 @@ class _NodeDelay extends ConsumerWidget {
   }
 }
 
+Future<void> _pasteFromClipboard(BuildContext context, WidgetRef ref) async {
+  final source = await readClipboardImport();
+  if (!context.mounted) return;
+  if (source == null) {
+    context.showNotifier(
+      context.appLocalizations.clipboardNothingToImport,
+      level: MessageLevel.error,
+    );
+    return;
+  }
+  await ref.read(profilesActionProvider.notifier).importFromClipboard(source);
+}
+
 class _Toolbar extends ConsumerWidget {
   const _Toolbar();
 
@@ -431,12 +444,21 @@ class _Toolbar extends ConsumerWidget {
       groupsProvider.select((state) => state.getGroup(nodeGroupName)?.all),
     );
     final edit = _EditScope.of(context);
+    final detectsClipboard = ref.watch(
+      appSettingProvider.select((state) => state.clipboardDetection),
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         spacing: _toolbarGap,
         children: [
+          if (!detectsClipboard)
+            _ToolbarButton(
+              glyph: AppGlyphs.paste,
+              tooltip: appLocalizations.paste,
+              onPressed: () => unawaited(_pasteFromClipboard(context, ref)),
+            ),
           _ToolbarButton(
             glyph: AppGlyphs.signpost,
             tooltip: appLocalizations.delayTest,
@@ -531,10 +553,10 @@ class _SubscriptionSection extends ConsumerWidget {
     final expire = info.expire > 0
         ? DateTime.fromMillisecondsSinceEpoch(info.expire * 1000).show
         : '∞';
-    return '\u{1F680}↑:${_gigabytes(info.upload)},'
+    return '↑:${_gigabytes(info.upload)},'
         '↓:${_gigabytes(info.download)},'
         'TOT:${_gigabytes(info.total)} '
-        '\u{1F4A1}EXPIRES:$expire';
+        'EXPIRES:$expire';
   }
 
   @override

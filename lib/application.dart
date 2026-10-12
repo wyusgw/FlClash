@@ -6,6 +6,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/common/window.dart';
 import 'package:fl_clash/bootstrap.dart';
 import 'package:fl_clash/common/system_dns.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/manager/hotkey_manager.dart';
@@ -15,6 +16,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/focus.dart';
 import 'package:fl_clash/widgets/keyboard_inset_hold.dart';
+import 'package:fl_clash/widgets/palette_link.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,10 +33,12 @@ Widget buildManagerStack({
       ? WindowHeaderContainer(child: child)
       : VpnManager(child: child);
   final state = AppStateManager(
-    child: CoreManager(
-      child: ConnectivityManager(
-        onConnectivityChanged: onConnectivityChanged,
-        child: platformApp,
+    child: ClipboardManager(
+      child: CoreManager(
+        child: ConnectivityManager(
+          onConnectivityChanged: onConnectivityChanged,
+          child: platformApp,
+        ),
       ),
     ),
   );
@@ -105,33 +109,46 @@ class ApplicationState extends ConsumerState<Application> {
     });
   }
 
+  Future<void> _importColorLink(Uri uri) async {
+    unawaited(window?.show());
+    final appLocalizations = currentAppLocalizations;
+    final colors = parseColorLink(uri);
+    if (colors == null) {
+      dialogs.showNotifier(
+        appLocalizations.colorLinkInvalid,
+        level: MessageLevel.error,
+      );
+      return;
+    }
+    final res = await dialogs.showMessage(
+      title: appLocalizations.confirm,
+      message: TextSpan(text: appLocalizations.importColorsTip(colors.length)),
+    );
+    if (res != true) return;
+    ref
+        .read(themeSettingProvider.notifier)
+        .update((state) => state.copyWith(paletteColors: colors));
+    dialogs.showNotifier(
+      appLocalizations.saveSuccess,
+      level: MessageLevel.success,
+    );
+  }
+
+  Future<void> _importProfileLink(String url) async {
+    unawaited(window?.show());
+    final res = await dialogs.showMessage(
+      title: currentAppLocalizations.addProfile,
+      message: importUrlMessage(context, url),
+    );
+    if (res != true) return;
+    unawaited(ref.read(profilesActionProvider.notifier).addProfileFormURL(url));
+  }
+
   void _initLink() {
-    linkManager.initAppLinksListen((url) async {
-      unawaited(window?.show());
-      final message = currentAppLocalizations.createProfileFromUrlTip(url);
-      final parts = message.split(url);
-      final res = await dialogs.showMessage(
-        title: currentAppLocalizations.addProfile,
-        message: TextSpan(
-          children: [
-            TextSpan(text: parts.first),
-            TextSpan(
-              text: url,
-              style: TextStyle(
-                color: context.colorScheme.primary,
-                decoration: TextDecoration.underline,
-                decorationColor: context.colorScheme.primary,
-              ),
-            ),
-            if (parts.length > 1) TextSpan(text: parts.last),
-          ],
-        ),
-      );
-      if (res != true) return;
-      unawaited(
-        ref.read(profilesActionProvider.notifier).addProfileFormURL(url),
-      );
-    });
+    linkManager.initAppLinksListen(
+      _importProfileLink,
+      colorCallBack: _importColorLink,
+    );
   }
 
   void _autoUpdateProfilesTask() {

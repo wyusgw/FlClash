@@ -83,6 +83,7 @@ class ConfirmDialog extends StatelessWidget {
     required this.message,
     required this.confirmText,
     this.cancelText,
+    this.destructive = false,
   });
 
   static const _width = 280.0;
@@ -94,6 +95,10 @@ class ConfirmDialog extends StatelessWidget {
 
   /// Null where there is nothing to decline.
   final String? cancelText;
+
+  /// For an answer that deletes or resets: it reads in red on the same grey as
+  /// the other button instead of standing out in the accent colour.
+  final bool destructive;
 
   @override
   Widget build(BuildContext context) {
@@ -155,8 +160,10 @@ class ConfirmDialog extends StatelessWidget {
                   Expanded(
                     child: _DialogButton(
                       label: confirmText,
-                      color: palette.accent,
-                      foreground: const Color(0xFFFFFFFF),
+                      color: destructive ? palette.hover : palette.accent,
+                      foreground: destructive
+                          ? groupedDanger
+                          : const Color(0xFFFFFFFF),
                       onPressed: () => Navigator.of(context).pop(true),
                     ),
                   ),

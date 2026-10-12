@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
+import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/manager/status_manager.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
@@ -39,6 +41,15 @@ const _nodes = [
   Proxy(name: '日本 01', type: 'shadowsocks', network: 'tcp'),
   Proxy(name: '香港 02', type: 'vless', network: 'ws'),
 ];
+
+class _RecordingImportAction extends ProfilesAction {
+  static final imported = <ClipboardImport>[];
+
+  @override
+  Future<void> importFromClipboard(ClipboardImport source) async {
+    imported.add(source);
+  }
+}
 
 class _StoredNodeAction extends ProfilesAction {
   _StoredNodeAction(this.outbound);
@@ -236,6 +247,10 @@ void main() {
 
     expect(find.textContaining('TOT:1.00GB'), findsOneWidget);
     expect(find.textContaining('EXPIRES:2026-12-05'), findsOneWidget);
+    expect(
+      find.text('↑:0.00GB,↓:0.00GB,TOT:1.00GB EXPIRES:2026-12-05'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('tapping a node selects it', (tester) async {
@@ -725,6 +740,86 @@ void main() {
       for (final pair in [(delay, add), (add, update), (update, more)]) {
         expect((pair.$2.dx - pair.$1.dx).abs(), lessThanOrEqualTo(32));
       }
+    });
+  });
+
+  group('paste button', () {
+    String? clipboard;
+
+    setUp(() {
+      clipboard = null;
+      _RecordingImportAction.imported.clear();
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            if (call.method == 'Clipboard.getData') {
+              final text = clipboard;
+              return text == null ? null : <String, Object?>{'text': text};
+            }
+            return null;
+          });
+    });
+
+    tearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    Future<void> pump(WidgetTester tester) => pumpHome(
+      tester,
+      profile: _profile(),
+      nodes: _nodes,
+      page: const StatusManager(child: HomeView()),
+      overrides: [
+        profilesActionProvider.overrideWith(_RecordingImportAction.new),
+      ],
+    );
+
+    testWidgets('shows while the clipboard permission is off', (tester) async {
+      await pump(tester);
+
+      expect(find.byGlyph(AppGlyphs.paste), findsOneWidget);
+      expect(find.byTooltip('Paste'), findsOneWidget);
+    });
+
+    testWidgets('hides once the permission is on', (tester) async {
+      await pump(tester);
+
+      container
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(clipboardDetection: true));
+      await tester.pumpAndSettle();
+
+      expect(find.byGlyph(AppGlyphs.paste), findsNothing);
+    });
+
+    testWidgets('imports what is on the clipboard when tapped', (tester) async {
+      await pump(tester);
+      clipboard = 'https://example.com/other';
+
+      await tester.tap(find.byGlyph(AppGlyphs.paste));
+      await tester.pumpAndSettle();
+
+      final imported = _RecordingImportAction.imported.single;
+      expect(
+        (imported as ClipboardSubscription).url,
+        'https://example.com/other',
+      );
+    });
+
+    testWidgets('says so when the clipboard holds nothing to import', (
+      tester,
+    ) async {
+      await pump(tester);
+      clipboard = 'meeting at noon';
+
+      await tester.tap(find.byGlyph(AppGlyphs.paste));
+      await tester.pumpAndSettle();
+
+      expect(_RecordingImportAction.imported, isEmpty);
+      expect(
+        find.text(AppLocalizations.current.clipboardNothingToImport),
+        findsOneWidget,
+      );
     });
   });
 }

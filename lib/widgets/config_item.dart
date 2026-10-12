@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/misc.dart' show ProviderListenable;
 
+import 'grouped_input.dart';
 import 'grouped_list.dart';
 import 'grouped_page.dart';
 import 'input.dart';
@@ -189,34 +190,27 @@ class ConfigTextItem extends _ConfigItem<String> {
   ) {
     final label = title(appLocalizations);
     final validator = this.validator;
-    return GroupedRow(
+    return GroupedInputRow(
       leading: leading,
       title: label,
       subtitle: showValueAsSubtitle ? null : buildSubtitle(appLocalizations),
-      value: showValueAsSubtitle ? value : null,
-      onTap: () async {
-        final input = await dialogs.showCommonDialog<String>(
-          child: InputDialog(
-            title: label,
-            value: value,
-            inputFormatters: maxLength == null
-                ? null
-                : TextInputLimits.limit(maxLength!),
-            keyboardType: keyboardType,
-            validator: (value) {
-              final normalized = _normalize(value);
-              if (normalized == null || normalized.isEmpty) {
-                return appLocalizations.emptyTip(label);
-              }
-              return validator?.call(normalized, appLocalizations);
-            },
-          ),
-        );
-        final normalized = _normalize(input);
-        if (normalized == null) {
-          return;
+      value: value,
+      inputFormatters: maxLength == null
+          ? null
+          : TextInputLimits.limit(maxLength!),
+      keyboardType: keyboardType,
+      validator: (text) {
+        final normalized = _normalize(text);
+        if (normalized == null || normalized.isEmpty) {
+          return appLocalizations.emptyTip(label);
         }
-        onChanged(ref, normalized);
+        return validator?.call(normalized, appLocalizations);
+      },
+      onSubmitted: (text) {
+        final normalized = _normalize(text);
+        if (normalized != null) {
+          onChanged(ref, normalized);
+        }
       },
     );
   }

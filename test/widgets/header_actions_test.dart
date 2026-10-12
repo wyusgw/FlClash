@@ -1,7 +1,6 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/theme.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -61,27 +60,6 @@ void main() {
     );
 
     expect(_width - list.right, _width - info.right);
-  });
-
-  testWidgets('a card header ends where a plain one does', (tester) async {
-    final info = await _pumpHeader(
-      tester,
-      InfoHeader(
-        info: const Info(label: 'Theme color'),
-        actions: _actions(),
-      ),
-    );
-    final card = await _pumpHeader(
-      tester,
-      ItemCard(
-        info: const Info(label: 'Theme color'),
-        actions: _actions(),
-        space: 8,
-        child: const SizedBox(),
-      ),
-    );
-
-    expect(_width - card.right, _width - info.right);
   });
 
   testWidgets('a header spaces its actions like an app bar', (tester) async {

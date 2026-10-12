@@ -1,9 +1,13 @@
+import 'dart:math' show max;
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'grouped_list.dart';
 import 'inherited.dart';
+import 'popup.dart';
 
 const _barContentHeight = 40.0;
 const _desktopTitleStrip = 22.0;
@@ -15,7 +19,15 @@ class GroupedBarAction {
     this.label,
     required this.tooltip,
     required this.onPressed,
-  }) : assert(glyph != null || label != null);
+  }) : assert(glyph != null || label != null),
+       menuItems = null;
+
+  const GroupedBarAction.menu({
+    required Glyph this.glyph,
+    required this.tooltip,
+    required List<CommonPopupMenuItem> this.menuItems,
+  }) : label = null,
+       onPressed = null;
 
   final Glyph? glyph;
 
@@ -23,6 +35,9 @@ class GroupedBarAction {
   final String? label;
   final String tooltip;
   final VoidCallback? onPressed;
+
+  /// Entries the button opens as a menu instead of calling [onPressed].
+  final List<CommonPopupMenuItem>? menuItems;
 }
 
 /// A page of the grouped look: a flat bar with a centred title and one action
@@ -35,16 +50,25 @@ class GroupedPage extends StatelessWidget {
     this.leading,
     this.leadingActions = const [],
     this.trailing,
+    this.trailingActions = const [],
+    this.titleWidget,
     this.onBack,
   });
 
   final String title;
+
+  /// Content in the bar's centre in place of the [title] text, such as a field
+  /// that renames the page's subject.
+  final Widget? titleWidget;
   final Widget body;
   final GroupedBarAction? leading;
 
   /// Words with icons side by side at the start, in place of [leading].
   final List<GroupedBarAction> leadingActions;
   final GroupedBarAction? trailing;
+
+  /// Buttons side by side at the end, in place of [trailing].
+  final List<GroupedBarAction> trailingActions;
   final VoidCallback? onBack;
 
   @override
@@ -75,15 +99,18 @@ class GroupedPage extends StatelessWidget {
                   alignment: Alignment.center,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: _barButton + 16,
+                      padding: EdgeInsets.symmetric(
+                        horizontal:
+                            _barButton * max(1, trailingActions.length) + 16,
                       ),
-                      child: Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: palette.rowTitle,
-                      ),
+                      child:
+                          titleWidget ??
+                          Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: palette.rowTitle,
+                          ),
                     ),
                     PositionedDirectional(
                       start: leadingActions.isEmpty ? 11 : 12,
@@ -100,7 +127,16 @@ class GroupedPage extends StatelessWidget {
                     ),
                     PositionedDirectional(
                       end: 6,
-                      child: _BarButton(action: trailing),
+                      child: trailingActions.isEmpty
+                          ? _BarButton(action: trailing)
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              spacing: 2,
+                              children: [
+                                for (final action in trailingActions)
+                                  _BarButton(action: action),
+                              ],
+                            ),
                     ),
                   ],
                 ),
@@ -151,6 +187,20 @@ class _BarButton extends StatelessWidget {
     final action = this.action;
     if (action == null) {
       return const SizedBox.shrink();
+    }
+    final menuItems = action.menuItems;
+    if (menuItems != null) {
+      return CommonPopupBox(
+        popupBuilder: (_) => CommonPopupMenu(items: menuItems),
+        targetBuilder: (open) => Tooltip(
+          message: action.tooltip,
+          child: InkResponse(
+            onTap: open,
+            radius: _barButton / 2,
+            child: _content(context, action),
+          ),
+        ),
+      );
     }
     return Tooltip(
       message: action.tooltip,
@@ -224,6 +274,57 @@ class GroupedChoicePage<T> extends StatelessWidget {
                       : null,
                   onTap: () => onSelected(entry.key),
                 ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A page of On and Off with the one in use checked and an explanation under
+/// them, for an option whose row on the page before shows only its state.
+class GroupedTogglePage extends ConsumerWidget {
+  const GroupedTogglePage({
+    super.key,
+    required this.title,
+    required this.description,
+    required this.read,
+    required this.write,
+  });
+
+  final String title;
+  final String description;
+
+  /// The current value, read from [ref] so the page follows it.
+  final bool Function(WidgetRef ref) read;
+  final void Function(WidgetRef ref, bool value) write;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    final palette = GroupedPalette.of(context);
+    final value = read(ref);
+    Widget row(String label, bool choice) {
+      return GroupedRow(
+        title: label,
+        trailing: value == choice
+            ? GlyphIcon(AppGlyphs.check, size: 18, color: palette.icon)
+            : null,
+        onTap: () => write(ref, choice),
+      );
+    }
+
+    return GroupedPage(
+      title: title,
+      onBack: () => Navigator.of(context).maybePop(),
+      body: GroupedBody(
+        children: [
+          GroupedSection(
+            footer: description,
+            children: [
+              row(appLocalizations.on, true),
+              row(appLocalizations.off, false),
             ],
           ),
         ],

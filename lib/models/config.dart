@@ -118,6 +118,9 @@ abstract class AppSettingProps with _$AppSettingProps {
     List<String> userAgents,
     String? globalUa,
     @Default(false) bool hideIp,
+    @Default(false) bool overwriteExistingNodes,
+    @Default(false) bool autoRenameNodes,
+    @Default(false) bool clipboardDetection,
     @Default(false) bool editorLineWrap,
     @Default(EditorFontSize.standard) EditorFontSize editorFontSize,
     @Default([]) List<String> serviceOrder,
@@ -285,6 +288,7 @@ abstract class ThemeProps with _$ThemeProps {
     @Default(false) bool pureBlack,
     @Default(true) bool sidebarBlur,
     @Default(TextScale()) TextScale textScale,
+    @Default({}) Map<String, int> paletteColors,
   }) = _ThemeProps;
 
   factory ThemeProps.fromJson(Map<String, Object?> json) =>

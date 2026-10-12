@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'add.dart';
 import 'edit.dart';
 import 'preview.dart';
+import 'subscription_info.dart';
 
 class ProfilesView extends ConsumerStatefulWidget {
   const ProfilesView({super.key});
@@ -237,28 +238,9 @@ class ProfileActions {
 
   void _handleShowSubscriptionInfo(BuildContext context) {
     unawaited(
-      dialogs.showCommonDialog<void>(
-        context: context,
-        child: Builder(
-          builder: (context) {
-            return CommonDialog(
-              backgroundColor: context.colorScheme.surfaceContainerLow,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              title: context.appLocalizations.subscriptionInfo,
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(context.appLocalizations.confirm),
-                ),
-              ],
-              child: SubscriptionInfoDetailView(
-                subscriptionInfo: profile.subscriptionInfo!,
-              ),
-            );
-          },
-        ),
+      BaseNavigator.push<void>(
+        context,
+        SubscriptionInfoPage(subscriptionInfo: profile.subscriptionInfo!),
       ),
     );
   }

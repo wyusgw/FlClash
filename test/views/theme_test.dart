@@ -1,7 +1,4 @@
-import 'dart:io';
-
-import 'package:fl_clash/common/feature.dart';
-import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
@@ -10,6 +7,7 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/theme.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -48,126 +46,316 @@ void main() {
 
   ThemeProps readTheme() => container.read(themeSettingProvider);
 
-  group('theme mode', () {
-    testWidgets('defaults to the dark theme', (tester) async {
-      await pumpThemeView(tester);
-
-      expect(readTheme().themeMode, ThemeMode.dark);
-    });
-
-    testWidgets('switches to light and back to dark', (tester) async {
-      await pumpThemeView(tester);
-
-      await tester.tap(find.text('Light'));
+  group('appearance', () {
+    Future<void> chooseMode(WidgetTester tester, String label) async {
+      await tester.tap(find.widgetWithText(GroupedRow, 'Appearance'));
       await tester.pumpAndSettle();
-      expect(readTheme().themeMode, ThemeMode.light);
-
-      await tester.tap(find.text('Dark'));
+      await tester.tap(find.widgetWithText(GroupedRow, label).last);
       await tester.pumpAndSettle();
-      expect(readTheme().themeMode, ThemeMode.dark);
-
-      await tester.tap(find.text('Auto'));
+      await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
-      expect(readTheme().themeMode, ThemeMode.system);
-    });
-  });
+    }
 
-  group('primary color', () {
-    testWidgets('blocks the back gesture only while a color is removable', (
+    testWidgets('defaults to the dark theme and says so on its row', (
       tester,
     ) async {
       await pumpThemeView(tester);
-      RoutePopDisposition disposition() {
-        return ModalRoute.of(
-          tester.element(find.byType(ThemeView)),
-        )!.popDisposition;
+
+      expect(readTheme().themeMode, ThemeMode.dark);
+      expect(
+        find.descendant(
+          of: find.widgetWithText(GroupedRow, 'Appearance'),
+          matching: find.text('Dark'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('keeps only appearance, colors and text size', (tester) async {
+      await pumpThemeView(tester);
+      final l10n = AppLocalizations.current;
+
+      for (final kept in [
+        l10n.appearance,
+        l10n.colors,
+        l10n.resetColors,
+        l10n.copyColorLink,
+      ]) {
+        expect(find.text(kept), findsWidgets, reason: kept);
       }
+      await tester.scrollUntilVisible(find.text(l10n.textScale), 200);
+      expect(find.text(l10n.textScale), findsOneWidget);
+      for (final removed in [
+        l10n.themeColor,
+        l10n.pureBlack,
+        l10n.pureBlackMode,
+        l10n.navigationBarStyle,
+        l10n.tabAnimation,
+        l10n.sidebarBlur,
+      ]) {
+        expect(find.text(removed), findsNothing, reason: removed);
+      }
+    });
 
-      expect(disposition(), isNot(RoutePopDisposition.doNotPop));
+    testWidgets('switches to light, auto and back to dark', (tester) async {
+      await pumpThemeView(tester);
 
-      await tester.longPress(find.byType(ColorSchemeBox).at(1));
+      await chooseMode(tester, 'Light');
+      expect(readTheme().themeMode, ThemeMode.light);
+
+      await chooseMode(tester, 'Auto');
+      expect(readTheme().themeMode, ThemeMode.system);
+
+      await chooseMode(tester, 'Dark');
+      expect(readTheme().themeMode, ThemeMode.dark);
+    });
+  });
+
+  group('colors', () {
+    Finder row(String text) => find.widgetWithText(GroupedRow, text);
+
+    Future<void> openColors(WidgetTester tester) async {
+      await tester.tap(row('Colors').last);
       await tester.pumpAndSettle();
-      expect(disposition(), RoutePopDisposition.doNotPop);
+    }
+
+    Future<void> setHex(WidgetTester tester, String token, String hex) async {
+      await tester.tap(row(token));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(EditableText), hex);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+    }
+
+    InkResponse save(WidgetTester tester) =>
+        tester.widget<InkResponse>(find.widgetWithText(InkResponse, 'Save'));
+
+    testWidgets('the section offers the colors, a reset and a link', (
+      tester,
+    ) async {
+      await pumpThemeView(tester);
+
+      expect(find.text('Colors'), findsNWidgets(2));
+      expect(row('Reset colors'), findsOneWidget);
+      expect(row('Copy link'), findsOneWidget);
+    });
+
+    testWidgets('the page lists each color with its hex value and name', (
+      tester,
+    ) async {
+      await pumpThemeView(tester);
+      await openColors(tester);
+
+      for (final token in GroupedColorToken.values) {
+        expect(find.text(token.id), findsOneWidget, reason: token.id);
+      }
+      expect(find.text('#000000'), findsWidgets);
+      expect(find.text('#F7F7F7'), findsOneWidget);
+      expect(find.text('#007AFF'), findsOneWidget);
+    });
+
+    testWidgets('a color edited and saved is stored for the look in use only', (
+      tester,
+    ) async {
+      await pumpThemeView(tester);
+      await openColors(tester);
+      expect(save(tester).onTap, isNull);
+
+      await setHex(tester, 'AccentColor', 'ff0000');
+
+      expect(find.text('#FF0000'), findsOneWidget);
+      expect(save(tester).onTap, isNotNull);
+      expect(readTheme().paletteColors, isEmpty, reason: 'not before Save');
+
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(readTheme().paletteColors, {'light.AccentColor': 0xFFFF0000});
+    });
+
+    testWidgets('setting a color back to its default drops the override', (
+      tester,
+    ) async {
+      container
+          .read(themeSettingProvider.notifier)
+          .update(
+            (state) => state.copyWith(
+              paletteColors: const {'light.AccentColor': 0xFFFF0000},
+            ),
+          );
+      await pumpThemeView(tester);
+      await openColors(tester);
+      expect(find.text('#FF0000'), findsOneWidget);
+
+      await setHex(tester, 'AccentColor', '007AFF');
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(readTheme().paletteColors, isEmpty);
+    });
+
+    testWidgets('a tap turns the value into a field in the row itself', (
+      tester,
+    ) async {
+      await pumpThemeView(tester);
+      await openColors(tester);
+
+      final before = tester.getSize(row('AccentColor'));
+      final textBefore = tester.getTopLeft(find.text('#007AFF'));
+      await tester.tap(row('AccentColor'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(InputDialog), findsNothing);
+      expect(find.byType(TextField), findsNothing, reason: 'no input box');
+      expect(tester.getSize(row('AccentColor')), before);
+      expect(
+        tester.getTopLeft(find.byType(EditableText)).dy,
+        moreOrLessEquals(textBefore.dy, epsilon: 2),
+        reason: 'the text stays where it was while it is edited',
+      );
+      expect(find.byType(EditableText), findsOneWidget);
+      expect(
+        find.descendant(
+          of: row('AccentColor'),
+          matching: find.byType(EditableText),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester.widget<EditableText>(find.byType(EditableText)).controller.text,
+        '007AFF',
+      );
+    });
+
+    testWidgets('moving to another row applies the one being edited', (
+      tester,
+    ) async {
+      await pumpThemeView(tester);
+      await openColors(tester);
+
+      await tester.tap(row('AccentColor'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(EditableText), 'FF0000');
+      await tester.tap(row('IconColor'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('#FF0000'), findsOneWidget);
+      expect(find.byType(EditableText), findsOneWidget);
+      expect(
+        find.descendant(
+          of: row('IconColor'),
+          matching: find.byType(EditableText),
+        ),
+        findsOneWidget,
+      );
+      expect(save(tester).onTap, isNotNull);
+    });
+
+    testWidgets('saving while a row is open keeps what was typed', (
+      tester,
+    ) async {
+      await pumpThemeView(tester);
+      await openColors(tester);
+
+      await tester.tap(row('AccentColor'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(EditableText), '00FF00');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(readTheme().paletteColors, {'light.AccentColor': 0xFF00FF00});
+    });
+
+    testWidgets('a value that is no color leaves the color as it was', (
+      tester,
+    ) async {
+      await pumpThemeView(tester);
+      await openColors(tester);
+
+      await setHex(tester, 'AccentColor', 'xyz');
+
+      expect(find.text('#007AFF'), findsOneWidget);
+      expect(save(tester).onTap, isNull);
+    });
+
+    testWidgets('leaving with edits asks first and can discard them', (
+      tester,
+    ) async {
+      await pumpThemeView(tester);
+      await openColors(tester);
+      await setHex(tester, 'AccentColor', 'ff0000');
+
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+      expect(find.text('Save the changes?'), findsOneWidget);
 
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
-      expect(disposition(), isNot(RoutePopDisposition.doNotPop));
-    });
-  });
 
-  group('sidebar blur', () {
-    testWidgets('stays hidden while the feature is off', (tester) async {
-      await pumpThemeView(tester);
-
-      expect(find.text('Sidebar blur'), findsNothing);
+      expect(find.byType(AppearanceColorsView), findsNothing);
+      expect(readTheme().paletteColors, isEmpty);
     });
 
-    testWidgets('shows a working toggle only on supported platforms', (
+    testWidgets('resetting the colors asks and then clears them', (
       tester,
     ) async {
-      feature = const Feature(sidebarBlur: true);
-      addTearDown(() => feature = const Feature());
-      await pumpThemeView(tester);
-      final toggle = find.text('Sidebar blur');
-
-      expect(readTheme().sidebarBlur, isTrue);
-      if (!Platform.isMacOS && !Platform.isWindows) {
-        expect(toggle, findsNothing);
-        return;
-      }
-
-      expect(toggle, findsOneWidget);
-      await tester.tap(toggle);
-      await tester.pumpAndSettle();
-      expect(readTheme().sidebarBlur, isFalse);
-    });
-  });
-
-  group('pure black', () {
-    testWidgets('switches both ways', (tester) async {
+      container
+          .read(themeSettingProvider.notifier)
+          .update(
+            (state) => state.copyWith(
+              paletteColors: const {'dark.CanvasColor': 0xFF123456},
+            ),
+          );
       await pumpThemeView(tester);
 
-      expect(readTheme().pureBlack, isFalse);
-
-      await tester.tap(find.text('Pure black'));
+      await tester.tap(row('Reset colors'));
       await tester.pumpAndSettle();
-      expect(readTheme().pureBlack, isTrue);
+      expect(readTheme().paletteColors, isNotEmpty);
 
-      await tester.tap(find.text('Standard'));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(ConfirmDialog),
+          matching: find.text('Reset'),
+        ),
+      );
       await tester.pumpAndSettle();
-      expect(readTheme().pureBlack, isFalse);
-    });
-  });
 
-  group('home navigation', () {
-    AppSettingProps readSetting() => container.read(appSettingProvider);
-
-    testWidgets('picks a floating or docked bottom bar', (tester) async {
-      await pumpThemeView(tester);
-
-      expect(readSetting().floatingNavigationBar, isTrue);
-
-      await tester.tap(find.text('Docked'));
-      await tester.pumpAndSettle();
-      expect(readSetting().floatingNavigationBar, isFalse);
-
-      await tester.tap(find.text('Floating'));
-      await tester.pumpAndSettle();
-      expect(readSetting().floatingNavigationBar, isTrue);
+      expect(readTheme().paletteColors, isEmpty);
     });
 
-    testWidgets('picks a sliding or fading tab switch', (tester) async {
+    testWidgets('the link copies the colors in force', (tester) async {
+      String? copied;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            if (call.method == 'Clipboard.setData') {
+              copied = (call.arguments as Map)['text'] as String;
+            }
+            return null;
+          });
+      addTearDown(
+        () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, null),
+      );
+      container
+          .read(themeSettingProvider.notifier)
+          .update(
+            (state) => state.copyWith(
+              paletteColors: const {'dark.AccentColor': 0xFF336699},
+            ),
+          );
       await pumpThemeView(tester);
 
-      expect(readSetting().tabAnimation, TabAnimation.slide);
-
-      await tester.tap(find.text('Fade'));
+      await tester.tap(row('Copy link'));
       await tester.pumpAndSettle();
-      expect(readSetting().tabAnimation, TabAnimation.fade);
 
-      await tester.tap(find.text('Slide'));
-      await tester.pumpAndSettle();
-      expect(readSetting().tabAnimation, TabAnimation.slide);
+      final uri = Uri.parse(copied!);
+      expect(uri.scheme, 'flclash');
+      expect(uri.host, 'color');
+      expect(uri.queryParameters['v'], '1.0');
+      expect(uri.queryParameters['dark.AccentColor'], '336699');
+      expect(uri.queryParameters['dark.CanvasColor'], '000000');
+      expect(parseColorLink(uri), isNotNull);
     });
   });
 

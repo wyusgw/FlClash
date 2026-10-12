@@ -52,6 +52,7 @@ export 'search.dart';
 export 'shape.dart';
 export 'snowflake.dart';
 export 'stats_archive.dart';
+export 'clipboard_import.dart';
 export 'string.dart';
 export 'subscription.dart';
 export 'tcp_delay.dart';

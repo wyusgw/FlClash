@@ -5,6 +5,7 @@ import 'package:fl_clash/common/theme.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,8 +56,27 @@ class ThemeManager extends ConsumerWidget {
       minTextScale,
     );
 
+    final paletteColors = ref.watch(
+      themeSettingProvider.select((state) => state.paletteColors),
+    );
     globalState.measure = Measure.of(context, textScaleFactor);
     globalState.theme = CommonTheme.of(context, textScaleFactor);
+    return GroupedPaletteScope(
+      dark: GroupedPalette.dark.withOverrides(
+        paletteOverridesFor(paletteColors, Brightness.dark),
+      ),
+      light: GroupedPalette.light.withOverrides(
+        paletteOverridesFor(paletteColors, Brightness.light),
+      ),
+      child: _buildApp(context, ref, textScaleFactor),
+    );
+  }
+
+  Widget _buildApp(
+    BuildContext context,
+    WidgetRef ref,
+    double textScaleFactor,
+  ) {
     return _AppMediaQuery(
       textScaler: TextScaler.linear(textScaleFactor),
       child: LayoutBuilder(

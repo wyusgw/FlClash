@@ -17,7 +17,7 @@ const _initial = AuthenticationProps(
   password: 'pass',
 );
 
-Future<ProviderContainer> _openDialog(WidgetTester tester, Widget item) async {
+Future<ProviderContainer> _openRow(WidgetTester tester, Widget item) async {
   tester.view.physicalSize = const Size(1000, 900);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
@@ -51,9 +51,8 @@ Future<ProviderContainer> _openDialog(WidgetTester tester, Widget item) async {
 }
 
 Future<void> _submit(WidgetTester tester, String text) async {
-  await tester.enterText(find.byType(TextFormField), text);
-  await tester.pumpAndSettle();
-  await tester.tap(find.text('Submit'));
+  await tester.enterText(find.byType(EditableText), text);
+  await tester.testTextInput.receiveAction(TextInputAction.done);
   await tester.pumpAndSettle();
 }
 
@@ -61,28 +60,22 @@ void main() {
   testWidgets('rejects an account that is empty once colons are stripped', (
     tester,
   ) async {
-    final container = await _openDialog(
-      tester,
-      const AuthenticationAccountItem(),
-    );
+    final container = await _openRow(tester, const AuthenticationAccountItem());
 
     await _submit(tester, ' :: ');
 
-    expect(find.byType(TextFormField), findsOneWidget);
+    expect(find.byType(EditableText), findsOneWidget, reason: 'stays open');
     expect(container.read(networkSettingProvider).authentication, _initial);
   });
 
   testWidgets('stores the account with surrounding space and colons removed', (
     tester,
   ) async {
-    final container = await _openDialog(
-      tester,
-      const AuthenticationAccountItem(),
-    );
+    final container = await _openRow(tester, const AuthenticationAccountItem());
 
     await _submit(tester, ' na:me ');
 
-    expect(find.byType(TextFormField), findsNothing);
+    expect(find.byType(EditableText), findsNothing);
     expect(
       container.read(networkSettingProvider).authentication.username,
       'name',
@@ -90,14 +83,14 @@ void main() {
   });
 
   testWidgets('rejects a whitespace-only password', (tester) async {
-    final container = await _openDialog(
+    final container = await _openRow(
       tester,
       const AuthenticationPasswordItem(),
     );
 
     await _submit(tester, '   ');
 
-    expect(find.byType(TextFormField), findsOneWidget);
+    expect(find.byType(EditableText), findsOneWidget, reason: 'stays open');
     expect(container.read(networkSettingProvider).authentication, _initial);
   });
 }

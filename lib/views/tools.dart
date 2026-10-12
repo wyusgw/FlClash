@@ -44,6 +44,7 @@ class ToolsView extends ConsumerWidget {
           delayTestMethod: state.delayTestMethod,
           trayMode: state.trayMode,
           showSidebar: state.showSidebar,
+          clipboardDetection: state.clipboardDetection,
         ),
       ),
     );
@@ -87,7 +88,7 @@ class ToolsView extends ConsumerWidget {
               _open(
                 context,
                 glyph: AppGlyphs.paintbrush,
-                title: appLocalizations.theme,
+                title: appLocalizations.appearance,
                 page: const ThemeView(),
               ),
               if (system.isMacOS)
@@ -98,6 +99,15 @@ class ToolsView extends ConsumerWidget {
                   chevron: true,
                   onTap: () => BaseNavigator.push(context, const MenuBarView()),
                 ),
+              GroupedRow(
+                leading: const GroupedIcon(AppGlyphs.paste),
+                title: appLocalizations.clipboard,
+                value: appSetting.clipboardDetection
+                    ? appLocalizations.on
+                    : appLocalizations.off,
+                chevron: true,
+                onTap: () => BaseNavigator.push(context, const ClipboardView()),
+              ),
               if (system.isDesktop)
                 GroupedRow(
                   leading: const GroupedIcon(AppGlyphs.columnsTwo),
@@ -239,6 +249,27 @@ class MenuBarView extends ConsumerWidget {
   }
 }
 
+/// Whether the app looks at the clipboard as it opens, or leaves it to a paste
+/// button on the home screen.
+class ClipboardView extends StatelessWidget {
+  const ClipboardView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
+    return GroupedTogglePage(
+      title: appLocalizations.clipboard,
+      description: appLocalizations.clipboardDesc(appName),
+      read: (ref) => ref.watch(
+        appSettingProvider.select((state) => state.clipboardDetection),
+      ),
+      write: (ref, value) => ref
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(clipboardDetection: value)),
+    );
+  }
+}
+
 /// Whether the window keeps its sidebar; without it the pages are reached
 /// from the bar at the bottom, as in a narrow window.
 class SidebarView extends ConsumerWidget {
@@ -278,6 +309,7 @@ class ResetView extends ConsumerWidget {
       title: appLocalizations.confirm,
       message: TextSpan(text: appLocalizations.resetTip),
       confirmText: appLocalizations.reset,
+      destructive: true,
     );
     return res == true;
   }

@@ -9,6 +9,9 @@ import 'string.dart';
 
 typedef InstallConfigCallBack = void Function(String url);
 
+/// A link that carries a set of colors rather than a profile.
+typedef ColorLinkCallBack = void Function(Uri uri);
+
 String? profileUrlFromQrCodes(Iterable<String?> values) {
   for (final value in values) {
     final text = value?.trim();
@@ -56,22 +59,31 @@ class LinkManager {
   }
 
   Future<void> initAppLinksListen(
-    Function(String url) installConfigCallBack,
-  ) async {
+    Function(String url) installConfigCallBack, {
+    ColorLinkCallBack? colorCallBack,
+  }) async {
     commonPrint.log('initAppLinksListen');
     destroy();
     subscription = uriLinkStream().listen((uri) {
-      _handle(uri, installConfigCallBack);
+      _handle(uri, installConfigCallBack, colorCallBack);
     });
     final pending = _pendingUri;
     _pendingUri = null;
     if (pending != null) {
-      _handle(pending, installConfigCallBack);
+      _handle(pending, installConfigCallBack, colorCallBack);
     }
   }
 
-  void _handle(Uri uri, Function(String url) installConfigCallBack) {
+  void _handle(
+    Uri uri,
+    Function(String url) installConfigCallBack,
+    ColorLinkCallBack? colorCallBack,
+  ) {
     commonPrint.log('onAppLink: $uri');
+    if (uri.host == 'color') {
+      colorCallBack?.call(uri);
+      return;
+    }
     final url = _installConfigUrl(uri);
     if (url != null) {
       installConfigCallBack(url);

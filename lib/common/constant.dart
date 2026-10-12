@@ -119,8 +119,6 @@ const stringListEquality = ListEquality<String>();
 const intListEquality = ListEquality<int>();
 const profileListEquality = ListEquality<Profile>();
 const hotKeyActionListEquality = ListEquality<HotKeyAction>();
-const stringAndStringMapEntryListEquality =
-    ListEquality<MapEntry<String, String>>();
 const keyboardModifierListEquality = SetEquality<KeyboardModifier>();
 
 const homeStoreKey = PageStorageKey<String>('home');

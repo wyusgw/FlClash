@@ -4,7 +4,6 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/features/editor/editor.dart';
 import 'package:fl_clash/icons/icons.dart';
-import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
@@ -263,65 +262,72 @@ class _EditorPageState extends ConsumerState<EditorPage> {
         },
         child: Focus(
           autofocus: true,
-          child: CommonScaffold(
+          child: GroupedPage(
+            title: _titleController.text,
             titleWidget: _EditorTitleField(
               controller: _titleController,
               enabled: widget.titleEditable,
             ),
-            iconActions: [
-              IconButtonData(
+            onBack: () => Navigator.of(context).maybePop(),
+            trailingActions: [
+              GroupedBarAction(
                 glyph: AppGlyphs.search,
                 tooltip: appLocalizations.search,
                 onPressed: isReady ? _handleSearch : null,
               ),
               if (widget.onSave != null)
-                IconButtonData(
+                GroupedBarAction(
                   glyph: AppGlyphs.check,
                   tooltip: appLocalizations.save,
                   onPressed: _barState.isDirty && !_saving ? _handleSave : null,
                 ),
-            ],
-            menuItems: [
-              CommonPopupMenuItem(
-                glyph: AppGlyphs.undo,
-                label: appLocalizations.undo,
-                onPressed: _barState.canUndo ? _undoController.undo : null,
-              ),
-              CommonPopupMenuItem(
-                glyph: AppGlyphs.redo,
-                label: appLocalizations.redo,
-                onPressed: _barState.canRedo ? _undoController.redo : null,
-              ),
-              CommonPopupMenuItem(
-                glyph: AppGlyphs.textSize,
-                label: appLocalizations.fontSize,
-                subItems: [
-                  for (final size in EditorFontSize.values)
-                    CommonPopupMenuItem(
-                      label: switch (size) {
-                        EditorFontSize.standard => appLocalizations.standard,
-                        EditorFontSize.large => appLocalizations.large,
-                        EditorFontSize.extraLarge =>
-                          appLocalizations.extraLarge,
-                      },
-                      checked: size == fontSize,
-                      onPressed: () => ref
-                          .read(appSettingProvider.notifier)
-                          .update(
-                            (state) => state.copyWith(editorFontSize: size),
-                          ),
-                    ),
+              GroupedBarAction.menu(
+                glyph: AppGlyphs.more,
+                tooltip: appLocalizations.more,
+                menuItems: [
+                  CommonPopupMenuItem(
+                    glyph: AppGlyphs.undo,
+                    label: appLocalizations.undo,
+                    onPressed: _barState.canUndo ? _undoController.undo : null,
+                  ),
+                  CommonPopupMenuItem(
+                    glyph: AppGlyphs.redo,
+                    label: appLocalizations.redo,
+                    onPressed: _barState.canRedo ? _undoController.redo : null,
+                  ),
+                  CommonPopupMenuItem(
+                    glyph: AppGlyphs.textSize,
+                    label: appLocalizations.fontSize,
+                    subItems: [
+                      for (final size in EditorFontSize.values)
+                        CommonPopupMenuItem(
+                          label: switch (size) {
+                            EditorFontSize.standard =>
+                              appLocalizations.standard,
+                            EditorFontSize.large => appLocalizations.large,
+                            EditorFontSize.extraLarge =>
+                              appLocalizations.extraLarge,
+                          },
+                          checked: size == fontSize,
+                          onPressed: () => ref
+                              .read(appSettingProvider.notifier)
+                              .update(
+                                (state) => state.copyWith(editorFontSize: size),
+                              ),
+                        ),
+                    ],
+                  ),
+                  CommonPopupMenuItem(
+                    glyph: AppGlyphs.wrap,
+                    label: appLocalizations.lineWrap,
+                    checked: lineWrap,
+                    onPressed: () => ref
+                        .read(appSettingProvider.notifier)
+                        .update(
+                          (state) => state.copyWith(editorLineWrap: !lineWrap),
+                        ),
+                  ),
                 ],
-              ),
-              CommonPopupMenuItem(
-                glyph: AppGlyphs.wrap,
-                label: appLocalizations.lineWrap,
-                checked: lineWrap,
-                onPressed: () => ref
-                    .read(appSettingProvider.notifier)
-                    .update(
-                      (state) => state.copyWith(editorLineWrap: !lineWrap),
-                    ),
               ),
             ],
             body: AbsorbPointer(
@@ -509,16 +515,21 @@ class _EditorTitleField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
     return TextField(
       maxLength: TextInputLimits.name,
       enabled: enabled,
       controller: controller,
+      textAlign: TextAlign.center,
+      cursorColor: palette.accent,
       decoration: InputDecoration(
         border: const NoInputBorder(),
         counter: const SizedBox(),
+        isCollapsed: true,
         hintText: context.appLocalizations.unnamed,
+        hintStyle: palette.rowTitle.copyWith(color: palette.tertiary),
       ),
-      style: context.textTheme.titleLarge,
+      style: palette.rowTitle,
       autofocus: false,
     );
   }

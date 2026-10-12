@@ -10,7 +10,7 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/activate_box.dart';
 import 'package:fl_clash/widgets/navigation_dock.dart';
 import 'package:fl_clash/widgets/null_status.dart';
-import 'package:fl_clash/widgets/scaffold.dart';
+import 'package:fl_clash/widgets/grouped_page.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -204,76 +204,69 @@ class _ScanPageState extends ConsumerState<ScanPage>
         child: AnnotatedRegion<SystemUiOverlayStyle>(
           value: _systemUiOverlayStyle,
           sized: false,
-          child: Scaffold(
-            body: LayoutBuilder(
-              builder: (context, constraints) {
-                final hintStyle = Theme.of(context).textTheme.bodyMedium!;
-                final layout = _ScanLayout(
-                  size: constraints.biggest,
-                  padding: MediaQuery.paddingOf(context),
-                  hintHeight:
-                      MediaQuery.textScalerOf(
-                        context,
-                      ).scale(hintStyle.fontSize!) *
-                      hintStyle.height! *
-                      _hintMaxLines,
-                );
-                return Stack(
-                  children: [
-                    Positioned.fill(
-                      child: MobileScanner(
-                        controller: _controller,
-                        scanWindow: layout.scanWindow,
-                        errorBuilder: (_, _) => const SizedBox.shrink(),
-                      ),
-                    ),
-                    Positioned.fill(
-                      child: ValueListenableBuilder<MobileScannerState>(
-                        valueListenable: _controller,
-                        builder: (context, state, _) {
-                          final error = state.error;
-                          if (error != null) {
-                            return _ScannerError(
-                              errorCode: error.errorCode,
-                              onRetry: _start,
-                              onOpenSettings: _openAppSettings,
-                            );
-                          }
-                          return _buildScanFrame(theme, layout, hintStyle);
-                        },
-                      ),
-                    ),
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: AppBar(
-                        backgroundColor: Colors.transparent,
-                        surfaceTintColor: Colors.transparent,
-                        automaticallyImplyLeading: false,
-                        leading: IconButton(
-                          tooltip: appLocalizations.close,
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          icon: const GlyphIcon(AppGlyphs.close),
-                        ),
-                        actions: genActions([
-                          IconButton(
-                            tooltip: appLocalizations.pickFromAlbum,
-                            onPressed: _pickFromAlbum,
-                            icon: const GlyphIcon(AppGlyphs.photos),
-                          ),
-                        ], edge: AppBarActionEdge.icon),
-                      ),
-                    ),
-                    Positioned.fromRect(
-                      rect: layout.torch,
-                      child: _TorchButton(controller: _controller),
-                    ),
-                  ],
-                );
+          child: GroupedPage(
+            title: appLocalizations.qrcode,
+            leading: GroupedBarAction(
+              glyph: AppGlyphs.close,
+              tooltip: appLocalizations.close,
+              onPressed: () {
+                Navigator.of(context).pop();
               },
+            ),
+            trailing: GroupedBarAction(
+              glyph: AppGlyphs.photos,
+              tooltip: appLocalizations.pickFromAlbum,
+              onPressed: _pickFromAlbum,
+            ),
+            body: MediaQuery.removePadding(
+              context: context,
+              removeTop: true,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final hintStyle = Theme.of(context).textTheme.bodyMedium!;
+                  final layout = _ScanLayout(
+                    size: constraints.biggest,
+                    padding: MediaQuery.paddingOf(context),
+                    hintHeight:
+                        MediaQuery.textScalerOf(
+                          context,
+                        ).scale(hintStyle.fontSize!) *
+                        hintStyle.height! *
+                        _hintMaxLines,
+                  );
+                  return Stack(
+                    children: [
+                      Positioned.fill(
+                        child: MobileScanner(
+                          controller: _controller,
+                          scanWindow: layout.scanWindow,
+                          errorBuilder: (_, _) => const SizedBox.shrink(),
+                        ),
+                      ),
+                      Positioned.fill(
+                        child: ValueListenableBuilder<MobileScannerState>(
+                          valueListenable: _controller,
+                          builder: (context, state, _) {
+                            final error = state.error;
+                            if (error != null) {
+                              return _ScannerError(
+                                errorCode: error.errorCode,
+                                onRetry: _start,
+                                onOpenSettings: _openAppSettings,
+                              );
+                            }
+                            return _buildScanFrame(theme, layout, hintStyle);
+                          },
+                        ),
+                      ),
+                      Positioned.fromRect(
+                        rect: layout.torch,
+                        child: _TorchButton(controller: _controller),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -397,7 +390,7 @@ class _ScanLayout {
         size.height - max(padding.bottom, _torchBottomMargin) - _torchSize;
     final scanWindow = _fitScanWindow(
       size: size,
-      top: padding.top + kToolbarHeight,
+      top: padding.top + _edgeMargin,
       bottom: torchTop - _controlGap - _hintGap - hintHeight,
       maxWidth: size.width,
     );
@@ -440,7 +433,7 @@ class _ScanLayout {
     );
     final torch = Rect.fromLTWH(
       size.width - padding.right - _torchSideMargin - _torchSize,
-      max(padding.top + kToolbarHeight, scanWindow.center.dy - _torchSize / 2),
+      max(padding.top + _edgeMargin, scanWindow.center.dy - _torchSize / 2),
       _torchSize,
       _torchSize,
     );

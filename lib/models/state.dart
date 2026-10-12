@@ -215,16 +215,6 @@ abstract class ProxyState with _$ProxyState {
 }
 
 @freezed
-abstract class ThemeColorsSelectorState with _$ThemeColorsSelectorState {
-  const factory ThemeColorsSelectorState({
-    required int? primaryColor,
-    required List<int> primaryColors,
-    required DynamicSchemeVariant schemeVariant,
-    required bool isDefault,
-  }) = _ThemeColorsSelectorState;
-}
-
-@freezed
 abstract class SystemProxySelectorState with _$SystemProxySelectorState {
   const factory SystemProxySelectorState({
     required bool systemProxy,

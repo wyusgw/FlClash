@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AppSettingProps {
 
- String? get locale; bool get onlyStatisticsProxy; bool get showNotificationStopAction; bool get autoLaunch; bool get silentLaunch; bool get autoRun; bool get openLogs; String get testUrl; DelayTestMethod get delayTestMethod; int get delayTestTimeoutSeconds;@JsonKey(readValue: _readTabAnimation) TabAnimation get tabAnimation; bool get floatingNavigationBar; bool get autoCheckUpdate; bool get crashlyticsTip; bool get crashlytics; bool get minimizeOnExit; bool get hidden; bool get developerMode; RestoreStrategy get restoreStrategy; bool get showTrayTitle; TrayMode get trayMode; bool get showSidebar; bool get archiveStats; bool get geoRegion; bool get checkCertificate;@JsonKey(readValue: _readUserAgents) List<String> get userAgents; String? get globalUa; bool get hideIp; bool get editorLineWrap; EditorFontSize get editorFontSize; List<String> get serviceOrder; List<String> get disabledServices; String? get currentService;
+ String? get locale; bool get onlyStatisticsProxy; bool get showNotificationStopAction; bool get autoLaunch; bool get silentLaunch; bool get autoRun; bool get openLogs; String get testUrl; DelayTestMethod get delayTestMethod; int get delayTestTimeoutSeconds;@JsonKey(readValue: _readTabAnimation) TabAnimation get tabAnimation; bool get floatingNavigationBar; bool get autoCheckUpdate; bool get crashlyticsTip; bool get crashlytics; bool get minimizeOnExit; bool get hidden; bool get developerMode; RestoreStrategy get restoreStrategy; bool get showTrayTitle; TrayMode get trayMode; bool get showSidebar; bool get archiveStats; bool get geoRegion; bool get checkCertificate;@JsonKey(readValue: _readUserAgents) List<String> get userAgents; String? get globalUa; bool get hideIp; bool get overwriteExistingNodes; bool get autoRenameNodes; bool get clipboardDetection; bool get editorLineWrap; EditorFontSize get editorFontSize; List<String> get serviceOrder; List<String> get disabledServices; String? get currentService;
 /// Create a copy of AppSettingProps
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $AppSettingPropsCopyWith<AppSettingProps> get copyWith => _$AppSettingPropsCopyW
 @override
 bool operator ==(Object other) {
   final _this = this as AppSettingProps;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppSettingProps&&(identical(other.locale, _this.locale) || other.locale == _this.locale)&&(identical(other.onlyStatisticsProxy, _this.onlyStatisticsProxy) || other.onlyStatisticsProxy == _this.onlyStatisticsProxy)&&(identical(other.showNotificationStopAction, _this.showNotificationStopAction) || other.showNotificationStopAction == _this.showNotificationStopAction)&&(identical(other.autoLaunch, _this.autoLaunch) || other.autoLaunch == _this.autoLaunch)&&(identical(other.silentLaunch, _this.silentLaunch) || other.silentLaunch == _this.silentLaunch)&&(identical(other.autoRun, _this.autoRun) || other.autoRun == _this.autoRun)&&(identical(other.openLogs, _this.openLogs) || other.openLogs == _this.openLogs)&&(identical(other.testUrl, _this.testUrl) || other.testUrl == _this.testUrl)&&(identical(other.delayTestMethod, _this.delayTestMethod) || other.delayTestMethod == _this.delayTestMethod)&&(identical(other.delayTestTimeoutSeconds, _this.delayTestTimeoutSeconds) || other.delayTestTimeoutSeconds == _this.delayTestTimeoutSeconds)&&(identical(other.tabAnimation, _this.tabAnimation) || other.tabAnimation == _this.tabAnimation)&&(identical(other.floatingNavigationBar, _this.floatingNavigationBar) || other.floatingNavigationBar == _this.floatingNavigationBar)&&(identical(other.autoCheckUpdate, _this.autoCheckUpdate) || other.autoCheckUpdate == _this.autoCheckUpdate)&&(identical(other.crashlyticsTip, _this.crashlyticsTip) || other.crashlyticsTip == _this.crashlyticsTip)&&(identical(other.crashlytics, _this.crashlytics) || other.crashlytics == _this.crashlytics)&&(identical(other.minimizeOnExit, _this.minimizeOnExit) || other.minimizeOnExit == _this.minimizeOnExit)&&(identical(other.hidden, _this.hidden) || other.hidden == _this.hidden)&&(identical(other.developerMode, _this.developerMode) || other.developerMode == _this.developerMode)&&(identical(other.restoreStrategy, _this.restoreStrategy) || other.restoreStrategy == _this.restoreStrategy)&&(identical(other.showTrayTitle, _this.showTrayTitle) || other.showTrayTitle == _this.showTrayTitle)&&(identical(other.trayMode, _this.trayMode) || other.trayMode == _this.trayMode)&&(identical(other.showSidebar, _this.showSidebar) || other.showSidebar == _this.showSidebar)&&(identical(other.archiveStats, _this.archiveStats) || other.archiveStats == _this.archiveStats)&&(identical(other.geoRegion, _this.geoRegion) || other.geoRegion == _this.geoRegion)&&(identical(other.checkCertificate, _this.checkCertificate) || other.checkCertificate == _this.checkCertificate)&&const DeepCollectionEquality().equals(other.userAgents, _this.userAgents)&&(identical(other.globalUa, _this.globalUa) || other.globalUa == _this.globalUa)&&(identical(other.hideIp, _this.hideIp) || other.hideIp == _this.hideIp)&&(identical(other.editorLineWrap, _this.editorLineWrap) || other.editorLineWrap == _this.editorLineWrap)&&(identical(other.editorFontSize, _this.editorFontSize) || other.editorFontSize == _this.editorFontSize)&&const DeepCollectionEquality().equals(other.serviceOrder, _this.serviceOrder)&&const DeepCollectionEquality().equals(other.disabledServices, _this.disabledServices)&&(identical(other.currentService, _this.currentService) || other.currentService == _this.currentService));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppSettingProps&&(identical(other.locale, _this.locale) || other.locale == _this.locale)&&(identical(other.onlyStatisticsProxy, _this.onlyStatisticsProxy) || other.onlyStatisticsProxy == _this.onlyStatisticsProxy)&&(identical(other.showNotificationStopAction, _this.showNotificationStopAction) || other.showNotificationStopAction == _this.showNotificationStopAction)&&(identical(other.autoLaunch, _this.autoLaunch) || other.autoLaunch == _this.autoLaunch)&&(identical(other.silentLaunch, _this.silentLaunch) || other.silentLaunch == _this.silentLaunch)&&(identical(other.autoRun, _this.autoRun) || other.autoRun == _this.autoRun)&&(identical(other.openLogs, _this.openLogs) || other.openLogs == _this.openLogs)&&(identical(other.testUrl, _this.testUrl) || other.testUrl == _this.testUrl)&&(identical(other.delayTestMethod, _this.delayTestMethod) || other.delayTestMethod == _this.delayTestMethod)&&(identical(other.delayTestTimeoutSeconds, _this.delayTestTimeoutSeconds) || other.delayTestTimeoutSeconds == _this.delayTestTimeoutSeconds)&&(identical(other.tabAnimation, _this.tabAnimation) || other.tabAnimation == _this.tabAnimation)&&(identical(other.floatingNavigationBar, _this.floatingNavigationBar) || other.floatingNavigationBar == _this.floatingNavigationBar)&&(identical(other.autoCheckUpdate, _this.autoCheckUpdate) || other.autoCheckUpdate == _this.autoCheckUpdate)&&(identical(other.crashlyticsTip, _this.crashlyticsTip) || other.crashlyticsTip == _this.crashlyticsTip)&&(identical(other.crashlytics, _this.crashlytics) || other.crashlytics == _this.crashlytics)&&(identical(other.minimizeOnExit, _this.minimizeOnExit) || other.minimizeOnExit == _this.minimizeOnExit)&&(identical(other.hidden, _this.hidden) || other.hidden == _this.hidden)&&(identical(other.developerMode, _this.developerMode) || other.developerMode == _this.developerMode)&&(identical(other.restoreStrategy, _this.restoreStrategy) || other.restoreStrategy == _this.restoreStrategy)&&(identical(other.showTrayTitle, _this.showTrayTitle) || other.showTrayTitle == _this.showTrayTitle)&&(identical(other.trayMode, _this.trayMode) || other.trayMode == _this.trayMode)&&(identical(other.showSidebar, _this.showSidebar) || other.showSidebar == _this.showSidebar)&&(identical(other.archiveStats, _this.archiveStats) || other.archiveStats == _this.archiveStats)&&(identical(other.geoRegion, _this.geoRegion) || other.geoRegion == _this.geoRegion)&&(identical(other.checkCertificate, _this.checkCertificate) || other.checkCertificate == _this.checkCertificate)&&const DeepCollectionEquality().equals(other.userAgents, _this.userAgents)&&(identical(other.globalUa, _this.globalUa) || other.globalUa == _this.globalUa)&&(identical(other.hideIp, _this.hideIp) || other.hideIp == _this.hideIp)&&(identical(other.overwriteExistingNodes, _this.overwriteExistingNodes) || other.overwriteExistingNodes == _this.overwriteExistingNodes)&&(identical(other.autoRenameNodes, _this.autoRenameNodes) || other.autoRenameNodes == _this.autoRenameNodes)&&(identical(other.clipboardDetection, _this.clipboardDetection) || other.clipboardDetection == _this.clipboardDetection)&&(identical(other.editorLineWrap, _this.editorLineWrap) || other.editorLineWrap == _this.editorLineWrap)&&(identical(other.editorFontSize, _this.editorFontSize) || other.editorFontSize == _this.editorFontSize)&&const DeepCollectionEquality().equals(other.serviceOrder, _this.serviceOrder)&&const DeepCollectionEquality().equals(other.disabledServices, _this.disabledServices)&&(identical(other.currentService, _this.currentService) || other.currentService == _this.currentService));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as AppSettingProps;
-  return Object.hashAll([runtimeType,_this.locale,_this.onlyStatisticsProxy,_this.showNotificationStopAction,_this.autoLaunch,_this.silentLaunch,_this.autoRun,_this.openLogs,_this.testUrl,_this.delayTestMethod,_this.delayTestTimeoutSeconds,_this.tabAnimation,_this.floatingNavigationBar,_this.autoCheckUpdate,_this.crashlyticsTip,_this.crashlytics,_this.minimizeOnExit,_this.hidden,_this.developerMode,_this.restoreStrategy,_this.showTrayTitle,_this.trayMode,_this.showSidebar,_this.archiveStats,_this.geoRegion,_this.checkCertificate,const DeepCollectionEquality().hash(_this.userAgents),_this.globalUa,_this.hideIp,_this.editorLineWrap,_this.editorFontSize,const DeepCollectionEquality().hash(_this.serviceOrder),const DeepCollectionEquality().hash(_this.disabledServices),_this.currentService]);
+  return Object.hashAll([runtimeType,_this.locale,_this.onlyStatisticsProxy,_this.showNotificationStopAction,_this.autoLaunch,_this.silentLaunch,_this.autoRun,_this.openLogs,_this.testUrl,_this.delayTestMethod,_this.delayTestTimeoutSeconds,_this.tabAnimation,_this.floatingNavigationBar,_this.autoCheckUpdate,_this.crashlyticsTip,_this.crashlytics,_this.minimizeOnExit,_this.hidden,_this.developerMode,_this.restoreStrategy,_this.showTrayTitle,_this.trayMode,_this.showSidebar,_this.archiveStats,_this.geoRegion,_this.checkCertificate,const DeepCollectionEquality().hash(_this.userAgents),_this.globalUa,_this.hideIp,_this.overwriteExistingNodes,_this.autoRenameNodes,_this.clipboardDetection,_this.editorLineWrap,_this.editorFontSize,const DeepCollectionEquality().hash(_this.serviceOrder),const DeepCollectionEquality().hash(_this.disabledServices),_this.currentService]);
 }
 
 @override
 String toString() {
   final _this = this as AppSettingProps;
-  return 'AppSettingProps(locale: ${_this.locale}, onlyStatisticsProxy: ${_this.onlyStatisticsProxy}, showNotificationStopAction: ${_this.showNotificationStopAction}, autoLaunch: ${_this.autoLaunch}, silentLaunch: ${_this.silentLaunch}, autoRun: ${_this.autoRun}, openLogs: ${_this.openLogs}, testUrl: ${_this.testUrl}, delayTestMethod: ${_this.delayTestMethod}, delayTestTimeoutSeconds: ${_this.delayTestTimeoutSeconds}, tabAnimation: ${_this.tabAnimation}, floatingNavigationBar: ${_this.floatingNavigationBar}, autoCheckUpdate: ${_this.autoCheckUpdate}, crashlyticsTip: ${_this.crashlyticsTip}, crashlytics: ${_this.crashlytics}, minimizeOnExit: ${_this.minimizeOnExit}, hidden: ${_this.hidden}, developerMode: ${_this.developerMode}, restoreStrategy: ${_this.restoreStrategy}, showTrayTitle: ${_this.showTrayTitle}, trayMode: ${_this.trayMode}, showSidebar: ${_this.showSidebar}, archiveStats: ${_this.archiveStats}, geoRegion: ${_this.geoRegion}, checkCertificate: ${_this.checkCertificate}, userAgents: ${_this.userAgents}, globalUa: ${_this.globalUa}, hideIp: ${_this.hideIp}, editorLineWrap: ${_this.editorLineWrap}, editorFontSize: ${_this.editorFontSize}, serviceOrder: ${_this.serviceOrder}, disabledServices: ${_this.disabledServices}, currentService: ${_this.currentService})';
+  return 'AppSettingProps(locale: ${_this.locale}, onlyStatisticsProxy: ${_this.onlyStatisticsProxy}, showNotificationStopAction: ${_this.showNotificationStopAction}, autoLaunch: ${_this.autoLaunch}, silentLaunch: ${_this.silentLaunch}, autoRun: ${_this.autoRun}, openLogs: ${_this.openLogs}, testUrl: ${_this.testUrl}, delayTestMethod: ${_this.delayTestMethod}, delayTestTimeoutSeconds: ${_this.delayTestTimeoutSeconds}, tabAnimation: ${_this.tabAnimation}, floatingNavigationBar: ${_this.floatingNavigationBar}, autoCheckUpdate: ${_this.autoCheckUpdate}, crashlyticsTip: ${_this.crashlyticsTip}, crashlytics: ${_this.crashlytics}, minimizeOnExit: ${_this.minimizeOnExit}, hidden: ${_this.hidden}, developerMode: ${_this.developerMode}, restoreStrategy: ${_this.restoreStrategy}, showTrayTitle: ${_this.showTrayTitle}, trayMode: ${_this.trayMode}, showSidebar: ${_this.showSidebar}, archiveStats: ${_this.archiveStats}, geoRegion: ${_this.geoRegion}, checkCertificate: ${_this.checkCertificate}, userAgents: ${_this.userAgents}, globalUa: ${_this.globalUa}, hideIp: ${_this.hideIp}, overwriteExistingNodes: ${_this.overwriteExistingNodes}, autoRenameNodes: ${_this.autoRenameNodes}, clipboardDetection: ${_this.clipboardDetection}, editorLineWrap: ${_this.editorLineWrap}, editorFontSize: ${_this.editorFontSize}, serviceOrder: ${_this.serviceOrder}, disabledServices: ${_this.disabledServices}, currentService: ${_this.currentService})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $AppSettingPropsCopyWith<$Res>  {
   factory $AppSettingPropsCopyWith(AppSettingProps value, $Res Function(AppSettingProps) _then) = _$AppSettingPropsCopyWithImpl;
 @useResult
 $Res call({
- String? locale, bool onlyStatisticsProxy, bool showNotificationStopAction, bool autoLaunch, bool silentLaunch, bool autoRun, bool openLogs, String testUrl, DelayTestMethod delayTestMethod, int delayTestTimeoutSeconds,@JsonKey(readValue: _readTabAnimation) TabAnimation tabAnimation, bool floatingNavigationBar, bool autoCheckUpdate, bool crashlyticsTip, bool crashlytics, bool minimizeOnExit, bool hidden, bool developerMode, RestoreStrategy restoreStrategy, bool showTrayTitle, TrayMode trayMode, bool showSidebar, bool archiveStats, bool geoRegion, bool checkCertificate,@JsonKey(readValue: _readUserAgents) List<String> userAgents, String? globalUa, bool hideIp, bool editorLineWrap, EditorFontSize editorFontSize, List<String> serviceOrder, List<String> disabledServices, String? currentService
+ String? locale, bool onlyStatisticsProxy, bool showNotificationStopAction, bool autoLaunch, bool silentLaunch, bool autoRun, bool openLogs, String testUrl, DelayTestMethod delayTestMethod, int delayTestTimeoutSeconds,@JsonKey(readValue: _readTabAnimation) TabAnimation tabAnimation, bool floatingNavigationBar, bool autoCheckUpdate, bool crashlyticsTip, bool crashlytics, bool minimizeOnExit, bool hidden, bool developerMode, RestoreStrategy restoreStrategy, bool showTrayTitle, TrayMode trayMode, bool showSidebar, bool archiveStats, bool geoRegion, bool checkCertificate,@JsonKey(readValue: _readUserAgents) List<String> userAgents, String? globalUa, bool hideIp, bool overwriteExistingNodes, bool autoRenameNodes, bool clipboardDetection, bool editorLineWrap, EditorFontSize editorFontSize, List<String> serviceOrder, List<String> disabledServices, String? currentService
 });
 
 
@@ -71,7 +71,7 @@ class _$AppSettingPropsCopyWithImpl<$Res>
 
 /// Create a copy of AppSettingProps
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? locale = freezed,Object? onlyStatisticsProxy = null,Object? showNotificationStopAction = null,Object? autoLaunch = null,Object? silentLaunch = null,Object? autoRun = null,Object? openLogs = null,Object? testUrl = null,Object? delayTestMethod = null,Object? delayTestTimeoutSeconds = null,Object? tabAnimation = null,Object? floatingNavigationBar = null,Object? autoCheckUpdate = null,Object? crashlyticsTip = null,Object? crashlytics = null,Object? minimizeOnExit = null,Object? hidden = null,Object? developerMode = null,Object? restoreStrategy = null,Object? showTrayTitle = null,Object? trayMode = null,Object? showSidebar = null,Object? archiveStats = null,Object? geoRegion = null,Object? checkCertificate = null,Object? userAgents = null,Object? globalUa = freezed,Object? hideIp = null,Object? editorLineWrap = null,Object? editorFontSize = null,Object? serviceOrder = null,Object? disabledServices = null,Object? currentService = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? locale = freezed,Object? onlyStatisticsProxy = null,Object? showNotificationStopAction = null,Object? autoLaunch = null,Object? silentLaunch = null,Object? autoRun = null,Object? openLogs = null,Object? testUrl = null,Object? delayTestMethod = null,Object? delayTestTimeoutSeconds = null,Object? tabAnimation = null,Object? floatingNavigationBar = null,Object? autoCheckUpdate = null,Object? crashlyticsTip = null,Object? crashlytics = null,Object? minimizeOnExit = null,Object? hidden = null,Object? developerMode = null,Object? restoreStrategy = null,Object? showTrayTitle = null,Object? trayMode = null,Object? showSidebar = null,Object? archiveStats = null,Object? geoRegion = null,Object? checkCertificate = null,Object? userAgents = null,Object? globalUa = freezed,Object? hideIp = null,Object? overwriteExistingNodes = null,Object? autoRenameNodes = null,Object? clipboardDetection = null,Object? editorLineWrap = null,Object? editorFontSize = null,Object? serviceOrder = null,Object? disabledServices = null,Object? currentService = freezed,}) {
   return _then(AppSettingProps(
 locale: freezed == locale ? _self.locale : locale // ignore: cast_nullable_to_non_nullable
 as String?,onlyStatisticsProxy: null == onlyStatisticsProxy ? _self.onlyStatisticsProxy : onlyStatisticsProxy // ignore: cast_nullable_to_non_nullable
@@ -101,6 +101,9 @@ as bool,checkCertificate: null == checkCertificate ? _self.checkCertificate : ch
 as bool,userAgents: null == userAgents ? _self.userAgents : userAgents // ignore: cast_nullable_to_non_nullable
 as List<String>,globalUa: freezed == globalUa ? _self.globalUa : globalUa // ignore: cast_nullable_to_non_nullable
 as String?,hideIp: null == hideIp ? _self.hideIp : hideIp // ignore: cast_nullable_to_non_nullable
+as bool,overwriteExistingNodes: null == overwriteExistingNodes ? _self.overwriteExistingNodes : overwriteExistingNodes // ignore: cast_nullable_to_non_nullable
+as bool,autoRenameNodes: null == autoRenameNodes ? _self.autoRenameNodes : autoRenameNodes // ignore: cast_nullable_to_non_nullable
+as bool,clipboardDetection: null == clipboardDetection ? _self.clipboardDetection : clipboardDetection // ignore: cast_nullable_to_non_nullable
 as bool,editorLineWrap: null == editorLineWrap ? _self.editorLineWrap : editorLineWrap // ignore: cast_nullable_to_non_nullable
 as bool,editorFontSize: null == editorFontSize ? _self.editorFontSize : editorFontSize // ignore: cast_nullable_to_non_nullable
 as EditorFontSize,serviceOrder: null == serviceOrder ? _self.serviceOrder : serviceOrder // ignore: cast_nullable_to_non_nullable
@@ -191,10 +194,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? locale,  bool onlyStatisticsProxy,  bool showNotificationStopAction,  bool autoLaunch,  bool silentLaunch,  bool autoRun,  bool openLogs,  String testUrl,  DelayTestMethod delayTestMethod,  int delayTestTimeoutSeconds, @JsonKey(readValue: _readTabAnimation)  TabAnimation tabAnimation,  bool floatingNavigationBar,  bool autoCheckUpdate,  bool crashlyticsTip,  bool crashlytics,  bool minimizeOnExit,  bool hidden,  bool developerMode,  RestoreStrategy restoreStrategy,  bool showTrayTitle,  TrayMode trayMode,  bool showSidebar,  bool archiveStats,  bool geoRegion,  bool checkCertificate, @JsonKey(readValue: _readUserAgents)  List<String> userAgents,  String? globalUa,  bool hideIp,  bool editorLineWrap,  EditorFontSize editorFontSize,  List<String> serviceOrder,  List<String> disabledServices,  String? currentService)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? locale,  bool onlyStatisticsProxy,  bool showNotificationStopAction,  bool autoLaunch,  bool silentLaunch,  bool autoRun,  bool openLogs,  String testUrl,  DelayTestMethod delayTestMethod,  int delayTestTimeoutSeconds, @JsonKey(readValue: _readTabAnimation)  TabAnimation tabAnimation,  bool floatingNavigationBar,  bool autoCheckUpdate,  bool crashlyticsTip,  bool crashlytics,  bool minimizeOnExit,  bool hidden,  bool developerMode,  RestoreStrategy restoreStrategy,  bool showTrayTitle,  TrayMode trayMode,  bool showSidebar,  bool archiveStats,  bool geoRegion,  bool checkCertificate, @JsonKey(readValue: _readUserAgents)  List<String> userAgents,  String? globalUa,  bool hideIp,  bool overwriteExistingNodes,  bool autoRenameNodes,  bool clipboardDetection,  bool editorLineWrap,  EditorFontSize editorFontSize,  List<String> serviceOrder,  List<String> disabledServices,  String? currentService)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AppSettingProps() when $default != null:
-return $default(_that.locale,_that.onlyStatisticsProxy,_that.showNotificationStopAction,_that.autoLaunch,_that.silentLaunch,_that.autoRun,_that.openLogs,_that.testUrl,_that.delayTestMethod,_that.delayTestTimeoutSeconds,_that.tabAnimation,_that.floatingNavigationBar,_that.autoCheckUpdate,_that.crashlyticsTip,_that.crashlytics,_that.minimizeOnExit,_that.hidden,_that.developerMode,_that.restoreStrategy,_that.showTrayTitle,_that.trayMode,_that.showSidebar,_that.archiveStats,_that.geoRegion,_that.checkCertificate,_that.userAgents,_that.globalUa,_that.hideIp,_that.editorLineWrap,_that.editorFontSize,_that.serviceOrder,_that.disabledServices,_that.currentService);case _:
+return $default(_that.locale,_that.onlyStatisticsProxy,_that.showNotificationStopAction,_that.autoLaunch,_that.silentLaunch,_that.autoRun,_that.openLogs,_that.testUrl,_that.delayTestMethod,_that.delayTestTimeoutSeconds,_that.tabAnimation,_that.floatingNavigationBar,_that.autoCheckUpdate,_that.crashlyticsTip,_that.crashlytics,_that.minimizeOnExit,_that.hidden,_that.developerMode,_that.restoreStrategy,_that.showTrayTitle,_that.trayMode,_that.showSidebar,_that.archiveStats,_that.geoRegion,_that.checkCertificate,_that.userAgents,_that.globalUa,_that.hideIp,_that.overwriteExistingNodes,_that.autoRenameNodes,_that.clipboardDetection,_that.editorLineWrap,_that.editorFontSize,_that.serviceOrder,_that.disabledServices,_that.currentService);case _:
   return orElse();
 
 }
@@ -212,10 +215,10 @@ return $default(_that.locale,_that.onlyStatisticsProxy,_that.showNotificationSto
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? locale,  bool onlyStatisticsProxy,  bool showNotificationStopAction,  bool autoLaunch,  bool silentLaunch,  bool autoRun,  bool openLogs,  String testUrl,  DelayTestMethod delayTestMethod,  int delayTestTimeoutSeconds, @JsonKey(readValue: _readTabAnimation)  TabAnimation tabAnimation,  bool floatingNavigationBar,  bool autoCheckUpdate,  bool crashlyticsTip,  bool crashlytics,  bool minimizeOnExit,  bool hidden,  bool developerMode,  RestoreStrategy restoreStrategy,  bool showTrayTitle,  TrayMode trayMode,  bool showSidebar,  bool archiveStats,  bool geoRegion,  bool checkCertificate, @JsonKey(readValue: _readUserAgents)  List<String> userAgents,  String? globalUa,  bool hideIp,  bool editorLineWrap,  EditorFontSize editorFontSize,  List<String> serviceOrder,  List<String> disabledServices,  String? currentService)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? locale,  bool onlyStatisticsProxy,  bool showNotificationStopAction,  bool autoLaunch,  bool silentLaunch,  bool autoRun,  bool openLogs,  String testUrl,  DelayTestMethod delayTestMethod,  int delayTestTimeoutSeconds, @JsonKey(readValue: _readTabAnimation)  TabAnimation tabAnimation,  bool floatingNavigationBar,  bool autoCheckUpdate,  bool crashlyticsTip,  bool crashlytics,  bool minimizeOnExit,  bool hidden,  bool developerMode,  RestoreStrategy restoreStrategy,  bool showTrayTitle,  TrayMode trayMode,  bool showSidebar,  bool archiveStats,  bool geoRegion,  bool checkCertificate, @JsonKey(readValue: _readUserAgents)  List<String> userAgents,  String? globalUa,  bool hideIp,  bool overwriteExistingNodes,  bool autoRenameNodes,  bool clipboardDetection,  bool editorLineWrap,  EditorFontSize editorFontSize,  List<String> serviceOrder,  List<String> disabledServices,  String? currentService)  $default,) {final _that = this;
 switch (_that) {
 case _AppSettingProps():
-return $default(_that.locale,_that.onlyStatisticsProxy,_that.showNotificationStopAction,_that.autoLaunch,_that.silentLaunch,_that.autoRun,_that.openLogs,_that.testUrl,_that.delayTestMethod,_that.delayTestTimeoutSeconds,_that.tabAnimation,_that.floatingNavigationBar,_that.autoCheckUpdate,_that.crashlyticsTip,_that.crashlytics,_that.minimizeOnExit,_that.hidden,_that.developerMode,_that.restoreStrategy,_that.showTrayTitle,_that.trayMode,_that.showSidebar,_that.archiveStats,_that.geoRegion,_that.checkCertificate,_that.userAgents,_that.globalUa,_that.hideIp,_that.editorLineWrap,_that.editorFontSize,_that.serviceOrder,_that.disabledServices,_that.currentService);case _:
+return $default(_that.locale,_that.onlyStatisticsProxy,_that.showNotificationStopAction,_that.autoLaunch,_that.silentLaunch,_that.autoRun,_that.openLogs,_that.testUrl,_that.delayTestMethod,_that.delayTestTimeoutSeconds,_that.tabAnimation,_that.floatingNavigationBar,_that.autoCheckUpdate,_that.crashlyticsTip,_that.crashlytics,_that.minimizeOnExit,_that.hidden,_that.developerMode,_that.restoreStrategy,_that.showTrayTitle,_that.trayMode,_that.showSidebar,_that.archiveStats,_that.geoRegion,_that.checkCertificate,_that.userAgents,_that.globalUa,_that.hideIp,_that.overwriteExistingNodes,_that.autoRenameNodes,_that.clipboardDetection,_that.editorLineWrap,_that.editorFontSize,_that.serviceOrder,_that.disabledServices,_that.currentService);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -232,10 +235,10 @@ return $default(_that.locale,_that.onlyStatisticsProxy,_that.showNotificationSto
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? locale,  bool onlyStatisticsProxy,  bool showNotificationStopAction,  bool autoLaunch,  bool silentLaunch,  bool autoRun,  bool openLogs,  String testUrl,  DelayTestMethod delayTestMethod,  int delayTestTimeoutSeconds, @JsonKey(readValue: _readTabAnimation)  TabAnimation tabAnimation,  bool floatingNavigationBar,  bool autoCheckUpdate,  bool crashlyticsTip,  bool crashlytics,  bool minimizeOnExit,  bool hidden,  bool developerMode,  RestoreStrategy restoreStrategy,  bool showTrayTitle,  TrayMode trayMode,  bool showSidebar,  bool archiveStats,  bool geoRegion,  bool checkCertificate, @JsonKey(readValue: _readUserAgents)  List<String> userAgents,  String? globalUa,  bool hideIp,  bool editorLineWrap,  EditorFontSize editorFontSize,  List<String> serviceOrder,  List<String> disabledServices,  String? currentService)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? locale,  bool onlyStatisticsProxy,  bool showNotificationStopAction,  bool autoLaunch,  bool silentLaunch,  bool autoRun,  bool openLogs,  String testUrl,  DelayTestMethod delayTestMethod,  int delayTestTimeoutSeconds, @JsonKey(readValue: _readTabAnimation)  TabAnimation tabAnimation,  bool floatingNavigationBar,  bool autoCheckUpdate,  bool crashlyticsTip,  bool crashlytics,  bool minimizeOnExit,  bool hidden,  bool developerMode,  RestoreStrategy restoreStrategy,  bool showTrayTitle,  TrayMode trayMode,  bool showSidebar,  bool archiveStats,  bool geoRegion,  bool checkCertificate, @JsonKey(readValue: _readUserAgents)  List<String> userAgents,  String? globalUa,  bool hideIp,  bool overwriteExistingNodes,  bool autoRenameNodes,  bool clipboardDetection,  bool editorLineWrap,  EditorFontSize editorFontSize,  List<String> serviceOrder,  List<String> disabledServices,  String? currentService)?  $default,) {final _that = this;
 switch (_that) {
 case _AppSettingProps() when $default != null:
-return $default(_that.locale,_that.onlyStatisticsProxy,_that.showNotificationStopAction,_that.autoLaunch,_that.silentLaunch,_that.autoRun,_that.openLogs,_that.testUrl,_that.delayTestMethod,_that.delayTestTimeoutSeconds,_that.tabAnimation,_that.floatingNavigationBar,_that.autoCheckUpdate,_that.crashlyticsTip,_that.crashlytics,_that.minimizeOnExit,_that.hidden,_that.developerMode,_that.restoreStrategy,_that.showTrayTitle,_that.trayMode,_that.showSidebar,_that.archiveStats,_that.geoRegion,_that.checkCertificate,_that.userAgents,_that.globalUa,_that.hideIp,_that.editorLineWrap,_that.editorFontSize,_that.serviceOrder,_that.disabledServices,_that.currentService);case _:
+return $default(_that.locale,_that.onlyStatisticsProxy,_that.showNotificationStopAction,_that.autoLaunch,_that.silentLaunch,_that.autoRun,_that.openLogs,_that.testUrl,_that.delayTestMethod,_that.delayTestTimeoutSeconds,_that.tabAnimation,_that.floatingNavigationBar,_that.autoCheckUpdate,_that.crashlyticsTip,_that.crashlytics,_that.minimizeOnExit,_that.hidden,_that.developerMode,_that.restoreStrategy,_that.showTrayTitle,_that.trayMode,_that.showSidebar,_that.archiveStats,_that.geoRegion,_that.checkCertificate,_that.userAgents,_that.globalUa,_that.hideIp,_that.overwriteExistingNodes,_that.autoRenameNodes,_that.clipboardDetection,_that.editorLineWrap,_that.editorFontSize,_that.serviceOrder,_that.disabledServices,_that.currentService);case _:
   return null;
 
 }
@@ -247,7 +250,7 @@ return $default(_that.locale,_that.onlyStatisticsProxy,_that.showNotificationSto
 @JsonSerializable()
 
 class _AppSettingProps implements AppSettingProps {
-  const _AppSettingProps({this.locale, this.onlyStatisticsProxy = false, this.showNotificationStopAction = true, this.autoLaunch = false, this.silentLaunch = false, this.autoRun = false, this.openLogs = false, this.testUrl = defaultTestUrl, this.delayTestMethod = DelayTestMethod.tcp, this.delayTestTimeoutSeconds = defaultDelayTestTimeoutSeconds, @JsonKey(readValue: _readTabAnimation) this.tabAnimation = TabAnimation.slide, this.floatingNavigationBar = true, this.autoCheckUpdate = true, this.crashlyticsTip = false, this.crashlytics = false, this.minimizeOnExit = true, this.hidden = false, this.developerMode = false, this.restoreStrategy = RestoreStrategy.compatible, this.showTrayTitle = true, this.trayMode = TrayMode.embedded, this.showSidebar = true, this.archiveStats = false, this.geoRegion = true, this.checkCertificate = true, @JsonKey(readValue: _readUserAgents)  List<String> userAgents = defaultUserAgents, this.globalUa, this.hideIp = false, this.editorLineWrap = false, this.editorFontSize = EditorFontSize.standard,  List<String> serviceOrder = const [],  List<String> disabledServices = const [], this.currentService}): _userAgents = userAgents,_serviceOrder = serviceOrder,_disabledServices = disabledServices;
+  const _AppSettingProps({this.locale, this.onlyStatisticsProxy = false, this.showNotificationStopAction = true, this.autoLaunch = false, this.silentLaunch = false, this.autoRun = false, this.openLogs = false, this.testUrl = defaultTestUrl, this.delayTestMethod = DelayTestMethod.tcp, this.delayTestTimeoutSeconds = defaultDelayTestTimeoutSeconds, @JsonKey(readValue: _readTabAnimation) this.tabAnimation = TabAnimation.slide, this.floatingNavigationBar = true, this.autoCheckUpdate = true, this.crashlyticsTip = false, this.crashlytics = false, this.minimizeOnExit = true, this.hidden = false, this.developerMode = false, this.restoreStrategy = RestoreStrategy.compatible, this.showTrayTitle = true, this.trayMode = TrayMode.embedded, this.showSidebar = true, this.archiveStats = false, this.geoRegion = true, this.checkCertificate = true, @JsonKey(readValue: _readUserAgents)  List<String> userAgents = defaultUserAgents, this.globalUa, this.hideIp = false, this.overwriteExistingNodes = false, this.autoRenameNodes = false, this.clipboardDetection = false, this.editorLineWrap = false, this.editorFontSize = EditorFontSize.standard,  List<String> serviceOrder = const [],  List<String> disabledServices = const [], this.currentService}): _userAgents = userAgents,_serviceOrder = serviceOrder,_disabledServices = disabledServices;
   factory _AppSettingProps.fromJson(Map<String, dynamic> json) => _$AppSettingPropsFromJson(json);
 
 @override final  String? locale;
@@ -284,6 +287,9 @@ class _AppSettingProps implements AppSettingProps {
 
 @override final  String? globalUa;
 @override@JsonKey() final  bool hideIp;
+@override@JsonKey() final  bool overwriteExistingNodes;
+@override@JsonKey() final  bool autoRenameNodes;
+@override@JsonKey() final  bool clipboardDetection;
 @override@JsonKey() final  bool editorLineWrap;
 @override@JsonKey() final  EditorFontSize editorFontSize;
  final  List<String> _serviceOrder;
@@ -315,18 +321,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppSettingProps&&(identical(other.locale, locale) || other.locale == locale)&&(identical(other.onlyStatisticsProxy, onlyStatisticsProxy) || other.onlyStatisticsProxy == onlyStatisticsProxy)&&(identical(other.showNotificationStopAction, showNotificationStopAction) || other.showNotificationStopAction == showNotificationStopAction)&&(identical(other.autoLaunch, autoLaunch) || other.autoLaunch == autoLaunch)&&(identical(other.silentLaunch, silentLaunch) || other.silentLaunch == silentLaunch)&&(identical(other.autoRun, autoRun) || other.autoRun == autoRun)&&(identical(other.openLogs, openLogs) || other.openLogs == openLogs)&&(identical(other.testUrl, testUrl) || other.testUrl == testUrl)&&(identical(other.delayTestMethod, delayTestMethod) || other.delayTestMethod == delayTestMethod)&&(identical(other.delayTestTimeoutSeconds, delayTestTimeoutSeconds) || other.delayTestTimeoutSeconds == delayTestTimeoutSeconds)&&(identical(other.tabAnimation, tabAnimation) || other.tabAnimation == tabAnimation)&&(identical(other.floatingNavigationBar, floatingNavigationBar) || other.floatingNavigationBar == floatingNavigationBar)&&(identical(other.autoCheckUpdate, autoCheckUpdate) || other.autoCheckUpdate == autoCheckUpdate)&&(identical(other.crashlyticsTip, crashlyticsTip) || other.crashlyticsTip == crashlyticsTip)&&(identical(other.crashlytics, crashlytics) || other.crashlytics == crashlytics)&&(identical(other.minimizeOnExit, minimizeOnExit) || other.minimizeOnExit == minimizeOnExit)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.developerMode, developerMode) || other.developerMode == developerMode)&&(identical(other.restoreStrategy, restoreStrategy) || other.restoreStrategy == restoreStrategy)&&(identical(other.showTrayTitle, showTrayTitle) || other.showTrayTitle == showTrayTitle)&&(identical(other.trayMode, trayMode) || other.trayMode == trayMode)&&(identical(other.showSidebar, showSidebar) || other.showSidebar == showSidebar)&&(identical(other.archiveStats, archiveStats) || other.archiveStats == archiveStats)&&(identical(other.geoRegion, geoRegion) || other.geoRegion == geoRegion)&&(identical(other.checkCertificate, checkCertificate) || other.checkCertificate == checkCertificate)&&const DeepCollectionEquality().equals(other.userAgents, _userAgents)&&(identical(other.globalUa, globalUa) || other.globalUa == globalUa)&&(identical(other.hideIp, hideIp) || other.hideIp == hideIp)&&(identical(other.editorLineWrap, editorLineWrap) || other.editorLineWrap == editorLineWrap)&&(identical(other.editorFontSize, editorFontSize) || other.editorFontSize == editorFontSize)&&const DeepCollectionEquality().equals(other.serviceOrder, _serviceOrder)&&const DeepCollectionEquality().equals(other.disabledServices, _disabledServices)&&(identical(other.currentService, currentService) || other.currentService == currentService));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppSettingProps&&(identical(other.locale, locale) || other.locale == locale)&&(identical(other.onlyStatisticsProxy, onlyStatisticsProxy) || other.onlyStatisticsProxy == onlyStatisticsProxy)&&(identical(other.showNotificationStopAction, showNotificationStopAction) || other.showNotificationStopAction == showNotificationStopAction)&&(identical(other.autoLaunch, autoLaunch) || other.autoLaunch == autoLaunch)&&(identical(other.silentLaunch, silentLaunch) || other.silentLaunch == silentLaunch)&&(identical(other.autoRun, autoRun) || other.autoRun == autoRun)&&(identical(other.openLogs, openLogs) || other.openLogs == openLogs)&&(identical(other.testUrl, testUrl) || other.testUrl == testUrl)&&(identical(other.delayTestMethod, delayTestMethod) || other.delayTestMethod == delayTestMethod)&&(identical(other.delayTestTimeoutSeconds, delayTestTimeoutSeconds) || other.delayTestTimeoutSeconds == delayTestTimeoutSeconds)&&(identical(other.tabAnimation, tabAnimation) || other.tabAnimation == tabAnimation)&&(identical(other.floatingNavigationBar, floatingNavigationBar) || other.floatingNavigationBar == floatingNavigationBar)&&(identical(other.autoCheckUpdate, autoCheckUpdate) || other.autoCheckUpdate == autoCheckUpdate)&&(identical(other.crashlyticsTip, crashlyticsTip) || other.crashlyticsTip == crashlyticsTip)&&(identical(other.crashlytics, crashlytics) || other.crashlytics == crashlytics)&&(identical(other.minimizeOnExit, minimizeOnExit) || other.minimizeOnExit == minimizeOnExit)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.developerMode, developerMode) || other.developerMode == developerMode)&&(identical(other.restoreStrategy, restoreStrategy) || other.restoreStrategy == restoreStrategy)&&(identical(other.showTrayTitle, showTrayTitle) || other.showTrayTitle == showTrayTitle)&&(identical(other.trayMode, trayMode) || other.trayMode == trayMode)&&(identical(other.showSidebar, showSidebar) || other.showSidebar == showSidebar)&&(identical(other.archiveStats, archiveStats) || other.archiveStats == archiveStats)&&(identical(other.geoRegion, geoRegion) || other.geoRegion == geoRegion)&&(identical(other.checkCertificate, checkCertificate) || other.checkCertificate == checkCertificate)&&const DeepCollectionEquality().equals(other.userAgents, _userAgents)&&(identical(other.globalUa, globalUa) || other.globalUa == globalUa)&&(identical(other.hideIp, hideIp) || other.hideIp == hideIp)&&(identical(other.overwriteExistingNodes, overwriteExistingNodes) || other.overwriteExistingNodes == overwriteExistingNodes)&&(identical(other.autoRenameNodes, autoRenameNodes) || other.autoRenameNodes == autoRenameNodes)&&(identical(other.clipboardDetection, clipboardDetection) || other.clipboardDetection == clipboardDetection)&&(identical(other.editorLineWrap, editorLineWrap) || other.editorLineWrap == editorLineWrap)&&(identical(other.editorFontSize, editorFontSize) || other.editorFontSize == editorFontSize)&&const DeepCollectionEquality().equals(other.serviceOrder, _serviceOrder)&&const DeepCollectionEquality().equals(other.disabledServices, _disabledServices)&&(identical(other.currentService, currentService) || other.currentService == currentService));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hashAll([runtimeType,locale,onlyStatisticsProxy,showNotificationStopAction,autoLaunch,silentLaunch,autoRun,openLogs,testUrl,delayTestMethod,delayTestTimeoutSeconds,tabAnimation,floatingNavigationBar,autoCheckUpdate,crashlyticsTip,crashlytics,minimizeOnExit,hidden,developerMode,restoreStrategy,showTrayTitle,trayMode,showSidebar,archiveStats,geoRegion,checkCertificate,const DeepCollectionEquality().hash(_userAgents),globalUa,hideIp,editorLineWrap,editorFontSize,const DeepCollectionEquality().hash(_serviceOrder),const DeepCollectionEquality().hash(_disabledServices),currentService]);
+    return Object.hashAll([runtimeType,locale,onlyStatisticsProxy,showNotificationStopAction,autoLaunch,silentLaunch,autoRun,openLogs,testUrl,delayTestMethod,delayTestTimeoutSeconds,tabAnimation,floatingNavigationBar,autoCheckUpdate,crashlyticsTip,crashlytics,minimizeOnExit,hidden,developerMode,restoreStrategy,showTrayTitle,trayMode,showSidebar,archiveStats,geoRegion,checkCertificate,const DeepCollectionEquality().hash(_userAgents),globalUa,hideIp,overwriteExistingNodes,autoRenameNodes,clipboardDetection,editorLineWrap,editorFontSize,const DeepCollectionEquality().hash(_serviceOrder),const DeepCollectionEquality().hash(_disabledServices),currentService]);
 }
 
 @override
 String toString() {
-    return 'AppSettingProps(locale: $locale, onlyStatisticsProxy: $onlyStatisticsProxy, showNotificationStopAction: $showNotificationStopAction, autoLaunch: $autoLaunch, silentLaunch: $silentLaunch, autoRun: $autoRun, openLogs: $openLogs, testUrl: $testUrl, delayTestMethod: $delayTestMethod, delayTestTimeoutSeconds: $delayTestTimeoutSeconds, tabAnimation: $tabAnimation, floatingNavigationBar: $floatingNavigationBar, autoCheckUpdate: $autoCheckUpdate, crashlyticsTip: $crashlyticsTip, crashlytics: $crashlytics, minimizeOnExit: $minimizeOnExit, hidden: $hidden, developerMode: $developerMode, restoreStrategy: $restoreStrategy, showTrayTitle: $showTrayTitle, trayMode: $trayMode, showSidebar: $showSidebar, archiveStats: $archiveStats, geoRegion: $geoRegion, checkCertificate: $checkCertificate, userAgents: $userAgents, globalUa: $globalUa, hideIp: $hideIp, editorLineWrap: $editorLineWrap, editorFontSize: $editorFontSize, serviceOrder: $serviceOrder, disabledServices: $disabledServices, currentService: $currentService)';
+    return 'AppSettingProps(locale: $locale, onlyStatisticsProxy: $onlyStatisticsProxy, showNotificationStopAction: $showNotificationStopAction, autoLaunch: $autoLaunch, silentLaunch: $silentLaunch, autoRun: $autoRun, openLogs: $openLogs, testUrl: $testUrl, delayTestMethod: $delayTestMethod, delayTestTimeoutSeconds: $delayTestTimeoutSeconds, tabAnimation: $tabAnimation, floatingNavigationBar: $floatingNavigationBar, autoCheckUpdate: $autoCheckUpdate, crashlyticsTip: $crashlyticsTip, crashlytics: $crashlytics, minimizeOnExit: $minimizeOnExit, hidden: $hidden, developerMode: $developerMode, restoreStrategy: $restoreStrategy, showTrayTitle: $showTrayTitle, trayMode: $trayMode, showSidebar: $showSidebar, archiveStats: $archiveStats, geoRegion: $geoRegion, checkCertificate: $checkCertificate, userAgents: $userAgents, globalUa: $globalUa, hideIp: $hideIp, overwriteExistingNodes: $overwriteExistingNodes, autoRenameNodes: $autoRenameNodes, clipboardDetection: $clipboardDetection, editorLineWrap: $editorLineWrap, editorFontSize: $editorFontSize, serviceOrder: $serviceOrder, disabledServices: $disabledServices, currentService: $currentService)';
 }
 
 
@@ -337,7 +343,7 @@ abstract mixin class _$AppSettingPropsCopyWith<$Res> implements $AppSettingProps
   factory _$AppSettingPropsCopyWith(_AppSettingProps value, $Res Function(_AppSettingProps) _then) = __$AppSettingPropsCopyWithImpl;
 @override @useResult
 $Res call({
- String? locale, bool onlyStatisticsProxy, bool showNotificationStopAction, bool autoLaunch, bool silentLaunch, bool autoRun, bool openLogs, String testUrl, DelayTestMethod delayTestMethod, int delayTestTimeoutSeconds,@JsonKey(readValue: _readTabAnimation) TabAnimation tabAnimation, bool floatingNavigationBar, bool autoCheckUpdate, bool crashlyticsTip, bool crashlytics, bool minimizeOnExit, bool hidden, bool developerMode, RestoreStrategy restoreStrategy, bool showTrayTitle, TrayMode trayMode, bool showSidebar, bool archiveStats, bool geoRegion, bool checkCertificate,@JsonKey(readValue: _readUserAgents) List<String> userAgents, String? globalUa, bool hideIp, bool editorLineWrap, EditorFontSize editorFontSize, List<String> serviceOrder, List<String> disabledServices, String? currentService
+ String? locale, bool onlyStatisticsProxy, bool showNotificationStopAction, bool autoLaunch, bool silentLaunch, bool autoRun, bool openLogs, String testUrl, DelayTestMethod delayTestMethod, int delayTestTimeoutSeconds,@JsonKey(readValue: _readTabAnimation) TabAnimation tabAnimation, bool floatingNavigationBar, bool autoCheckUpdate, bool crashlyticsTip, bool crashlytics, bool minimizeOnExit, bool hidden, bool developerMode, RestoreStrategy restoreStrategy, bool showTrayTitle, TrayMode trayMode, bool showSidebar, bool archiveStats, bool geoRegion, bool checkCertificate,@JsonKey(readValue: _readUserAgents) List<String> userAgents, String? globalUa, bool hideIp, bool overwriteExistingNodes, bool autoRenameNodes, bool clipboardDetection, bool editorLineWrap, EditorFontSize editorFontSize, List<String> serviceOrder, List<String> disabledServices, String? currentService
 });
 
 
@@ -354,7 +360,7 @@ class __$AppSettingPropsCopyWithImpl<$Res>
 
 /// Create a copy of AppSettingProps
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? locale = freezed,Object? onlyStatisticsProxy = null,Object? showNotificationStopAction = null,Object? autoLaunch = null,Object? silentLaunch = null,Object? autoRun = null,Object? openLogs = null,Object? testUrl = null,Object? delayTestMethod = null,Object? delayTestTimeoutSeconds = null,Object? tabAnimation = null,Object? floatingNavigationBar = null,Object? autoCheckUpdate = null,Object? crashlyticsTip = null,Object? crashlytics = null,Object? minimizeOnExit = null,Object? hidden = null,Object? developerMode = null,Object? restoreStrategy = null,Object? showTrayTitle = null,Object? trayMode = null,Object? showSidebar = null,Object? archiveStats = null,Object? geoRegion = null,Object? checkCertificate = null,Object? userAgents = null,Object? globalUa = freezed,Object? hideIp = null,Object? editorLineWrap = null,Object? editorFontSize = null,Object? serviceOrder = null,Object? disabledServices = null,Object? currentService = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? locale = freezed,Object? onlyStatisticsProxy = null,Object? showNotificationStopAction = null,Object? autoLaunch = null,Object? silentLaunch = null,Object? autoRun = null,Object? openLogs = null,Object? testUrl = null,Object? delayTestMethod = null,Object? delayTestTimeoutSeconds = null,Object? tabAnimation = null,Object? floatingNavigationBar = null,Object? autoCheckUpdate = null,Object? crashlyticsTip = null,Object? crashlytics = null,Object? minimizeOnExit = null,Object? hidden = null,Object? developerMode = null,Object? restoreStrategy = null,Object? showTrayTitle = null,Object? trayMode = null,Object? showSidebar = null,Object? archiveStats = null,Object? geoRegion = null,Object? checkCertificate = null,Object? userAgents = null,Object? globalUa = freezed,Object? hideIp = null,Object? overwriteExistingNodes = null,Object? autoRenameNodes = null,Object? clipboardDetection = null,Object? editorLineWrap = null,Object? editorFontSize = null,Object? serviceOrder = null,Object? disabledServices = null,Object? currentService = freezed,}) {
   return _then(_AppSettingProps(
 locale: freezed == locale ? _self.locale : locale // ignore: cast_nullable_to_non_nullable
 as String?,onlyStatisticsProxy: null == onlyStatisticsProxy ? _self.onlyStatisticsProxy : onlyStatisticsProxy // ignore: cast_nullable_to_non_nullable
@@ -384,6 +390,9 @@ as bool,checkCertificate: null == checkCertificate ? _self.checkCertificate : ch
 as bool,userAgents: null == userAgents ? _self._userAgents : userAgents // ignore: cast_nullable_to_non_nullable
 as List<String>,globalUa: freezed == globalUa ? _self.globalUa : globalUa // ignore: cast_nullable_to_non_nullable
 as String?,hideIp: null == hideIp ? _self.hideIp : hideIp // ignore: cast_nullable_to_non_nullable
+as bool,overwriteExistingNodes: null == overwriteExistingNodes ? _self.overwriteExistingNodes : overwriteExistingNodes // ignore: cast_nullable_to_non_nullable
+as bool,autoRenameNodes: null == autoRenameNodes ? _self.autoRenameNodes : autoRenameNodes // ignore: cast_nullable_to_non_nullable
+as bool,clipboardDetection: null == clipboardDetection ? _self.clipboardDetection : clipboardDetection // ignore: cast_nullable_to_non_nullable
 as bool,editorLineWrap: null == editorLineWrap ? _self.editorLineWrap : editorLineWrap // ignore: cast_nullable_to_non_nullable
 as bool,editorFontSize: null == editorFontSize ? _self.editorFontSize : editorFontSize // ignore: cast_nullable_to_non_nullable
 as EditorFontSize,serviceOrder: null == serviceOrder ? _self._serviceOrder : serviceOrder // ignore: cast_nullable_to_non_nullable
@@ -2419,7 +2428,7 @@ as double,
 /// @nodoc
 mixin _$ThemeProps {
 
- int? get primaryColor; List<int> get primaryColors; ThemeMode get themeMode; DynamicSchemeVariant get schemeVariant; bool get pureBlack; bool get sidebarBlur; TextScale get textScale;
+ int? get primaryColor; List<int> get primaryColors; ThemeMode get themeMode; DynamicSchemeVariant get schemeVariant; bool get pureBlack; bool get sidebarBlur; TextScale get textScale; Map<String, int> get paletteColors;
 /// Create a copy of ThemeProps
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2433,20 +2442,20 @@ $ThemePropsCopyWith<ThemeProps> get copyWith => _$ThemePropsCopyWithImpl<ThemePr
 @override
 bool operator ==(Object other) {
   final _this = this as ThemeProps;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThemeProps&&(identical(other.primaryColor, _this.primaryColor) || other.primaryColor == _this.primaryColor)&&const DeepCollectionEquality().equals(other.primaryColors, _this.primaryColors)&&(identical(other.themeMode, _this.themeMode) || other.themeMode == _this.themeMode)&&(identical(other.schemeVariant, _this.schemeVariant) || other.schemeVariant == _this.schemeVariant)&&(identical(other.pureBlack, _this.pureBlack) || other.pureBlack == _this.pureBlack)&&(identical(other.sidebarBlur, _this.sidebarBlur) || other.sidebarBlur == _this.sidebarBlur)&&(identical(other.textScale, _this.textScale) || other.textScale == _this.textScale));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThemeProps&&(identical(other.primaryColor, _this.primaryColor) || other.primaryColor == _this.primaryColor)&&const DeepCollectionEquality().equals(other.primaryColors, _this.primaryColors)&&(identical(other.themeMode, _this.themeMode) || other.themeMode == _this.themeMode)&&(identical(other.schemeVariant, _this.schemeVariant) || other.schemeVariant == _this.schemeVariant)&&(identical(other.pureBlack, _this.pureBlack) || other.pureBlack == _this.pureBlack)&&(identical(other.sidebarBlur, _this.sidebarBlur) || other.sidebarBlur == _this.sidebarBlur)&&(identical(other.textScale, _this.textScale) || other.textScale == _this.textScale)&&const DeepCollectionEquality().equals(other.paletteColors, _this.paletteColors));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as ThemeProps;
-  return Object.hash(runtimeType,_this.primaryColor,const DeepCollectionEquality().hash(_this.primaryColors),_this.themeMode,_this.schemeVariant,_this.pureBlack,_this.sidebarBlur,_this.textScale);
+  return Object.hash(runtimeType,_this.primaryColor,const DeepCollectionEquality().hash(_this.primaryColors),_this.themeMode,_this.schemeVariant,_this.pureBlack,_this.sidebarBlur,_this.textScale,const DeepCollectionEquality().hash(_this.paletteColors));
 }
 
 @override
 String toString() {
   final _this = this as ThemeProps;
-  return 'ThemeProps(primaryColor: ${_this.primaryColor}, primaryColors: ${_this.primaryColors}, themeMode: ${_this.themeMode}, schemeVariant: ${_this.schemeVariant}, pureBlack: ${_this.pureBlack}, sidebarBlur: ${_this.sidebarBlur}, textScale: ${_this.textScale})';
+  return 'ThemeProps(primaryColor: ${_this.primaryColor}, primaryColors: ${_this.primaryColors}, themeMode: ${_this.themeMode}, schemeVariant: ${_this.schemeVariant}, pureBlack: ${_this.pureBlack}, sidebarBlur: ${_this.sidebarBlur}, textScale: ${_this.textScale}, paletteColors: ${_this.paletteColors})';
 }
 
 
@@ -2457,7 +2466,7 @@ abstract mixin class $ThemePropsCopyWith<$Res>  {
   factory $ThemePropsCopyWith(ThemeProps value, $Res Function(ThemeProps) _then) = _$ThemePropsCopyWithImpl;
 @useResult
 $Res call({
- int? primaryColor, List<int> primaryColors, ThemeMode themeMode, DynamicSchemeVariant schemeVariant, bool pureBlack, bool sidebarBlur, TextScale textScale
+ int? primaryColor, List<int> primaryColors, ThemeMode themeMode, DynamicSchemeVariant schemeVariant, bool pureBlack, bool sidebarBlur, TextScale textScale, Map<String, int> paletteColors
 });
 
 
@@ -2474,7 +2483,7 @@ class _$ThemePropsCopyWithImpl<$Res>
 
 /// Create a copy of ThemeProps
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? primaryColor = freezed,Object? primaryColors = null,Object? themeMode = null,Object? schemeVariant = null,Object? pureBlack = null,Object? sidebarBlur = null,Object? textScale = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? primaryColor = freezed,Object? primaryColors = null,Object? themeMode = null,Object? schemeVariant = null,Object? pureBlack = null,Object? sidebarBlur = null,Object? textScale = null,Object? paletteColors = null,}) {
   return _then(ThemeProps(
 primaryColor: freezed == primaryColor ? _self.primaryColor : primaryColor // ignore: cast_nullable_to_non_nullable
 as int?,primaryColors: null == primaryColors ? _self.primaryColors : primaryColors // ignore: cast_nullable_to_non_nullable
@@ -2483,7 +2492,8 @@ as ThemeMode,schemeVariant: null == schemeVariant ? _self.schemeVariant : scheme
 as DynamicSchemeVariant,pureBlack: null == pureBlack ? _self.pureBlack : pureBlack // ignore: cast_nullable_to_non_nullable
 as bool,sidebarBlur: null == sidebarBlur ? _self.sidebarBlur : sidebarBlur // ignore: cast_nullable_to_non_nullable
 as bool,textScale: null == textScale ? _self.textScale : textScale // ignore: cast_nullable_to_non_nullable
-as TextScale,
+as TextScale,paletteColors: null == paletteColors ? _self.paletteColors : paletteColors // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,
   ));
 }
 /// Create a copy of ThemeProps
@@ -2577,10 +2587,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  bool pureBlack,  bool sidebarBlur,  TextScale textScale)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  bool pureBlack,  bool sidebarBlur,  TextScale textScale,  Map<String, int> paletteColors)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ThemeProps() when $default != null:
-return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.pureBlack,_that.sidebarBlur,_that.textScale);case _:
+return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.pureBlack,_that.sidebarBlur,_that.textScale,_that.paletteColors);case _:
   return orElse();
 
 }
@@ -2598,10 +2608,10 @@ return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.sch
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  bool pureBlack,  bool sidebarBlur,  TextScale textScale)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  bool pureBlack,  bool sidebarBlur,  TextScale textScale,  Map<String, int> paletteColors)  $default,) {final _that = this;
 switch (_that) {
 case _ThemeProps():
-return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.pureBlack,_that.sidebarBlur,_that.textScale);case _:
+return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.pureBlack,_that.sidebarBlur,_that.textScale,_that.paletteColors);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -2618,10 +2628,10 @@ return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.sch
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  bool pureBlack,  bool sidebarBlur,  TextScale textScale)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  bool pureBlack,  bool sidebarBlur,  TextScale textScale,  Map<String, int> paletteColors)?  $default,) {final _that = this;
 switch (_that) {
 case _ThemeProps() when $default != null:
-return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.pureBlack,_that.sidebarBlur,_that.textScale);case _:
+return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.pureBlack,_that.sidebarBlur,_that.textScale,_that.paletteColors);case _:
   return null;
 
 }
@@ -2633,7 +2643,7 @@ return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.sch
 @JsonSerializable()
 
 class _ThemeProps implements ThemeProps {
-  const _ThemeProps({this.primaryColor,  List<int> primaryColors = defaultPrimaryColors, this.themeMode = ThemeMode.dark, this.schemeVariant = DynamicSchemeVariant.content, this.pureBlack = false, this.sidebarBlur = true, this.textScale = const TextScale()}): _primaryColors = primaryColors;
+  const _ThemeProps({this.primaryColor,  List<int> primaryColors = defaultPrimaryColors, this.themeMode = ThemeMode.dark, this.schemeVariant = DynamicSchemeVariant.content, this.pureBlack = false, this.sidebarBlur = true, this.textScale = const TextScale(),  Map<String, int> paletteColors = const {}}): _primaryColors = primaryColors,_paletteColors = paletteColors;
   factory _ThemeProps.fromJson(Map<String, dynamic> json) => _$ThemePropsFromJson(json);
 
 @override final  int? primaryColor;
@@ -2649,6 +2659,13 @@ class _ThemeProps implements ThemeProps {
 @override@JsonKey() final  bool pureBlack;
 @override@JsonKey() final  bool sidebarBlur;
 @override@JsonKey() final  TextScale textScale;
+ final  Map<String, int> _paletteColors;
+@override@JsonKey() Map<String, int> get paletteColors {
+  if (_paletteColors is EqualUnmodifiableMapView) return _paletteColors;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_paletteColors);
+}
+
 
 /// Create a copy of ThemeProps
 /// with the given fields replaced by the non-null parameter values.
@@ -2663,18 +2680,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThemeProps&&(identical(other.primaryColor, primaryColor) || other.primaryColor == primaryColor)&&const DeepCollectionEquality().equals(other.primaryColors, _primaryColors)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.schemeVariant, schemeVariant) || other.schemeVariant == schemeVariant)&&(identical(other.pureBlack, pureBlack) || other.pureBlack == pureBlack)&&(identical(other.sidebarBlur, sidebarBlur) || other.sidebarBlur == sidebarBlur)&&(identical(other.textScale, textScale) || other.textScale == textScale));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThemeProps&&(identical(other.primaryColor, primaryColor) || other.primaryColor == primaryColor)&&const DeepCollectionEquality().equals(other.primaryColors, _primaryColors)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.schemeVariant, schemeVariant) || other.schemeVariant == schemeVariant)&&(identical(other.pureBlack, pureBlack) || other.pureBlack == pureBlack)&&(identical(other.sidebarBlur, sidebarBlur) || other.sidebarBlur == sidebarBlur)&&(identical(other.textScale, textScale) || other.textScale == textScale)&&const DeepCollectionEquality().equals(other.paletteColors, _paletteColors));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,primaryColor,const DeepCollectionEquality().hash(_primaryColors),themeMode,schemeVariant,pureBlack,sidebarBlur,textScale);
+    return Object.hash(runtimeType,primaryColor,const DeepCollectionEquality().hash(_primaryColors),themeMode,schemeVariant,pureBlack,sidebarBlur,textScale,const DeepCollectionEquality().hash(_paletteColors));
 }
 
 @override
 String toString() {
-    return 'ThemeProps(primaryColor: $primaryColor, primaryColors: $primaryColors, themeMode: $themeMode, schemeVariant: $schemeVariant, pureBlack: $pureBlack, sidebarBlur: $sidebarBlur, textScale: $textScale)';
+    return 'ThemeProps(primaryColor: $primaryColor, primaryColors: $primaryColors, themeMode: $themeMode, schemeVariant: $schemeVariant, pureBlack: $pureBlack, sidebarBlur: $sidebarBlur, textScale: $textScale, paletteColors: $paletteColors)';
 }
 
 
@@ -2685,7 +2702,7 @@ abstract mixin class _$ThemePropsCopyWith<$Res> implements $ThemePropsCopyWith<$
   factory _$ThemePropsCopyWith(_ThemeProps value, $Res Function(_ThemeProps) _then) = __$ThemePropsCopyWithImpl;
 @override @useResult
 $Res call({
- int? primaryColor, List<int> primaryColors, ThemeMode themeMode, DynamicSchemeVariant schemeVariant, bool pureBlack, bool sidebarBlur, TextScale textScale
+ int? primaryColor, List<int> primaryColors, ThemeMode themeMode, DynamicSchemeVariant schemeVariant, bool pureBlack, bool sidebarBlur, TextScale textScale, Map<String, int> paletteColors
 });
 
 
@@ -2702,7 +2719,7 @@ class __$ThemePropsCopyWithImpl<$Res>
 
 /// Create a copy of ThemeProps
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? primaryColor = freezed,Object? primaryColors = null,Object? themeMode = null,Object? schemeVariant = null,Object? pureBlack = null,Object? sidebarBlur = null,Object? textScale = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? primaryColor = freezed,Object? primaryColors = null,Object? themeMode = null,Object? schemeVariant = null,Object? pureBlack = null,Object? sidebarBlur = null,Object? textScale = null,Object? paletteColors = null,}) {
   return _then(_ThemeProps(
 primaryColor: freezed == primaryColor ? _self.primaryColor : primaryColor // ignore: cast_nullable_to_non_nullable
 as int?,primaryColors: null == primaryColors ? _self._primaryColors : primaryColors // ignore: cast_nullable_to_non_nullable
@@ -2711,7 +2728,8 @@ as ThemeMode,schemeVariant: null == schemeVariant ? _self.schemeVariant : scheme
 as DynamicSchemeVariant,pureBlack: null == pureBlack ? _self.pureBlack : pureBlack // ignore: cast_nullable_to_non_nullable
 as bool,sidebarBlur: null == sidebarBlur ? _self.sidebarBlur : sidebarBlur // ignore: cast_nullable_to_non_nullable
 as bool,textScale: null == textScale ? _self.textScale : textScale // ignore: cast_nullable_to_non_nullable
-as TextScale,
+as TextScale,paletteColors: null == paletteColors ? _self._paletteColors : paletteColors // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,
   ));
 }
 

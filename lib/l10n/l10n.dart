@@ -355,11 +355,41 @@ class AppLocalizations {
     return Intl.message('Download', name: 'download', desc: '', args: []);
   }
 
+  /// `Upload used`
+  String get usedUploadTraffic {
+    return Intl.message(
+      'Upload used',
+      name: 'usedUploadTraffic',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Download used`
+  String get usedDownloadTraffic {
+    return Intl.message(
+      'Download used',
+      name: 'usedDownloadTraffic',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Used traffic`
   String get usedTraffic {
     return Intl.message(
       'Used traffic',
       name: 'usedTraffic',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remaining traffic`
+  String get remainingTraffic {
+    return Intl.message(
+      'Remaining traffic',
+      name: 'remainingTraffic',
       desc: '',
       args: [],
     );
@@ -448,6 +478,51 @@ class AppLocalizations {
   /// `Theme`
   String get theme {
     return Intl.message('Theme', name: 'theme', desc: '', args: []);
+  }
+
+  /// `Appearance`
+  String get appearance {
+    return Intl.message('Appearance', name: 'appearance', desc: '', args: []);
+  }
+
+  /// `Colors`
+  String get colors {
+    return Intl.message('Colors', name: 'colors', desc: '', args: []);
+  }
+
+  /// `Reset colors`
+  String get resetColors {
+    return Intl.message(
+      'Reset colors',
+      name: 'resetColors',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy link`
+  String get copyColorLink {
+    return Intl.message('Copy link', name: 'copyColorLink', desc: '', args: []);
+  }
+
+  /// `Import this color scheme ({count} colors)?`
+  String importColorsTip(Object count) {
+    return Intl.message(
+      'Import this color scheme ($count colors)?',
+      name: 'importColorsTip',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `This color link could not be read`
+  String get colorLinkInvalid {
+    return Intl.message(
+      'This color link could not be read',
+      name: 'colorLinkInvalid',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Set dark mode and adjust colors`
@@ -1680,6 +1755,41 @@ class AppLocalizations {
     );
   }
 
+  /// `Clipboard`
+  String get clipboard {
+    return Intl.message('Clipboard', name: 'clipboard', desc: '', args: []);
+  }
+
+  /// `If enabled, {appName} tries to recognize a proxy server URL in the clipboard as soon as the app opens and offers to import it.\n\nIf not enabled, a dedicated paste button appears on the home screen; tap it to paste and import the clipboard content by hand.`
+  String clipboardDesc(Object appName) {
+    return Intl.message(
+      'If enabled, $appName tries to recognize a proxy server URL in the clipboard as soon as the app opens and offers to import it.\n\nIf not enabled, a dedicated paste button appears on the home screen; tap it to paste and import the clipboard content by hand.',
+      name: 'clipboardDesc',
+      desc: '',
+      args: [appName],
+    );
+  }
+
+  /// `Import {count} server node(s) from the clipboard?`
+  String importNodesFromClipboardTip(Object count) {
+    return Intl.message(
+      'Import $count server node(s) from the clipboard?',
+      name: 'importNodesFromClipboardTip',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `The clipboard holds no proxy server URL to import`
+  String get clipboardNothingToImport {
+    return Intl.message(
+      'The clipboard holds no proxy server URL to import',
+      name: 'clipboardNothingToImport',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Import from clipboard`
   String get clipboardImport {
     return Intl.message(
@@ -1735,11 +1845,71 @@ class AppLocalizations {
     return Intl.message('Update all', name: 'updateAll', desc: '', args: []);
   }
 
-  /// `Delete all profiles`
-  String get deleteAllProfiles {
+  /// `Server nodes`
+  String get serverNodes {
     return Intl.message(
-      'Delete all profiles',
-      name: 'deleteAllProfiles',
+      'Server nodes',
+      name: 'serverNodes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Overwrite existing`
+  String get overwriteExisting {
+    return Intl.message(
+      'Overwrite existing',
+      name: 'overwriteExisting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Replace the existing server when the name matches`
+  String get overwriteExistingDesc {
+    return Intl.message(
+      'Replace the existing server when the name matches',
+      name: 'overwriteExistingDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Auto rename`
+  String get autoRenameNodes {
+    return Intl.message(
+      'Auto rename',
+      name: 'autoRenameNodes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add a number to the server name to avoid duplicates`
+  String get autoRenameNodesDesc {
+    return Intl.message(
+      'Add a number to the server name to avoid duplicates',
+      name: 'autoRenameNodesDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete all nodes`
+  String get deleteAllNodes {
+    return Intl.message(
+      'Delete all nodes',
+      name: 'deleteAllNodes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Are you sure you want to delete?`
+  String get deleteAllNodesTip {
+    return Intl.message(
+      'Are you sure you want to delete?',
+      name: 'deleteAllNodesTip',
       desc: '',
       args: [],
     );
@@ -4423,11 +4593,6 @@ class AppLocalizations {
       desc: '',
       args: [],
     );
-  }
-
-  /// `Outbound IP`
-  String get outboundIp {
-    return Intl.message('Outbound IP', name: 'outboundIp', desc: '', args: []);
   }
 
   /// `IP address`

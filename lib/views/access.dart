@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -21,6 +22,7 @@ class AccessView extends ConsumerStatefulWidget {
 
 class _AccessViewState extends ConsumerState<AccessView> {
   late ScrollController _controller;
+  final _searchController = TextEditingController();
   List<String>? _pinedList;
   bool _isInit = false;
   bool _installedAppsPermissionGranted = true;
@@ -96,39 +98,21 @@ class _AccessViewState extends ConsumerState<AccessView> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     _controller.dispose();
     super.dispose();
   }
 
-  IconButtonData _buildSelectAllAction({
-    required bool isSelectedAll,
-    required List<String> allValueList,
-  }) {
-    void onPressed() {
-      ref.read(accessControlStateProvider.notifier).update((state) {
-        final newSet = Set<String>.from(state.currentList);
-        final isSelectedAll = newSet.containsAll(allValueList);
-        if (isSelectedAll) {
-          newSet.removeAll(allValueList);
-        } else {
-          newSet.addAll(allValueList);
-        }
-        return state.copyWithNewList(newSet.toList());
-      });
-    }
-
-    final appLocalizations = context.appLocalizations;
-    return isSelectedAll
-        ? IconButtonData(
-            glyph: AppGlyphs.deselect,
-            tooltip: appLocalizations.cancelSelectAll,
-            onPressed: onPressed,
-          )
-        : IconButtonData(
-            glyph: AppGlyphs.selectAll,
-            tooltip: appLocalizations.selectAll,
-            onPressed: onPressed,
-          );
+  void _toggleSelectAll(List<String> allValueList) {
+    ref.read(accessControlStateProvider.notifier).update((state) {
+      final newSet = Set<String>.from(state.currentList);
+      if (newSet.containsAll(allValueList)) {
+        newSet.removeAll(allValueList);
+      } else {
+        newSet.addAll(allValueList);
+      }
+      return state.copyWithNewList(newSet.toList());
+    });
   }
 
   Future<void> _intelligentSelected() async {
@@ -157,17 +141,14 @@ class _AccessViewState extends ConsumerState<AccessView> {
         );
   }
 
-  Future<void> _handleToSetting() async {
-    await showSheet<int>(
-      context: context,
-      props: const SheetProps(isScrollControlled: true),
-      builder: (context) {
-        final appLocalizations = context.appLocalizations;
-        return CommonScaffold(
-          body: const AccessControlPanel(),
-          title: appLocalizations.accessControlSettings,
-        );
-      },
+  void _handleToSetting() {
+    BaseNavigator.push<void>(
+      context,
+      AccessControlSettingsView(
+        onIntelligentSelected: _intelligentSelected,
+        onExport: _exportToClipboard,
+        onImport: _importFormClipboard,
+      ),
     );
   }
 
@@ -256,50 +237,11 @@ class _AccessViewState extends ConsumerState<AccessView> {
     });
   }
 
-  List<CommonPopupMenuItem> _buildMenuItems(
-    BuildContext context, {
-    required bool enable,
-  }) {
-    final appLocalizations = context.appLocalizations;
-    return [
-      CommonPopupMenuItem(
-        glyph: AppGlyphs.toggle,
-        label: enable ? appLocalizations.turnOff : appLocalizations.turnOn,
-        onPressed: _handleToggle,
-      ),
-      CommonPopupMenuItem(
-        glyph: AppGlyphs.sliders,
-        label: appLocalizations.settings,
-        onPressed: _handleToSetting,
-      ),
-      CommonPopupMenuItem(
-        glyph: AppGlyphs.moreCircle,
-        label: appLocalizations.action,
-        subItems: [
-          CommonPopupMenuItem(
-            glyph: AppGlyphs.sparkle,
-            label: appLocalizations.intelligentSelected,
-            onPressed: _intelligentSelected,
-          ),
-          CommonPopupMenuItem(
-            glyph: AppGlyphs.copy,
-            label: appLocalizations.clipboardExport,
-            onPressed: _exportToClipboard,
-          ),
-          CommonPopupMenuItem(
-            glyph: AppGlyphs.paste,
-            label: appLocalizations.clipboardImport,
-            onPressed: _importFormClipboard,
-          ),
-        ],
-      ),
-    ];
-  }
-
-  Widget _buildContent({
+  Widget _buildList({
     required List<Package> packages,
     required Set<String> selected,
     required bool isSearching,
+    required bool canSelectAll,
   }) {
     return FutureBuilder(
       future: _completer.future,
@@ -308,6 +250,10 @@ class _AccessViewState extends ConsumerState<AccessView> {
         if (snapshot.connectionState != ConnectionState.done) {
           return const Center(child: CommonCircleLoading());
         }
+        final allSelected =
+            packages.isNotEmpty &&
+            packages.every((item) => selected.contains(item.packageName));
+        final headerCount = canSelectAll ? 1 : 0;
         return NullStatusSwitcher(
           isEmpty: packages.isEmpty,
           isSearching: isSearching,
@@ -315,23 +261,52 @@ class _AccessViewState extends ConsumerState<AccessView> {
             label: appLocalizations.noData,
             illustration: NullStatusIllustration.apps,
           ),
-          child: CommonScrollBar(
-            controller: _controller,
-            child: ListView.builder(
-              controller: _controller,
-              itemCount: packages.length,
-              itemExtent: 72,
-              itemBuilder: (_, index) {
-                final package = packages[index];
-                return PackageListItem(
-                  key: Key(package.packageName),
-                  package: package,
-                  value: selected.contains(package.packageName),
-                  onChanged: (value) {
-                    _handleSelected(package.packageName);
-                  },
-                );
-              },
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                groupedPageInset,
+                0,
+                groupedPageInset,
+                20 + BottomInsetScope.of(context),
+              ),
+              child: GroupedCard(
+                child: CommonScrollBar(
+                  controller: _controller,
+                  child: ListView.separated(
+                    controller: _controller,
+                    shrinkWrap: true,
+                    itemCount: packages.length + headerCount,
+                    separatorBuilder: (_, index) => GroupedHairline(
+                      inset: index < headerCount
+                          ? groupedRowPadding + 1
+                          : _packageSeparatorInset,
+                    ),
+                    itemBuilder: (_, index) {
+                      if (index < headerCount) {
+                        return GroupedRow(
+                          title: allSelected
+                              ? appLocalizations.cancelSelectAll
+                              : appLocalizations.selectAll,
+                          trailing: GroupedSelectMark(selected: allSelected),
+                          onTap: () => _toggleSelectAll(
+                            packages.map((item) => item.packageName).toList(),
+                          ),
+                        );
+                      }
+                      final package = packages[index - headerCount];
+                      return PackageListItem(
+                        key: Key(package.packageName),
+                        package: package,
+                        value: selected.contains(package.packageName),
+                        onChanged: (value) {
+                          _handleSelected(package.packageName);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
             ),
           ),
         );
@@ -355,58 +330,19 @@ class _AccessViewState extends ConsumerState<AccessView> {
     );
   }
 
-  Widget _buildBannerBar({
+  String _describe({
     required bool enable,
     required AccessControlMode mode,
     required int count,
   }) {
     final appLocalizations = context.appLocalizations;
     if (!enable) {
-      return MaterialBanner(
-        leading: GlyphIcon(AppGlyphs.info, color: context.colorScheme.outline),
-        content: Text(
-          appLocalizations.accessControlDisabledDesc,
-          style: TextStyle(color: context.colorScheme.onSurfaceVariant),
-        ),
-        actions: [
-          CommonMinFilledButtonTheme(
-            child: ElasticButton(
-              child: FilledButton.tonal(
-                onPressed: _handleToggle,
-                child: Text(appLocalizations.turnOn),
-              ),
-            ),
-          ),
-        ],
-      );
+      return appLocalizations.accessControlDisabledDesc;
     }
     final describe = mode == AccessControlMode.acceptSelected
         ? appLocalizations.accessControlAllowDesc
         : appLocalizations.accessControlNotAllowDesc;
-    final textStyle = context.textTheme.labelLarge?.copyWith(
-      color: context.colorScheme.onPrimary,
-    );
-    return MaterialBanner(
-      content: Text(describe),
-      actions: [
-        Card.filled(
-          color: context.colorScheme.primary,
-          elevation: 0,
-          shape: AppShape.md,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(appLocalizations.selected, style: textStyle),
-                const SizedBox(width: 4),
-                Flexible(child: Text('$count', style: textStyle)),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
+    return '$describe · ${appLocalizations.selected} $count';
   }
 
   void _onSearch(String value) {
@@ -435,15 +371,10 @@ class _AccessViewState extends ConsumerState<AccessView> {
     final valueList = currentList.intersection(viewPackageNameList);
     final needsInstalledAppsPermission =
         packages.isEmpty && !_installedAppsPermissionGranted;
-    final selectAllAction =
+    final canSelectAll =
         accessControl.enable &&
-            !needsInstalledAppsPermission &&
-            viewPackageNameList.isNotEmpty
-        ? _buildSelectAllAction(
-            isSelectedAll: valueList.length == viewPackageNameList.length,
-            allValueList: viewPackageNameList,
-          )
-        : null;
+        !needsInstalledAppsPermission &&
+        viewPackageNameList.isNotEmpty;
     final hasChanges = ref.watch(
       vpnSettingProvider.select(
         (state) =>
@@ -451,6 +382,7 @@ class _AccessViewState extends ConsumerState<AccessView> {
             _getRealAccessControlProps(accessControl),
       ),
     );
+    final appLocalizations = context.appLocalizations;
     return CommonPopScope(
       onPop: hasChanges
           ? (_) {
@@ -458,57 +390,82 @@ class _AccessViewState extends ConsumerState<AccessView> {
               return false;
             }
           : null,
-      child: CommonScaffold(
-        isLoading: isLoading,
-        searchState: AppBarSearchState(onSearch: _onSearch),
-        searchActions: [?selectAllAction],
-        title: context.appLocalizations.appAccessControl,
-        iconActions: [
-          if (hasChanges)
-            IconButtonData(
-              glyph: AppGlyphs.check,
-              onPressed: _handleSave,
-              tooltip: context.appLocalizations.save,
-            ),
-        ],
-        menuItems: [
-          ..._buildMenuItems(context, enable: accessControl.enable),
-          if (selectAllAction != null)
-            CommonPopupMenuItem(
-              glyph: selectAllAction.glyph,
-              label: selectAllAction.tooltip!,
-              onPressed: selectAllAction.onPressed,
-            ),
-        ],
-        body: AppBarClearance(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildBannerBar(
-                enable: accessControl.enable,
-                mode: mode,
-                count: valueList.length,
+      child: GroupedPage(
+        title: appLocalizations.appAccessControl,
+        onBack: () => Navigator.of(context).maybePop(),
+        trailing: GroupedBarAction(
+          label: appLocalizations.save,
+          tooltip: appLocalizations.save,
+          onPressed: hasChanges ? _handleSave : null,
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (isLoading) const LinearProgressIndicator(minHeight: 2),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                groupedPageInset,
+                13,
+                groupedPageInset,
+                10,
               ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: needsInstalledAppsPermission
-                    ? _buildInstalledAppsPermissionStatus()
-                    : DisabledMask(
-                        status: !accessControl.enable,
-                        child: _buildContent(
-                          packages: viewPackages,
-                          selected: valueList.toSet(),
-                          isSearching: query.isNotEmpty,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: 12,
+                children: [
+                  GroupedSection(
+                    footer: _describe(
+                      enable: accessControl.enable,
+                      mode: mode,
+                      count: valueList.length,
+                    ),
+                    children: [
+                      GroupedRow(
+                        leading: const GroupedIcon(AppGlyphs.toggle),
+                        title: appLocalizations.accessControl,
+                        trailing: GroupedSwitch(
+                          value: accessControl.enable,
+                          onChanged: (_) => _handleToggle(),
                         ),
                       ),
+                      GroupedRow(
+                        leading: const GroupedIcon(AppGlyphs.sliders),
+                        title: appLocalizations.accessControlSettings,
+                        chevron: true,
+                        onTap: _handleToSetting,
+                      ),
+                    ],
+                  ),
+                  GroupedSearchField(
+                    controller: _searchController,
+                    hint: appLocalizations.search,
+                    clearTooltip: appLocalizations.clearSearch,
+                    onChanged: _onSearch,
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Expanded(
+              child: needsInstalledAppsPermission
+                  ? _buildInstalledAppsPermissionStatus()
+                  : DisabledMask(
+                      status: !accessControl.enable,
+                      child: _buildList(
+                        packages: viewPackages,
+                        selected: valueList.toSet(),
+                        isSearching: query.isNotEmpty,
+                        canSelectAll: canSelectAll,
+                      ),
+                    ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
+
+const _packageSeparatorInset = groupedRowPadding + 24 + groupedLeadingGap;
 
 class PackageListItem extends StatelessWidget {
   final Package package;
@@ -524,49 +481,44 @@ class PackageListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListItem.checkbox(
-      leading: PackageIcon(packageName: package.packageName, size: 48),
-      title: Text(
-        package.label,
-        style: const TextStyle(overflow: TextOverflow.ellipsis),
-        maxLines: 1,
-      ),
-      subtitle: Text(
-        package.packageName,
-        style: const TextStyle(overflow: TextOverflow.ellipsis),
-        maxLines: 1,
-      ),
-      value: value,
-      onChanged: onChanged,
+    return GroupedRow(
+      leading: PackageIcon(packageName: package.packageName, size: 24),
+      leadingWidth: 24,
+      title: package.label,
+      subtitle: package.packageName,
+      trailing: GroupedSelectMark(selected: value),
+      onTap: () => onChanged(!value),
     );
   }
 }
 
-class AccessControlPanel extends ConsumerStatefulWidget {
-  const AccessControlPanel({super.key});
+class AccessControlSettingsView extends ConsumerWidget {
+  const AccessControlSettingsView({
+    super.key,
+    required this.onIntelligentSelected,
+    required this.onExport,
+    required this.onImport,
+  });
 
-  @override
-  ConsumerState createState() => _AccessControlPanelState();
-}
+  final VoidCallback onIntelligentSelected;
+  final VoidCallback onExport;
+  final VoidCallback onImport;
 
-class _AccessControlPanelState extends ConsumerState<AccessControlPanel> {
-  Glyph _getIconWithAccessControlMode(AccessControlMode mode) {
+  Glyph _modeGlyph(AccessControlMode mode) {
     return switch (mode) {
       AccessControlMode.acceptSelected => AppGlyphs.checkCircle,
       AccessControlMode.rejectSelected => AppGlyphs.block,
     };
   }
 
-  String _getTextWithAccessControlMode(AccessControlMode mode) {
-    final appLocalizations = context.appLocalizations;
+  String _modeText(AppLocalizations appLocalizations, AccessControlMode mode) {
     return switch (mode) {
       AccessControlMode.acceptSelected => appLocalizations.whitelistMode,
       AccessControlMode.rejectSelected => appLocalizations.blacklistMode,
     };
   }
 
-  String _getTextWithAccessSortType(AccessSortType type) {
-    final appLocalizations = context.appLocalizations;
+  String _sortText(AppLocalizations appLocalizations, AccessSortType type) {
     return switch (type) {
       AccessSortType.none => appLocalizations.defaultText,
       AccessSortType.name => appLocalizations.name,
@@ -574,7 +526,7 @@ class _AccessControlPanelState extends ConsumerState<AccessControlPanel> {
     };
   }
 
-  Glyph _getIconWithProxiesSortType(AccessSortType type) {
+  Glyph _sortGlyph(AccessSortType type) {
     return switch (type) {
       AccessSortType.none => AppGlyphs.sort,
       AccessSortType.name => AppGlyphs.sortAlpha,
@@ -582,151 +534,105 @@ class _AccessControlPanelState extends ConsumerState<AccessControlPanel> {
     };
   }
 
-  List<Widget> _buildModeSetting() {
-    final appLocalizations = context.appLocalizations;
-    return generateSection(
-      isFirst: true,
-      title: appLocalizations.mode,
-      items: [
-        SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          scrollDirection: Axis.horizontal,
-          child: Consumer(
-            builder: (_, ref, _) {
-              final accessControlMode = ref.watch(
-                accessControlStateProvider.select((state) => state.mode),
-              );
-              return Wrap(
-                spacing: 16,
-                children: [
-                  for (final item in AccessControlMode.values)
-                    SettingInfoCard(
-                      Info(
-                        label: _getTextWithAccessControlMode(item),
-                        glyph: _getIconWithAccessControlMode(item),
-                      ),
-                      isSelected: accessControlMode == item,
-                      onPressed: () {
-                        ref
-                            .read(accessControlStateProvider.notifier)
-                            .update((state) => state.copyWith(mode: item));
-                      },
-                    ),
-                ],
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  List<Widget> _buildSortSetting() {
-    final appLocalizations = context.appLocalizations;
-    return generateSection(
-      title: appLocalizations.sort,
-      items: [
-        SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          scrollDirection: Axis.horizontal,
-          child: Consumer(
-            builder: (_, ref, _) {
-              final accessSortType = ref.watch(
-                accessControlStateProvider.select((state) => state.sort),
-              );
-              return Wrap(
-                spacing: 16,
-                children: [
-                  for (final item in AccessSortType.values)
-                    SettingInfoCard(
-                      Info(
-                        label: _getTextWithAccessSortType(item),
-                        glyph: _getIconWithProxiesSortType(item),
-                      ),
-                      isSelected: accessSortType == item,
-                      onPressed: () {
-                        ref
-                            .read(accessControlStateProvider.notifier)
-                            .update((state) => state.copyWith(sort: item));
-                      },
-                    ),
-                ],
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  List<Widget> _buildSourceSetting() {
-    final appLocalizations = context.appLocalizations;
-    return generateSection(
-      title: appLocalizations.source,
-      items: [
-        SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          scrollDirection: Axis.horizontal,
-          child: Consumer(
-            builder: (_, ref, _) {
-              final filters = ref.watch(
-                accessControlStateProvider.select(
-                  (state) => (
-                    filterSystemApp: state.isFilterSystemApp,
-                    filterNonInternetApp: state.isFilterNonInternetApp,
-                  ),
-                ),
-              );
-              return Wrap(
-                spacing: 16,
-                children: [
-                  SettingTextCard(
-                    appLocalizations.systemApp,
-                    isSelected: filters.filterSystemApp == false,
-                    onPressed: () {
-                      ref
-                          .read(accessControlStateProvider.notifier)
-                          .update(
-                            (state) => state.copyWith(
-                              isFilterSystemApp: !filters.filterSystemApp,
-                            ),
-                          );
-                    },
-                  ),
-                  SettingTextCard(
-                    appLocalizations.noNetworkApp,
-                    isSelected: filters.filterNonInternetApp == false,
-                    onPressed: () {
-                      ref
-                          .read(accessControlStateProvider.notifier)
-                          .update(
-                            (state) => state.copyWith(
-                              isFilterNonInternetApp:
-                                  !filters.filterNonInternetApp,
-                            ),
-                          );
-                    },
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-      ],
+  Widget _check(BuildContext context, bool selected) {
+    if (!selected) {
+      return const SizedBox.shrink();
+    }
+    return GlyphIcon(
+      AppGlyphs.check,
+      size: 18,
+      color: GroupedPalette.of(context).icon,
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.only(top: context.contentTopPadding, bottom: 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    final state = ref.watch(accessControlStateProvider);
+    final notifier = ref.read(accessControlStateProvider.notifier);
+    return GroupedPage(
+      title: appLocalizations.accessControlSettings,
+      onBack: () => Navigator.of(context).maybePop(),
+      body: GroupedBody(
         children: [
-          ..._buildModeSetting(),
-          ..._buildSortSetting(),
-          ..._buildSourceSetting(),
+          GroupedSection(
+            header: appLocalizations.mode,
+            children: [
+              for (final item in AccessControlMode.values)
+                GroupedRow(
+                  key: ValueKey(item),
+                  leading: GroupedIcon(_modeGlyph(item)),
+                  title: _modeText(appLocalizations, item),
+                  trailing: _check(context, state.mode == item),
+                  onTap: () =>
+                      notifier.update((state) => state.copyWith(mode: item)),
+                ),
+            ],
+          ),
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
+            header: appLocalizations.sort,
+            children: [
+              for (final item in AccessSortType.values)
+                GroupedRow(
+                  key: ValueKey(item),
+                  leading: GroupedIcon(_sortGlyph(item)),
+                  title: _sortText(appLocalizations, item),
+                  trailing: _check(context, state.sort == item),
+                  onTap: () =>
+                      notifier.update((state) => state.copyWith(sort: item)),
+                ),
+            ],
+          ),
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
+            header: appLocalizations.source,
+            children: [
+              GroupedRow(
+                title: appLocalizations.systemApp,
+                trailing: GroupedSwitch(
+                  value: !state.isFilterSystemApp,
+                  onChanged: (_) => notifier.update(
+                    (state) => state.copyWith(
+                      isFilterSystemApp: !state.isFilterSystemApp,
+                    ),
+                  ),
+                ),
+              ),
+              GroupedRow(
+                title: appLocalizations.noNetworkApp,
+                trailing: GroupedSwitch(
+                  value: !state.isFilterNonInternetApp,
+                  onChanged: (_) => notifier.update(
+                    (state) => state.copyWith(
+                      isFilterNonInternetApp: !state.isFilterNonInternetApp,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
+            header: appLocalizations.action,
+            children: [
+              GroupedRow(
+                leading: const GroupedIcon(AppGlyphs.sparkle),
+                title: appLocalizations.intelligentSelected,
+                onTap: onIntelligentSelected,
+              ),
+              GroupedRow(
+                leading: const GroupedIcon(AppGlyphs.copy),
+                title: appLocalizations.clipboardExport,
+                onTap: onExport,
+              ),
+              GroupedRow(
+                leading: const GroupedIcon(AppGlyphs.paste),
+                title: appLocalizations.clipboardImport,
+                onTap: onImport,
+              ),
+            ],
+          ),
         ],
       ),
     );

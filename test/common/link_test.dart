@@ -153,4 +153,45 @@ void main() {
       );
     });
   });
+
+  group('color links', () {
+    final colors = <Uri>[];
+
+    setUp(colors.clear);
+
+    Future<void> listenForColors() async {
+      await linkManager.initAppLinksListen(
+        received.add,
+        colorCallBack: colors.add,
+      );
+    }
+
+    test('a color link goes to the color callback only', () async {
+      await listenForColors();
+
+      await emit('flclash://color?v=1.0&dark.CanvasColor=000000');
+
+      expect(colors.single.queryParameters['dark.CanvasColor'], '000000');
+      expect(received, isEmpty);
+    });
+
+    test('a color link is dropped when nobody asked for colors', () async {
+      await listen();
+
+      await emit('flclash://color?v=1.0&dark.CanvasColor=000000');
+
+      expect(received, isEmpty);
+    });
+
+    test('an install-config link still reaches the profile callback', () async {
+      await listenForColors();
+
+      await emit(
+        'flclash://install-config?url=https%3A%2F%2Fexample.com%2Fsub',
+      );
+
+      expect(received.single, 'https://example.com/sub');
+      expect(colors, isEmpty);
+    });
+  });
 }

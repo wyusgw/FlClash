@@ -2,7 +2,6 @@ import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/access.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -209,7 +208,9 @@ void main() {
     expect(rootBackCount, 0);
   });
 
-  testWidgets('inactive page scope exits access search layer', (tester) async {
+  testWidgets('inactive page scope exits the app bar search layer', (
+    tester,
+  ) async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     globalState.container = container;
@@ -223,7 +224,11 @@ void main() {
           includeNavigatorKey: false,
           child: _PageActivityTestScope(
             isActive: isActive,
-            child: const AccessView(),
+            child: CommonScaffold(
+              title: 'title',
+              searchState: AppBarSearchState(onSearch: (_) {}),
+              body: const SizedBox(),
+            ),
           ),
         ),
       ),

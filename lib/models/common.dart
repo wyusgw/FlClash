@@ -467,17 +467,6 @@ abstract class HotKeyAction with _$HotKeyAction {
       _$HotKeyActionFromJson(json);
 }
 
-typedef Validator = String? Function(String? value);
-
-@freezed
-abstract class Field with _$Field {
-  const factory Field({
-    required String label,
-    required String value,
-    Validator? validator,
-  }) = _Field;
-}
-
 class CloseWindowIntent extends Intent {
   const CloseWindowIntent();
 }

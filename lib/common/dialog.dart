@@ -38,6 +38,7 @@ class Dialogs {
     String? cancelText,
     bool cancelable = true,
     bool? dismissible,
+    bool destructive = false,
   }) async {
     return showCommonDialog<bool>(
       context: context,
@@ -52,6 +53,7 @@ class Dialogs {
             cancelText: cancelable
                 ? (cancelText ?? appLocalizations.cancel)
                 : null,
+            destructive: destructive,
           );
         },
       ),
@@ -83,27 +85,6 @@ class Dialogs {
               ),
             ),
           );
-        },
-      ),
-    );
-  }
-
-  Future<String?> showUrlInput({required String title, String value = ''}) {
-    final appLocalizations = currentAppLocalizations;
-    return showCommonDialog<String>(
-      child: InputDialog(
-        title: title,
-        value: value,
-        labelText: appLocalizations.url,
-        inputFormatters: TextInputLimits.limit(TextInputLimits.url),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return appLocalizations.emptyTip(appLocalizations.value);
-          }
-          if (!value.isUrl) {
-            return appLocalizations.urlTip(appLocalizations.value);
-          }
-          return null;
         },
       ),
     );
@@ -155,6 +136,26 @@ class _UpdatingMessageItem extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The question asked before a subscription address is taken in, with the
+/// address itself picked out.
+InlineSpan importUrlMessage(BuildContext context, String url) {
+  final parts = currentAppLocalizations.createProfileFromUrlTip(url).split(url);
+  return TextSpan(
+    children: [
+      TextSpan(text: parts.first),
+      TextSpan(
+        text: url,
+        style: TextStyle(
+          color: context.colorScheme.primary,
+          decoration: TextDecoration.underline,
+          decorationColor: context.colorScheme.primary,
+        ),
+      ),
+      if (parts.length > 1) TextSpan(text: parts.last),
+    ],
+  );
 }
 
 final dialogs = Dialogs._();

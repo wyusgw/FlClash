@@ -96,6 +96,97 @@ void main() {
     expect(find.text('SSIDs are empty'), findsNothing);
   });
 
+  group('typing an SSID in its row', () {
+    Future<void> type(WidgetTester tester, String text) async {
+      await tester.enterText(find.byType(EditableText), text);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('adding opens a row for typing and keeps what is typed', (
+      tester,
+    ) async {
+      await pumpView(tester, ssids: ['Home']);
+
+      await tester.tap(find.text('Add'));
+      await tester.pumpAndSettle();
+      expect(find.byType(Dialog), findsNothing);
+      expect(find.byType(TextField), findsNothing);
+      expect(find.byType(EditableText), findsOneWidget);
+
+      await type(tester, 'Office');
+
+      expect(container.read(excludeSSIDsProvider), ['Home', 'Office']);
+      expect(find.byType(EditableText), findsNothing);
+      expect(find.text('Office'), findsOneWidget);
+    });
+
+    testWidgets('the first SSID can be typed where the placeholder was', (
+      tester,
+    ) async {
+      await pumpView(tester);
+
+      await tester.tap(find.text('Add'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('SSIDs are empty'), findsNothing);
+      await type(tester, 'Cafe');
+      expect(container.read(excludeSSIDsProvider), ['Cafe']);
+    });
+
+    testWidgets('an empty or taken name is refused with a reason', (
+      tester,
+    ) async {
+      await pumpView(tester, ssids: ['Home']);
+      await tester.tap(find.text('Add'));
+      await tester.pumpAndSettle();
+
+      await type(tester, '  ');
+      expect(
+        find.text(AppLocalizations.current.emptyTip('SSID').trim()),
+        findsOneWidget,
+      );
+
+      await type(tester, 'Home');
+      expect(
+        find.text(AppLocalizations.current.existsTip('SSID').trim()),
+        findsOneWidget,
+      );
+      expect(container.read(excludeSSIDsProvider), ['Home']);
+      expect(find.byType(EditableText), findsOneWidget);
+    });
+
+    testWidgets('tapping a name edits it in place and keeps its position', (
+      tester,
+    ) async {
+      await pumpView(tester, ssids: ['Home', 'Office', 'Cafe']);
+
+      await tester.tap(find.text('Office'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<EditableText>(find.byType(EditableText)).controller.text,
+        'Office',
+      );
+
+      await type(tester, 'Work');
+
+      expect(container.read(excludeSSIDsProvider), ['Home', 'Work', 'Cafe']);
+    });
+
+    testWidgets('Escape leaves the list as it was', (tester) async {
+      await pumpView(tester, ssids: ['Home']);
+      await tester.tap(find.text('Add'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(EditableText), 'Half');
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(EditableText), findsNothing);
+      expect(container.read(excludeSSIDsProvider), ['Home']);
+    });
+  });
+
   testWidgets('selecting an item swaps the header into selection mode', (
     tester,
   ) async {

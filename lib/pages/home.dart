@@ -1,6 +1,5 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/manager/app_manager.dart';
 import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -9,6 +8,20 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 typedef OnSelected = void Function(int index);
+
+/// Whether the bottom bar floats. A desktop window the user took the sidebar
+/// out of keeps the flat bar of the grouped pages whatever the setting says.
+final _floatingBarProvider = Provider<bool>((ref) {
+  final setting = ref.watch(
+    appSettingProvider.select(
+      (state) => (
+        floating: state.floatingNavigationBar,
+        showSidebar: state.showSidebar,
+      ),
+    ),
+  );
+  return setting.floating && (setting.showSidebar || !system.isDesktop);
+});
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -30,11 +43,7 @@ class HomePage extends ConsumerWidget {
                   .watch(currentNavigationItemsStateProvider)
                   .value;
               final isMobile = ref.watch(isMobileViewProvider);
-              final floating = ref.watch(
-                appSettingProvider.select(
-                  (state) => state.floatingNavigationBar,
-                ),
-              );
+              final floating = ref.watch(_floatingBarProvider);
               return _HomePageView(
                 navigationItems: navigationItems,
                 pageBuilder: (_, index) {
@@ -70,9 +79,7 @@ class _HomeShell extends ConsumerWidget {
     final state = ref.watch(navigationStateProvider);
     final isMobile = state.viewMode == ViewMode.mobile;
     final navigationItems = state.navigationItems;
-    final floating = ref.watch(
-      appSettingProvider.select((state) => state.floatingNavigationBar),
-    );
+    final floating = ref.watch(_floatingBarProvider);
     final palette = GroupedPalette.of(context);
     return Material(
       color: palette.canvas,
@@ -121,41 +128,18 @@ class _HomeShell extends ConsumerWidget {
           AnimatedVisibility.bottomNavigation(
             visible: isMobile && !floating,
             child: _NavigationPadding(
-              child: NavigationBarTheme(
-                data: NavigationBarThemeData(
-                  backgroundColor: palette.bar,
-                  surfaceTintColor: Colors.transparent,
-                  indicatorColor: Colors.transparent,
-                  iconTheme: WidgetStateProperty.resolveWith(
-                    (states) => IconThemeData(
-                      color: states.contains(WidgetState.selected)
-                          ? palette.accent
-                          : palette.secondary,
+              child: DockedTabBar(
+                destinations: [
+                  for (final item in navigationItems)
+                    NavigationDockDestination(
+                      glyph: item.glyph,
+                      label: item.label.label,
                     ),
-                  ),
-                  labelTextStyle: WidgetStateProperty.resolveWith(
-                    (states) => TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: states.contains(WidgetState.selected)
-                          ? palette.accent
-                          : palette.secondary,
-                    ),
-                  ),
-                ),
-                child: NavigationBar(
-                  destinations: [
-                    for (final item in navigationItems)
-                      NavigationDestination(
-                        icon: GlyphIcon(item.glyph),
-                        label: item.label.label,
-                      ),
-                  ],
-                  selectedIndex: state.currentIndex,
-                  onDestinationSelected: (index) {
-                    _handleToPage(navigationItems[index].label, ref);
-                  },
-                ),
+                ],
+                selectedIndex: state.currentIndex,
+                onSelected: (index) {
+                  _handleToPage(navigationItems[index].label, ref);
+                },
               ),
             ),
           ),

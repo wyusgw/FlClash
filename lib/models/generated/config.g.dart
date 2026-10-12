@@ -55,6 +55,9 @@ _AppSettingProps _$AppSettingPropsFromJson(
       defaultUserAgents,
   globalUa: json['globalUa'] as String?,
   hideIp: json['hideIp'] as bool? ?? false,
+  overwriteExistingNodes: json['overwriteExistingNodes'] as bool? ?? false,
+  autoRenameNodes: json['autoRenameNodes'] as bool? ?? false,
+  clipboardDetection: json['clipboardDetection'] as bool? ?? false,
   editorLineWrap: json['editorLineWrap'] as bool? ?? false,
   editorFontSize:
       $enumDecodeNullable(_$EditorFontSizeEnumMap, json['editorFontSize']) ??
@@ -102,6 +105,9 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'userAgents': instance.userAgents,
       'globalUa': instance.globalUa,
       'hideIp': instance.hideIp,
+      'overwriteExistingNodes': instance.overwriteExistingNodes,
+      'autoRenameNodes': instance.autoRenameNodes,
+      'clipboardDetection': instance.clipboardDetection,
       'editorLineWrap': instance.editorLineWrap,
       'editorFontSize': _$EditorFontSizeEnumMap[instance.editorFontSize]!,
       'serviceOrder': instance.serviceOrder,
@@ -345,6 +351,11 @@ _ThemeProps _$ThemePropsFromJson(Map<String, dynamic> json) => _ThemeProps(
   textScale: json['textScale'] == null
       ? const TextScale()
       : TextScale.fromJson(json['textScale'] as Map<String, dynamic>),
+  paletteColors:
+      (json['paletteColors'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, (e as num).toInt()),
+      ) ??
+      const {},
 );
 
 Map<String, dynamic> _$ThemePropsToJson(_ThemeProps instance) =>
@@ -356,6 +367,7 @@ Map<String, dynamic> _$ThemePropsToJson(_ThemeProps instance) =>
       'pureBlack': instance.pureBlack,
       'sidebarBlur': instance.sidebarBlur,
       'textScale': instance.textScale,
+      'paletteColors': instance.paletteColors,
     };
 
 const _$ThemeModeEnumMap = {

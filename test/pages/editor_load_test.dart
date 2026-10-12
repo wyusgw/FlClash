@@ -127,8 +127,10 @@ void main() {
     await settle(tester, 12);
     expect(
       tester
-          .widget<IconButton>(find.widgetWithGlyph(IconButton, AppGlyphs.check))
-          .onPressed,
+          .widget<InkResponse>(
+            find.widgetWithGlyph(InkResponse, AppGlyphs.check),
+          )
+          .onTap,
       isNull,
     );
 
@@ -201,10 +203,10 @@ void main() {
       controller.replaceRange(start, end, text);
       await settle(tester, 2);
       return tester
-              .widget<IconButton>(
-                find.widgetWithGlyph(IconButton, AppGlyphs.check),
+              .widget<InkResponse>(
+                find.widgetWithGlyph(InkResponse, AppGlyphs.check),
               )
-              .onPressed !=
+              .onTap !=
           null;
     }
 
@@ -301,8 +303,8 @@ void main() {
   }
 
   VoidCallback? saveButton(WidgetTester tester) => tester
-      .widget<IconButton>(find.widgetWithGlyph(IconButton, AppGlyphs.check))
-      .onPressed;
+      .widget<InkResponse>(find.widgetWithGlyph(InkResponse, AppGlyphs.check))
+      .onTap;
 
   testWidgets('a held save shortcut saves once', (tester) async {
     final (controller, saved) = await pushSaving(tester, save: (_) {});
@@ -324,7 +326,7 @@ void main() {
     controller.replaceRange(10, 10, 's');
     await settle(tester, 2);
 
-    await tester.tap(find.widgetWithGlyph(IconButton, AppGlyphs.check));
+    await tester.tap(find.widgetWithGlyph(InkResponse, AppGlyphs.check));
     await tester.pump();
     expect(saveButton(tester), isNull);
     await pressSaveShortcut(tester);
@@ -398,7 +400,7 @@ void main() {
     ]);
     expect(controller.text, 'mode: ');
 
-    await tester.tap(find.widgetWithGlyph(IconButton, AppGlyphs.check));
+    await tester.tap(find.widgetWithGlyph(InkResponse, AppGlyphs.check));
     await settle(tester, 12);
 
     expect(saved, ['mode: rules']);

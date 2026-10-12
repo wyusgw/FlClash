@@ -8,6 +8,7 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/core.dart';
+import 'package:fl_clash/providers/route_state.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/data.dart';
 import 'package:fl_clash/views/stats.dart';
@@ -45,6 +46,7 @@ void main() {
   late _MockCore core;
 
   setUpAll(() async {
+    registerFallbackValue(const OutboundIpParams(timeout: 0));
     home = Directory.systemTemp.createTempSync('stats_view_test');
     PathProviderPlatform.instance = _FakePathProvider(home.path);
     await appPath.homeDirPath;
@@ -59,8 +61,19 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     core = _MockCore();
     when(() => core.resetTraffic()).thenReturn(null);
+    when(() => core.outboundIp(any())).thenAnswer((_) async => null);
     container = ProviderContainer(
       overrides: [
+        routeTrackerProvider.overrideWithBuild(
+          (_, _) => const RouteState(
+            coreEpoch: 1,
+            picksVersion: 1,
+            hostEpoch: 1,
+            proxied: true,
+            synced: true,
+            live: true,
+          ),
+        ),
         coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
       ],
     );

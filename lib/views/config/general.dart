@@ -9,8 +9,6 @@ import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-part 'general/port_dialog.dart';
-
 class LogLevelItem extends ConsumerWidget {
   const LogLevelItem({super.key});
 
@@ -55,44 +53,48 @@ class TestUrlItem extends ConsumerWidget with GroupedPlainInset {
     final testUrl = ref.watch(
       appSettingProvider.select((state) => state.testUrl),
     );
-    return GroupedRow(
+    return GroupedInputRow(
       title: appLocalizations.testUrl,
-      subtitle: testUrl,
-      onTap: () async {
-        final value = await dialogs.showCommonDialog<String>(
-          child: InputDialog(
-            title: appLocalizations.testUrl,
-            value: testUrl,
-            resetValue: defaultTestUrl,
-            inputFormatters: TextInputLimits.limit(TextInputLimits.url),
-            validator: (String? value) {
-              if (value == null || value.isEmpty) {
-                return appLocalizations.emptyTip(appLocalizations.testUrl);
-              }
-              if (!value.isUrl) {
-                return appLocalizations.urlTip(appLocalizations.testUrl);
-              }
-              return null;
-            },
-          ),
-        );
-        if (value == null) {
-          return;
+      value: testUrl,
+      resetValue: defaultTestUrl,
+      inputFormatters: TextInputLimits.limit(TextInputLimits.url),
+      validator: (value) {
+        if (value.isEmpty) {
+          return appLocalizations.emptyTip(appLocalizations.testUrl);
         }
-        ref
-            .read(appSettingProvider.notifier)
-            .update((state) => state.copyWith(testUrl: value));
+        if (!value.isUrl) {
+          return appLocalizations.urlTip(appLocalizations.testUrl);
+        }
+        return null;
       },
+      onSubmitted: (value) => ref
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(testUrl: value)),
     );
   }
 }
 
+const _minPort = 1024;
+const _maxPort = 49151;
+
+@visibleForTesting
+String? validatePort(String? value, AppLocalizations appLocalizations) {
+  final label = appLocalizations.mixedPort;
+  if (value == null || value.isEmpty) {
+    return appLocalizations.emptyTip(label);
+  }
+  final port = int.tryParse(value);
+  if (port == null) {
+    return appLocalizations.numberTip(label);
+  }
+  if (port < _minPort || port > _maxPort) {
+    return appLocalizations.portTip(label);
+  }
+  return null;
+}
+
 class PortItem extends ConsumerWidget with GroupedPlainInset {
   const PortItem({super.key});
-
-  Future<void> handleShowPortDialog() async {
-    await dialogs.showCommonDialog(child: const _PortDialog());
-  }
 
   @override
   Widget build(BuildContext context, ref) {
@@ -100,10 +102,16 @@ class PortItem extends ConsumerWidget with GroupedPlainInset {
     final mixedPort = ref.watch(
       coreSettingProvider.select((state) => state.mixedPort),
     );
-    return GroupedRow(
+    return GroupedInputRow(
       title: appLocalizations.port,
       value: '$mixedPort',
-      onTap: handleShowPortDialog,
+      resetValue: '$defaultMixedPort',
+      keyboardType: TextInputType.number,
+      inputFormatters: TextInputLimits.digitsOnly(TextInputLimits.port),
+      validator: (value) => validatePort(value, appLocalizations),
+      onSubmitted: (value) => ref
+          .read(coreSettingProvider.notifier)
+          .update((state) => state.copyWith(mixedPort: int.parse(value))),
     );
   }
 }

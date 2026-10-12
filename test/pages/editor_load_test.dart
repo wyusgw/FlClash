@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:code_forge/code_forge.dart';
 import 'package:fl_clash/common/navigator.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/pages/editor.dart';
 import 'package:fl_clash/providers/app.dart';
@@ -147,6 +148,35 @@ void main() {
     'CRLF content handed over opens with nothing to save or confirm',
     (tester) => openCrlf(tester, loaded: false),
   );
+
+  Future<CodeForgeController> pumpTyped(
+    WidgetTester tester,
+    String content,
+    String typed,
+  ) async {
+    await tester.pumpWidget(
+      TestApp(
+        overrides: [
+          viewSizeProvider.overrideWithBuild((_, _) => const Size(1200, 1000)),
+        ],
+        child: EditorPage(
+          title: 'Editor',
+          content: content,
+          language: Language.json,
+          onSave: (_, _, _) {},
+        ),
+      ),
+    );
+    await settle(tester);
+    final controller = tester
+        .widget<CodeForge>(find.byType(CodeForge))
+        .controller;
+    controller.focusNode!.requestFocus();
+    await settle(tester, 2);
+    await typeText(tester, controller, typed);
+    await settle(tester, 8);
+    return controller;
+  }
 
   testWidgets('only an edit that changes the document can be saved', (
     tester,
@@ -419,5 +449,14 @@ void main() {
 
     expect(saved, ['mode: rules']);
     expect(find.byType(EditorPage), findsNothing);
+  });
+
+  testWidgets('typing a prefix of a word in the document offers it', (
+    tester,
+  ) async {
+    await pumpTyped(tester, '{"upstream": 1}\n', 'upst');
+
+    expect(find.text('upstream'), findsOneWidget);
+    await settle(tester, 8);
   });
 }

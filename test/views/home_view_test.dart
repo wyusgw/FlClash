@@ -14,6 +14,7 @@ import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/home/delay_test.dart';
 import 'package:fl_clash/views/home/home.dart';
+import 'package:fl_clash/views/config/network.dart';
 import 'package:fl_clash/views/home/route_mode.dart';
 import 'package:fl_clash/views/profiles/edit_server.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
@@ -290,6 +291,22 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(RouteModeView), findsOneWidget);
+  });
+
+  testWidgets('the routing page offers the TUN switch on a desktop', (
+    tester,
+  ) async {
+    await pumpHome(tester, page: const RouteModeView(desktop: true));
+
+    expect(find.byType(TUNItem), findsOneWidget);
+  });
+
+  testWidgets('the routing page has no TUN switch off a desktop', (
+    tester,
+  ) async {
+    await pumpHome(tester, page: const RouteModeView(desktop: false));
+
+    expect(find.byType(TUNItem), findsNothing);
   });
 
   testWidgets('the routing page marks the mode and switches it', (

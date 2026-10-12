@@ -5,6 +5,7 @@ import 'package:fl_clash/common/app_localizations.dart';
 import 'package:fl_clash/common/app_ports.dart';
 import 'package:fl_clash/common/constant.dart';
 import 'package:fl_clash/common/l10n_labels.dart';
+import 'package:fl_clash/common/num.dart';
 import 'package:fl_clash/common/tray.dart';
 import 'package:fl_clash/common/xray_config.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -148,10 +149,14 @@ void main() {
     return null;
   }
 
-  Future<void> update(TrayState trayState, {AppTray? on}) {
+  Future<void> update(
+    TrayState trayState, {
+    AppTray? on,
+    Traffic traffic = const Traffic(),
+  }) {
     return (on ?? tray).update(
       trayState: trayState,
-      traffic: const Traffic(),
+      traffic: traffic,
       read: container.read,
     );
   }
@@ -252,6 +257,34 @@ void main() {
 
     await update(_trayState(tunEnable: true));
     expect(_item(showCall(), l10n.tun)['checked'], isTrue);
+  });
+
+  test(
+    'the rates show below the speed toggle while the menu bar does not',
+    () async {
+      final l10n = currentAppLocalizations;
+      await update(_trayState(), traffic: const Traffic(up: 800, down: 3300));
+
+      final items = _items(showCall());
+      final toggle = items.indexWhere(
+        (item) => item['label'] == l10n.toggleSpeedView,
+      );
+      expect(items[toggle + 1]['label'], '▲  ${800.shortTraffic.show}/s');
+      expect(items[toggle + 1]['enabled'], isFalse);
+      expect(items[toggle + 2]['label'], '▼  ${3300.shortTraffic.show}/s');
+      expect(items[toggle + 2]['enabled'], isFalse);
+      expect(items[toggle + 3]['type'], 'separator');
+    },
+  );
+
+  test('the rates are left out once the speed shows in the menu bar', () async {
+    await update(
+      _trayState(showTrayTitle: true),
+      traffic: const Traffic(up: 800, down: 3300),
+    );
+
+    expect(_labels(showCall()).where((l) => l.startsWith('▲')), isEmpty);
+    expect(_labels(showCall()).where((l) => l.startsWith('▼')), isEmpty);
   });
 
   test('without a node group the server entries are left out', () async {

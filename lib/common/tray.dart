@@ -9,6 +9,7 @@ import 'l10n_labels.dart';
 import 'app_ports.dart';
 import 'constant.dart';
 import 'keyboard.dart';
+import 'num.dart';
 import 'provider_reader.dart';
 import 'string.dart';
 import 'system.dart';
@@ -100,7 +101,7 @@ class AppTray implements TrayPort {
         toolTip: trayState.safeMode
             ? currentAppLocalizations.safeModeAppTitle(appName)
             : appName,
-        menu: _buildMenu(trayState: trayState, read: read),
+        menu: _buildMenu(trayState: trayState, traffic: traffic, read: read),
       ),
     );
     await updateTitle(showTrayTitle: trayState.showTrayTitle, traffic: traffic);
@@ -118,6 +119,7 @@ class AppTray implements TrayPort {
 
   List<TrayMenuItem> _buildMenu({
     required TrayState trayState,
+    required Traffic traffic,
     required ProviderReader read,
   }) {
     final commonAction = read(commonActionProvider.notifier);
@@ -213,6 +215,16 @@ class AppTray implements TrayPort {
           shortcut: keyEquivalent(HotAction.speedView),
           onSelected: commonAction.updateSpeedStatistics,
         ),
+        if (!trayState.showTrayTitle) ...[
+          TrayMenuAction(
+            label: '▲  ${traffic.up.shortTraffic.show}/s',
+            enabled: false,
+          ),
+          TrayMenuAction(
+            label: '▼  ${traffic.down.shortTraffic.show}/s',
+            enabled: false,
+          ),
+        ],
       ],
       const TrayMenuSeparator(),
       TrayMenuAction(

@@ -66,6 +66,9 @@ class _TrayManagerState extends ConsumerState<TrayManager> {
               traffic: next.traffic,
             ),
           );
+          if (!next.showTrayTitle) {
+            _requestUpdate();
+          }
         }
       });
     }

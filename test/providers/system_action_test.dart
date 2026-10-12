@@ -87,6 +87,13 @@ class _GeometryWindowPort implements WindowPort {
   Future<void> toggle() async {}
 
   @override
+  Future<int?> showTextMenu({
+    required Offset position,
+    required List<TextMenuItem> items,
+    String? speech,
+  }) async => null;
+
+  @override
   Future<void> show() async {}
 }
 

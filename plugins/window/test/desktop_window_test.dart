@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart' show Offset;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:window/window.dart';
 
@@ -203,5 +204,46 @@ void main() {
     expect(await desktopWindow.isPositionSupported(), isTrue);
     expect(await desktopWindow.isEffectSupported(WindowEffect.mica), isFalse);
     expect(calls.last.arguments, {'effect': 'mica'});
+  });
+
+  group('showTextMenu', () {
+    test('sends the point, the entries and the speech text', () async {
+      responder = (call) => 2;
+
+      final chosen = await desktopWindow.showTextMenu(
+        position: const Offset(12.5, 40),
+        items: const [
+          (id: 'cut', label: 'Cut', enabled: false),
+          (id: 'copy', label: 'Copy', enabled: false),
+          (id: 'paste', label: 'Paste', enabled: true),
+        ],
+        speech: 'read me',
+      );
+
+      expect(chosen, 2);
+      expect(calls.single.method, 'showTextMenu');
+      expect(calls.single.arguments, {
+        'x': 12.5,
+        'y': 40.0,
+        'items': [
+          {'id': 'cut', 'label': 'Cut', 'enabled': false},
+          {'id': 'copy', 'label': 'Copy', 'enabled': false},
+          {'id': 'paste', 'label': 'Paste', 'enabled': true},
+        ],
+        'speech': 'read me',
+      });
+    });
+
+    test('answers null when the menu was dismissed', () async {
+      responder = (call) => null;
+
+      final chosen = await desktopWindow.showTextMenu(
+        position: Offset.zero,
+        items: const [(id: 'paste', label: 'Paste', enabled: true)],
+      );
+
+      expect(chosen, isNull);
+      expect((calls.single.arguments as Map)['speech'], isNull);
+    });
   });
 }

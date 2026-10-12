@@ -360,19 +360,15 @@ class _AppearanceColorsViewState extends ConsumerState<AppearanceColorsView> {
                 children: [
                   Text('#', style: style, strutStyle: strut),
                   Expanded(
-                    child: EditableText(
+                    child: GroupedEditableText(
                       controller: _hex,
                       focusNode: _focus,
-                      autofocus: true,
                       style: style,
                       strutStyle: strut,
                       cursorColor: palette.accent,
-                      backgroundCursorColor: palette.tertiary,
                       selectionColor: palette.accent.withValues(alpha: 0.3),
                       textCapitalization: TextCapitalization.characters,
-                      textInputAction: TextInputAction.done,
                       keyboardType: TextInputType.visiblePassword,
-                      maxLines: 1,
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(
                           RegExp('[0-9a-fA-F]'),

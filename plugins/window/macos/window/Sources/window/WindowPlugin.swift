@@ -1,3 +1,4 @@
+import AVFoundation
 import Cocoa
 import FlutterMacOS
 
@@ -34,6 +35,9 @@ public class WindowPlugin: NSObject, FlutterPlugin {
     private lazy var handlers: [String: (Arguments) throws -> Any?] = makeHandlers()
     private var active = NSApp.isActive
     private var reportedHidden = false
+    private var chosenMenuItem: Int?
+    private var speechText: String?
+    private let speaker = AVSpeechSynthesizer()
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "window", binaryMessenger: registrar.messenger)
@@ -108,6 +112,101 @@ public class WindowPlugin: NSObject, FlutterPlugin {
         lifecycle?.sendMessage(active ? "AppLifecycleState.resumed" : "AppLifecycleState.inactive")
     }
 
+    /// Pops the system's text menu at a point of the Flutter view, given from
+    /// its top left, and answers with the index of the entry chosen, or nil.
+    /// Its titles and the Spelling, Substitutions and Speech submenus are the
+    /// ones AppKit gives a text view; Cut, Copy and Paste act on what Flutter
+    /// holds, and only Speech works of the submenus.
+    private func showTextMenu(
+        x: Double, y: Double, entries: [[String: Any]], speech: String?
+    ) throws -> Int? {
+        guard let view = registrar?.view else {
+            throw PluginError(code: "not_initialized", message: "no Flutter view")
+        }
+        chosenMenuItem = nil
+        speechText = speech
+        let template = NSTextView.defaultMenu
+        let menu = NSMenu()
+        menu.autoenablesItems = false
+
+        func systemTitle(_ selector: String) -> String? {
+            template?.items.first { $0.action == NSSelectorFromString(selector) }?.title
+        }
+        let selectors = ["cut": "cut:", "copy": "copy:", "paste": "paste:"]
+        for (index, entry) in entries.enumerated() {
+            guard let id = entry["id"] as? String, let selector = selectors[id] else { continue }
+            let title = systemTitle(selector) ?? entry["label"] as? String ?? id
+            let item = NSMenuItem(title: title, action: #selector(textMenuItemChosen(_:)), keyEquivalent: "")
+            item.target = self
+            item.tag = index
+            item.isEnabled = entry["enabled"] as? Bool ?? true
+            menu.addItem(item)
+        }
+
+        menu.addItem(NSMenuItem.separator())
+        for probe in ["checkSpelling:", "orderFrontSubstitutionsPanel:", "startSpeaking:"] {
+            guard let source = template?.items.first(where: { item in
+                item.submenu?.items.contains { $0.action == NSSelectorFromString(probe) } == true
+            }) else { continue }
+            let item = source.copy() as! NSMenuItem
+            item.isEnabled = true
+            if probe == "startSpeaking:" {
+                wireSpeech(item.submenu)
+            } else {
+                disable(item.submenu)
+            }
+            menu.addItem(item)
+        }
+
+        let point = NSPoint(x: x, y: view.isFlipped ? y : view.bounds.height - y)
+        menu.popUp(positioning: nil, at: point, in: view)
+        return chosenMenuItem
+    }
+
+    // What the field cannot do shows greyed, as the system shows what a view
+    // does not answer to.
+    private func disable(_ menu: NSMenu?) {
+        guard let menu else { return }
+        menu.autoenablesItems = false
+        for item in menu.items {
+            item.isEnabled = false
+            disable(item.submenu)
+        }
+    }
+
+    private func wireSpeech(_ menu: NSMenu?) {
+        guard let menu else { return }
+        menu.autoenablesItems = false
+        for item in menu.items {
+            switch item.action.map(NSStringFromSelector) {
+            case "startSpeaking:":
+                item.target = self
+                item.action = #selector(startSpeaking(_:))
+                item.isEnabled = !(speechText ?? "").isEmpty
+            case "stopSpeaking:":
+                item.target = self
+                item.action = #selector(stopSpeaking(_:))
+                item.isEnabled = speaker.isSpeaking
+            default:
+                item.isEnabled = false
+            }
+        }
+    }
+
+    @objc private func startSpeaking(_ sender: NSMenuItem) {
+        guard let text = speechText, !text.isEmpty else { return }
+        speaker.stopSpeaking(at: .immediate)
+        speaker.speak(AVSpeechUtterance(string: text))
+    }
+
+    @objc private func stopSpeaking(_ sender: NSMenuItem) {
+        speaker.stopSpeaking(at: .immediate)
+    }
+
+    @objc private func textMenuItemChosen(_ sender: NSMenuItem) {
+        chosenMenuItem = sender.tag
+    }
+
     private func emit(_ name: String) {
         channel?.invokeMethod("onEvent", arguments: ["name": name])
     }
@@ -179,6 +278,16 @@ public class WindowPlugin: NSObject, FlutterPlugin {
             },
             "startDragging": { _ in try controller.startDragging(); return nil }
         ]
+
+        handlers["showTextMenu"] = { [weak self] args in
+            guard let self else { return nil }
+            return try self.showTextMenu(
+                x: args.double("x"),
+                y: args.double("y"),
+                entries: args.mapList("items"),
+                speech: try args.optionalString("speech")
+            )
+        }
 
         handlers["ensureInitialized"] = { [weak self] _ in
             guard let self, let window = self.registrar?.view?.window else {

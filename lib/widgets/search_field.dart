@@ -1,6 +1,7 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:material_ui/material_ui.dart';
+import 'text_menu.dart';
 
 /// Below this many items a sheet is short enough to scan without a search.
 const sheetSearchMinItemCount = 10;
@@ -50,6 +51,7 @@ class _SearchFieldState extends State<SearchField> {
           textInputAction: TextInputAction.search,
           inputFormatters: TextInputLimits.limit(TextInputLimits.search),
           onChanged: widget.onChanged,
+          contextMenuBuilder: systemTextContextMenu,
           decoration: InputDecoration(
             hintText: appLocalizations.search,
             prefixIcon: const GlyphIcon(AppGlyphs.search, size: 20),

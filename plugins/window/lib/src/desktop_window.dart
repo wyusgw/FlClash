@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart' show Alignment, Brightness;
+import 'package:flutter/widgets.dart' show Alignment, Brightness, Offset;
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window/src/title_bar_style.dart';
 import 'package:window/src/window_effect.dart';
@@ -223,6 +223,27 @@ class DesktopWindow {
   }
 
   Future<void> startDragging() => _call('startDragging');
+
+  /// Pops the system's own text menu at [position], measured from the top left
+  /// of the window's content, and answers with the index of the entry chosen,
+  /// or null when it was dismissed. An entry's [id] is `cut`, `copy`, `paste`
+  /// or `select-all`; one that is not [enabled] shows greyed. [speech] is what
+  /// the menu's Speech entry reads aloud, where the system has one.
+  Future<int?> showTextMenu({
+    required Offset position,
+    required List<({String id, String label, bool enabled})> items,
+    String? speech,
+  }) {
+    return _channel.invokeMethod<int>('showTextMenu', {
+      'x': position.dx,
+      'y': position.dy,
+      'items': [
+        for (final item in items)
+          {'id': item.id, 'label': item.label, 'enabled': item.enabled},
+      ],
+      'speech': speech,
+    });
+  }
 }
 
 final DesktopWindow desktopWindow = DesktopWindow.instance;

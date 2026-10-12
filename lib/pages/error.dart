@@ -2,6 +2,7 @@ import 'package:fl_clash/common/color.dart';
 import 'package:fl_clash/common/shape.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/widgets/navigation_dock.dart';
+import 'package:fl_clash/widgets/text_menu.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
@@ -61,6 +62,7 @@ class InitErrorScreen extends StatelessWidget {
                 ),
                 child: SelectableText(
                   error.toString(),
+                  contextMenuBuilder: systemTextContextMenu,
                   style: TextStyle(
                     color: colorScheme.onErrorContainer,
                     fontWeight: FontWeight.w600,
@@ -83,6 +85,7 @@ class InitErrorScreen extends StatelessWidget {
                 ),
                 child: SelectableText(
                   stack.toString(),
+                  contextMenuBuilder: systemTextContextMenu,
                   style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
                 ),
               ),

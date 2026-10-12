@@ -521,6 +521,7 @@ class _EditorTitleField extends StatelessWidget {
       enabled: enabled,
       controller: controller,
       textAlign: TextAlign.center,
+      contextMenuBuilder: systemTextContextMenu,
       cursorColor: palette.accent,
       decoration: InputDecoration(
         border: const NoInputBorder(),
@@ -1106,6 +1107,7 @@ class FindPanel extends StatelessWidget implements PreferredSizeWidget {
       child: TextField(
         maxLines: 1,
         focusNode: focusNode,
+        contextMenuBuilder: systemTextContextMenu,
         inputFormatters: TextInputLimits.limit(TextInputLimits.search),
         style: context.textTheme.bodyMedium,
         decoration: const InputDecoration(

@@ -67,6 +67,7 @@ class WindowPlugin : public flutter::Plugin {
   void HandleIsEffectSupported(const flutter::EncodableMap* args, std::unique_ptr<Result> result);
   void HandleSetEffect(const flutter::EncodableMap* args, std::unique_ptr<Result> result);
   void HandleStartDragging(const flutter::EncodableMap* args, std::unique_ptr<Result> result);
+  void HandleShowTextMenu(const flutter::EncodableMap* args, std::unique_ptr<Result> result);
 
   flutter::PluginRegistrarWindows* registrar_;
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> channel_;

@@ -1,7 +1,9 @@
 #include "window_plugin.h"
 
 #include <cstdint>
+#include <string>
 #include <variant>
+#include <vector>
 
 #include "running_instance.h"
 
@@ -48,6 +50,41 @@ std::optional<std::string> GetString(const flutter::EncodableMap* args,
   if (it == args->end()) return std::nullopt;
   const auto* value = std::get_if<std::string>(&it->second);
   return value == nullptr ? std::nullopt : std::optional<std::string>(*value);
+}
+
+struct MenuEntry {
+  std::string label;
+  bool enabled = true;
+};
+
+std::vector<MenuEntry> GetMenuEntries(const flutter::EncodableMap* args,
+                                      const char* key) {
+  std::vector<MenuEntry> entries;
+  if (args == nullptr) return entries;
+  const auto it = args->find(flutter::EncodableValue(key));
+  if (it == args->end()) return entries;
+  const auto* list = std::get_if<flutter::EncodableList>(&it->second);
+  if (list == nullptr) return entries;
+  for (const auto& value : *list) {
+    const auto* map = std::get_if<flutter::EncodableMap>(&value);
+    if (map == nullptr) continue;
+    MenuEntry entry;
+    entry.label = GetString(map, "label").value_or(std::string());
+    entry.enabled = GetBool(map, "enabled").value_or(true);
+    entries.push_back(std::move(entry));
+  }
+  return entries;
+}
+
+std::wstring Widen(const std::string& text) {
+  if (text.empty()) return std::wstring();
+  const int length = ::MultiByteToWideChar(CP_UTF8, 0, text.data(),
+                                           static_cast<int>(text.size()),
+                                           nullptr, 0);
+  std::wstring wide(length, L'\0');
+  ::MultiByteToWideChar(CP_UTF8, 0, text.data(), static_cast<int>(text.size()),
+                        wide.data(), length);
+  return wide;
 }
 
 }  // namespace
@@ -142,6 +179,7 @@ void WindowPlugin::BuildHandlerTable() {
   handlers_["isEffectSupported"] = &WindowPlugin::HandleIsEffectSupported;
   handlers_["setEffect"] = &WindowPlugin::HandleSetEffect;
   handlers_["startDragging"] = &WindowPlugin::HandleStartDragging;
+  handlers_["showTextMenu"] = &WindowPlugin::HandleShowTextMenu;
 }
 
 void WindowPlugin::HandleEnsureInitialized(const flutter::EncodableMap*,
@@ -389,6 +427,45 @@ void WindowPlugin::HandleStartDragging(const flutter::EncodableMap*,
                                        std::unique_ptr<Result> result) {
   controller_.StartDragging();
   result->Success();
+}
+
+// Pops the system menu at a point of the Flutter view, given in logical pixels
+// from its top left, and answers with the index of the entry chosen, or null.
+void WindowPlugin::HandleShowTextMenu(const flutter::EncodableMap* args,
+                                      std::unique_ptr<Result> result) {
+  const auto x = GetDouble(args, "x");
+  const auto y = GetDouble(args, "y");
+  const auto items = GetMenuEntries(args, "items");
+  if (!x.has_value() || !y.has_value() || items.empty()) {
+    result->Error("bad_args", "showTextMenu: x, y, items");
+    return;
+  }
+  const HWND view = registrar_->GetView()->GetNativeWindow();
+  const double scale = ::GetDpiForWindow(view) / 96.0;
+  POINT point{static_cast<LONG>(*x * scale), static_cast<LONG>(*y * scale)};
+  ::ClientToScreen(view, &point);
+
+  const HMENU menu = ::CreatePopupMenu();
+  for (size_t index = 0; index < items.size(); ++index) {
+    const std::wstring label = Widen(items[index].label);
+    // Command ids start at 1: TrackPopupMenu answers 0 for a dismissed menu.
+    ::AppendMenuW(menu,
+                  MF_STRING | (items[index].enabled ? MF_ENABLED : MF_GRAYED),
+                  static_cast<UINT_PTR>(index + 1), label.c_str());
+  }
+  // The menu belongs to the top-level window so it takes the focus and closes
+  // on a click elsewhere.
+  const HWND owner = ::GetAncestor(view, GA_ROOT);
+  ::SetForegroundWindow(owner);
+  const UINT chosen = static_cast<UINT>(::TrackPopupMenu(
+      menu, TPM_RETURNCMD | TPM_RIGHTBUTTON | TPM_NONOTIFY, point.x, point.y,
+      0, owner, nullptr));
+  ::DestroyMenu(menu);
+  if (chosen == 0) {
+    result->Success();
+    return;
+  }
+  result->Success(flutter::EncodableValue(static_cast<int32_t>(chosen - 1)));
 }
 
 }  // namespace window

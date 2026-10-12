@@ -3,6 +3,8 @@ import 'package:fl_clash/icons/icons.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'text_menu.dart';
+
 const groupedRowHeight = 37.0;
 const groupedRowPadding = 12.0;
 const groupedLeadingSize = 19.0;
@@ -551,6 +553,7 @@ class GroupedFieldRow extends GroupedItem {
                 keyboardType: keyboardType,
                 inputFormatters: inputFormatters,
                 obscureText: obscure,
+                contextMenuBuilder: systemTextContextMenu,
                 cursorColor: palette.accent,
                 style: palette.rowTitle.copyWith(fontWeight: FontWeight.w500),
                 decoration: InputDecoration.collapsed(
@@ -698,6 +701,7 @@ class GroupedSearchField extends StatelessWidget {
                 child: TextField(
                   controller: controller,
                   onChanged: onChanged,
+                  contextMenuBuilder: systemTextContextMenu,
                   cursorColor: palette.accent,
                   style: palette.rowTitle.copyWith(fontWeight: FontWeight.w500),
                   decoration: InputDecoration.collapsed(

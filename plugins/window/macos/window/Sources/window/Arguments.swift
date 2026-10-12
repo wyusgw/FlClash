@@ -32,6 +32,13 @@ struct Arguments {
         return value
     }
 
+    func mapList(_ key: String) throws -> [[String: Any]] {
+        guard let value = values[key] as? [[String: Any]] else {
+            throw ArgumentError(key: key)
+        }
+        return value
+    }
+
     func optionalDouble(_ key: String) throws -> Double? {
         guard let raw = values[key], !(raw is NSNull) else {
             return nil

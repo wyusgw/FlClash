@@ -1,8 +1,134 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:flutter/gestures.dart' show kSecondaryButton;
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'grouped_list.dart';
+import 'text_menu.dart';
+
+/// Text typed in place, with no box around it: a caret, the selection by
+/// press and drag, and the system's menu for Cut, Copy and Paste. A bare
+/// [EditableText] has none of the gestures, which a field draws from its own
+/// wrapper.
+class GroupedEditableText extends StatefulWidget {
+  const GroupedEditableText({
+    super.key,
+    required this.controller,
+    required this.focusNode,
+    required this.style,
+    required this.cursorColor,
+    required this.selectionColor,
+    this.autofocus = true,
+    this.textAlign = TextAlign.start,
+    this.strutStyle,
+    this.keyboardType,
+    this.textCapitalization = TextCapitalization.none,
+    this.inputFormatters,
+    this.onEditingComplete,
+    this.onSubmitted,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final TextStyle style;
+  final Color cursorColor;
+  final Color selectionColor;
+  final bool autofocus;
+  final TextAlign textAlign;
+  final StrutStyle? strutStyle;
+  final TextInputType? keyboardType;
+  final TextCapitalization textCapitalization;
+  final List<TextInputFormatter>? inputFormatters;
+  final VoidCallback? onEditingComplete;
+  final ValueChanged<String>? onSubmitted;
+
+  @override
+  State<GroupedEditableText> createState() => _GroupedEditableTextState();
+}
+
+class _GroupedEditableTextState extends State<GroupedEditableText>
+    implements TextSelectionGestureDetectorBuilderDelegate {
+  @override
+  final editableTextKey = GlobalKey<EditableTextState>();
+
+  @override
+  bool get forcePressEnabled => false;
+
+  @override
+  bool get selectionEnabled => true;
+
+  late final _gestures = TextSelectionGestureDetectorBuilder(delegate: this);
+  bool _secondaryPress = false;
+  bool _menuBuilt = false;
+
+  // A right click in an empty field moves nothing, so the field raises no
+  // selection change and no toolbar of its own; the menu is asked for here.
+  void _handlePointerUp() {
+    if (!_secondaryPress) {
+      return;
+    }
+    _secondaryPress = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_menuBuilt) {
+        editableTextKey.currentState?.toggleToolbar(false);
+      }
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
+  Widget _buildMenu(BuildContext context, EditableTextState state) {
+    _menuBuilt = true;
+    return systemTextContextMenu(context, state);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (event) {
+        _secondaryPress = event.buttons & kSecondaryButton != 0;
+        _menuBuilt = false;
+      },
+      onPointerUp: (_) => _handlePointerUp(),
+      child: _gestures.buildGestureDetector(
+        behavior: HitTestBehavior.translucent,
+        child: EditableText(
+          key: editableTextKey,
+          controller: widget.controller,
+          focusNode: widget.focusNode,
+          autofocus: widget.autofocus,
+          style: widget.style,
+          strutStyle: widget.strutStyle,
+          textAlign: widget.textAlign,
+          cursorColor: widget.cursorColor,
+          backgroundCursorColor: widget.cursorColor,
+          selectionColor: widget.selectionColor,
+          selectionControls: groupedSelectionControls(context),
+          contextMenuBuilder: _buildMenu,
+          keyboardType: widget.keyboardType,
+          textCapitalization: widget.textCapitalization,
+          textInputAction: TextInputAction.done,
+          maxLines: 1,
+          inputFormatters: widget.inputFormatters,
+          onEditingComplete: widget.onEditingComplete,
+          onSubmitted: widget.onSubmitted,
+        ),
+      ),
+    );
+  }
+}
+
+/// The handles a selection shows: a pointer's on a desktop, a finger's
+/// elsewhere. The menu itself is [groupedTextContextMenu].
+TextSelectionControls groupedSelectionControls(BuildContext context) {
+  return switch (Theme.of(context).platform) {
+    TargetPlatform.macOS ||
+    TargetPlatform.linux ||
+    TargetPlatform.windows => desktopTextSelectionHandleControls,
+    TargetPlatform.android ||
+    TargetPlatform.iOS ||
+    TargetPlatform.fuchsia => materialTextSelectionHandleControls,
+  };
+}
 
 /// A row whose value is typed in the row itself: a tap turns the value into a
 /// caret in place, the row lights up, and Enter or leaving the row keeps it.
@@ -192,18 +318,14 @@ class _GroupedInputRowState extends State<GroupedInputRow> {
                     const SingleActivator(LogicalKeyboardKey.escape): () =>
                         _finish(commitIfValid: false),
                   },
-                  child: EditableText(
+                  child: GroupedEditableText(
                     controller: _controller,
                     focusNode: _focus,
-                    autofocus: true,
                     style: style,
                     textAlign: TextAlign.end,
                     cursorColor: palette.accent,
-                    backgroundCursorColor: palette.tertiary,
                     selectionColor: palette.accent.withValues(alpha: 0.3),
                     keyboardType: widget.keyboardType,
-                    textInputAction: TextInputAction.done,
-                    maxLines: 1,
                     inputFormatters: widget.inputFormatters,
                     // Keeps Enter from dropping the focus, which would end
                     // the edit before a refused value can be explained.

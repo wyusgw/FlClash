@@ -12,6 +12,7 @@ import 'grouped_input.dart';
 import 'grouped_list.dart';
 import 'grouped_page.dart';
 import 'list.dart';
+import 'text_menu.dart';
 part 'edit_view.dart';
 
 class OptionsDialog<T> extends StatelessWidget {
@@ -204,6 +205,7 @@ class _InputDialogState extends State<InputDialog> {
               maxLines: widget.obscureText == true ? 1 : 5,
               minLines: 1,
               controller: _textController,
+              contextMenuBuilder: systemTextContextMenu,
               onFieldSubmitted: (_) {
                 _handleUpdate();
               },

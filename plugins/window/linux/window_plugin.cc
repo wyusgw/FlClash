@@ -114,6 +114,17 @@ static bool arg_string(FlValue* args, const char* key, const char** out) {
   return true;
 }
 
+static FlValue* arg_list(FlValue* args, const char* key) {
+  if (args == nullptr || fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
+    return nullptr;
+  }
+  FlValue* value = fl_value_lookup_string(args, key);
+  if (value == nullptr || fl_value_get_type(value) != FL_VALUE_TYPE_LIST) {
+    return nullptr;
+  }
+  return value;
+}
+
 static FlMethodResponse* handle_ensure_initialized(WindowPlugin*,
                                                     FlValue*) {
   return success_null();
@@ -426,6 +437,81 @@ static FlMethodResponse* handle_start_dragging(WindowPlugin* self,
   return window_drag_start(self);
 }
 
+typedef struct {
+  GMainLoop* loop;
+  int chosen;
+} TextMenuState;
+
+static void on_text_menu_item_activate(GtkMenuItem* item, gpointer data) {
+  auto* state = static_cast<TextMenuState*>(data);
+  state->chosen = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(item), "index"));
+}
+
+static void on_text_menu_deactivate(GtkMenuShell*, gpointer data) {
+  g_main_loop_quit(static_cast<TextMenuState*>(data)->loop);
+}
+
+// Pops a menu at a point of the Flutter view, in logical pixels from its top
+// left, and answers with the index of the entry chosen, or null. The call
+// waits in a nested loop until the menu closes, as the other platforms' do.
+static FlMethodResponse* handle_show_text_menu(WindowPlugin* self,
+                                               FlValue* args) {
+  double x;
+  double y;
+  FlValue* items = arg_list(args, "items");
+  if (!arg_double(args, "x", &x) || !arg_double(args, "y", &y) ||
+      items == nullptr || fl_value_get_length(items) == 0) {
+    return bad_args_response("showTextMenu", "x, y, items");
+  }
+  FlView* view = fl_plugin_registrar_get_view(self->registrar);
+  GdkWindow* gdk_window =
+      view == nullptr ? nullptr : gtk_widget_get_window(GTK_WIDGET(view));
+  if (gdk_window == nullptr) {
+    return not_ready_response();
+  }
+
+  TextMenuState state = {g_main_loop_new(nullptr, FALSE), -1};
+  GtkWidget* menu = gtk_menu_new();
+  g_signal_connect(menu, "deactivate", G_CALLBACK(on_text_menu_deactivate),
+                   &state);
+  const size_t count = fl_value_get_length(items);
+  for (size_t index = 0; index < count; ++index) {
+    FlValue* entry = fl_value_get_list_value(items, index);
+    const char* text = "";
+    bool enabled = true;
+    if (fl_value_get_type(entry) == FL_VALUE_TYPE_MAP) {
+      arg_string(entry, "label", &text);
+      arg_bool(entry, "enabled", &enabled);
+    }
+    GtkWidget* item = gtk_menu_item_new_with_label(text);
+    gtk_widget_set_sensitive(item, enabled);
+    g_object_set_data(G_OBJECT(item), "index",
+                      GINT_TO_POINTER(static_cast<int>(index)));
+    g_signal_connect(item, "activate", G_CALLBACK(on_text_menu_item_activate),
+                     &state);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+  }
+  gtk_widget_show_all(menu);
+
+  GdkRectangle anchor = {static_cast<int>(x), static_cast<int>(y), 1, 1};
+  gtk_menu_popup_at_rect(GTK_MENU(menu), gdk_window, &anchor,
+                         GDK_GRAVITY_NORTH_WEST, GDK_GRAVITY_NORTH_WEST,
+                         nullptr);
+  g_main_loop_run(state.loop);
+  // An item's activation can be queued behind the menu closing; let it land.
+  while (g_main_context_pending(nullptr)) {
+    g_main_context_iteration(nullptr, FALSE);
+  }
+
+  g_main_loop_unref(state.loop);
+  gtk_widget_destroy(menu);
+  if (state.chosen < 0) {
+    return success_null();
+  }
+  g_autoptr(FlValue) chosen = fl_value_new_int(state.chosen);
+  return success_response(chosen);
+}
+
 typedef FlMethodResponse* (*MethodHandler)(WindowPlugin*, FlValue*);
 
 typedef struct {
@@ -461,6 +547,7 @@ static const MethodEntry kMethods[] = {
     {"isEffectSupported", handle_is_effect_supported},
     {"setEffect", handle_set_effect},
     {"startDragging", handle_start_dragging},
+    {"showTextMenu", handle_show_text_menu},
 };
 
 static void window_plugin_handle_method_call(WindowPlugin* self,

@@ -310,7 +310,11 @@ class _LogBody extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SelectableText(payload.message, style: styles.primary),
+          SelectableText(
+            payload.message,
+            style: styles.primary,
+            contextMenuBuilder: systemTextContextMenu,
+          ),
           if (payload.tag.isNotEmpty) Text(payload.tag, style: styles.muted),
         ],
       );
@@ -342,6 +346,7 @@ class _LogBody extends StatelessWidget {
           TextSpan(text: '\n$_sourceText', style: styles.muted),
         ],
       ),
+      contextMenuBuilder: systemTextContextMenu,
     );
   }
 }

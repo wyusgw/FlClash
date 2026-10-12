@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/common/shape.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
+import 'package:fl_clash/widgets/text_menu.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -141,6 +142,7 @@ class ConfirmDialog extends StatelessWidget {
                       children: [message],
                     ),
                     textAlign: TextAlign.center,
+                    contextMenuBuilder: systemTextContextMenu,
                   ),
                 ),
               ),

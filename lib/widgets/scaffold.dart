@@ -18,6 +18,7 @@ import 'popup.dart';
 import 'search_field.dart';
 import 'sheet.dart';
 import 'sheet_header.dart';
+import 'text_menu.dart';
 
 typedef OnKeywordsUpdateCallback = void Function(List<String> keywords);
 
@@ -400,6 +401,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
             textInputAction: TextInputAction.search,
             inputFormatters: TextInputLimits.limit(TextInputLimits.search),
             style: context.textTheme.titleLarge,
+            contextMenuBuilder: systemTextContextMenu,
             onChanged: (value) {
               if (startState != null) {
                 startState.onSearch(value);

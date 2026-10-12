@@ -57,6 +57,7 @@ export 'super_grid.dart';
 export 'super_reorderable_list.dart';
 export 'tab.dart';
 export 'text.dart';
+export 'text_menu.dart';
 export 'text_loupe.dart';
 export 'theme.dart';
 export 'wave.dart';

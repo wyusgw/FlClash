@@ -184,6 +184,17 @@ class Window implements WindowPort {
   }
 
   @override
+  Future<int?> showTextMenu({
+    required Offset position,
+    required List<TextMenuItem> items,
+    String? speech,
+  }) => desktopWindow.showTextMenu(
+    position: position,
+    items: items,
+    speech: speech,
+  );
+
+  @override
   Future<void> show() => _visibility.show();
 
   @override

@@ -198,6 +198,13 @@ class AppTray implements TrayPort {
           },
         ),
       ],
+      TrayMenuCheckbox(
+        label: appLocalizations.tun,
+        checked: trayState.tunEnable,
+        detail: shortcut(HotAction.tun),
+        shortcut: keyEquivalent(HotAction.tun),
+        onSelected: systemAction.updateTun,
+      ),
       if (isMacOS) ...[
         const TrayMenuSeparator(),
         TrayMenuAction(

@@ -174,7 +174,7 @@ void main() {
   );
 
   test(
-    'the stopped menu reads not connected and drops the old toggles',
+    'the stopped menu reads not connected and drops the old toggles but the TUN one',
     () async {
       await update(_trayState());
 
@@ -187,7 +187,6 @@ void main() {
       for (final dropped in [
         l10n.start,
         l10n.stop,
-        l10n.tun,
         l10n.systemProxy,
         l10n.autoLaunch,
         l10n.copyEnvVar,
@@ -236,6 +235,23 @@ void main() {
     );
     expect(items[index + 2]['label'], currentAppLocalizations.connectivityTest);
     expect(items[index + 2]['detail'], '⌃⇧D');
+  });
+
+  test('the TUN entry follows the setting and its shortcut', () async {
+    final l10n = currentAppLocalizations;
+    await update(
+      _trayState(
+        hotKeys: {
+          HotAction.tun: _bind(HotAction.tun, PhysicalKeyboardKey.keyT),
+        },
+      ),
+    );
+    expect(_item(showCall(), l10n.tun)['type'], 'checkbox');
+    expect(_item(showCall(), l10n.tun)['checked'], isFalse);
+    expect(_item(showCall(), l10n.tun)['detail'], '⌃⇧T');
+
+    await update(_trayState(tunEnable: true));
+    expect(_item(showCall(), l10n.tun)['checked'], isTrue);
   });
 
   test('without a node group the server entries are left out', () async {

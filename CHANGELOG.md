@@ -1,5 +1,39 @@
 # Changelog
 
+## v0.9.0 (2026-10-13)
+
+**Breaking Changes**
+
+- **core** Replace the mihomo core with Xray-core (ae8163d)
+
+**Features**
+
+- **rules** Rule configs have a right-click menu to rename, edit, edit as plain text or delete, and the default config can be edited (213c5b6)
+- **rules** The config tab holds Xray rule configs that can be written by hand, imported, downloaded or tested (ef4593a)
+- **settings** Android has a haptic feedback switch under Other in the settings (605bdc4)
+- **ui** The sidebar can be resized by dragging its edge (e452e1b)
+- **link** The URL Schemes page lists links to start, stop, toggle, switch server, add a server, test connectivity, update subscriptions and switch routing (bac58aa)
+- **tray** The tray menu lists the current upload and download speed under the speed view on macOS when the menu bar shows none (376db6f)
+- **tray** The speed beside the menu bar icon is off by default and appears once the speed view is toggled (7e69340)
+- **tray** The tray menu has a checkbox for the TUN virtual network card (8a66791)
+- **ui** The global routing page has a switch for the TUN virtual network card on desktop (e217c40)
+- **ui** Text fields open the system's own Cut, Copy and Paste menu on desktop (b7ea2e5)
+- **profiles** Subscriptions are now fetched as Vex by default, and the v2rayNG user agent is no longer listed (e5120d0)
+- **app** A clearer settings page with tunnel, permissions, reset and about sections (812b8f0)
+- **app** Clipboard import, shareable color schemes, and in-place editing of settings (68f1de8)
+- **app** Choose a server's flag by hand or have it found from its address, and icons for the notes in a subscription (47a86c3)
+- **app** Statistics, server editing and reset pages, a menu bar mode and sidebar switch, and a consistent look across settings (aa0e7f3)
+- **app** Node flags are now round images that look the same on every platform (75b9310)
+- **app** A Shadowrocket-style interface, manual server entry for ten protocols, and Hysteria 1 support (d4bf179)
+- **proxies** The proxies page lists nodes directly, and choosing a node rewrites the running config (7503c9c)
+- **core** Replace the mihomo core with Xray-core (ae8163d)
+- **app** Remove the disclaimer and its consent screen (0e1cfa7)
+
+**Bug Fixes**
+
+- **app** Node rows no longer repeat the flag emoji next to the round flag (b0abaf1)
+- **database** Bring a v4 database from before the schema rebuild up to date (0867b48)
+
 ## v0.8.99 (2026-10-03)
 
 **Features**

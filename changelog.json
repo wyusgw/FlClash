@@ -2,6 +2,144 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "0.9.0",
+      "tag": "v0.9.0",
+      "date": "2026-10-13",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "breaking",
+          "entries": [
+            {
+              "id": "ae8163d",
+              "scope": "core",
+              "text": "Replace the mihomo core with Xray-core"
+            }
+          ]
+        },
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "213c5b6",
+              "scope": "rules",
+              "text": "Rule configs have a right-click menu to rename, edit, edit as plain text or delete, and the default config can be edited"
+            },
+            {
+              "id": "ef4593a",
+              "scope": "rules",
+              "text": "The config tab holds Xray rule configs that can be written by hand, imported, downloaded or tested"
+            },
+            {
+              "id": "605bdc4",
+              "scope": "settings",
+              "text": "Android has a haptic feedback switch under Other in the settings"
+            },
+            {
+              "id": "e452e1b",
+              "scope": "ui",
+              "text": "The sidebar can be resized by dragging its edge"
+            },
+            {
+              "id": "bac58aa",
+              "scope": "link",
+              "text": "The URL Schemes page lists links to start, stop, toggle, switch server, add a server, test connectivity, update subscriptions and switch routing"
+            },
+            {
+              "id": "376db6f",
+              "scope": "tray",
+              "text": "The tray menu lists the current upload and download speed under the speed view on macOS when the menu bar shows none"
+            },
+            {
+              "id": "7e69340",
+              "scope": "tray",
+              "text": "The speed beside the menu bar icon is off by default and appears once the speed view is toggled"
+            },
+            {
+              "id": "8a66791",
+              "scope": "tray",
+              "text": "The tray menu has a checkbox for the TUN virtual network card"
+            },
+            {
+              "id": "e217c40",
+              "scope": "ui",
+              "text": "The global routing page has a switch for the TUN virtual network card on desktop"
+            },
+            {
+              "id": "b7ea2e5",
+              "scope": "ui",
+              "text": "Text fields open the system's own Cut, Copy and Paste menu on desktop"
+            },
+            {
+              "id": "e5120d0",
+              "scope": "profiles",
+              "text": "Subscriptions are now fetched as Vex by default, and the v2rayNG user agent is no longer listed"
+            },
+            {
+              "id": "812b8f0",
+              "scope": "app",
+              "text": "A clearer settings page with tunnel, permissions, reset and about sections"
+            },
+            {
+              "id": "68f1de8",
+              "scope": "app",
+              "text": "Clipboard import, shareable color schemes, and in-place editing of settings"
+            },
+            {
+              "id": "47a86c3",
+              "scope": "app",
+              "text": "Choose a server's flag by hand or have it found from its address, and icons for the notes in a subscription"
+            },
+            {
+              "id": "aa0e7f3",
+              "scope": "app",
+              "text": "Statistics, server editing and reset pages, a menu bar mode and sidebar switch, and a consistent look across settings"
+            },
+            {
+              "id": "75b9310",
+              "scope": "app",
+              "text": "Node flags are now round images that look the same on every platform"
+            },
+            {
+              "id": "d4bf179",
+              "scope": "app",
+              "text": "A Shadowrocket-style interface, manual server entry for ten protocols, and Hysteria 1 support"
+            },
+            {
+              "id": "7503c9c",
+              "scope": "proxies",
+              "text": "The proxies page lists nodes directly, and choosing a node rewrites the running config"
+            },
+            {
+              "id": "ae8163d",
+              "scope": "core",
+              "text": "Replace the mihomo core with Xray-core"
+            },
+            {
+              "id": "0e1cfa7",
+              "scope": "app",
+              "text": "Remove the disclaimer and its consent screen"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "b0abaf1",
+              "scope": "app",
+              "text": "Node rows no longer repeat the flag emoji next to the round flag"
+            },
+            {
+              "id": "0867b48",
+              "scope": "database",
+              "text": "Bring a v4 database from before the schema rebuild up to date"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.8.99",
       "tag": "v0.8.99",
       "date": "2026-10-03",

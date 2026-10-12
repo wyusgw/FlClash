@@ -40,7 +40,7 @@ _AppSettingProps _$AppSettingPropsFromJson(
   restoreStrategy:
       $enumDecodeNullable(_$RestoreStrategyEnumMap, json['restoreStrategy']) ??
       RestoreStrategy.compatible,
-  showTrayTitle: json['showTrayTitle'] as bool? ?? true,
+  showTrayTitle: json['showTrayTitle'] as bool? ?? false,
   trayMode:
       $enumDecodeNullable(_$TrayModeEnumMap, json['trayMode']) ??
       TrayMode.embedded,

@@ -1,3 +1,4 @@
+import 'package:fl_clash/common/constant.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/database.dart';
@@ -144,12 +145,12 @@ void main() {
     await tester.tap(find.text('User-Agent'));
     await tester.pumpAndSettle();
     expect(find.byType(UserAgentsView), findsOneWidget);
-    expect(find.text('v2rayN/7.5.0'), findsOneWidget);
+    expect(find.text(subscriptionUserAgent), findsOneWidget);
 
-    await tester.tap(find.text('v2rayN/7.5.0'));
+    await tester.tap(find.text(subscriptionUserAgent));
     await tester.pumpAndSettle();
 
-    expect(container.read(appSettingProvider).globalUa, 'v2rayN/7.5.0');
+    expect(container.read(appSettingProvider).globalUa, subscriptionUserAgent);
     expect(tester.takeException(), null);
   });
 }

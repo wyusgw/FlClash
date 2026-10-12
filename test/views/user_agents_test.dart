@@ -13,6 +13,9 @@ import 'package:flutter_test/flutter_test.dart';
 import '../helpers/test_app.dart';
 import '../helpers/test_profiles.dart';
 
+const _second = 'Custom/2.0';
+final _seeded = [...defaultUserAgents, _second];
+
 void main() {
   late ProviderContainer container;
 
@@ -44,7 +47,9 @@ void main() {
         .update((_) => const Size(1000, 1600));
     container
         .read(appSettingProvider.notifier)
-        .update((state) => state.copyWith(globalUa: globalUa));
+        .update(
+          (state) => state.copyWith(globalUa: globalUa, userAgents: _seeded),
+        );
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -67,12 +72,12 @@ void main() {
     await pumpView(tester);
 
     expect(find.text(currentAppLocalizations.defaultText), findsOneWidget);
-    for (final userAgent in defaultUserAgents) {
+    for (final userAgent in _seeded) {
       expect(find.text(userAgent), findsOneWidget);
     }
     expect(
       find.byTooltip(currentAppLocalizations.more),
-      findsNWidgets(defaultUserAgents.length),
+      findsNWidgets(_seeded.length),
     );
   });
 
@@ -81,9 +86,9 @@ void main() {
   ) async {
     await pumpView(tester);
 
-    await tester.tap(find.text(defaultUserAgents.last));
+    await tester.tap(find.text(_second));
     await tester.pumpAndSettle();
-    expect(selected(), defaultUserAgents.last);
+    expect(selected(), _second);
 
     await tester.tap(find.text(currentAppLocalizations.defaultText));
     await tester.pumpAndSettle();
@@ -97,7 +102,7 @@ void main() {
     await tester.pumpAndSettle();
     await submitInput(tester, '  CustomUA/1.0  ');
 
-    expect(saved(), [...defaultUserAgents, 'CustomUA/1.0']);
+    expect(saved(), [..._seeded, 'CustomUA/1.0']);
     expect(selected(), isNull);
     expect(find.text('CustomUA/1.0'), findsOneWidget);
   });
@@ -122,7 +127,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(saved(), defaultUserAgents);
+    expect(saved(), _seeded);
   });
 
   testWidgets('editing the selected value keeps it selected', (tester) async {
@@ -134,16 +139,16 @@ void main() {
     await tester.pumpAndSettle();
     await submitInput(tester, 'clash-verge/v3.0.0');
 
-    expect(saved(), ['clash-verge/v3.0.0', defaultUserAgents.last]);
+    expect(saved(), ['clash-verge/v3.0.0', _second]);
     expect(selected(), 'clash-verge/v3.0.0');
   });
 
   testWidgets('deleting the selected value falls back to the default', (
     tester,
   ) async {
-    await pumpView(tester, globalUa: defaultUserAgents.last);
+    await pumpView(tester, globalUa: _second);
 
-    await tester.tap(menuOf(defaultUserAgents.last));
+    await tester.tap(menuOf(_second));
     await tester.pumpAndSettle();
     await tester.tap(find.text(currentAppLocalizations.delete));
     await tester.pumpAndSettle();
@@ -152,7 +157,7 @@ void main() {
 
     expect(saved(), [defaultUserAgents.first]);
     expect(selected(), isNull);
-    expect(find.text(defaultUserAgents.last), findsNothing);
+    expect(find.text(_second), findsNothing);
   });
 
   testWidgets('shows a selected value that is missing from the list', (
@@ -161,7 +166,7 @@ void main() {
     await pumpView(tester, globalUa: 'Legacy/1.0');
 
     expect(find.text('Legacy/1.0'), findsOneWidget);
-    expect(saved(), defaultUserAgents);
+    expect(saved(), _seeded);
 
     await tester.tap(menuOf(defaultUserAgents.first));
     await tester.pumpAndSettle();
@@ -170,7 +175,7 @@ void main() {
     await tester.tap(find.text(currentAppLocalizations.confirm));
     await tester.pumpAndSettle();
 
-    expect(saved(), [defaultUserAgents.last, 'Legacy/1.0']);
+    expect(saved(), [_second, 'Legacy/1.0']);
     expect(selected(), 'Legacy/1.0');
   });
 
@@ -205,7 +210,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(EditableText), findsNothing);
-    expect(saved(), defaultUserAgents);
+    expect(saved(), _seeded);
   });
 
   testWidgets('editing opens the value itself for typing', (tester) async {
@@ -226,6 +231,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(EditableText), findsNothing);
-    expect(saved(), defaultUserAgents);
+    expect(saved(), _seeded);
   });
 }

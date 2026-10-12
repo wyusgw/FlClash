@@ -11,8 +11,17 @@ import 'package:material_ui/material_ui.dart';
 const appName = 'FlClash';
 const appHelperService = 'FlClashHelperService';
 const coreManifestName = 'manifest.json';
+
+// The clients this app presents itself as, with the version of each written
+// only here.
+const _browserChromeVersion = '120.0.0.0';
+const _vexVersion = '1.0.0';
+
 const browserUa =
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/$_browserChromeVersion Safari/537.36';
+
+/// The client name subscriptions are fetched as.
+const subscriptionUserAgent = 'Vex/$_vexVersion';
 const packageName = 'com.follow.clash';
 final unixSocketPath = '/tmp/FlClashSocket_${Random().nextInt(10000)}.sock';
 final windowsPipeName = '\\\\.\\pipe\\FlClashCore_${_randomPipeId()}';
@@ -111,8 +120,6 @@ const repository = 'chen08209/FlClash';
 const maxMobileWidth = 600;
 const maxLaptopWidth = 840;
 
-/// The client name subscriptions are fetched as.
-const subscriptionUserAgent = 'v2rayN/7.5.0';
 const defaultTestUrl = 'https://www.gstatic.com/generate_204';
 
 const stringListEquality = ListEquality<String>();

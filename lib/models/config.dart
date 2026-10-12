@@ -29,7 +29,7 @@ const defaultBypassDomain = [
   '192.168.*',
 ];
 
-const defaultUserAgents = [subscriptionUserAgent, 'v2rayNG/1.9.40'];
+const defaultUserAgents = [subscriptionUserAgent];
 
 const defaultAppSettingProps = AppSettingProps();
 const defaultVpnProps = VpnProps();

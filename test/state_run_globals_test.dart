@@ -45,6 +45,7 @@ void main() {
 
       expect(globalState.ua, _packageInfo.ua);
       expect(globalState.ua, subscriptionUserAgent);
+      expect(globalState.ua, matches(r'^Vex/\d+(\.\d+)*$'));
     });
 
     test('prefers the configured global user agent', () {

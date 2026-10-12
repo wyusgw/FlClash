@@ -1,5 +1,5 @@
 import 'package:code_forge/code_forge.dart';
-import 'package:fl_clash/features/features.dart';
+import 'package:fl_clash/features/editor/completion_popup.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 

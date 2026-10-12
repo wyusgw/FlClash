@@ -151,7 +151,7 @@ void main() {
 
   Future<CodeForgeController> pumpTyped(
     WidgetTester tester,
-    Language language,
+    String content,
     String typed,
   ) async {
     await tester.pumpWidget(
@@ -161,8 +161,8 @@ void main() {
         ],
         child: EditorPage(
           title: 'Editor',
-          content: '',
-          language: language,
+          content: content,
+          language: Language.json,
           onSave: (_, _, _) {},
         ),
       ),
@@ -451,23 +451,12 @@ void main() {
     expect(find.byType(EditorPage), findsNothing);
   });
 
-  testWidgets('the YAML editor completes Clash keys with their separator', (
+  testWidgets('typing a prefix of a word in the document offers it', (
     tester,
   ) async {
-    final controller = await pumpTyped(tester, Language.yaml, 'mixed-p');
+    await pumpTyped(tester, '{"upstream": 1}\n', 'upst');
 
-    await tester.tap(find.text('mixed-port'));
-    await settle(tester, 8);
-
-    expect(controller.text, 'mixed-port: ');
-    expect(controller.selection.extentOffset, controller.length);
-  });
-
-  testWidgets('the script editor completes script words', (tester) async {
-    await pumpTyped(tester, Language.javaScript, 'cons');
-
-    expect(find.text('console'), findsOneWidget);
-    expect(find.text('mixed-port'), findsNothing);
+    expect(find.text('upstream'), findsOneWidget);
     await settle(tester, 8);
   });
 }

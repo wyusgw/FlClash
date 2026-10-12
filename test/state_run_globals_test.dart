@@ -44,7 +44,7 @@ void main() {
       setGlobalUa('');
 
       expect(globalState.ua, _packageInfo.ua);
-      expect(globalState.ua, contains('FlClash/v1.2.3'));
+      expect(globalState.ua, subscriptionUserAgent);
     });
 
     test('prefers the configured global user agent', () {

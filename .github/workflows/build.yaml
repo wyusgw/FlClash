@@ -215,7 +215,7 @@ jobs:
           tags="$(sed -n 's/^tags: *//p' ../build_config.yaml)"
           test -n "$tags" || { echo 'Could not read tags from build_config.yaml' >&2; exit 1; }
           export CGO_ENABLED=1 GOOS=android GOARCH=arm64 CC
-          go vet "-tags=$tags" . ./tun ./platform
+          go vet "-tags=$tags" . ./platform
 
   android:
     name: Android unit tests

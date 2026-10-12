@@ -246,9 +246,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "bind": MessageLookupByLibrary.simpleMessage("Bind"),
     "blacklistMode": MessageLookupByLibrary.simpleMessage("Blacklist mode"),
     "builtInRules": MessageLookupByLibrary.simpleMessage("Built-in rules"),
-    "builtInRulesDesc": MessageLookupByLibrary.simpleMessage(
-      "Mainland China direct, the rest through the proxy",
-    ),
     "bypassDomain": MessageLookupByLibrary.simpleMessage("Bypass domains"),
     "bypassDomainDesc": MessageLookupByLibrary.simpleMessage(
       "Only takes effect while the system proxy is enabled",
@@ -394,7 +391,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteAllNodesTip": MessageLookupByLibrary.simpleMessage(
       "Are you sure you want to delete?",
     ),
-    "deleteRuleSet": MessageLookupByLibrary.simpleMessage("Delete rule set"),
+    "deleteRuleSet": MessageLookupByLibrary.simpleMessage("Delete config"),
     "deleteSuccess": MessageLookupByLibrary.simpleMessage(
       "Deleted successfully",
     ),
@@ -431,6 +428,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "Download speed (Mbps)",
     ),
     "edit": MessageLookupByLibrary.simpleMessage("Edit"),
+    "editPlainText": MessageLookupByLibrary.simpleMessage("Edit plain text"),
+    "editRuleSet": MessageLookupByLibrary.simpleMessage("Edit config"),
     "editServer": MessageLookupByLibrary.simpleMessage("Edit server"),
     "editSsid": MessageLookupByLibrary.simpleMessage("Edit SSID"),
     "editorUnavailable": MessageLookupByLibrary.simpleMessage(
@@ -854,6 +853,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "remote": MessageLookupByLibrary.simpleMessage("Remote"),
     "remove": MessageLookupByLibrary.simpleMessage("Remove"),
+    "rename": MessageLookupByLibrary.simpleMessage("Rename"),
     "replace": MessageLookupByLibrary.simpleMessage("Replace"),
     "replaceAll": MessageLookupByLibrary.simpleMessage("Replace all"),
     "request": MessageLookupByLibrary.simpleMessage("Request"),

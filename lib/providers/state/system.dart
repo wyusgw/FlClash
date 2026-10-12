@@ -1,12 +1,10 @@
 part of '../state.dart';
 
-/// The rules of the rule set in use; empty while the built-in rules apply.
+/// The rules of the rule set in use; empty while the built-in rules apply,
+/// which they do until the default config is first edited.
 @riverpod
 List<Map<String, dynamic>> activeRules(Ref ref) {
-  final id = ref.watch(currentRuleSetIdProvider);
-  if (id == null) {
-    return const [];
-  }
+  final id = ref.watch(currentRuleSetIdProvider) ?? defaultRuleSetId;
   final sets = ref.watch(ruleSetsProvider);
   for (final set in sets) {
     if (set.id == id) {

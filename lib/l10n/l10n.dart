@@ -80,16 +80,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Mainland China direct, the rest through the proxy`
-  String get builtInRulesDesc {
-    return Intl.message(
-      'Mainland China direct, the rest through the proxy',
-      name: 'builtInRulesDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Rules apply in rule mode. Traffic no rule matches goes through the proxy.`
   String get rulesFooter {
     return Intl.message(
@@ -210,11 +200,31 @@ class AppLocalizations {
     );
   }
 
-  /// `Delete rule set`
+  /// `Delete config`
   String get deleteRuleSet {
     return Intl.message(
-      'Delete rule set',
+      'Delete config',
       name: 'deleteRuleSet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Rename`
+  String get rename {
+    return Intl.message('Rename', name: 'rename', desc: '', args: []);
+  }
+
+  /// `Edit config`
+  String get editRuleSet {
+    return Intl.message('Edit config', name: 'editRuleSet', desc: '', args: []);
+  }
+
+  /// `Edit plain text`
+  String get editPlainText {
+    return Intl.message(
+      'Edit plain text',
+      name: 'editPlainText',
       desc: '',
       args: [],
     );

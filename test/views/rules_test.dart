@@ -1,4 +1,6 @@
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
+import 'package:flutter/gestures.dart' show kSecondaryButton;
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
@@ -152,7 +154,7 @@ void main() {
   ) async {
     await pumpView(tester, page: const RuleSetView(id: 1), currentId: 1);
 
-    await tester.tap(find.text('Delete rule set'));
+    await tester.tap(find.text('Delete config'));
     await tester.pumpAndSettle();
 
     expect(sets(), isEmpty);
@@ -186,5 +188,132 @@ void main() {
       find.text('No rule matches, so it goes through the proxy'),
       findsOneWidget,
     );
+  });
+
+  group('the menu of a rule config', () {
+    Future<void> openMenu(WidgetTester tester) async {
+      await tester.tap(find.text('Work'), buttons: kSecondaryButton);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('a right click lists what can be done with it', (tester) async {
+      await pumpView(tester);
+
+      await openMenu(tester);
+
+      for (final label in [
+        'Rename',
+        'Edit config',
+        'Edit plain text',
+        'Delete config',
+      ]) {
+        expect(find.text(label), findsOneWidget, reason: label);
+      }
+    });
+
+    testWidgets('rename takes a new name', (tester) async {
+      await pumpView(tester);
+
+      await openMenu(tester);
+      await tester.tap(find.text('Rename'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField), 'Home');
+      await tester.tap(find.text('Submit'));
+      await tester.pumpAndSettle();
+
+      expect(sets().single.label, 'Home');
+    });
+
+    testWidgets('delete drops it and the built-in rules take over', (
+      tester,
+    ) async {
+      await pumpView(tester, currentId: 1);
+
+      await openMenu(tester);
+      await tester.tap(find.text('Delete config'));
+      await tester.pumpAndSettle();
+
+      expect(sets(), isEmpty);
+      expect(container.read(currentRuleSetIdProvider), isNull);
+    });
+
+    testWidgets('edit config opens its rules', (tester) async {
+      await pumpView(tester);
+
+      await openMenu(tester);
+      await tester.tap(find.text('Edit config'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RuleSetView), findsOneWidget);
+    });
+
+    testWidgets('the info button opens its rules too', (tester) async {
+      await pumpView(tester);
+
+      await tester.tap(find.byTooltip('Edit').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Work'), findsWidgets);
+      expect(find.byType(RuleSetView), findsOneWidget);
+    });
+  });
+
+  group('the default config', () {
+    testWidgets('has a menu with no delete and an info button', (tester) async {
+      await pumpView(tester);
+
+      await tester.tap(find.text('Built-in rules'), buttons: kSecondaryButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Rename'), findsOneWidget);
+      expect(find.text('Edit plain text'), findsOneWidget);
+      expect(find.text('Delete config'), findsNothing);
+      expect(
+        find.descendant(
+          of: rowOf('Built-in rules'),
+          matching: find.byTooltip('Edit'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('opens on the built-in rules before its first edit', (
+      tester,
+    ) async {
+      await pumpView(tester, page: const RuleSetView(id: defaultRuleSetId));
+
+      expect(find.text('geosite:cn'), findsOneWidget);
+      expect(find.text('geoip:cn'), findsOneWidget);
+      expect(find.text('Delete config'), findsNothing);
+    });
+
+    testWidgets('an edit is kept and becomes the rules in use', (tester) async {
+      await pumpView(tester, page: const RuleSetView(id: defaultRuleSetId));
+
+      await tester.tap(find.byTooltip('Delete').first);
+      await tester.pump();
+
+      final stored = sets().firstWhere((set) => set.id == defaultRuleSetId);
+      expect(stored.rules, hasLength(1));
+      expect(container.read(activeRulesProvider), stored.rules);
+    });
+
+    testWidgets('restoring it puts the built-in rules back', (tester) async {
+      await pumpView(
+        tester,
+        initial: const [
+          RuleSet(id: defaultRuleSetId, label: 'Mine', rules: []),
+          _set,
+        ],
+        currentId: 1,
+      );
+
+      await tester.tap(find.text('Restore default config'));
+      await tester.pump();
+
+      final stored = sets().firstWhere((set) => set.id == defaultRuleSetId);
+      expect(stored.rules, builtInRules);
+      expect(container.read(currentRuleSetIdProvider), isNull);
+    });
   });
 }

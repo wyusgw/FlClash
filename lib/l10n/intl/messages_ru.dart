@@ -257,9 +257,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Режим чёрного списка",
     ),
     "builtInRules": MessageLookupByLibrary.simpleMessage("Встроенные правила"),
-    "builtInRulesDesc": MessageLookupByLibrary.simpleMessage(
-      "Материковый Китай напрямую, остальное через прокси",
-    ),
     "bypassDomain": MessageLookupByLibrary.simpleMessage("Исключённые домены"),
     "bypassDomainDesc": MessageLookupByLibrary.simpleMessage(
       "Действует только при включённом системном прокси",
@@ -405,9 +402,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteAllNodesTip": MessageLookupByLibrary.simpleMessage(
       "Вы уверены, что хотите удалить?",
     ),
-    "deleteRuleSet": MessageLookupByLibrary.simpleMessage(
-      "Удалить набор правил",
-    ),
+    "deleteRuleSet": MessageLookupByLibrary.simpleMessage("Удалить конфиг"),
     "deleteSuccess": MessageLookupByLibrary.simpleMessage("Удалено"),
     "deleteTip": m6,
     "desc": MessageLookupByLibrary.simpleMessage(
@@ -442,6 +437,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "Скорость загрузки (Мбит/с)",
     ),
     "edit": MessageLookupByLibrary.simpleMessage("Редактировать"),
+    "editPlainText": MessageLookupByLibrary.simpleMessage(
+      "Редактировать как текст",
+    ),
+    "editRuleSet": MessageLookupByLibrary.simpleMessage("Изменить конфиг"),
     "editServer": MessageLookupByLibrary.simpleMessage("Изменить сервер"),
     "editSsid": MessageLookupByLibrary.simpleMessage("Изменить SSID"),
     "editorUnavailable": MessageLookupByLibrary.simpleMessage(
@@ -881,6 +880,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "remainingTraffic": MessageLookupByLibrary.simpleMessage("Остаток трафика"),
     "remote": MessageLookupByLibrary.simpleMessage("Удалённо"),
     "remove": MessageLookupByLibrary.simpleMessage("Убрать"),
+    "rename": MessageLookupByLibrary.simpleMessage("Переименовать"),
     "replace": MessageLookupByLibrary.simpleMessage("Заменить"),
     "replaceAll": MessageLookupByLibrary.simpleMessage("Заменить все"),
     "request": MessageLookupByLibrary.simpleMessage("Запрос"),

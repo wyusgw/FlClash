@@ -8,12 +8,14 @@ part of '../state.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The rules of the rule set in use; empty while the built-in rules apply.
+/// The rules of the rule set in use; empty while the built-in rules apply,
+/// which they do until the default config is first edited.
 
 @ProviderFor(activeRules)
 final activeRulesProvider = ActiveRulesProvider._();
 
-/// The rules of the rule set in use; empty while the built-in rules apply.
+/// The rules of the rule set in use; empty while the built-in rules apply,
+/// which they do until the default config is first edited.
 
 final class ActiveRulesProvider
     extends
@@ -23,7 +25,8 @@ final class ActiveRulesProvider
           List<Map<String, dynamic>>
         >
     with $Provider<List<Map<String, dynamic>>> {
-  /// The rules of the rule set in use; empty while the built-in rules apply.
+  /// The rules of the rule set in use; empty while the built-in rules apply,
+  /// which they do until the default config is first edited.
   ActiveRulesProvider._()
     : super(
         from: null,
@@ -58,7 +61,7 @@ final class ActiveRulesProvider
   }
 }
 
-String _$activeRulesHash() => r'7a7fc76905e32df9ecad76a6441059f86c4607df';
+String _$activeRulesHash() => r'4d3b7bc2d8f18f00ddf9bd30bc8e8c708de0cedc';
 
 /// Everything the generated config is built from besides the profile itself.
 

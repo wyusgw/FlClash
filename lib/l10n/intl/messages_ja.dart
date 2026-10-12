@@ -212,9 +212,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "bind": MessageLookupByLibrary.simpleMessage("連携"),
     "blacklistMode": MessageLookupByLibrary.simpleMessage("ブラックリストモード"),
     "builtInRules": MessageLookupByLibrary.simpleMessage("組み込みルール"),
-    "builtInRulesDesc": MessageLookupByLibrary.simpleMessage(
-      "中国本土は直接接続、それ以外はプロキシ経由",
-    ),
     "bypassDomain": MessageLookupByLibrary.simpleMessage("除外ドメイン"),
     "bypassDomainDesc": MessageLookupByLibrary.simpleMessage(
       "システムプロキシが有効な場合のみ適用されます",
@@ -334,7 +331,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "delete": MessageLookupByLibrary.simpleMessage("削除"),
     "deleteAllNodes": MessageLookupByLibrary.simpleMessage("すべてのノードを削除"),
     "deleteAllNodesTip": MessageLookupByLibrary.simpleMessage("削除してもよろしいですか？"),
-    "deleteRuleSet": MessageLookupByLibrary.simpleMessage("ルールセットを削除"),
+    "deleteRuleSet": MessageLookupByLibrary.simpleMessage("設定を削除"),
     "deleteSuccess": MessageLookupByLibrary.simpleMessage("削除しました"),
     "deleteTip": m6,
     "desc": MessageLookupByLibrary.simpleMessage(
@@ -367,6 +364,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "download": MessageLookupByLibrary.simpleMessage("ダウンロード"),
     "downloadSpeed": MessageLookupByLibrary.simpleMessage("ダウンロード速度（Mbps）"),
     "edit": MessageLookupByLibrary.simpleMessage("編集"),
+    "editPlainText": MessageLookupByLibrary.simpleMessage("プレーンテキストを編集"),
+    "editRuleSet": MessageLookupByLibrary.simpleMessage("設定を編集"),
     "editServer": MessageLookupByLibrary.simpleMessage("サーバーを編集"),
     "editSsid": MessageLookupByLibrary.simpleMessage("SSIDを編集"),
     "editorUnavailable": MessageLookupByLibrary.simpleMessage("エディターを利用できません"),
@@ -742,6 +741,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "remainingTraffic": MessageLookupByLibrary.simpleMessage("残りのトラフィック"),
     "remote": MessageLookupByLibrary.simpleMessage("リモート"),
     "remove": MessageLookupByLibrary.simpleMessage("削除"),
+    "rename": MessageLookupByLibrary.simpleMessage("名前を変更"),
     "replace": MessageLookupByLibrary.simpleMessage("置換"),
     "replaceAll": MessageLookupByLibrary.simpleMessage("すべて置換"),
     "request": MessageLookupByLibrary.simpleMessage("リクエスト"),

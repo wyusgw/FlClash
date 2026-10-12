@@ -6,6 +6,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/pages/editor.dart';
 import 'package:fl_clash/pages/scan.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/state.dart';
@@ -55,12 +56,29 @@ String describeRule(Map<String, dynamic> rule) {
   return jsonEncode(rule);
 }
 
+const _builtInDefault = RuleSet(id: defaultRuleSetId, rules: builtInRules);
+
+/// The default config as stored, or the built-in rules before its first edit.
+RuleSet _defaultOf(List<RuleSet> sets) =>
+    sets.where((set) => set.id == defaultRuleSetId).firstOrNull ??
+    _builtInDefault;
+
+RuleSet? _setOf(List<RuleSet> sets, int id) => id == defaultRuleSetId
+    ? _defaultOf(sets)
+    : sets.where((set) => set.id == id).firstOrNull;
+
+String _labelOf(AppLocalizations l, RuleSet set) =>
+    set.id == defaultRuleSetId && set.label.isEmpty
+    ? l.builtInRules
+    : set.label;
+
 void _updateSet(WidgetRef ref, int id, RuleSet Function(RuleSet set) update) {
-  ref
-      .read(ruleSetsProvider.notifier)
-      .update(
-        (sets) => [for (final set in sets) set.id == id ? update(set) : set],
-      );
+  ref.read(ruleSetsProvider.notifier).update((sets) {
+    if (id == defaultRuleSetId && !sets.any((set) => set.id == id)) {
+      return [update(_builtInDefault), ...sets];
+    }
+    return [for (final set in sets) set.id == id ? update(set) : set];
+  });
 }
 
 Future<List<Map<String, dynamic>>> _download(String url) async {
@@ -75,6 +93,16 @@ void _showRulesError(BuildContext context, Object error) {
         : userFacingErrorMessage(error, context.appLocalizations),
     level: MessageLevel.error,
   );
+}
+
+/// Drops a rule config, falling back to the built-in rules if it was in use.
+void _deleteRuleSet(WidgetRef ref, int id) {
+  if (ref.read(currentRuleSetIdProvider) == id) {
+    ref.read(currentRuleSetIdProvider.notifier).value = null;
+  }
+  ref
+      .read(ruleSetsProvider.notifier)
+      .update((sets) => [...sets.where((set) => set.id != id)]);
 }
 
 void _keep(WidgetRef ref, RuleSet set) {
@@ -186,7 +214,17 @@ class RulesView extends ConsumerWidget {
                 leading: const GroupedIcon(AppGlyphs.undo),
                 title: appLocalizations.restoreDefaultRules,
                 chevron: true,
-                onTap: () => select(null),
+                onTap: () {
+                  _updateSet(
+                    ref,
+                    defaultRuleSetId,
+                    (set) => set.copyWith(
+                      rules: builtInRules,
+                      lastUpdateDate: DateTime.now(),
+                    ),
+                  );
+                  select(null);
+                },
               ),
               GroupedRow(
                 leading: const GroupedIcon(AppGlyphs.cloudDownload),
@@ -209,58 +247,181 @@ class RulesView extends ConsumerWidget {
                 '${appLocalizations.rulesLegend} '
                 '${appLocalizations.rulesFooter}',
             children: [
-              GroupedRow(
-                leading: const DecoratedBox(
-                  decoration: ShapeDecoration(
-                    shape: AppShape.circle,
-                    color: _defaultDot,
-                  ),
-                  child: SizedBox.square(dimension: _dotSize),
-                ),
-                leadingWidth: _dotSize,
-                title: appLocalizations.builtInRules,
-                subtitle: appLocalizations.builtInRulesDesc,
-                trailing: currentId == null ? check : null,
-                onTap: () => select(null),
-              ),
-              for (final set in sets)
-                GroupedRow(
+              for (final set in [
+                _defaultOf(sets),
+                ...sets.where((set) => set.id != defaultRuleSetId),
+              ])
+                _RuleSetMenuTarget(
                   key: ValueKey(set.id),
-                  leading: const SizedBox.square(dimension: _dotSize),
-                  leadingWidth: _dotSize,
-                  title: set.label,
-                  subtitle: _ruleSetDetail(set),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    spacing: 6,
-                    children: [
-                      if (set.id == currentId) check,
-                      Tooltip(
-                        message: appLocalizations.edit,
-                        child: InkResponse(
-                          onTap: () => BaseNavigator.push(
-                            context,
-                            RuleSetView(id: set.id),
-                          ),
-                          radius: 16,
-                          splashFactory: NoSplash.splashFactory,
-                          hoverColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          child: GlyphIcon(
-                            AppGlyphs.info,
-                            size: 21,
-                            color: palette.accent,
+                  ruleSet: set,
+                  child: GroupedRow(
+                    leading: set.id == defaultRuleSetId
+                        ? const DecoratedBox(
+                            decoration: ShapeDecoration(
+                              shape: AppShape.circle,
+                              color: _defaultDot,
+                            ),
+                            child: SizedBox.square(dimension: _dotSize),
+                          )
+                        : const SizedBox.square(dimension: _dotSize),
+                    leadingWidth: _dotSize,
+                    title: _labelOf(appLocalizations, set),
+                    subtitle: _ruleSetDetail(set),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      spacing: 6,
+                      children: [
+                        if (set.id == (currentId ?? defaultRuleSetId)) check,
+                        Tooltip(
+                          message: appLocalizations.edit,
+                          child: InkResponse(
+                            onTap: () => BaseNavigator.push(
+                              context,
+                              RuleSetView(id: set.id),
+                            ),
+                            radius: 16,
+                            splashFactory: NoSplash.splashFactory,
+                            hoverColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                            child: GlyphIcon(
+                              AppGlyphs.info,
+                              size: 21,
+                              color: palette.accent,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    onTap: () =>
+                        select(set.id == defaultRuleSetId ? null : set.id),
                   ),
-                  onTap: () => select(set.id),
                 ),
             ],
           ),
         ],
       ),
+    );
+  }
+}
+
+enum _RuleSetAction { rename, edit, editText, delete }
+
+/// Opens a rule config's menu where it was asked for: a right click, or a
+/// long press.
+class _RuleSetMenuTarget extends ConsumerWidget {
+  const _RuleSetMenuTarget({
+    super.key,
+    required this.ruleSet,
+    required this.child,
+  });
+
+  final RuleSet ruleSet;
+  final Widget child;
+
+  Future<void> _rename(BuildContext context, WidgetRef ref) async {
+    final appLocalizations = context.appLocalizations;
+    final value = await dialogs.showCommonDialog<String>(
+      child: InputDialog(
+        title: appLocalizations.rename,
+        value: _labelOf(appLocalizations, ruleSet),
+        validator: (value) => value == null || value.trim().isEmpty
+            ? appLocalizations.required
+            : null,
+      ),
+    );
+    final label = value?.trim();
+    if (label == null || label.isEmpty) return;
+    _updateSet(ref, ruleSet.id, (set) => set.copyWith(label: label));
+  }
+
+  void _editText(BuildContext context, WidgetRef ref) {
+    final text = const JsonEncoder.withIndent(
+      '  ',
+    ).convert({'rules': ruleSet.rules});
+    unawaited(
+      BaseNavigator.push(
+        context,
+        EditorPage(
+          title: _labelOf(context.appLocalizations, ruleSet),
+          content: text,
+          onSave: (context, _, content) {
+            try {
+              final rules = parseXrayRules(content);
+              _updateSet(ref, ruleSet.id, (set) => set.copyWith(rules: rules));
+              Navigator.of(context).pop();
+            } catch (error) {
+              _showRulesError(context, error);
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _open(
+    BuildContext context,
+    WidgetRef ref,
+    Offset position,
+  ) async {
+    final appLocalizations = context.appLocalizations;
+    final overlay =
+        Overlay.of(context).context.findRenderObject()! as RenderBox;
+    final chosen = await showMenu<_RuleSetAction>(
+      context: context,
+      position: RelativeRect.fromRect(
+        position & const Size(1, 1),
+        Offset.zero & overlay.size,
+      ),
+      items: [
+        PopupMenuItem(
+          value: _RuleSetAction.rename,
+          height: 30,
+          child: Text(appLocalizations.rename),
+        ),
+        PopupMenuItem(
+          value: _RuleSetAction.edit,
+          height: 30,
+          child: Text(appLocalizations.editRuleSet),
+        ),
+        PopupMenuItem(
+          value: _RuleSetAction.editText,
+          height: 30,
+          child: Text(appLocalizations.editPlainText),
+        ),
+        if (ruleSet.id != defaultRuleSetId) ...[
+          const PopupMenuDivider(height: 1),
+          PopupMenuItem(
+            value: _RuleSetAction.delete,
+            height: 30,
+            child: Text(
+              appLocalizations.deleteRuleSet,
+              style: const TextStyle(color: groupedDanger),
+            ),
+          ),
+        ],
+      ],
+    );
+    if (chosen == null || !context.mounted) return;
+    switch (chosen) {
+      case _RuleSetAction.rename:
+        await _rename(context, ref);
+      case _RuleSetAction.edit:
+        unawaited(BaseNavigator.push(context, RuleSetView(id: ruleSet.id)));
+      case _RuleSetAction.editText:
+        _editText(context, ref);
+      case _RuleSetAction.delete:
+        _deleteRuleSet(ref, ruleSet.id);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onSecondaryTapDown: (details) =>
+          unawaited(_open(context, ref, details.globalPosition)),
+      onLongPressStart: (details) =>
+          unawaited(_open(context, ref, details.globalPosition)),
+      child: child,
     );
   }
 }
@@ -478,12 +639,7 @@ class _RuleSetViewState extends ConsumerState<RuleSetView> {
   }
 
   void _delete() {
-    if (ref.read(currentRuleSetIdProvider) == widget.id) {
-      ref.read(currentRuleSetIdProvider.notifier).value = null;
-    }
-    ref
-        .read(ruleSetsProvider.notifier)
-        .update((sets) => [...sets.where((set) => set.id != widget.id)]);
+    _deleteRuleSet(ref, widget.id);
     Navigator.of(context).pop();
   }
 
@@ -492,16 +648,15 @@ class _RuleSetViewState extends ConsumerState<RuleSetView> {
     final appLocalizations = context.appLocalizations;
     final palette = GroupedPalette.of(context);
     final set = ref.watch(
-      ruleSetsProvider.select(
-        (sets) => sets.where((set) => set.id == widget.id).firstOrNull,
-      ),
+      ruleSetsProvider.select((sets) => _setOf(sets, widget.id)),
     );
     if (set == null) {
       return const SizedBox.shrink();
     }
     final url = set.url;
+    final label = _labelOf(appLocalizations, set);
     return GroupedPage(
-      title: set.label,
+      title: label,
       onBack: () => Navigator.of(context).maybePop(),
       trailing: GroupedBarAction(
         glyph: AppGlyphs.add,
@@ -518,7 +673,7 @@ class _RuleSetViewState extends ConsumerState<RuleSetView> {
             children: [
               GroupedInputRow(
                 title: appLocalizations.name,
-                value: set.label,
+                value: label,
                 validator: (value) =>
                     value.trim().isEmpty ? appLocalizations.required : null,
                 onSubmitted: (value) => _updateSet(
@@ -576,16 +731,18 @@ class _RuleSetViewState extends ConsumerState<RuleSetView> {
                 ),
             ],
           ),
-          const SizedBox(height: groupedSectionGap),
-          GroupedSection(
-            children: [
-              GroupedButtonRow(
-                label: appLocalizations.deleteRuleSet,
-                color: groupedDanger,
-                onTap: _delete,
-              ),
-            ],
-          ),
+          if (set.id != defaultRuleSetId) ...[
+            const SizedBox(height: groupedSectionGap),
+            GroupedSection(
+              children: [
+                GroupedButtonRow(
+                  label: appLocalizations.deleteRuleSet,
+                  color: groupedDanger,
+                  onTap: _delete,
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

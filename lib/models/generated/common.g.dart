@@ -132,6 +132,7 @@ const _$HotActionEnumMap = {
   HotAction.updateProfiles: 'updateProfiles',
   HotAction.copyEnv: 'copyEnv',
   HotAction.exit: 'exit',
+  HotAction.speedView: 'speedView',
 };
 
 const _$KeyboardModifierEnumMap = {

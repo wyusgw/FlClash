@@ -80,4 +80,20 @@ void main() {
     expect(isModifierKey(PhysicalKeyboardKey.metaLeft), isTrue);
     expect(isModifierKey(PhysicalKeyboardKey.keyA), isFalse);
   });
+
+  test('menuKeyEquivalent names the keys AppKit can match', () {
+    expect(menuKeyEquivalent(PhysicalKeyboardKey.keyP.usbHidUsage), 'p');
+    expect(menuKeyEquivalent(PhysicalKeyboardKey.digit0.usbHidUsage), '0');
+    expect(menuKeyEquivalent(PhysicalKeyboardKey.digit7.usbHidUsage), '7');
+    expect(menuKeyEquivalent(PhysicalKeyboardKey.comma.usbHidUsage), ',');
+    expect(menuKeyEquivalent(PhysicalKeyboardKey.enter.usbHidUsage), '\r');
+    expect(
+      menuKeyEquivalent(PhysicalKeyboardKey.arrowUp.usbHidUsage),
+      '\uF700',
+    );
+    expect(menuKeyEquivalent(PhysicalKeyboardKey.f1.usbHidUsage), '\uF704');
+    expect(menuKeyEquivalent(PhysicalKeyboardKey.f12.usbHidUsage), '\uF70F');
+    expect(menuKeyEquivalent(PhysicalKeyboardKey.numpad1.usbHidUsage), isNull);
+    expect(menuKeyEquivalent(PhysicalKeyboardKey.f13.usbHidUsage), isNull);
+  });
 }

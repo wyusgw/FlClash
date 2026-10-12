@@ -163,6 +163,55 @@ final class ShortcutLabels {
   }
 }
 
+/// The character AppKit matches a menu key equivalent against, or null for a
+/// key it cannot name. Function keys use the private-use characters AppKit
+/// reserves for them (`NSUpArrowFunctionKey`, `NSF1FunctionKey`, ...).
+String? menuKeyEquivalent(int usbHidUsage) {
+  final named = _menuKeyEquivalents[PhysicalKeyboardKey(usbHidUsage)];
+  if (named != null) {
+    return named;
+  }
+  return switch (usbHidUsage) {
+    >= 0x00070004 && <= 0x0007001d => String.fromCharCode(
+      0x61 + usbHidUsage - 0x00070004,
+    ),
+    >= 0x0007001e && <= 0x00070026 => '${usbHidUsage - 0x0007001d}',
+    0x00070027 => '0',
+    >= 0x0007003a && <= 0x00070045 => String.fromCharCode(
+      0xF704 + usbHidUsage - 0x0007003a,
+    ),
+    _ => null,
+  };
+}
+
+final _menuKeyEquivalents = {
+  PhysicalKeyboardKey.enter: '\r',
+  PhysicalKeyboardKey.escape: '\u001b',
+  PhysicalKeyboardKey.backspace: '\u0008',
+  PhysicalKeyboardKey.delete: '\uF728',
+  PhysicalKeyboardKey.tab: '\t',
+  PhysicalKeyboardKey.space: ' ',
+  PhysicalKeyboardKey.home: '\uF729',
+  PhysicalKeyboardKey.end: '\uF72B',
+  PhysicalKeyboardKey.pageUp: '\uF72C',
+  PhysicalKeyboardKey.pageDown: '\uF72D',
+  PhysicalKeyboardKey.arrowUp: '\uF700',
+  PhysicalKeyboardKey.arrowDown: '\uF701',
+  PhysicalKeyboardKey.arrowLeft: '\uF702',
+  PhysicalKeyboardKey.arrowRight: '\uF703',
+  PhysicalKeyboardKey.minus: '-',
+  PhysicalKeyboardKey.equal: '=',
+  PhysicalKeyboardKey.bracketLeft: '[',
+  PhysicalKeyboardKey.bracketRight: ']',
+  PhysicalKeyboardKey.backslash: r'\',
+  PhysicalKeyboardKey.semicolon: ';',
+  PhysicalKeyboardKey.quote: "'",
+  PhysicalKeyboardKey.backquote: '`',
+  PhysicalKeyboardKey.comma: ',',
+  PhysicalKeyboardKey.period: '.',
+  PhysicalKeyboardKey.slash: '/',
+};
+
 SingleActivator controlSingleActivator(LogicalKeyboardKey trigger) {
   final control = system.isMacOS ? false : true;
   return SingleActivator(trigger, control: control, meta: !control);

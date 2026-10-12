@@ -54,17 +54,28 @@ abstract final class TrayCodec {
       sink[id] = item;
       return switch (item) {
         TrayMenuSeparator() => <String, Object?>{'id': id, 'type': 'separator'},
-        TrayMenuAction(:final label, :final detail, :final enabled) =>
+        TrayMenuAction(
+          :final label,
+          :final detail,
+          :final busy,
+          :final shortcut,
+          :final enabled,
+        ) =>
           <String, Object?>{
             'id': id,
             'type': 'action',
             'label': label,
             if (detail != null && detail.isNotEmpty) 'detail': detail,
+            if (busy) 'busy': true,
+            if (shortcut != null) 'shortcut': _encodeShortcut(shortcut),
             'enabled': enabled,
           },
         TrayMenuCheckbox(
           :final label,
           :final detail,
+          :final detailTone,
+          :final busy,
+          :final shortcut,
           :final enabled,
           :final checked,
         ) =>
@@ -73,12 +84,18 @@ abstract final class TrayCodec {
             'type': 'checkbox',
             'label': label,
             if (detail != null && detail.isNotEmpty) 'detail': detail,
+            if (detail != null && detail.isNotEmpty && detailTone != null)
+              'detailTone': detailTone.name,
+            if (busy) 'busy': true,
+            if (shortcut != null) 'shortcut': _encodeShortcut(shortcut),
             'enabled': enabled,
             'checked': checked,
           },
         TrayMenuSubmenu(
           :final label,
           :final detail,
+          :final detailTone,
+          :final busy,
           :final enabled,
           :final items,
         ) =>
@@ -87,12 +104,25 @@ abstract final class TrayCodec {
             'type': 'submenu',
             'label': label,
             if (detail != null && detail.isNotEmpty) 'detail': detail,
+            if (detail != null && detail.isNotEmpty && detailTone != null)
+              'detailTone': detailTone.name,
+            if (busy) 'busy': true,
             'enabled': enabled,
             'items': _encodeItems(items, sink, allocator),
           },
       };
     }).toList();
   }
+}
+
+Map<String, Object?> _encodeShortcut(TrayShortcut shortcut) {
+  return {
+    'key': shortcut.key,
+    'modifiers': [
+      for (final modifier in TrayShortcutModifier.values)
+        if (shortcut.modifiers.contains(modifier)) modifier.name,
+    ],
+  };
 }
 
 final class _IdAllocator {

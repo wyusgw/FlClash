@@ -17,9 +17,6 @@ TrayState _trayState({
 }) {
   return TrayState(
     mode: Mode.rule,
-    port: 7890,
-    autoLaunch: false,
-    systemProxy: false,
     tunEnable: false,
     isStart: isStart,
     groups: const [],

@@ -925,9 +925,39 @@ class AppLocalizations {
     return Intl.message('Show', name: 'show', desc: '', args: []);
   }
 
+  /// `Open {appName}`
+  String openApp(Object appName) {
+    return Intl.message(
+      'Open $appName',
+      name: 'openApp',
+      desc: '',
+      args: [appName],
+    );
+  }
+
   /// `Exit`
   String get exit {
     return Intl.message('Exit', name: 'exit', desc: '', args: []);
+  }
+
+  /// `Quit from menu bar`
+  String get quitFromMenuBar {
+    return Intl.message(
+      'Quit from menu bar',
+      name: 'quitFromMenuBar',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Toggle speed view`
+  String get toggleSpeedView {
+    return Intl.message(
+      'Toggle speed view',
+      name: 'toggleSpeedView',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `System proxy`
@@ -2260,11 +2290,11 @@ class AppLocalizations {
     );
   }
 
-  /// `Already used by “{action}”. Saving moves it here.`
-  String hotkeyConflictWith(Object action) {
+  /// `Moved from “{action}”`
+  String hotkeyMovedFrom(Object action) {
     return Intl.message(
-      'Already used by “$action”. Saving moves it here.',
-      name: 'hotkeyConflictWith',
+      'Moved from “$action”',
+      name: 'hotkeyMovedFrom',
       desc: '',
       args: [action],
     );

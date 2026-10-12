@@ -23,6 +23,7 @@ Glyph _glyphOf(HotAction action) {
     HotAction.copyEnv => AppGlyphs.code,
     HotAction.delayTest => AppGlyphs.bolt,
     HotAction.updateProfiles => AppGlyphs.sync,
+    HotAction.speedView => AppGlyphs.speed,
   };
 }
 
@@ -30,7 +31,12 @@ List<(String, List<HotAction>)> _sections(AppLocalizations appLocalizations) {
   return [
     (
       appLocalizations.general,
-      const [HotAction.view, HotAction.start, HotAction.exit],
+      const [
+        HotAction.view,
+        HotAction.start,
+        HotAction.speedView,
+        HotAction.exit,
+      ],
     ),
     (
       appLocalizations.outboundMode,
@@ -97,8 +103,109 @@ void _saveBinding(WidgetRef ref, HotKeyAction binding) {
   notifier.value = _withBinding(notifier.value, binding);
 }
 
-class HotKeyView extends StatelessWidget {
+class HotKeyView extends ConsumerStatefulWidget {
   const HotKeyView({super.key});
+
+  @override
+  ConsumerState<HotKeyView> createState() => _HotKeyViewState();
+}
+
+class _HotKeyViewState extends ConsumerState<HotKeyView> {
+  late final HotKeyRecording _recording;
+  HotAction? _recordingAction;
+  Set<KeyboardModifier> _modifiers = const {};
+  bool _needsModifier = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _recording = ref.read(hotKeyRecordingProvider.notifier);
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
+    if (_recordingAction != null) {
+      final recording = _recording;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        recording.value = false;
+      });
+    }
+    super.dispose();
+  }
+
+  void _start(HotAction action) {
+    setState(() {
+      _recordingAction = action;
+      _modifiers = const {};
+      _needsModifier = false;
+    });
+    _recording.value = true;
+  }
+
+  void _stop() {
+    setState(() {
+      _recordingAction = null;
+      _modifiers = const {};
+      _needsModifier = false;
+    });
+    _recording.value = false;
+  }
+
+  void _commit(HotKeyAction binding) {
+    final displaced = _conflictOf(ref.read(hotKeyActionsProvider), binding);
+    _saveBinding(ref, binding);
+    _stop();
+    if (displaced != null) {
+      dialogs.showNotifier(
+        context.appLocalizations.hotkeyMovedFrom(displaced.action.label),
+      );
+    }
+  }
+
+  Set<KeyboardModifier> _heldModifiers({PhysicalKeyboardKey? except}) {
+    final pressed = HardwareKeyboard.instance.physicalKeysPressed;
+    return {
+      for (final modifier in KeyboardModifier.values)
+        if (modifier.physicalKeys.any(pressed.contains) &&
+            !modifier.physicalKeys.contains(except))
+          modifier,
+    };
+  }
+
+  bool _handleKeyEvent(KeyEvent event) {
+    final action = _recordingAction;
+    if (action == null) {
+      return false;
+    }
+    final physicalKey = event.physicalKey;
+    if (isModifierKey(physicalKey)) {
+      setState(() {
+        _modifiers = _heldModifiers();
+        _needsModifier = false;
+      });
+      return true;
+    }
+    if (event is KeyUpEvent) {
+      return true;
+    }
+    final modifiers = _heldModifiers(except: physicalKey);
+    if (physicalKey == PhysicalKeyboardKey.escape && modifiers.isEmpty) {
+      _stop();
+      return true;
+    }
+    final key = physicalKey.usbHidUsage;
+    if (!isValidHotKey(modifiers, key)) {
+      setState(() {
+        _modifiers = modifiers;
+        _needsModifier = true;
+      });
+      return true;
+    }
+    _commit(HotKeyAction(action: action, key: key, modifiers: modifiers));
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +236,20 @@ class HotKeyView extends StatelessWidget {
                 header: title,
                 children: [
                   for (final action in actions)
-                    _HotKeyItem(action: action, labels: labels),
+                    _HotKeyItem(
+                      action: action,
+                      labels: labels,
+                      recording: _recordingAction == action
+                          ? (
+                              modifiers: _modifiers,
+                              needsModifier: _needsModifier,
+                            )
+                          : null,
+                      onTap: () =>
+                          _recordingAction == action ? _stop() : _start(action),
+                      onClear: () =>
+                          _saveBinding(ref, HotKeyAction(action: action)),
+                    ),
                 ],
               ),
             ),
@@ -139,15 +259,43 @@ class HotKeyView extends StatelessWidget {
   }
 }
 
+typedef _RecordingPreview = ({
+  Set<KeyboardModifier> modifiers,
+  bool needsModifier,
+});
+
 class _HotKeyItem extends ConsumerWidget implements GroupedInset {
-  const _HotKeyItem({required this.action, required this.labels});
+  const _HotKeyItem({
+    required this.action,
+    required this.labels,
+    required this.recording,
+    required this.onTap,
+    required this.onClear,
+  });
 
   final HotAction action;
   final ShortcutLabels labels;
+  final _RecordingPreview? recording;
+  final VoidCallback onTap;
+  final VoidCallback onClear;
 
   @override
   double get separatorInset =>
       groupedRowPadding + groupedLeadingSize + groupedLeadingGap;
+
+  Widget _recordingTrailing(BuildContext context, _RecordingPreview preview) {
+    final palette = GroupedPalette.of(context);
+    if (preview.modifiers.isEmpty) {
+      return Text(
+        context.appLocalizations.pressKeyboard,
+        style: palette.rowValue.copyWith(color: palette.accent),
+      );
+    }
+    return _KeyCaps(
+      parts: labels.modifierParts(preview.modifiers),
+      trailingPlaceholder: true,
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -158,21 +306,35 @@ class _HotKeyItem extends ConsumerWidget implements GroupedInset {
       hotKeyFailuresProvider.select((state) => state[action]),
     );
     final key = hotKeyAction.key;
+    final preview = recording;
+    final Widget? subtitle;
+    if (preview != null && preview.needsModifier) {
+      subtitle = Text(
+        appLocalizations.hotkeyNeedsModifier(
+          labels
+              .modifierParts(primaryHotKeyModifiers)
+              .join(labels.isMacOS ? ' ' : ', '),
+        ),
+        style: palette.rowSubtitle.copyWith(color: context.colorScheme.error),
+      );
+    } else if (failure != null) {
+      subtitle = Tooltip(
+        message: failure,
+        child: Text(
+          appLocalizations.hotkeyUnavailable,
+          style: palette.rowSubtitle.copyWith(color: context.colorScheme.error),
+        ),
+      );
+    } else {
+      subtitle = null;
+    }
     return GroupedRow(
       leading: GroupedIcon(_glyphOf(action)),
       title: action.label,
-      subtitleWidget: failure == null
-          ? null
-          : Tooltip(
-              message: failure,
-              child: Text(
-                appLocalizations.hotkeyUnavailable,
-                style: palette.rowSubtitle.copyWith(
-                  color: context.colorScheme.error,
-                ),
-              ),
-            ),
-      trailing: key == null
+      subtitleWidget: subtitle,
+      trailing: preview != null
+          ? _recordingTrailing(context, preview)
+          : key == null
           ? Text(appLocalizations.hotkeyNotSet, style: palette.rowValue)
           : Row(
               mainAxisSize: MainAxisSize.min,
@@ -186,8 +348,7 @@ class _HotKeyItem extends ConsumerWidget implements GroupedInset {
                   message: appLocalizations.remove,
                   child: InkResponse(
                     radius: 14,
-                    onTap: () =>
-                        _saveBinding(ref, HotKeyAction(action: action)),
+                    onTap: onClear,
                     child: GlyphIcon(
                       AppGlyphs.close,
                       size: 16,
@@ -197,11 +358,7 @@ class _HotKeyItem extends ConsumerWidget implements GroupedInset {
                 ),
               ],
             ),
-      onTap: () {
-        dialogs.showCommonDialog(
-          child: HotKeyRecorder(hotKeyAction: hotKeyAction, labels: labels),
-        );
-      },
+      onTap: onTap,
     );
   }
 }
@@ -209,23 +366,23 @@ class _HotKeyItem extends ConsumerWidget implements GroupedInset {
 class _KeyCaps extends StatelessWidget {
   const _KeyCaps({
     required this.parts,
-    this.isLarge = false,
     this.isError = false,
+    this.trailingPlaceholder = false,
   });
 
   final List<String> parts;
-  final bool isLarge;
   final bool isError;
+  final bool trailingPlaceholder;
 
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: isLarge ? 8 : 4,
-      runSpacing: isLarge ? 8 : 4,
-      alignment: WrapAlignment.center,
+      spacing: 4,
+      runSpacing: 4,
+      alignment: WrapAlignment.end,
       children: [
-        for (final part in parts)
-          _KeyCap(label: part, isLarge: isLarge, isError: isError),
+        for (final part in parts) _KeyCap(label: part, isError: isError),
+        if (trailingPlaceholder) const _KeyCap(label: '…', isPlaceholder: true),
       ],
     );
   }
@@ -234,13 +391,11 @@ class _KeyCaps extends StatelessWidget {
 class _KeyCap extends StatelessWidget {
   const _KeyCap({
     required this.label,
-    this.isLarge = false,
     this.isError = false,
     this.isPlaceholder = false,
   });
 
   final String label;
-  final bool isLarge;
   final bool isError;
   final bool isPlaceholder;
 
@@ -248,26 +403,14 @@ class _KeyCap extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
     final palette = GroupedPalette.of(context);
-    final side = isLarge ? 44.0 : 22.0;
-    final foregroundColor = isError
-        ? colorScheme.error
-        : (isLarge ? colorScheme.onSurfaceVariant : palette.label);
-    final textStyle = isLarge
-        ? context.textTheme.titleMedium
-        : context.textTheme.labelSmall;
-    final fill = isLarge ? colorScheme.surfaceContainerHighest : palette.hover;
     return Container(
-      constraints: BoxConstraints(minWidth: side, minHeight: side),
-      padding: EdgeInsets.symmetric(horizontal: isLarge ? 12 : 6),
+      constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
+      padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: ShapeDecoration(
-        color: isPlaceholder ? Colors.transparent : fill,
-        shape: (isLarge ? AppShape.md : AppShape.sm).copyWith(
-          side: isLarge || isError
-              ? BorderSide(
-                  color: isError
-                      ? colorScheme.error
-                      : colorScheme.outlineVariant,
-                )
+        color: isPlaceholder ? Colors.transparent : palette.hover,
+        shape: AppShape.sm.copyWith(
+          side: isError
+              ? BorderSide(color: colorScheme.error)
               : BorderSide.none,
         ),
       ),
@@ -276,236 +419,10 @@ class _KeyCap extends StatelessWidget {
         heightFactor: 1,
         child: Text(
           label,
-          style: textStyle?.copyWith(
+          style: context.textTheme.labelSmall?.copyWith(
             fontWeight: FontWeight.w600,
-            color: foregroundColor,
+            color: isError ? colorScheme.error : palette.label,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class HotKeyRecorder extends ConsumerStatefulWidget {
-  const HotKeyRecorder({
-    super.key,
-    required this.hotKeyAction,
-    required this.labels,
-  });
-
-  final HotKeyAction hotKeyAction;
-  final ShortcutLabels labels;
-
-  @override
-  ConsumerState<HotKeyRecorder> createState() => _HotKeyRecorderState();
-}
-
-class _HotKeyRecorderState extends ConsumerState<HotKeyRecorder> {
-  late final HotKeyRecording _recording;
-  Set<KeyboardModifier> _modifiers = const {};
-  int? _key;
-
-  HotKeyAction get _draft =>
-      widget.hotKeyAction.copyWith(modifiers: _modifiers, key: _key);
-
-  @override
-  void initState() {
-    super.initState();
-    _recording = ref.read(hotKeyRecordingProvider.notifier);
-    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _recording.value = true;
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
-    final recording = _recording;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      recording.value = false;
-    });
-    super.dispose();
-  }
-
-  Set<KeyboardModifier> _heldModifiers({PhysicalKeyboardKey? except}) {
-    final pressed = HardwareKeyboard.instance.physicalKeysPressed;
-    return {
-      for (final modifier in KeyboardModifier.values)
-        if (modifier.physicalKeys.any(pressed.contains) &&
-            !modifier.physicalKeys.contains(except))
-          modifier,
-    };
-  }
-
-  bool _handleKeyEvent(KeyEvent event) {
-    final physicalKey = event.physicalKey;
-    if (isModifierKey(physicalKey)) {
-      if (event is KeyDownEvent || (event is KeyUpEvent && _key == null)) {
-        setState(() {
-          _key = null;
-          _modifiers = _heldModifiers();
-        });
-      }
-      return false;
-    }
-    if (event is KeyUpEvent) {
-      return false;
-    }
-    final modifiers = _heldModifiers(except: physicalKey);
-    if (physicalKey == PhysicalKeyboardKey.escape && modifiers.isEmpty) {
-      Navigator.of(context).pop();
-      return false;
-    }
-    setState(() {
-      _modifiers = modifiers;
-      _key = physicalKey.usbHidUsage;
-    });
-    return false;
-  }
-
-  void _handleSave() {
-    Navigator.of(context).pop();
-    _saveBinding(ref, _draft);
-  }
-
-  void _handleRemove() {
-    Navigator.of(context).pop();
-    _saveBinding(ref, HotKeyAction(action: widget.hotKeyAction.action));
-  }
-
-  Widget _buildCapture(BuildContext context, {required bool isError}) {
-    final colorScheme = context.colorScheme;
-    final key = _key;
-    final Widget content;
-    if (key != null) {
-      content = _KeyCaps(
-        parts: widget.labels.parts(_modifiers, key),
-        isLarge: true,
-        isError: isError,
-      );
-    } else if (_modifiers.isNotEmpty) {
-      content = Wrap(
-        spacing: 8,
-        alignment: WrapAlignment.center,
-        children: [
-          for (final part in widget.labels.modifierParts(_modifiers))
-            _KeyCap(label: part, isLarge: true),
-          const _KeyCap(label: '…', isLarge: true, isPlaceholder: true),
-        ],
-      );
-    } else {
-      content = Text(
-        context.appLocalizations.pressKeyboard,
-        textAlign: TextAlign.center,
-        style: context.textTheme.bodyLarge?.copyWith(
-          color: colorScheme.onSurfaceVariant,
-        ),
-      );
-    }
-    return Container(
-      constraints: const BoxConstraints(minHeight: 96),
-      padding: const EdgeInsets.all(16),
-      alignment: Alignment.center,
-      decoration: ShapeDecoration(
-        color: colorScheme.surfaceContainerLow,
-        shape: AppShape.md.copyWith(
-          side: BorderSide(
-            color: isError ? colorScheme.error : colorScheme.primary,
-            width: 1.5,
-          ),
-        ),
-      ),
-      child: content,
-    );
-  }
-
-  Widget? _buildStatus(
-    BuildContext context, {
-    required bool isInvalid,
-    required HotKeyAction? conflict,
-  }) {
-    final appLocalizations = context.appLocalizations;
-    final colorScheme = context.colorScheme;
-    final (text, color) = switch ((isInvalid, conflict)) {
-      (true, _) => (
-        appLocalizations.hotkeyNeedsModifier(
-          widget.labels
-              .modifierParts(primaryHotKeyModifiers)
-              .join(widget.labels.isMacOS ? ' ' : ', '),
-        ),
-        colorScheme.error,
-      ),
-      (false, final HotKeyAction conflict) => (
-        appLocalizations.hotkeyConflictWith(conflict.action.label),
-        colorScheme.tertiary,
-      ),
-      _ => (null, null),
-    };
-    if (text == null) {
-      return null;
-    }
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Text(
-        text,
-        style: context.textTheme.bodyMedium?.copyWith(color: color),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final appLocalizations = context.appLocalizations;
-    final draft = _draft;
-    final isComplete = draft.key != null;
-    final isValid = isValidHotKey(draft.modifiers, draft.key);
-    final isInvalid = isComplete && !isValid;
-    final conflict = isValid
-        ? _conflictOf(ref.watch(hotKeyActionsProvider), draft)
-        : null;
-    final status = _buildStatus(
-      context,
-      isInvalid: isInvalid,
-      conflict: conflict,
-    );
-    return Focus(
-      onKeyEvent: (_, _) {
-        return KeyEventResult.handled;
-      },
-      autofocus: true,
-      child: CommonDialog(
-        title: widget.hotKeyAction.action.label,
-        actions: [
-          if (widget.hotKeyAction.key != null)
-            TextButton(
-              onPressed: _handleRemove,
-              child: Text(appLocalizations.remove),
-            ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(appLocalizations.cancel),
-          ),
-          TextButton(
-            onPressed: isValid ? _handleSave : null,
-            child: Text(appLocalizations.save),
-          ),
-        ],
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildCapture(context, isError: isInvalid),
-            AnimatedSize(
-              duration: commonDuration,
-              alignment: Alignment.topCenter,
-              child: status ?? const SizedBox(width: double.infinity),
-            ),
-          ],
         ),
       ),
     );

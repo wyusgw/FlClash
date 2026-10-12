@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/manager/locale_manager.dart';
 import 'package:fl_clash/manager/tray_manager.dart';
@@ -48,6 +49,8 @@ class _SlowFirstFailureSystemAction extends SystemAction {
     }
   }
 }
+
+Mode _nextMode(Mode mode) => Mode.values[(mode.index + 1) % Mode.values.length];
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -168,7 +171,7 @@ void main() {
 
     container
         .read(coreSettingProvider.notifier)
-        .update((state) => state.copyWith(mixedPort: state.mixedPort + 1));
+        .update((state) => state.copyWith(mode: _nextMode(state.mode)));
     await tester.pumpAndSettle();
 
     expect(_RecordingSystemAction.updateTrayCount, 1);
@@ -182,7 +185,7 @@ void main() {
 
     container
         .read(coreSettingProvider.notifier)
-        .update((state) => state.copyWith(mixedPort: state.mixedPort));
+        .update((state) => state.copyWith(mode: state.mode));
     await tester.pumpAndSettle();
 
     expect(_RecordingSystemAction.updateTrayCount, 0);
@@ -195,7 +198,7 @@ void main() {
 
     container
         .read(coreSettingProvider.notifier)
-        .update((state) => state.copyWith(mixedPort: state.mixedPort + 1));
+        .update((state) => state.copyWith(mode: _nextMode(state.mode)));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
@@ -214,7 +217,7 @@ void main() {
     for (var i = 0; i < 2; i++) {
       container
           .read(coreSettingProvider.notifier)
-          .update((state) => state.copyWith(mixedPort: state.mixedPort + 1));
+          .update((state) => state.copyWith(mode: _nextMode(state.mode)));
       await tester.pump();
     }
     expect(_SlowFirstFailureSystemAction.updateTrayCount, 1);

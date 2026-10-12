@@ -54,6 +54,7 @@ extension HotActionL10n on HotAction {
       HotAction.updateProfiles => appLocalizations.actionUpdateProfiles,
       HotAction.copyEnv => appLocalizations.copyEnvVar,
       HotAction.exit => appLocalizations.exit,
+      HotAction.speedView => appLocalizations.toggleSpeedView,
     };
   }
 }

@@ -7,6 +7,8 @@ final class TrayMenuItemView: NSView {
     struct Content {
         let label: String
         let detail: String?
+        let detailColor: NSColor?
+        let busy: Bool
         let checked: Bool
         let enabled: Bool
         let hasSubmenu: Bool
@@ -48,6 +50,8 @@ final class TrayMenuItemView: NSView {
     private static let metrics = Metrics.current
     private static let detailGap: CGFloat = 20
     private static let arrowGap: CGFloat = 6
+    private static let spinnerSize: CGFloat = 12
+    private static let spinnerStep: CGFloat = 14
 
     private static let detailFont = NSFont.monospacedDigitSystemFont(
         ofSize: metrics.font.pointSize,
@@ -58,12 +62,16 @@ final class TrayMenuItemView: NSView {
     private static let arrow = symbol("chevron.right", weight: .semibold)
 
     private let content: Content
+    private var spinnerAngle: CGFloat = 0
+    private var spinnerTimer: Timer?
 
     init(content: Content) {
         self.content = content
         let metrics = TrayMenuItemView.metrics
         var width = metrics.titleX + TrayMenuItemView.width(content.label) + metrics.trailing
-        if let detail = content.detail {
+        if content.busy {
+            width += TrayMenuItemView.detailGap + TrayMenuItemView.spinnerSize
+        } else if let detail = content.detail {
             width += TrayMenuItemView.detailGap + TrayMenuItemView.width(detail, font: TrayMenuItemView.detailFont)
         }
         if content.hasSubmenu {
@@ -115,16 +123,47 @@ final class TrayMenuItemView: NSView {
             trailingX -= arrowWidth + TrayMenuItemView.arrowGap
         }
 
-        if let detail = content.detail {
+        if content.busy {
+            let size = TrayMenuItemView.spinnerSize
             let color: NSColor = highlighted
                 ? .selectedMenuItemTextColor
                 : content.enabled ? .secondaryLabelColor : .tertiaryLabelColor
+            drawSpinner(x: trailingX - size, size: size, color: color)
+            trailingX -= size + TrayMenuItemView.detailGap
+        } else if let detail = content.detail {
+            let color: NSColor = highlighted
+                ? .selectedMenuItemTextColor
+                : content.enabled ? content.detailColor ?? .secondaryLabelColor : .tertiaryLabelColor
             let detailWidth = TrayMenuItemView.width(detail, font: TrayMenuItemView.detailFont)
             drawText(detail, x: trailingX - detailWidth, width: detailWidth, color: color, font: TrayMenuItemView.detailFont)
             trailingX -= detailWidth + TrayMenuItemView.detailGap
         }
 
         drawText(content.label, x: metrics.titleX, width: trailingX - metrics.titleX, color: primary, font: metrics.font)
+    }
+
+    // The menu tracks in its own run-loop mode, so the timer joins the common modes.
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        spinnerTimer?.invalidate()
+        spinnerTimer = nil
+        guard content.busy, window != nil else {
+            return
+        }
+        let timer = Timer(timeInterval: 1.0 / 30.0, repeats: true) { [weak self] _ in
+            guard let self = self else {
+                return
+            }
+            self.spinnerAngle = (self.spinnerAngle + TrayMenuItemView.spinnerStep)
+                .truncatingRemainder(dividingBy: 360)
+            self.needsDisplay = true
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        spinnerTimer = timer
+    }
+
+    deinit {
+        spinnerTimer?.invalidate()
     }
 
     override func mouseUp(with event: NSEvent) {
@@ -150,6 +189,21 @@ final class TrayMenuItemView: NSView {
             options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine],
             attributes: [.font: font, .foregroundColor: color, .paragraphStyle: style]
         )
+    }
+
+    private func drawSpinner(x: CGFloat, size: CGFloat, color: NSColor) {
+        let lineWidth: CGFloat = 1.5
+        let path = NSBezierPath()
+        path.appendArc(
+            withCenter: NSPoint(x: x + size / 2, y: bounds.midY),
+            radius: (size - lineWidth) / 2,
+            startAngle: spinnerAngle,
+            endAngle: spinnerAngle + 270
+        )
+        path.lineWidth = lineWidth
+        path.lineCapStyle = .round
+        color.setStroke()
+        path.stroke()
     }
 
     private func drawSymbol(_ image: NSImage, x: CGFloat, color: NSColor) {

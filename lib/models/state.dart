@@ -94,9 +94,6 @@ abstract class ProfilesState with _$ProfilesState {
 abstract class TrayState with _$TrayState {
   const factory TrayState({
     required Mode mode,
-    required int port,
-    required bool autoLaunch,
-    required bool systemProxy,
     required bool tunEnable,
     required bool isStart,
     required List<Group> groups,

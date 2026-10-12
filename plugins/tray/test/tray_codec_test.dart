@@ -137,4 +137,116 @@ void main() {
 
     expect(encoded.menu.single, {'id': 1024, 'type': 'separator'});
   });
+
+  test('a shortcut is serialized with its modifiers in a fixed order', () {
+    final encoded = TrayCodec.encode(
+      _spec(
+        menu: const [
+          TrayMenuAction(
+            label: 'a',
+            shortcut: TrayShortcut(
+              key: 'p',
+              modifiers: {
+                TrayShortcutModifier.command,
+                TrayShortcutModifier.control,
+              },
+            ),
+          ),
+          TrayMenuCheckbox(
+            label: 'b',
+            checked: false,
+            shortcut: TrayShortcut(key: 'k'),
+          ),
+          TrayMenuAction(label: 'c'),
+        ],
+      ),
+    );
+
+    final items = encoded.menu.cast<Map<String, Object?>>();
+    expect(items[0]['shortcut'], {
+      'key': 'p',
+      'modifiers': ['control', 'command'],
+    });
+    expect(items[1]['shortcut'], {'key': 'k', 'modifiers': <String>[]});
+    expect(items[2].containsKey('shortcut'), isFalse);
+  });
+
+  test('signature tracks the shortcut', () {
+    String signatureWith(TrayShortcut? shortcut) {
+      return TrayCodec.encode(
+        _spec(
+          menu: [TrayMenuAction(label: 'a', shortcut: shortcut)],
+        ),
+      ).signature;
+    }
+
+    expect(
+      signatureWith(const TrayShortcut(key: 'k')),
+      isNot(signatureWith(const TrayShortcut(key: 'j'))),
+    );
+    expect(
+      signatureWith(null),
+      isNot(signatureWith(const TrayShortcut(key: 'k'))),
+    );
+  });
+
+  test('a detail tone travels only with a detail', () {
+    final encoded = TrayCodec.encode(
+      _spec(
+        menu: const [
+          TrayMenuCheckbox(
+            label: 'a',
+            checked: false,
+            detail: '88ms',
+            detailTone: TrayDetailTone.success,
+          ),
+          TrayMenuSubmenu(
+            label: 'b',
+            detail: 'slow',
+            detailTone: TrayDetailTone.warning,
+            items: [],
+          ),
+          TrayMenuCheckbox(
+            label: 'c',
+            checked: false,
+            detailTone: TrayDetailTone.error,
+          ),
+        ],
+      ),
+    );
+
+    final items = encoded.menu.cast<Map<String, Object?>>();
+    expect(items[0]['detailTone'], 'success');
+    expect(items[1]['detailTone'], 'warning');
+    expect(items[2].containsKey('detailTone'), isFalse);
+  });
+
+  test('busy is serialized only when set', () {
+    final encoded = TrayCodec.encode(
+      _spec(
+        menu: const [
+          TrayMenuAction(label: 'a', busy: true),
+          TrayMenuCheckbox(label: 'b', checked: false, busy: true),
+          TrayMenuSubmenu(label: 'c', busy: true, items: []),
+          TrayMenuAction(label: 'd'),
+        ],
+      ),
+    );
+
+    final items = encoded.menu.cast<Map<String, Object?>>();
+    expect(items.take(3).map((item) => item['busy']), [true, true, true]);
+    expect(items[3].containsKey('busy'), isFalse);
+  });
+
+  test('signature tracks busy', () {
+    String signatureWith({required bool busy}) {
+      return TrayCodec.encode(
+        _spec(
+          menu: [TrayMenuAction(label: 'a', busy: busy)],
+        ),
+      ).signature;
+    }
+
+    expect(signatureWith(busy: true), isNot(signatureWith(busy: false)));
+  });
 }

@@ -29,6 +29,15 @@ final class TrayMenu: NSMenu, NSMenuDelegate {
         return detail
     }
 
+    private static func detailColor(_ entry: [String: Any]) -> NSColor? {
+        switch entry["detailTone"] as? String {
+        case "success": return .systemGreen
+        case "warning": return .systemOrange
+        case "error": return .systemRed
+        default: return nil
+        }
+    }
+
     private func makeItem(_ entry: [String: Any]) -> NSMenuItem {
         let type = entry["type"] as? String ?? ""
         if type == "separator" {
@@ -47,14 +56,36 @@ final class TrayMenu: NSMenu, NSMenuDelegate {
         } else {
             item.target = self
             item.action = #selector(didSelectItem(_:))
+            applyShortcut(entry["shortcut"] as? [String: Any], to: item)
         }
         return item
+    }
+
+    // The row's own view draws the shortcut text; the key equivalent only makes it fire.
+    private func applyShortcut(_ shortcut: [String: Any]?, to item: NSMenuItem) {
+        guard let key = shortcut?["key"] as? String, !key.isEmpty else {
+            return
+        }
+        var mask: NSEvent.ModifierFlags = []
+        for name in shortcut?["modifiers"] as? [String] ?? [] {
+            switch name {
+            case "control": mask.insert(.control)
+            case "option": mask.insert(.option)
+            case "shift": mask.insert(.shift)
+            case "command": mask.insert(.command)
+            default: break
+            }
+        }
+        item.keyEquivalent = key
+        item.keyEquivalentModifierMask = mask
     }
 
     private static func content(_ entry: [String: Any], _ item: NSMenuItem) -> TrayMenuItemView.Content {
         TrayMenuItemView.Content(
             label: item.title,
             detail: detail(entry),
+            detailColor: detailColor(entry),
+            busy: entry["busy"] as? Bool == true,
             checked: item.state == .on,
             enabled: item.isEnabled,
             hasSubmenu: item.hasSubmenu

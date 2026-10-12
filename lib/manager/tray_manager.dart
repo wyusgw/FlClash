@@ -47,12 +47,17 @@ class _TrayManagerState extends ConsumerState<TrayManager> {
         _requestUpdate();
       }
     });
+    ref.listenManual(trayDelaysProvider, (prev, next) {
+      if (!const DeepCollectionEquality().equals(prev, next)) {
+        _requestUpdate();
+      }
+    });
+    ref.listenManual(trayPendingDelaysProvider, (prev, next) {
+      if (!const DeepCollectionEquality().equals(prev, next)) {
+        _requestUpdate();
+      }
+    });
     if (system.isMacOS) {
-      ref.listenManual(trayDelaysProvider, (prev, next) {
-        if (!const DeepCollectionEquality().equals(prev, next)) {
-          _requestUpdate();
-        }
-      });
       ref.listenManual(trayTitleStateProvider, (prev, next) {
         if (prev != next) {
           _reportFailure(

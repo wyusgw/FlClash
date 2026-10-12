@@ -130,7 +130,7 @@ final class TrayStateProvider
   }
 }
 
-String _$trayStateHash() => r'3cd9b1df0010f77a9ff58027c46d9160a671c23f';
+String _$trayStateHash() => r'f6e60a3539ebd5efab75b1c45015b671dea35ae3';
 
 /// Measured delays of the proxies the tray lists, by group and then proxy
 /// name. Resolved like a proxy card, so a nested group shows its selection.
@@ -188,6 +188,61 @@ final class TrayDelaysProvider
 }
 
 String _$trayDelaysHash() => r'266ed418b13319a7fcc6a3d8307b6786f6ce89bf';
+
+/// Proxies the tray lists whose delay test is queued or running, by group.
+/// Keyed like [trayDelays], so a nested group counts as its resolved proxy.
+
+@ProviderFor(trayPendingDelays)
+final trayPendingDelaysProvider = TrayPendingDelaysProvider._();
+
+/// Proxies the tray lists whose delay test is queued or running, by group.
+/// Keyed like [trayDelays], so a nested group counts as its resolved proxy.
+
+final class TrayPendingDelaysProvider
+    extends
+        $FunctionalProvider<
+          Map<String, Set<String>>,
+          Map<String, Set<String>>,
+          Map<String, Set<String>>
+        >
+    with $Provider<Map<String, Set<String>>> {
+  /// Proxies the tray lists whose delay test is queued or running, by group.
+  /// Keyed like [trayDelays], so a nested group counts as its resolved proxy.
+  TrayPendingDelaysProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'trayPendingDelaysProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$trayPendingDelaysHash();
+
+  @$internal
+  @override
+  $ProviderElement<Map<String, Set<String>>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  Map<String, Set<String>> create(Ref ref) {
+    return trayPendingDelays(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Map<String, Set<String>> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Map<String, Set<String>>>(value),
+    );
+  }
+}
+
+String _$trayPendingDelaysHash() => r'f72b05f32a1c4a3378cc54a94c3b435b43790269';
 
 @ProviderFor(trayTitleState)
 final trayTitleStateProvider = TrayTitleStateProvider._();

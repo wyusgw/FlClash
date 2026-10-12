@@ -17,25 +17,14 @@ configInputs(Ref ref) {
 @riverpod
 TrayState trayState(Ref ref) {
   final isStart = ref.watch(runTimeProvider.select((state) => state != null));
-  final systemProxy = ref.watch(
-    networkSettingProvider.select((state) => state.systemProxy),
-  );
   final coreConfig = ref.watch(
     coreSettingProvider.select(
-      (state) => (
-        mode: state.mode,
-        mixedPort: state.mixedPort,
-        tunEnable: state.tun.enable,
-      ),
+      (state) => (mode: state.mode, tunEnable: state.tun.enable),
     ),
   );
   final appSetting = ref.watch(
     appSettingProvider.select(
-      (state) => (
-        autoLaunch: state.autoLaunch,
-        showTrayTitle: state.showTrayTitle,
-        trayMode: state.trayMode,
-      ),
+      (state) => (showTrayTitle: state.showTrayTitle, trayMode: state.trayMode),
     ),
   );
   final groups = ref.watch(currentGroupsStateProvider).value;
@@ -45,9 +34,6 @@ TrayState trayState(Ref ref) {
 
   return TrayState(
     mode: coreConfig.mode,
-    port: coreConfig.mixedPort,
-    autoLaunch: appSetting.autoLaunch,
-    systemProxy: systemProxy,
     tunEnable: coreConfig.tunEnable,
     isStart: isStart,
     groups: groups,
@@ -104,6 +90,41 @@ Map<String, Map<String, int>> trayDelays(Ref ref) {
     }
   }
   return delays;
+}
+
+/// Proxies the tray lists whose delay test is queued or running, by group.
+/// Keyed like [trayDelays], so a nested group counts as its resolved proxy.
+@riverpod
+Map<String, Set<String>> trayPendingDelays(Ref ref) {
+  final pending = ref.watch(pendingDelayTestsProvider);
+  if (pending.isEmpty) {
+    return const {};
+  }
+  final groups = ref.watch(currentGroupsStateProvider).value;
+  final allGroups = ref.watch(groupsProvider);
+  final selectedMap = ref.watch(selectedMapProvider);
+  final defaultTestUrl = ref.watch(
+    appSettingProvider.select((state) => state.testUrl),
+  );
+  final busy = <String, Set<String>>{};
+  for (final group in groups) {
+    final groupUrl = group.testUrl.takeFirstValid([defaultTestUrl]);
+    for (final proxy in group.all) {
+      final state = computeRealSelectedProxyState(
+        proxy.name,
+        groups: allGroups,
+        selectedMap: selectedMap,
+      );
+      final key = delayTestKey(
+        state.testUrl.takeFirstValid([groupUrl]),
+        state.proxyName,
+      );
+      if (pending.containsKey(key)) {
+        (busy[group.name] ??= {}).add(proxy.name);
+      }
+    }
+  }
+  return busy;
 }
 
 @riverpod

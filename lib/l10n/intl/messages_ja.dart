@@ -40,7 +40,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m8(label) => "${label}はすでに存在します";
 
-  static String m9(action) => "「${action}」で使用中です。保存するとこちらに移動します。";
+  static String m9(action) => "「${action}」から移動しました";
 
   static String m10(modifiers) => "${modifiers} のいずれかを含めてください";
 
@@ -75,19 +75,21 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m24(label) => "${label}は数値である必要があります";
 
-  static String m25(label) => "${label} は 1024〜49151 の範囲で指定してください";
+  static String m25(appName) => "${appName} を開く";
 
-  static String m26(appName) => "${appName}（セーフモード）";
+  static String m26(label) => "${label} は 1024〜49151 の範囲で指定してください";
 
-  static String m27(count) => "${count} 件選択中";
+  static String m27(appName) => "${appName}（セーフモード）";
 
-  static String m28(time) => "${time} に検査";
+  static String m28(count) => "${count} 件選択中";
 
-  static String m29(label) => "${label}は1項目のみ指定できます";
+  static String m29(time) => "${time} に検査";
 
-  static String m30(label) => "${label}はURLである必要があります";
+  static String m30(label) => "${label}は1項目のみ指定できます";
 
-  static String m31(count) => "${count} 年前";
+  static String m31(label) => "${label}はURLである必要があります";
+
+  static String m32(count) => "${count} 年前";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -404,11 +406,11 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "home": MessageLookupByLibrary.simpleMessage("ホーム"),
     "host": MessageLookupByLibrary.simpleMessage("ホスト"),
-    "hotkeyConflictWith": m9,
     "hotkeyDesc": MessageLookupByLibrary.simpleMessage(
       "グローバルホットキーはウィンドウが非表示でも有効です。アクションをタップしてキーの組み合わせを記録します。",
     ),
     "hotkeyManagement": MessageLookupByLibrary.simpleMessage("ホットキー管理"),
+    "hotkeyMovedFrom": m9,
     "hotkeyNeedsModifier": m10,
     "hotkeyNotSet": MessageLookupByLibrary.simpleMessage("未設定"),
     "hotkeyUnavailable": MessageLookupByLibrary.simpleMessage(
@@ -620,6 +622,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "onlyStatisticsProxy": MessageLookupByLibrary.simpleMessage(
       "プロキシトラフィックのみ集計",
     ),
+    "openApp": m25,
     "optional": MessageLookupByLibrary.simpleMessage("任意"),
     "options": MessageLookupByLibrary.simpleMessage("オプション"),
     "other": MessageLookupByLibrary.simpleMessage("その他"),
@@ -637,7 +640,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "有効なQRコードをアップロードしてください",
     ),
     "port": MessageLookupByLibrary.simpleMessage("ポート"),
-    "portTip": m25,
+    "portTip": m26,
     "prerequisites": MessageLookupByLibrary.simpleMessage("前提条件"),
     "pressKeyboard": MessageLookupByLibrary.simpleMessage("キーの組み合わせを押してください"),
     "preview": MessageLookupByLibrary.simpleMessage("プレビュー"),
@@ -677,6 +680,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "qrcodeDesc": MessageLookupByLibrary.simpleMessage(
       "QRコードをスキャンしてプロファイルを取得します",
     ),
+    "quitFromMenuBar": MessageLookupByLibrary.simpleMessage("メニューバーから終了"),
     "rainbowScheme": MessageLookupByLibrary.simpleMessage("レインボー"),
     "redo": MessageLookupByLibrary.simpleMessage("やり直す"),
     "releaseMemory": MessageLookupByLibrary.simpleMessage("メモリを解放"),
@@ -730,7 +734,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "rules": MessageLookupByLibrary.simpleMessage("ルール"),
     "runTime": MessageLookupByLibrary.simpleMessage("起動時間"),
     "safeMode": MessageLookupByLibrary.simpleMessage("セーフモード"),
-    "safeModeAppTitle": m26,
+    "safeModeAppTitle": m27,
     "save": MessageLookupByLibrary.simpleMessage("保存"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("変更を保存しますか？"),
     "saveSuccess": MessageLookupByLibrary.simpleMessage("保存しました"),
@@ -741,14 +745,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "security": MessageLookupByLibrary.simpleMessage("セキュリティ"),
     "selectAll": MessageLookupByLibrary.simpleMessage("すべて選択"),
     "selected": MessageLookupByLibrary.simpleMessage("選択済み"),
-    "selectedCountTitle": m27,
+    "selectedCountTitle": m28,
     "server": MessageLookupByLibrary.simpleMessage("サーバー"),
     "serverName": MessageLookupByLibrary.simpleMessage("サーバー名 (SNI)"),
     "serviceAvailable": MessageLookupByLibrary.simpleMessage("利用可能"),
     "serviceBlocked": MessageLookupByLibrary.simpleMessage("ブロック済み"),
     "serviceCheck": MessageLookupByLibrary.simpleMessage("検査"),
     "serviceCheckAll": MessageLookupByLibrary.simpleMessage("すべて検査"),
-    "serviceCheckedAt": m28,
+    "serviceCheckedAt": m29,
     "serviceComingSoon": MessageLookupByLibrary.simpleMessage("近日提供予定"),
     "serviceDisallowedIsp": MessageLookupByLibrary.simpleMessage(
       "許可されていない ISP",
@@ -782,7 +786,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "起動時にウィンドウを表示しません",
     ),
     "singleAdd": MessageLookupByLibrary.simpleMessage("個別追加"),
-    "singleValueTip": m29,
+    "singleValueTip": m30,
     "size": MessageLookupByLibrary.simpleMessage("サイズ"),
     "slide": MessageLookupByLibrary.simpleMessage("スライド"),
     "sort": MessageLookupByLibrary.simpleMessage("並べ替え"),
@@ -835,6 +839,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "tip": MessageLookupByLibrary.simpleMessage("ヒント"),
     "toggle": MessageLookupByLibrary.simpleMessage("切り替え"),
+    "toggleSpeedView": MessageLookupByLibrary.simpleMessage("速度表示を切り替え"),
     "tolerance": MessageLookupByLibrary.simpleMessage("許容値"),
     "tonalSpotScheme": MessageLookupByLibrary.simpleMessage("トーナルスポット"),
     "tools": MessageLookupByLibrary.simpleMessage("ツール"),
@@ -864,7 +869,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlDesc": MessageLookupByLibrary.simpleMessage("URLからプロファイルを取得します"),
     "urlSchemes": MessageLookupByLibrary.simpleMessage("URL スキーム"),
     "urlTestSettings": MessageLookupByLibrary.simpleMessage("URL テスト設定"),
-    "urlTip": m30,
+    "urlTip": m31,
     "usedTraffic": MessageLookupByLibrary.simpleMessage("使用済みトラフィック"),
     "userAgent": MessageLookupByLibrary.simpleMessage("User-Agent"),
     "username": MessageLookupByLibrary.simpleMessage("ユーザー名"),
@@ -882,7 +887,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "vpnTip": MessageLookupByLibrary.simpleMessage("変更はVPNの再起動後に有効になります"),
     "webDAVConfiguration": MessageLookupByLibrary.simpleMessage("WebDAV設定"),
     "whitelistMode": MessageLookupByLibrary.simpleMessage("ホワイトリストモード"),
-    "yearsAgo": m31,
+    "yearsAgo": m32,
     "zhCN": MessageLookupByLibrary.simpleMessage("簡体字中国語"),
   };
 }

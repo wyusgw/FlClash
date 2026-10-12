@@ -42,8 +42,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m8(label) => "${label} already exists";
 
-  static String m9(action) =>
-      "Already used by “${action}”. Saving moves it here.";
+  static String m9(action) => "Moved from “${action}”";
 
   static String m10(modifiers) => "Include at least one of ${modifiers}";
 
@@ -82,19 +81,21 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m24(label) => "${label} must be a number";
 
-  static String m25(label) => "${label} must be between 1024 and 49151";
+  static String m25(appName) => "Open ${appName}";
 
-  static String m26(appName) => "${appName} (Safe mode)";
+  static String m26(label) => "${label} must be between 1024 and 49151";
 
-  static String m27(count) => "${count} selected";
+  static String m27(appName) => "${appName} (Safe mode)";
 
-  static String m28(time) => "Checked at ${time}";
+  static String m28(count) => "${count} selected";
 
-  static String m29(label) => "${label} must be a single item";
+  static String m29(time) => "Checked at ${time}";
 
-  static String m30(label) => "${label} must be a URL";
+  static String m30(label) => "${label} must be a single item";
 
-  static String m31(count) =>
+  static String m31(label) => "${label} must be a URL";
+
+  static String m32(count) =>
       "${Intl.plural(count, one: '1 year ago', other: '${count} years ago')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -474,13 +475,13 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "home": MessageLookupByLibrary.simpleMessage("Home"),
     "host": MessageLookupByLibrary.simpleMessage("Host"),
-    "hotkeyConflictWith": m9,
     "hotkeyDesc": MessageLookupByLibrary.simpleMessage(
       "Global hotkeys work even while the window is hidden. Tap an action to record its key combination.",
     ),
     "hotkeyManagement": MessageLookupByLibrary.simpleMessage(
       "Hotkey management",
     ),
+    "hotkeyMovedFrom": m9,
     "hotkeyNeedsModifier": m10,
     "hotkeyNotSet": MessageLookupByLibrary.simpleMessage("Not set"),
     "hotkeyUnavailable": MessageLookupByLibrary.simpleMessage(
@@ -719,6 +720,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "onlyStatisticsProxy": MessageLookupByLibrary.simpleMessage(
       "Only count proxy traffic",
     ),
+    "openApp": m25,
     "optional": MessageLookupByLibrary.simpleMessage("Optional"),
     "options": MessageLookupByLibrary.simpleMessage("Options"),
     "other": MessageLookupByLibrary.simpleMessage("Other"),
@@ -738,7 +740,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Please upload a valid QR code",
     ),
     "port": MessageLookupByLibrary.simpleMessage("Port"),
-    "portTip": m25,
+    "portTip": m26,
     "prerequisites": MessageLookupByLibrary.simpleMessage("Prerequisites"),
     "pressKeyboard": MessageLookupByLibrary.simpleMessage(
       "Press a key combination",
@@ -781,6 +783,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "qrcode": MessageLookupByLibrary.simpleMessage("QR code"),
     "qrcodeDesc": MessageLookupByLibrary.simpleMessage(
       "Scan a QR code to obtain a profile",
+    ),
+    "quitFromMenuBar": MessageLookupByLibrary.simpleMessage(
+      "Quit from menu bar",
     ),
     "rainbowScheme": MessageLookupByLibrary.simpleMessage("Rainbow"),
     "redo": MessageLookupByLibrary.simpleMessage("Redo"),
@@ -853,7 +858,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "rules": MessageLookupByLibrary.simpleMessage("Rules"),
     "runTime": MessageLookupByLibrary.simpleMessage("Run time"),
     "safeMode": MessageLookupByLibrary.simpleMessage("Safe mode"),
-    "safeModeAppTitle": m26,
+    "safeModeAppTitle": m27,
     "save": MessageLookupByLibrary.simpleMessage("Save"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("Save the changes?"),
     "saveSuccess": MessageLookupByLibrary.simpleMessage("Saved successfully"),
@@ -866,14 +871,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "security": MessageLookupByLibrary.simpleMessage("Security"),
     "selectAll": MessageLookupByLibrary.simpleMessage("Select all"),
     "selected": MessageLookupByLibrary.simpleMessage("Selected"),
-    "selectedCountTitle": m27,
+    "selectedCountTitle": m28,
     "server": MessageLookupByLibrary.simpleMessage("Server"),
     "serverName": MessageLookupByLibrary.simpleMessage("Server name (SNI)"),
     "serviceAvailable": MessageLookupByLibrary.simpleMessage("Available"),
     "serviceBlocked": MessageLookupByLibrary.simpleMessage("Blocked"),
     "serviceCheck": MessageLookupByLibrary.simpleMessage("Check"),
     "serviceCheckAll": MessageLookupByLibrary.simpleMessage("Check all"),
-    "serviceCheckedAt": m28,
+    "serviceCheckedAt": m29,
     "serviceComingSoon": MessageLookupByLibrary.simpleMessage("Coming soon"),
     "serviceDisallowedIsp": MessageLookupByLibrary.simpleMessage(
       "Disallowed ISP",
@@ -913,7 +918,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Start without showing the window",
     ),
     "singleAdd": MessageLookupByLibrary.simpleMessage("Single add"),
-    "singleValueTip": m29,
+    "singleValueTip": m30,
     "size": MessageLookupByLibrary.simpleMessage("Size"),
     "slide": MessageLookupByLibrary.simpleMessage("Slide"),
     "sort": MessageLookupByLibrary.simpleMessage("Sort"),
@@ -972,6 +977,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "tip": MessageLookupByLibrary.simpleMessage("Tip"),
     "toggle": MessageLookupByLibrary.simpleMessage("Toggle"),
+    "toggleSpeedView": MessageLookupByLibrary.simpleMessage(
+      "Toggle speed view",
+    ),
     "tolerance": MessageLookupByLibrary.simpleMessage("Tolerance"),
     "tonalSpotScheme": MessageLookupByLibrary.simpleMessage("Tonal spot"),
     "tools": MessageLookupByLibrary.simpleMessage("Tools"),
@@ -1011,7 +1019,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlTestSettings": MessageLookupByLibrary.simpleMessage(
       "URL test settings",
     ),
-    "urlTip": m30,
+    "urlTip": m31,
     "usedTraffic": MessageLookupByLibrary.simpleMessage("Used traffic"),
     "userAgent": MessageLookupByLibrary.simpleMessage("User-Agent"),
     "username": MessageLookupByLibrary.simpleMessage("Username"),
@@ -1033,7 +1041,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "WebDAV configuration",
     ),
     "whitelistMode": MessageLookupByLibrary.simpleMessage("Whitelist mode"),
-    "yearsAgo": m31,
+    "yearsAgo": m32,
     "zhCN": MessageLookupByLibrary.simpleMessage("Simplified Chinese"),
   };
 }

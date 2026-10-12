@@ -154,6 +154,8 @@ class _HotKeyManagerState extends ConsumerState<HotKeyManager> {
         unawaited(systemAction.copyProxyEnv());
       case HotAction.exit:
         unawaited(systemAction.handleExit());
+      case HotAction.speedView:
+        commonAction.updateSpeedStatistics();
     }
   }
 

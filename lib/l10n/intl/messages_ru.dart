@@ -42,8 +42,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m8(label) => "«${label}» уже существует";
 
-  static String m9(action) =>
-      "Уже используется для «${action}». При сохранении будет перенесено сюда.";
+  static String m9(action) => "Перенесено из «${action}»";
 
   static String m10(modifiers) =>
       "Добавьте хотя бы одну из клавиш: ${modifiers}";
@@ -83,20 +82,22 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m24(label) => "Значение «${label}» должно быть числом";
 
-  static String m25(label) =>
+  static String m25(appName) => "Открыть ${appName}";
+
+  static String m26(label) =>
       "Значение «${label}» должно быть от 1024 до 49151";
 
-  static String m26(appName) => "${appName} (Безопасный режим)";
+  static String m27(appName) => "${appName} (Безопасный режим)";
 
-  static String m27(count) => "Выбрано: ${count}";
+  static String m28(count) => "Выбрано: ${count}";
 
-  static String m28(time) => "Проверено в ${time}";
+  static String m29(time) => "Проверено в ${time}";
 
-  static String m29(label) => "«${label}» — только одно значение";
+  static String m30(label) => "«${label}» — только одно значение";
 
-  static String m30(label) => "Значение «${label}» должно быть URL";
+  static String m31(label) => "Значение «${label}» должно быть URL";
 
-  static String m31(count) =>
+  static String m32(count) =>
       "${Intl.plural(count, one: '${count} год назад', few: '${count} года назад', many: '${count} лет назад', other: '${count} года назад')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -484,11 +485,11 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "home": MessageLookupByLibrary.simpleMessage("Главная"),
     "host": MessageLookupByLibrary.simpleMessage("Хост"),
-    "hotkeyConflictWith": m9,
     "hotkeyDesc": MessageLookupByLibrary.simpleMessage(
       "Глобальные горячие клавиши работают, даже когда окно скрыто. Нажмите на действие, чтобы записать сочетание клавиш.",
     ),
     "hotkeyManagement": MessageLookupByLibrary.simpleMessage("Горячие клавиши"),
+    "hotkeyMovedFrom": m9,
     "hotkeyNeedsModifier": m10,
     "hotkeyNotSet": MessageLookupByLibrary.simpleMessage("Не задано"),
     "hotkeyUnavailable": MessageLookupByLibrary.simpleMessage(
@@ -733,6 +734,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "onlyStatisticsProxy": MessageLookupByLibrary.simpleMessage(
       "Учитывать только трафик прокси",
     ),
+    "openApp": m25,
     "optional": MessageLookupByLibrary.simpleMessage("Необязательно"),
     "options": MessageLookupByLibrary.simpleMessage("Опции"),
     "other": MessageLookupByLibrary.simpleMessage("Другое"),
@@ -756,7 +758,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Загрузите корректный QR-код",
     ),
     "port": MessageLookupByLibrary.simpleMessage("Порт"),
-    "portTip": m25,
+    "portTip": m26,
     "prerequisites": MessageLookupByLibrary.simpleMessage(
       "Предварительные условия",
     ),
@@ -801,6 +803,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "qrcode": MessageLookupByLibrary.simpleMessage("QR-код"),
     "qrcodeDesc": MessageLookupByLibrary.simpleMessage(
       "Сканируйте QR-код, чтобы получить профиль",
+    ),
+    "quitFromMenuBar": MessageLookupByLibrary.simpleMessage(
+      "Выйти из строки меню",
     ),
     "rainbowScheme": MessageLookupByLibrary.simpleMessage("Радуга"),
     "redo": MessageLookupByLibrary.simpleMessage("Повторить"),
@@ -883,7 +888,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "rules": MessageLookupByLibrary.simpleMessage("Правила"),
     "runTime": MessageLookupByLibrary.simpleMessage("Время работы"),
     "safeMode": MessageLookupByLibrary.simpleMessage("Безопасный режим"),
-    "safeModeAppTitle": m26,
+    "safeModeAppTitle": m27,
     "save": MessageLookupByLibrary.simpleMessage("Сохранить"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("Сохранить изменения?"),
     "saveSuccess": MessageLookupByLibrary.simpleMessage("Сохранено"),
@@ -896,14 +901,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "security": MessageLookupByLibrary.simpleMessage("Безопасность"),
     "selectAll": MessageLookupByLibrary.simpleMessage("Выбрать всё"),
     "selected": MessageLookupByLibrary.simpleMessage("Выбрано"),
-    "selectedCountTitle": m27,
+    "selectedCountTitle": m28,
     "server": MessageLookupByLibrary.simpleMessage("Сервер"),
     "serverName": MessageLookupByLibrary.simpleMessage("Имя сервера (SNI)"),
     "serviceAvailable": MessageLookupByLibrary.simpleMessage("Доступен"),
     "serviceBlocked": MessageLookupByLibrary.simpleMessage("Заблокировано"),
     "serviceCheck": MessageLookupByLibrary.simpleMessage("Проверить"),
     "serviceCheckAll": MessageLookupByLibrary.simpleMessage("Проверить все"),
-    "serviceCheckedAt": m28,
+    "serviceCheckedAt": m29,
     "serviceComingSoon": MessageLookupByLibrary.simpleMessage("Скоро появится"),
     "serviceDisallowedIsp": MessageLookupByLibrary.simpleMessage(
       "Недопустимый провайдер",
@@ -947,7 +952,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Запускаться без показа окна",
     ),
     "singleAdd": MessageLookupByLibrary.simpleMessage("По одному"),
-    "singleValueTip": m29,
+    "singleValueTip": m30,
     "size": MessageLookupByLibrary.simpleMessage("Размер"),
     "slide": MessageLookupByLibrary.simpleMessage("Сдвиг"),
     "sort": MessageLookupByLibrary.simpleMessage("Сортировка"),
@@ -1012,6 +1017,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "tip": MessageLookupByLibrary.simpleMessage("Подсказка"),
     "toggle": MessageLookupByLibrary.simpleMessage("Переключить"),
+    "toggleSpeedView": MessageLookupByLibrary.simpleMessage(
+      "Переключить показ скорости",
+    ),
     "tolerance": MessageLookupByLibrary.simpleMessage("Допуск"),
     "tonalSpotScheme": MessageLookupByLibrary.simpleMessage("Тональный акцент"),
     "tools": MessageLookupByLibrary.simpleMessage("Инструменты"),
@@ -1049,7 +1057,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlTestSettings": MessageLookupByLibrary.simpleMessage(
       "Настройки проверки URL",
     ),
-    "urlTip": m30,
+    "urlTip": m31,
     "usedTraffic": MessageLookupByLibrary.simpleMessage(
       "Использованный трафик",
     ),
@@ -1075,7 +1083,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "whitelistMode": MessageLookupByLibrary.simpleMessage(
       "Режим белого списка",
     ),
-    "yearsAgo": m31,
+    "yearsAgo": m32,
     "zhCN": MessageLookupByLibrary.simpleMessage("Упрощённый китайский"),
   };
 }

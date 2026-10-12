@@ -2790,7 +2790,7 @@ as int?,
 /// @nodoc
 mixin _$TrayState {
 
- Mode get mode; int get port; bool get autoLaunch; bool get systemProxy; bool get tunEnable; bool get isStart; List<Group> get groups; Map<String, String> get selectedMap; bool get showTrayTitle; bool get safeMode; TrayMode get trayMode; Map<HotAction, HotKeyAction> get hotKeys;
+ Mode get mode; bool get tunEnable; bool get isStart; List<Group> get groups; Map<String, String> get selectedMap; bool get showTrayTitle; bool get safeMode; TrayMode get trayMode; Map<HotAction, HotKeyAction> get hotKeys;
 /// Create a copy of TrayState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2802,20 +2802,20 @@ $TrayStateCopyWith<TrayState> get copyWith => _$TrayStateCopyWithImpl<TrayState>
 @override
 bool operator ==(Object other) {
   final _this = this as TrayState;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TrayState&&(identical(other.mode, _this.mode) || other.mode == _this.mode)&&(identical(other.port, _this.port) || other.port == _this.port)&&(identical(other.autoLaunch, _this.autoLaunch) || other.autoLaunch == _this.autoLaunch)&&(identical(other.systemProxy, _this.systemProxy) || other.systemProxy == _this.systemProxy)&&(identical(other.tunEnable, _this.tunEnable) || other.tunEnable == _this.tunEnable)&&(identical(other.isStart, _this.isStart) || other.isStart == _this.isStart)&&const DeepCollectionEquality().equals(other.groups, _this.groups)&&const DeepCollectionEquality().equals(other.selectedMap, _this.selectedMap)&&(identical(other.showTrayTitle, _this.showTrayTitle) || other.showTrayTitle == _this.showTrayTitle)&&(identical(other.safeMode, _this.safeMode) || other.safeMode == _this.safeMode)&&(identical(other.trayMode, _this.trayMode) || other.trayMode == _this.trayMode)&&const DeepCollectionEquality().equals(other.hotKeys, _this.hotKeys));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TrayState&&(identical(other.mode, _this.mode) || other.mode == _this.mode)&&(identical(other.tunEnable, _this.tunEnable) || other.tunEnable == _this.tunEnable)&&(identical(other.isStart, _this.isStart) || other.isStart == _this.isStart)&&const DeepCollectionEquality().equals(other.groups, _this.groups)&&const DeepCollectionEquality().equals(other.selectedMap, _this.selectedMap)&&(identical(other.showTrayTitle, _this.showTrayTitle) || other.showTrayTitle == _this.showTrayTitle)&&(identical(other.safeMode, _this.safeMode) || other.safeMode == _this.safeMode)&&(identical(other.trayMode, _this.trayMode) || other.trayMode == _this.trayMode)&&const DeepCollectionEquality().equals(other.hotKeys, _this.hotKeys));
 }
 
 
 @override
 int get hashCode {
   final _this = this as TrayState;
-  return Object.hash(runtimeType,_this.mode,_this.port,_this.autoLaunch,_this.systemProxy,_this.tunEnable,_this.isStart,const DeepCollectionEquality().hash(_this.groups),const DeepCollectionEquality().hash(_this.selectedMap),_this.showTrayTitle,_this.safeMode,_this.trayMode,const DeepCollectionEquality().hash(_this.hotKeys));
+  return Object.hash(runtimeType,_this.mode,_this.tunEnable,_this.isStart,const DeepCollectionEquality().hash(_this.groups),const DeepCollectionEquality().hash(_this.selectedMap),_this.showTrayTitle,_this.safeMode,_this.trayMode,const DeepCollectionEquality().hash(_this.hotKeys));
 }
 
 @override
 String toString() {
   final _this = this as TrayState;
-  return 'TrayState(mode: ${_this.mode}, port: ${_this.port}, autoLaunch: ${_this.autoLaunch}, systemProxy: ${_this.systemProxy}, tunEnable: ${_this.tunEnable}, isStart: ${_this.isStart}, groups: ${_this.groups}, selectedMap: ${_this.selectedMap}, showTrayTitle: ${_this.showTrayTitle}, safeMode: ${_this.safeMode}, trayMode: ${_this.trayMode}, hotKeys: ${_this.hotKeys})';
+  return 'TrayState(mode: ${_this.mode}, tunEnable: ${_this.tunEnable}, isStart: ${_this.isStart}, groups: ${_this.groups}, selectedMap: ${_this.selectedMap}, showTrayTitle: ${_this.showTrayTitle}, safeMode: ${_this.safeMode}, trayMode: ${_this.trayMode}, hotKeys: ${_this.hotKeys})';
 }
 
 
@@ -2826,7 +2826,7 @@ abstract mixin class $TrayStateCopyWith<$Res>  {
   factory $TrayStateCopyWith(TrayState value, $Res Function(TrayState) _then) = _$TrayStateCopyWithImpl;
 @useResult
 $Res call({
- Mode mode, int port, bool autoLaunch, bool systemProxy, bool tunEnable, bool isStart, List<Group> groups, Map<String, String> selectedMap, bool showTrayTitle, bool safeMode, TrayMode trayMode, Map<HotAction, HotKeyAction> hotKeys
+ Mode mode, bool tunEnable, bool isStart, List<Group> groups, Map<String, String> selectedMap, bool showTrayTitle, bool safeMode, TrayMode trayMode, Map<HotAction, HotKeyAction> hotKeys
 });
 
 
@@ -2843,13 +2843,10 @@ class _$TrayStateCopyWithImpl<$Res>
 
 /// Create a copy of TrayState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? mode = null,Object? port = null,Object? autoLaunch = null,Object? systemProxy = null,Object? tunEnable = null,Object? isStart = null,Object? groups = null,Object? selectedMap = null,Object? showTrayTitle = null,Object? safeMode = null,Object? trayMode = null,Object? hotKeys = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? mode = null,Object? tunEnable = null,Object? isStart = null,Object? groups = null,Object? selectedMap = null,Object? showTrayTitle = null,Object? safeMode = null,Object? trayMode = null,Object? hotKeys = null,}) {
   return _then(TrayState(
 mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
-as Mode,port: null == port ? _self.port : port // ignore: cast_nullable_to_non_nullable
-as int,autoLaunch: null == autoLaunch ? _self.autoLaunch : autoLaunch // ignore: cast_nullable_to_non_nullable
-as bool,systemProxy: null == systemProxy ? _self.systemProxy : systemProxy // ignore: cast_nullable_to_non_nullable
-as bool,tunEnable: null == tunEnable ? _self.tunEnable : tunEnable // ignore: cast_nullable_to_non_nullable
+as Mode,tunEnable: null == tunEnable ? _self.tunEnable : tunEnable // ignore: cast_nullable_to_non_nullable
 as bool,isStart: null == isStart ? _self.isStart : isStart // ignore: cast_nullable_to_non_nullable
 as bool,groups: null == groups ? _self.groups : groups // ignore: cast_nullable_to_non_nullable
 as List<Group>,selectedMap: null == selectedMap ? _self.selectedMap : selectedMap // ignore: cast_nullable_to_non_nullable
@@ -2942,10 +2939,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Mode mode,  int port,  bool autoLaunch,  bool systemProxy,  bool tunEnable,  bool isStart,  List<Group> groups,  Map<String, String> selectedMap,  bool showTrayTitle,  bool safeMode,  TrayMode trayMode,  Map<HotAction, HotKeyAction> hotKeys)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Mode mode,  bool tunEnable,  bool isStart,  List<Group> groups,  Map<String, String> selectedMap,  bool showTrayTitle,  bool safeMode,  TrayMode trayMode,  Map<HotAction, HotKeyAction> hotKeys)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TrayState() when $default != null:
-return $default(_that.mode,_that.port,_that.autoLaunch,_that.systemProxy,_that.tunEnable,_that.isStart,_that.groups,_that.selectedMap,_that.showTrayTitle,_that.safeMode,_that.trayMode,_that.hotKeys);case _:
+return $default(_that.mode,_that.tunEnable,_that.isStart,_that.groups,_that.selectedMap,_that.showTrayTitle,_that.safeMode,_that.trayMode,_that.hotKeys);case _:
   return orElse();
 
 }
@@ -2963,10 +2960,10 @@ return $default(_that.mode,_that.port,_that.autoLaunch,_that.systemProxy,_that.t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Mode mode,  int port,  bool autoLaunch,  bool systemProxy,  bool tunEnable,  bool isStart,  List<Group> groups,  Map<String, String> selectedMap,  bool showTrayTitle,  bool safeMode,  TrayMode trayMode,  Map<HotAction, HotKeyAction> hotKeys)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Mode mode,  bool tunEnable,  bool isStart,  List<Group> groups,  Map<String, String> selectedMap,  bool showTrayTitle,  bool safeMode,  TrayMode trayMode,  Map<HotAction, HotKeyAction> hotKeys)  $default,) {final _that = this;
 switch (_that) {
 case _TrayState():
-return $default(_that.mode,_that.port,_that.autoLaunch,_that.systemProxy,_that.tunEnable,_that.isStart,_that.groups,_that.selectedMap,_that.showTrayTitle,_that.safeMode,_that.trayMode,_that.hotKeys);case _:
+return $default(_that.mode,_that.tunEnable,_that.isStart,_that.groups,_that.selectedMap,_that.showTrayTitle,_that.safeMode,_that.trayMode,_that.hotKeys);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -2983,10 +2980,10 @@ return $default(_that.mode,_that.port,_that.autoLaunch,_that.systemProxy,_that.t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Mode mode,  int port,  bool autoLaunch,  bool systemProxy,  bool tunEnable,  bool isStart,  List<Group> groups,  Map<String, String> selectedMap,  bool showTrayTitle,  bool safeMode,  TrayMode trayMode,  Map<HotAction, HotKeyAction> hotKeys)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Mode mode,  bool tunEnable,  bool isStart,  List<Group> groups,  Map<String, String> selectedMap,  bool showTrayTitle,  bool safeMode,  TrayMode trayMode,  Map<HotAction, HotKeyAction> hotKeys)?  $default,) {final _that = this;
 switch (_that) {
 case _TrayState() when $default != null:
-return $default(_that.mode,_that.port,_that.autoLaunch,_that.systemProxy,_that.tunEnable,_that.isStart,_that.groups,_that.selectedMap,_that.showTrayTitle,_that.safeMode,_that.trayMode,_that.hotKeys);case _:
+return $default(_that.mode,_that.tunEnable,_that.isStart,_that.groups,_that.selectedMap,_that.showTrayTitle,_that.safeMode,_that.trayMode,_that.hotKeys);case _:
   return null;
 
 }
@@ -2998,13 +2995,10 @@ return $default(_that.mode,_that.port,_that.autoLaunch,_that.systemProxy,_that.t
 
 
 class _TrayState implements TrayState {
-  const _TrayState({required this.mode, required this.port, required this.autoLaunch, required this.systemProxy, required this.tunEnable, required this.isStart, required  List<Group> groups, required  Map<String, String> selectedMap, required this.showTrayTitle, required this.safeMode, this.trayMode = TrayMode.embedded,  Map<HotAction, HotKeyAction> hotKeys = const {}}): _groups = groups,_selectedMap = selectedMap,_hotKeys = hotKeys;
+  const _TrayState({required this.mode, required this.tunEnable, required this.isStart, required  List<Group> groups, required  Map<String, String> selectedMap, required this.showTrayTitle, required this.safeMode, this.trayMode = TrayMode.embedded,  Map<HotAction, HotKeyAction> hotKeys = const {}}): _groups = groups,_selectedMap = selectedMap,_hotKeys = hotKeys;
   
 
 @override final  Mode mode;
-@override final  int port;
-@override final  bool autoLaunch;
-@override final  bool systemProxy;
 @override final  bool tunEnable;
 @override final  bool isStart;
  final  List<Group> _groups;
@@ -3042,18 +3036,18 @@ _$TrayStateCopyWith<_TrayState> get copyWith => __$TrayStateCopyWithImpl<_TraySt
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TrayState&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.port, port) || other.port == port)&&(identical(other.autoLaunch, autoLaunch) || other.autoLaunch == autoLaunch)&&(identical(other.systemProxy, systemProxy) || other.systemProxy == systemProxy)&&(identical(other.tunEnable, tunEnable) || other.tunEnable == tunEnable)&&(identical(other.isStart, isStart) || other.isStart == isStart)&&const DeepCollectionEquality().equals(other.groups, _groups)&&const DeepCollectionEquality().equals(other.selectedMap, _selectedMap)&&(identical(other.showTrayTitle, showTrayTitle) || other.showTrayTitle == showTrayTitle)&&(identical(other.safeMode, safeMode) || other.safeMode == safeMode)&&(identical(other.trayMode, trayMode) || other.trayMode == trayMode)&&const DeepCollectionEquality().equals(other.hotKeys, _hotKeys));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TrayState&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.tunEnable, tunEnable) || other.tunEnable == tunEnable)&&(identical(other.isStart, isStart) || other.isStart == isStart)&&const DeepCollectionEquality().equals(other.groups, _groups)&&const DeepCollectionEquality().equals(other.selectedMap, _selectedMap)&&(identical(other.showTrayTitle, showTrayTitle) || other.showTrayTitle == showTrayTitle)&&(identical(other.safeMode, safeMode) || other.safeMode == safeMode)&&(identical(other.trayMode, trayMode) || other.trayMode == trayMode)&&const DeepCollectionEquality().equals(other.hotKeys, _hotKeys));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,mode,port,autoLaunch,systemProxy,tunEnable,isStart,const DeepCollectionEquality().hash(_groups),const DeepCollectionEquality().hash(_selectedMap),showTrayTitle,safeMode,trayMode,const DeepCollectionEquality().hash(_hotKeys));
+    return Object.hash(runtimeType,mode,tunEnable,isStart,const DeepCollectionEquality().hash(_groups),const DeepCollectionEquality().hash(_selectedMap),showTrayTitle,safeMode,trayMode,const DeepCollectionEquality().hash(_hotKeys));
 }
 
 @override
 String toString() {
-    return 'TrayState(mode: $mode, port: $port, autoLaunch: $autoLaunch, systemProxy: $systemProxy, tunEnable: $tunEnable, isStart: $isStart, groups: $groups, selectedMap: $selectedMap, showTrayTitle: $showTrayTitle, safeMode: $safeMode, trayMode: $trayMode, hotKeys: $hotKeys)';
+    return 'TrayState(mode: $mode, tunEnable: $tunEnable, isStart: $isStart, groups: $groups, selectedMap: $selectedMap, showTrayTitle: $showTrayTitle, safeMode: $safeMode, trayMode: $trayMode, hotKeys: $hotKeys)';
 }
 
 
@@ -3064,7 +3058,7 @@ abstract mixin class _$TrayStateCopyWith<$Res> implements $TrayStateCopyWith<$Re
   factory _$TrayStateCopyWith(_TrayState value, $Res Function(_TrayState) _then) = __$TrayStateCopyWithImpl;
 @override @useResult
 $Res call({
- Mode mode, int port, bool autoLaunch, bool systemProxy, bool tunEnable, bool isStart, List<Group> groups, Map<String, String> selectedMap, bool showTrayTitle, bool safeMode, TrayMode trayMode, Map<HotAction, HotKeyAction> hotKeys
+ Mode mode, bool tunEnable, bool isStart, List<Group> groups, Map<String, String> selectedMap, bool showTrayTitle, bool safeMode, TrayMode trayMode, Map<HotAction, HotKeyAction> hotKeys
 });
 
 
@@ -3081,13 +3075,10 @@ class __$TrayStateCopyWithImpl<$Res>
 
 /// Create a copy of TrayState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? mode = null,Object? port = null,Object? autoLaunch = null,Object? systemProxy = null,Object? tunEnable = null,Object? isStart = null,Object? groups = null,Object? selectedMap = null,Object? showTrayTitle = null,Object? safeMode = null,Object? trayMode = null,Object? hotKeys = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? mode = null,Object? tunEnable = null,Object? isStart = null,Object? groups = null,Object? selectedMap = null,Object? showTrayTitle = null,Object? safeMode = null,Object? trayMode = null,Object? hotKeys = null,}) {
   return _then(_TrayState(
 mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
-as Mode,port: null == port ? _self.port : port // ignore: cast_nullable_to_non_nullable
-as int,autoLaunch: null == autoLaunch ? _self.autoLaunch : autoLaunch // ignore: cast_nullable_to_non_nullable
-as bool,systemProxy: null == systemProxy ? _self.systemProxy : systemProxy // ignore: cast_nullable_to_non_nullable
-as bool,tunEnable: null == tunEnable ? _self.tunEnable : tunEnable // ignore: cast_nullable_to_non_nullable
+as Mode,tunEnable: null == tunEnable ? _self.tunEnable : tunEnable // ignore: cast_nullable_to_non_nullable
 as bool,isStart: null == isStart ? _self.isStart : isStart // ignore: cast_nullable_to_non_nullable
 as bool,groups: null == groups ? _self._groups : groups // ignore: cast_nullable_to_non_nullable
 as List<Group>,selectedMap: null == selectedMap ? _self._selectedMap : selectedMap // ignore: cast_nullable_to_non_nullable

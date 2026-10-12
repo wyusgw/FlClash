@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/app_ports.dart';
+import 'package:fl_clash/common/compute.dart';
 import 'package:fl_clash/common/constant.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -403,7 +404,6 @@ void main() {
 
     final tray = container.read(trayStateProvider);
     expect(tray.mode, Mode.global);
-    expect(tray.port, 8899);
     expect(tray.tunEnable, isTrue);
     expect(tray.isStart, isTrue);
 
@@ -566,6 +566,34 @@ void main() {
     expect(container.read(trayDelaysProvider), {
       'Selector': {'Leaf': 42},
       'Probe': {'Leaf': -1},
+    });
+  });
+
+  test('tray pending delays follow the queue and resolve nested groups', () {
+    container
+        .read(groupsProvider.notifier)
+        .update(
+          (_) => const [
+            Group(
+              name: 'Selector',
+              type: GroupType.Selector,
+              hidden: false,
+              all: [
+                Proxy(name: 'Leaf', type: 'Direct'),
+                Proxy(name: 'Idle', type: 'Direct'),
+              ],
+            ),
+          ],
+        );
+    container.listen(trayPendingDelaysProvider, (_, _) {});
+    expect(container.read(trayPendingDelaysProvider), isEmpty);
+
+    container
+        .read(pendingDelayTestsProvider.notifier)
+        .apply(acquired: [delayTestKey(defaultTestUrl, 'Leaf')]);
+
+    expect(container.read(trayPendingDelaysProvider), {
+      'Selector': {'Leaf'},
     });
   });
 

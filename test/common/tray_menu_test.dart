@@ -6,6 +6,7 @@ import 'package:fl_clash/common/app_ports.dart';
 import 'package:fl_clash/common/constant.dart';
 import 'package:fl_clash/common/l10n_labels.dart';
 import 'package:fl_clash/common/tray.dart';
+import 'package:fl_clash/common/xray_config.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
@@ -24,7 +25,7 @@ import 'package:tray/tray.dart';
 const _channel = MethodChannel('tray');
 
 const _proxyGroup = Group(
-  name: 'Proxy',
+  name: nodeGroupName,
   type: GroupType.Selector,
   all: [
     Proxy(name: 'A', type: 'Direct'),
@@ -59,8 +60,6 @@ class _FakePathProvider extends PathProviderPlatform {
 TrayState _trayState({
   bool isStart = false,
   bool tunEnable = false,
-  bool systemProxy = false,
-  bool autoLaunch = false,
   bool showTrayTitle = false,
   bool safeMode = false,
   Mode mode = Mode.rule,
@@ -69,9 +68,6 @@ TrayState _trayState({
 }) {
   return TrayState(
     mode: mode,
-    port: 7890,
-    autoLaunch: autoLaunch,
-    systemProxy: systemProxy,
     tunEnable: tunEnable,
     isStart: isStart,
     groups: groups,
@@ -170,44 +166,98 @@ void main() {
       await container.read(systemActionProvider.notifier).updateTray();
 
       expect(showCall(), isNotNull);
-      expect(_labels(showCall()), contains(currentAppLocalizations.exit));
+      expect(
+        _labels(showCall()),
+        contains(currentAppLocalizations.quitFromMenuBar),
+      );
     },
   );
 
-  test('builds the stopped menu without the running-only toggles', () async {
+  test(
+    'the stopped menu reads not connected and drops the old toggles',
+    () async {
+      await update(_trayState());
+
+      final labels = _labels(showCall());
+      final l10n = currentAppLocalizations;
+      expect(labels, contains(l10n.openApp(appName)));
+      expect(labels, contains(l10n.quitFromMenuBar));
+      expect(labels, contains(l10n.toggleSpeedView));
+      expect(_item(showCall(), l10n.notConnected)['checked'], isFalse);
+      for (final dropped in [
+        l10n.start,
+        l10n.stop,
+        l10n.tun,
+        l10n.systemProxy,
+        l10n.autoLaunch,
+        l10n.copyEnvVar,
+      ]) {
+        expect(labels, isNot(contains(dropped)));
+      }
+    },
+  );
+
+  test('the running menu names the selected server', () async {
+    container.dispose();
+    container = ProviderContainer(
+      overrides: [
+        selectedProxyNameProvider(nodeGroupName).overrideWithValue('B'),
+      ],
+    );
+    await update(_trayState(isStart: true, groups: [_proxyGroup]));
+
+    final l10n = currentAppLocalizations;
+    expect(_item(showCall(), '${l10n.connected}: B')['checked'], isTrue);
+    expect(_item(showCall(), '${l10n.server}: B')['type'], 'submenu');
+  });
+
+  test('the connectivity test follows the server submenu', () async {
+    await update(
+      _trayState(
+        groups: [_proxyGroup],
+        hotKeys: {
+          HotAction.delayTest: _bind(
+            HotAction.delayTest,
+            PhysicalKeyboardKey.keyD,
+          ),
+        },
+      ),
+    );
+
+    final items = _items(showCall());
+    final index = items.indexWhere((item) => item['type'] == 'submenu');
+    expect(
+      items[index]['label'],
+      startsWith(currentAppLocalizations.globalRouting),
+    );
+    expect(
+      items[index + 1]['label'],
+      startsWith(currentAppLocalizations.server),
+    );
+    expect(items[index + 2]['label'], currentAppLocalizations.connectivityTest);
+    expect(items[index + 2]['detail'], '⌃⇧D');
+  });
+
+  test('without a node group the server entries are left out', () async {
     await update(_trayState());
 
     final labels = _labels(showCall());
     final l10n = currentAppLocalizations;
-    expect(labels, contains(l10n.show));
-    expect(labels, contains(l10n.start));
-    expect(labels, contains(l10n.autoLaunch));
-    expect(labels, contains(l10n.copyEnvVar));
-    expect(labels, contains(l10n.exit));
-    expect(labels, isNot(contains(l10n.tun)));
-    expect(labels, isNot(contains(l10n.systemProxy)));
-  });
-
-  test('adds TUN and system proxy toggles once the core is running', () async {
-    await update(_trayState(isStart: true));
-
-    final labels = _labels(showCall());
-    final l10n = currentAppLocalizations;
-    expect(labels, contains(l10n.stop), reason: 'start flips to stop');
-    expect(labels, contains(l10n.tun));
-    expect(labels, contains(l10n.systemProxy));
+    expect(labels.where((label) => label.startsWith(l10n.server)), isEmpty);
+    expect(labels, isNot(contains(l10n.connectivityTest)));
   });
 
   group('safe mode', () {
     test('keeps the full menu', () async {
-      await update(_trayState(isStart: true, safeMode: true));
+      await update(
+        _trayState(isStart: true, safeMode: true, groups: [_proxyGroup]),
+      );
 
       final labels = _labels(showCall());
       final l10n = currentAppLocalizations;
-      expect(labels, contains(l10n.stop));
-      expect(labels, contains(l10n.tun));
-      expect(labels, contains(l10n.systemProxy));
-      expect(labels, contains(l10n.copyEnvVar));
+      expect(labels, contains('${l10n.connected}: A'));
+      expect(labels, contains(l10n.connectivityTest));
+      expect(labels, contains(l10n.quitFromMenuBar));
     });
 
     test('names the mode in the tooltip and ships the safe icon', () async {
@@ -227,14 +277,23 @@ void main() {
     });
   });
 
-  test('offers every outbound mode as a menu entry', () async {
+  test('offers every outbound mode in the routing submenu', () async {
     await update(_trayState(mode: Mode.global));
 
-    final checkedModes = _items(showCall())
-        .where((item) => item['checked'] == true)
-        .map((item) => item['label'])
-        .toList();
-    expect(checkedModes, contains(Intl.message(Mode.global.name)));
+    final routing = _item(
+      showCall(),
+      '${currentAppLocalizations.globalRouting}: ${Mode.global.label}',
+    );
+    final children = (routing['items'] as List).cast<Map<Object?, Object?>>();
+    expect(children.map((item) => item['label']), [
+      for (final mode in Mode.values) mode.label,
+    ]);
+    expect(
+      children
+          .where((item) => item['checked'] == true)
+          .map((item) => item['label']),
+      [Intl.message(Mode.global.name)],
+    );
   });
 
   test('sends icon, tooltip and menu in a single show call', () async {
@@ -273,25 +332,66 @@ void main() {
     expect(first.first, 1024);
   });
 
-  test('group submenus carry their proxies as nested items', () async {
+  test('the server submenu carries the nodes as nested items', () async {
+    await update(_trayState(groups: [_proxyGroup]));
+
+    final l10n = currentAppLocalizations;
+    final submenu = _item(showCall(), '${l10n.server}: A');
+    final children = (submenu['items'] as List).cast<Map<Object?, Object?>>();
+    expect(children.map((item) => item['label']), ['A', 'B', 'C']);
+    expect(children.first['checked'], isTrue);
+  });
+
+  test(
+    'a bound hotkey also selects its entry while the menu is open',
+    () async {
+      await update(
+        _trayState(
+          groups: [_proxyGroup],
+          hotKeys: {
+            HotAction.start: _bind(HotAction.start, PhysicalKeyboardKey.keyS),
+            HotAction.speedView: HotKeyAction(
+              action: HotAction.speedView,
+              key: PhysicalKeyboardKey.keyK.usbHidUsage,
+              modifiers: const {KeyboardModifier.meta},
+            ),
+            HotAction.exit: HotKeyAction(
+              action: HotAction.exit,
+              key: PhysicalKeyboardKey.f4.usbHidUsage,
+              modifiers: const {KeyboardModifier.fn, KeyboardModifier.alt},
+            ),
+          },
+        ),
+      );
+
+      final l10n = currentAppLocalizations;
+      final call = showCall();
+      expect(_item(call, l10n.notConnected)['shortcut'], {
+        'key': 's',
+        'modifiers': ['control', 'shift'],
+      });
+      expect(_item(call, l10n.toggleSpeedView)['shortcut'], {
+        'key': 'k',
+        'modifiers': ['command'],
+      });
+      expect(_item(call, l10n.quitFromMenuBar), isNot(contains('shortcut')));
+      expect(_item(call, l10n.connectivityTest), isNot(contains('shortcut')));
+    },
+  );
+
+  test('a platform that is not macOS sends no key equivalent', () async {
     await update(
       _trayState(
-        groups: [
-          const Group(
-            name: 'Proxy',
-            type: GroupType.Selector,
-            all: [Proxy(name: 'A', type: 'Direct')],
-          ),
-        ],
+        hotKeys: {
+          HotAction.start: _bind(HotAction.start, PhysicalKeyboardKey.keyS),
+        },
       ),
+      on: AppTray.forPlatform(isMacOS: false, isWindows: true),
     );
 
-    final submenu = _items(
-      showCall(),
-    ).firstWhere((item) => item['type'] == 'submenu');
-    expect(submenu['label'], 'Proxy');
-    final children = (submenu['items'] as List).cast<Map<Object?, Object?>>();
-    expect(children.map((item) => item['label']), contains('A'));
+    final item = _item(showCall(), currentAppLocalizations.notConnected);
+    expect(item['detail'], 'Ctrl+Shift+S');
+    expect(item, isNot(contains('shortcut')));
   });
 
   test('shows each bound hotkey dimmed beside its entry', () async {
@@ -304,18 +404,28 @@ void main() {
             HotAction.globalMode,
             PhysicalKeyboardKey.keyG,
           ),
-          HotAction.tun: _bind(HotAction.tun, PhysicalKeyboardKey.keyT),
+          HotAction.start: _bind(HotAction.start, PhysicalKeyboardKey.keyS),
+          HotAction.mode: _bind(HotAction.mode, PhysicalKeyboardKey.keyM),
         },
       ),
     );
 
     final l10n = currentAppLocalizations;
     final call = showCall();
-    expect(_item(call, l10n.show)['detail'], '⌃⇧V');
-    expect(_item(call, Mode.global.label)['detail'], '⌃⇧G');
-    expect(_item(call, l10n.tun)['detail'], '⌃⇧T');
-    expect(_item(call, l10n.exit), isNot(contains('detail')));
-    expect(_item(call, Mode.rule.label), isNot(contains('detail')));
+    expect(_item(call, l10n.openApp(appName))['detail'], '⌃⇧V');
+    expect(_item(call, l10n.connected)['detail'], '⌃⇧S');
+    final routing = _item(call, '${l10n.globalRouting}: ${Mode.rule.label}');
+    expect(routing['detail'], '⌃⇧M');
+    final modes = (routing['items'] as List).cast<Map<Object?, Object?>>();
+    expect(
+      modes.firstWhere((item) => item['label'] == Mode.global.label)['detail'],
+      '⌃⇧G',
+    );
+    expect(
+      modes.firstWhere((item) => item['label'] == Mode.rule.label),
+      isNot(contains('detail')),
+    );
+    expect(_item(call, l10n.quitFromMenuBar), isNot(contains('detail')));
   });
 
   test(
@@ -324,42 +434,83 @@ void main() {
       container.dispose();
       container = ProviderContainer(
         overrides: [
-          selectedProxyNameProvider('Proxy').overrideWithValue('A'),
+          selectedProxyNameProvider(nodeGroupName).overrideWithValue('A'),
           trayDelaysProvider.overrideWithValue({
-            'Proxy': {'A': 120, 'B': -1},
+            nodeGroupName: {'A': 120, 'B': -1},
           }),
         ],
       );
       await update(_trayState(groups: [_proxyGroup]));
 
-      final submenu = _item(showCall(), 'Proxy');
-      expect(submenu['detail'], '120');
+      final submenu = _item(showCall(), '${currentAppLocalizations.server}: A');
+      expect(submenu['detail'], '120ms');
       final children = (submenu['items'] as List).cast<Map<Object?, Object?>>();
       expect(children.map((item) => item['detail']), [
-        '120',
+        '120ms',
         currentAppLocalizations.timeout,
+        null,
+      ]);
+      expect(submenu['detailTone'], 'success');
+      expect(children.map((item) => item['detailTone']), [
+        'success',
+        'error',
         null,
       ]);
     },
   );
 
-  test('a delay test entry follows the groups', () async {
-    await update(
-      _trayState(
-        groups: [_proxyGroup],
-        hotKeys: {
-          HotAction.delayTest: _bind(
-            HotAction.delayTest,
-            PhysicalKeyboardKey.keyD,
-          ),
-        },
-      ),
+  test('nodes under test spin until their delay arrives', () async {
+    container.dispose();
+    container = ProviderContainer(
+      overrides: [
+        selectedProxyNameProvider(nodeGroupName).overrideWithValue('A'),
+        trayDelaysProvider.overrideWithValue({
+          nodeGroupName: {'A': 120},
+        }),
+        trayPendingDelaysProvider.overrideWithValue({
+          nodeGroupName: {'A', 'C'},
+        }),
+      ],
     );
+    await update(_trayState(groups: [_proxyGroup]));
 
-    final items = _items(showCall());
-    final index = items.indexWhere((item) => item['type'] == 'submenu');
-    expect(items[index + 1]['label'], HotAction.delayTest.label);
-    expect(items[index + 1]['detail'], '⌃⇧D');
+    final l10n = currentAppLocalizations;
+    final submenu = _item(showCall(), '${l10n.server}: A');
+    final children = (submenu['items'] as List).cast<Map<Object?, Object?>>();
+    expect(submenu['busy'], isTrue);
+    expect(children.map((item) => item['busy']), [true, null, true]);
+    expect(_item(showCall(), l10n.connectivityTest)['busy'], isTrue);
+  });
+
+  test('nothing spins while no delay test is pending', () async {
+    await update(_trayState(groups: [_proxyGroup]));
+
+    final l10n = currentAppLocalizations;
+    final submenu = _item(showCall(), '${l10n.server}: A');
+    final children = (submenu['items'] as List).cast<Map<Object?, Object?>>();
+    expect(submenu, isNot(contains('busy')));
+    expect(children, everyElement(isNot(contains('busy'))));
+    expect(_item(showCall(), l10n.connectivityTest), isNot(contains('busy')));
+  });
+
+  test('a slow node is tinted as a warning', () async {
+    container.dispose();
+    container = ProviderContainer(
+      overrides: [
+        selectedProxyNameProvider(nodeGroupName).overrideWithValue('A'),
+        trayDelaysProvider.overrideWithValue({
+          nodeGroupName: {'A': 600, 'B': 599},
+        }),
+      ],
+    );
+    await update(_trayState(groups: [_proxyGroup]));
+
+    final submenu = _item(showCall(), '${currentAppLocalizations.server}: A');
+    final children = (submenu['items'] as List).cast<Map<Object?, Object?>>();
+    expect(children.take(2).map((item) => item['detailTone']), [
+      'warning',
+      'success',
+    ]);
   });
 
   group('a platform that is not macOS', () {
@@ -369,33 +520,25 @@ void main() {
       windows = AppTray.forPlatform(isMacOS: false, isWindows: true);
     });
 
-    test('gets a plain icon, no group submenus and no speed toggle', () async {
-      await update(
-        _trayState(
-          isStart: true,
-          groups: [
-            const Group(
-              name: 'Proxy',
-              type: GroupType.Selector,
-              all: [Proxy(name: 'A', type: 'Direct')],
-            ),
-          ],
-        ),
-        on: windows,
-      );
+    test(
+      'gets a plain icon and the same menu without the speed toggle',
+      () async {
+        await update(
+          _trayState(isStart: true, groups: [_proxyGroup]),
+          on: windows,
+        );
 
-      final arguments = showCall()!.arguments as Map;
-      expect((arguments['icon'] as Map)['isTemplate'], isFalse);
-      expect(
-        _items(showCall()).where((item) => item['type'] == 'submenu'),
-        isEmpty,
-      );
-      expect(
-        _labels(showCall()),
-        isNot(contains(currentAppLocalizations.speedStatistics)),
-      );
-      expect(_labels(showCall()), isNot(contains(HotAction.delayTest.label)));
-    });
+        final arguments = showCall()!.arguments as Map;
+        expect((arguments['icon'] as Map)['isTemplate'], isFalse);
+        final l10n = currentAppLocalizations;
+        expect(
+          _items(showCall()).where((item) => item['type'] == 'submenu'),
+          hasLength(2),
+        );
+        expect(_labels(showCall()), contains(l10n.connectivityTest));
+        expect(_labels(showCall()), isNot(contains(l10n.toggleSpeedView)));
+      },
+    );
 
     test('joins modifiers with + in the hotkey hints', () async {
       await update(
@@ -408,7 +551,7 @@ void main() {
       );
 
       expect(
-        _item(showCall(), currentAppLocalizations.show)['detail'],
+        _item(showCall(), currentAppLocalizations.openApp(appName))['detail'],
         'Ctrl+Shift+V',
       );
     });

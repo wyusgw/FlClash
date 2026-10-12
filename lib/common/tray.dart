@@ -10,6 +10,7 @@ import 'app_ports.dart';
 import 'constant.dart';
 import 'keyboard.dart';
 import 'provider_reader.dart';
+import 'string.dart';
 import 'system.dart';
 import 'window.dart';
 import 'xray_config.dart';
@@ -122,83 +123,140 @@ class AppTray implements TrayPort {
     final commonAction = read(commonActionProvider.notifier);
     final systemAction = read(systemActionProvider.notifier);
     final setupAction = read(setupActionProvider.notifier);
+    final proxiesAction = read(proxiesActionProvider.notifier);
     final appLocalizations = currentAppLocalizations;
     String? shortcut(HotAction action) => _shortcut(trayState, action);
-    final showItem = TrayMenuAction(
-      label: appLocalizations.show,
-      detail: shortcut(HotAction.view),
-      onSelected: () {
-        window?.show();
-      },
-    );
-    final exitItem = TrayMenuAction(
-      label: appLocalizations.exit,
-      detail: shortcut(HotAction.exit),
-      onSelected: () {
-        systemAction.handleExit();
-      },
-    );
+    TrayShortcut? keyEquivalent(HotAction action) =>
+        _keyEquivalent(trayState, action);
+    final nodeGroup = trayState.groups.getGroup(nodeGroupName);
+    final pendingNodes = nodeGroup == null
+        ? const <String>{}
+        : read(trayPendingDelaysProvider)[nodeGroup.name] ?? const {};
+    final selectedNode = nodeGroup == null
+        ? ''
+        : read(
+            selectedProxyNameProvider(nodeGroupName),
+          ).takeFirstValid([nodeGroup.all.firstOrNull?.name]);
 
     return [
-      showItem,
+      TrayMenuAction(
+        label: appLocalizations.openApp(appName),
+        detail: shortcut(HotAction.view),
+        shortcut: keyEquivalent(HotAction.view),
+        onSelected: () {
+          window?.show();
+        },
+      ),
       TrayMenuCheckbox(
-        label: trayState.isStart
-            ? appLocalizations.stop
-            : appLocalizations.start,
-        checked: false,
+        label: !trayState.isStart
+            ? appLocalizations.notConnected
+            : _withValue(appLocalizations.connected, selectedNode),
+        checked: trayState.isStart,
         detail: shortcut(HotAction.start),
+        shortcut: keyEquivalent(HotAction.start),
         onSelected: commonAction.toggleRunning,
       ),
-      if (isMacOS)
-        TrayMenuCheckbox(
-          label: appLocalizations.speedStatistics,
-          checked: trayState.showTrayTitle,
-          onSelected: commonAction.updateSpeedStatistics,
-        ),
       const TrayMenuSeparator(),
-      for (final mode in Mode.values)
-        TrayMenuCheckbox(
-          label: mode.label,
-          checked: mode == trayState.mode,
-          detail: shortcut(switch (mode) {
-            Mode.rule => HotAction.ruleMode,
-            Mode.global => HotAction.globalMode,
-            Mode.direct => HotAction.directMode,
-          }),
-          onSelected: () {
-            setupAction.changeMode(mode);
+      TrayMenuSubmenu(
+        label: _withValue(appLocalizations.globalRouting, trayState.mode.label),
+        detail: shortcut(HotAction.mode),
+        items: [
+          for (final mode in Mode.values)
+            TrayMenuCheckbox(
+              label: mode.label,
+              checked: mode == trayState.mode,
+              detail: shortcut(_modeHotAction(mode)),
+              shortcut: keyEquivalent(_modeHotAction(mode)),
+              onSelected: () {
+                setupAction.changeMode(mode);
+              },
+            ),
+        ],
+      ),
+      if (nodeGroup != null) ...[
+        _buildServerSubmenu(
+          nodeGroup,
+          selectedName: selectedNode,
+          delays: read(trayDelaysProvider)[nodeGroup.name] ?? const {},
+          pending: pendingNodes,
+          onSelected: (proxyName) {
+            proxiesAction.changeProxy(
+              groupName: nodeGroup.name,
+              proxyName: proxyName,
+            );
           },
         ),
-      const TrayMenuSeparator(),
-      if (isMacOS) ..._buildGroupMenu(trayState: trayState, read: read),
-      if (trayState.isStart) ...[
-        TrayMenuCheckbox(
-          label: appLocalizations.tun,
-          checked: trayState.tunEnable,
-          detail: shortcut(HotAction.tun),
-          onSelected: systemAction.updateTun,
+        TrayMenuAction(
+          label: appLocalizations.connectivityTest,
+          detail: shortcut(HotAction.delayTest),
+          busy: pendingNodes.isNotEmpty,
+          shortcut: keyEquivalent(HotAction.delayTest),
+          onSelected: () {
+            if (pendingNodes.isEmpty) {
+              proxiesAction.delayTestGroups([nodeGroup]);
+            }
+          },
         ),
-        TrayMenuCheckbox(
-          label: appLocalizations.systemProxy,
-          checked: trayState.systemProxy,
-          detail: shortcut(HotAction.proxy),
-          onSelected: systemAction.updateSystemProxy,
-        ),
-        const TrayMenuSeparator(),
       ],
-      TrayMenuCheckbox(
-        label: appLocalizations.autoLaunch,
-        checked: trayState.autoLaunch,
-        onSelected: systemAction.updateAutoLaunch,
-      ),
-      TrayMenuAction(
-        label: appLocalizations.copyEnvVar,
-        detail: shortcut(HotAction.copyEnv),
-        onSelected: systemAction.copyProxyEnv,
-      ),
+      if (isMacOS) ...[
+        const TrayMenuSeparator(),
+        TrayMenuAction(
+          label: appLocalizations.toggleSpeedView,
+          detail: shortcut(HotAction.speedView),
+          shortcut: keyEquivalent(HotAction.speedView),
+          onSelected: commonAction.updateSpeedStatistics,
+        ),
+      ],
       const TrayMenuSeparator(),
-      exitItem,
+      TrayMenuAction(
+        label: isMacOS
+            ? appLocalizations.quitFromMenuBar
+            : appLocalizations.exit,
+        detail: shortcut(HotAction.exit),
+        shortcut: keyEquivalent(HotAction.exit),
+        onSelected: () {
+          systemAction.handleExit();
+        },
+      ),
     ];
+  }
+
+  HotAction _modeHotAction(Mode mode) {
+    return switch (mode) {
+      Mode.rule => HotAction.ruleMode,
+      Mode.global => HotAction.globalMode,
+      Mode.direct => HotAction.directMode,
+    };
+  }
+
+  TrayShortcut? _keyEquivalent(TrayState trayState, HotAction action) {
+    final hotKey = trayState.hotKeys[action];
+    final key = hotKey?.key;
+    if (!isMacOS || hotKey == null || key == null) {
+      return null;
+    }
+    final character = menuKeyEquivalent(key);
+    final modifiers = {
+      for (final modifier in hotKey.modifiers)
+        switch (modifier) {
+          KeyboardModifier.control => TrayShortcutModifier.control,
+          KeyboardModifier.alt => TrayShortcutModifier.option,
+          KeyboardModifier.shift => TrayShortcutModifier.shift,
+          KeyboardModifier.meta => TrayShortcutModifier.command,
+          KeyboardModifier.capsLock || KeyboardModifier.fn => null,
+        },
+    };
+    if (character == null || modifiers.contains(null)) {
+      return null;
+    }
+    return TrayShortcut(
+      key: character,
+      modifiers: modifiers.whereType<TrayShortcutModifier>().toSet(),
+    );
+  }
+
+  String _withValue(String label, String value) {
+    return value.isEmpty ? label : '$label: $value';
   }
 
   String? _shortcut(TrayState trayState, HotAction action) {
@@ -213,63 +271,44 @@ class AppTray implements TrayPort {
     ).text(hotKey.modifiers, key);
   }
 
+  TrayDetailTone? _delayTone(int? delay) {
+    if (delay == null) {
+      return null;
+    }
+    return switch (delay) {
+      <= 0 => TrayDetailTone.error,
+      < 600 => TrayDetailTone.success,
+      _ => TrayDetailTone.warning,
+    };
+  }
+
   String? _delayText(int? delay) {
     if (delay == null) {
       return null;
     }
-    return delay > 0 ? '$delay' : currentAppLocalizations.timeout;
+    return delay > 0 ? '${delay}ms' : currentAppLocalizations.timeout;
   }
 
-  List<TrayMenuItem> _buildGroupMenu({
-    required TrayState trayState,
-    required ProviderReader read,
-  }) {
-    if (trayState.groups.isEmpty) {
-      return const [];
-    }
-    final delays = read(trayDelaysProvider);
-    final proxiesAction = read(proxiesActionProvider.notifier);
-    return [
-      for (final group in trayState.groups)
-        _buildGroupSubmenu(
-          group,
-          selectedName: read(selectedProxyNameProvider(group.name)),
-          delays: delays[group.name] ?? const {},
-          onSelected: (proxyName) {
-            proxiesAction.changeProxy(
-              groupName: group.name,
-              proxyName: proxyName,
-            );
-          },
-        ),
-      TrayMenuAction(
-        label: HotAction.delayTest.label,
-        detail: _shortcut(trayState, HotAction.delayTest),
-        onSelected: () {
-          proxiesAction.delayTestGroups(trayState.groups);
-        },
-      ),
-      const TrayMenuSeparator(),
-    ];
-  }
-
-  TrayMenuSubmenu _buildGroupSubmenu(
+  TrayMenuSubmenu _buildServerSubmenu(
     Group group, {
-    required String? selectedName,
+    required String selectedName,
     required Map<String, int> delays,
+    required Set<String> pending,
     required void Function(String proxyName) onSelected,
   }) {
     return TrayMenuSubmenu(
-      label: group.name == nodeGroupName
-          ? currentAppLocalizations.proxies
-          : group.name,
+      label: _withValue(currentAppLocalizations.server, selectedName),
       detail: _delayText(delays[selectedName]),
+      detailTone: _delayTone(delays[selectedName]),
+      busy: pending.contains(selectedName),
       items: [
         for (final proxy in group.all)
           TrayMenuCheckbox(
             label: proxy.name,
             checked: selectedName == proxy.name,
             detail: _delayText(delays[proxy.name]),
+            detailTone: _delayTone(delays[proxy.name]),
+            busy: pending.contains(proxy.name),
             onSelected: () {
               onSelected(proxy.name);
             },

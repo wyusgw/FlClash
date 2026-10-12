@@ -215,6 +215,7 @@ enum HotAction {
   updateProfiles,
   copyEnv,
   exit,
+  speedView,
 }
 
 enum ProxiesIconStyle { filled, plain, hidden }

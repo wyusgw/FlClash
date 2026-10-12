@@ -12,8 +12,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/test_app.dart';
 
-const _labels = ShortcutLabels(isMacOS: false, isWindows: true);
-
 final _keyA = PhysicalKeyboardKey.keyA.usbHidUsage;
 final _keyB = PhysicalKeyboardKey.keyB.usbHidUsage;
 
@@ -53,37 +51,6 @@ Future<void> _pumpView(WidgetTester tester, ProviderContainer container) async {
   await tester.pumpAndSettle();
 }
 
-Future<void> _pumpRecorder(
-  WidgetTester tester,
-  ProviderContainer container,
-  HotKeyAction action,
-) async {
-  // Pushed as a route so the recorder's Navigator.pop has something to pop,
-  // matching how the view opens it as a dialog.
-  await tester.pumpWidget(
-    UncontrolledProviderScope(
-      container: container,
-      child: TestApp(
-        child: Builder(
-          builder: (context) => TextButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => Scaffold(
-                  body: HotKeyRecorder(hotKeyAction: action, labels: _labels),
-                ),
-              ),
-            ),
-            child: const Text('open'),
-          ),
-        ),
-      ),
-    ),
-  );
-  await tester.pumpAndSettle();
-  await tester.tap(find.text('open'));
-  await tester.pumpAndSettle();
-}
-
 Future<void> _press(
   WidgetTester tester,
   PhysicalKeyboardKey key,
@@ -114,10 +81,6 @@ Future<void> _pressControlA(WidgetTester tester) {
     LogicalKeyboardKey.keyA,
     holding: const [_control],
   );
-}
-
-TextButton _button(WidgetTester tester, String label) {
-  return tester.widget<TextButton>(find.widgetWithText(TextButton, label));
 }
 
 void main() {
@@ -193,34 +156,32 @@ void main() {
     });
   });
 
-  group('HotKeyRecorder', () {
-    testWidgets('pauses global hotkeys while it is open', (tester) async {
-      final container = _containerFor(tester);
-      await _pumpRecorder(
-        tester,
-        container,
-        const HotKeyAction(action: HotAction.mode),
-      );
-
-      expect(container.read(hotKeyRecordingProvider), isTrue);
-
-      await tester.tap(find.text(currentAppLocalizations.cancel));
+  group('recording in place', () {
+    Future<void> startRecording(WidgetTester tester, HotAction action) async {
+      await tester.scrollUntilVisible(find.text(action.label), 100);
+      await tester.tap(find.text(action.label));
       await tester.pumpAndSettle();
+    }
 
-      expect(container.read(hotKeyRecordingProvider), isFalse);
-    });
-
-    testWidgets('previews held modifiers until a key completes it', (
+    testWidgets('tapping an unset row starts recording right there', (
       tester,
     ) async {
       final container = _containerFor(tester);
-      await _pumpRecorder(
-        tester,
-        container,
-        const HotKeyAction(action: HotAction.mode),
-      );
+      await _pumpView(tester, container);
 
+      await startRecording(tester, HotAction.start);
+
+      expect(find.byType(HotKeyView), findsOne);
       expect(find.text(currentAppLocalizations.pressKeyboard), findsOne);
+      expect(container.read(hotKeyRecordingProvider), isTrue);
+    });
+
+    testWidgets('a held modifier previews until a key completes it', (
+      tester,
+    ) async {
+      final container = _containerFor(tester);
+      await _pumpView(tester, container);
+      await startRecording(tester, HotAction.start);
 
       await simulateKeyDownEvent(
         LogicalKeyboardKey.controlLeft,
@@ -228,18 +189,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Ctrl'), findsOne);
+      expect(
+        find.text(ShortcutLabels.host().modifier(KeyboardModifier.control)),
+        findsOne,
+      );
       expect(find.text('…'), findsOne);
-      expect(_button(tester, currentAppLocalizations.save).onPressed, isNull);
+      expect(find.text(currentAppLocalizations.pressKeyboard), findsNothing);
 
-      await simulateKeyDownEvent(
-        LogicalKeyboardKey.keyA,
-        physicalKey: PhysicalKeyboardKey.keyA,
-      );
-      await simulateKeyUpEvent(
-        LogicalKeyboardKey.keyA,
-        physicalKey: PhysicalKeyboardKey.keyA,
-      );
       await simulateKeyUpEvent(
         LogicalKeyboardKey.controlLeft,
         physicalKey: PhysicalKeyboardKey.controlLeft,
@@ -247,141 +203,95 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('…'), findsNothing);
-      expect(find.text('Ctrl'), findsOne);
-      expect(find.text('A'), findsOne);
-      expect(tester.takeException(), null);
+      expect(find.text(currentAppLocalizations.pressKeyboard), findsOne);
     });
 
-    testWidgets('save stores a modifier plus key combination', (tester) async {
+    testWidgets('a modifier plus key saves at once and stops recording', (
+      tester,
+    ) async {
       final container = _containerFor(tester);
-      await _pumpRecorder(
-        tester,
-        container,
-        const HotKeyAction(action: HotAction.mode),
-      );
+      await _pumpView(tester, container);
+      await startRecording(tester, HotAction.start);
 
       await _pressControlA(tester);
-      await tester.tap(find.text(currentAppLocalizations.save));
-      await tester.pumpAndSettle();
 
       final stored = container.read(hotKeyActionsProvider);
       expect(stored, hasLength(1));
-      expect(stored.single.action, HotAction.mode);
+      expect(stored.single.action, HotAction.start);
       expect(stored.single.key, _keyA);
       expect(stored.single.modifiers, {KeyboardModifier.control});
+      expect(container.read(hotKeyRecordingProvider), isFalse);
+      expect(find.text(currentAppLocalizations.pressKeyboard), findsNothing);
+      expect(find.text(ShortcutLabels.host().key(_keyA)), findsOne);
     });
 
-    testWidgets('a bare key cannot be saved and says why', (tester) async {
+    testWidgets('a bare key is refused with a reason and keeps recording', (
+      tester,
+    ) async {
       final container = _containerFor(tester);
-      await _pumpRecorder(
-        tester,
-        container,
-        const HotKeyAction(action: HotAction.mode),
-      );
+      await _pumpView(tester, container);
+      await startRecording(tester, HotAction.start);
 
       await _press(tester, PhysicalKeyboardKey.keyA, LogicalKeyboardKey.keyA);
 
-      expect(_button(tester, currentAppLocalizations.save).onPressed, isNull);
+      expect(container.read(hotKeyActionsProvider), isEmpty);
+      expect(container.read(hotKeyRecordingProvider), isTrue);
       expect(
         find.text(
-          currentAppLocalizations.hotkeyNeedsModifier('Ctrl, Alt, Shift, Win'),
+          currentAppLocalizations.hotkeyNeedsModifier(
+            ShortcutLabels.host()
+                .modifierParts(primaryHotKeyModifiers)
+                .join(ShortcutLabels.host().isMacOS ? ' ' : ', '),
+          ),
         ),
         findsOne,
       );
-      expect(container.read(hotKeyActionsProvider), isEmpty);
     });
 
-    testWidgets('saving a taken combination moves it from the other action', (
+    testWidgets('a taken combination moves from the other action', (
       tester,
     ) async {
       final taken = HotKeyAction(
-        action: HotAction.start,
+        action: HotAction.mode,
         key: _keyA,
         modifiers: const {KeyboardModifier.control},
       );
       final container = _containerFor(tester, hotKeyActions: [taken]);
-      await _pumpRecorder(
-        tester,
-        container,
-        const HotKeyAction(action: HotAction.mode),
-      );
+      await _pumpView(tester, container);
+      await startRecording(tester, HotAction.start);
 
       await _pressControlA(tester);
 
-      expect(
-        find.text(
-          currentAppLocalizations.hotkeyConflictWith(HotAction.start.label),
-        ),
-        findsOne,
-      );
-
-      await tester.tap(find.text(currentAppLocalizations.save));
-      await tester.pumpAndSettle();
-
       final stored = container.read(hotKeyActionsProvider);
       expect(stored, hasLength(1));
-      expect(stored.single.action, HotAction.mode);
-      expect(stored.single.key, _keyA);
+      expect(stored.single.action, HotAction.start);
     });
 
-    testWidgets('save replaces the binding for the same action', (
+    testWidgets('recording over a bound row replaces its combination', (
       tester,
     ) async {
       final existing = HotKeyAction(
-        action: HotAction.mode,
+        action: HotAction.start,
         key: _keyB,
         modifiers: const {KeyboardModifier.control},
       );
       final container = _containerFor(tester, hotKeyActions: [existing]);
-      await _pumpRecorder(tester, container, existing);
+      await _pumpView(tester, container);
+      await startRecording(tester, HotAction.start);
 
       await _pressControlA(tester);
-      await tester.tap(find.text(currentAppLocalizations.save));
-      await tester.pumpAndSettle();
 
       final stored = container.read(hotKeyActionsProvider);
       expect(stored, hasLength(1), reason: 'replaces rather than appends');
       expect(stored.single.key, _keyA);
     });
 
-    testWidgets('remove clears the binding for the action', (tester) async {
-      final existing = HotKeyAction(
-        action: HotAction.mode,
-        key: _keyB,
-        modifiers: const {KeyboardModifier.control},
-      );
-      final other = HotKeyAction(
-        action: HotAction.tun,
-        key: _keyA,
-        modifiers: const {KeyboardModifier.control},
-      );
-      final container = _containerFor(tester, hotKeyActions: [existing, other]);
-      await _pumpRecorder(tester, container, existing);
-
-      await tester.tap(find.text(currentAppLocalizations.remove));
-      await tester.pumpAndSettle();
-
-      expect(container.read(hotKeyActionsProvider), [other]);
-    });
-
-    testWidgets('remove is offered only for a bound action', (tester) async {
+    testWidgets('a bare Escape or a second tap cancels without saving', (
+      tester,
+    ) async {
       final container = _containerFor(tester);
-      await _pumpRecorder(
-        tester,
-        container,
-        const HotKeyAction(action: HotAction.mode),
-      );
-
-      expect(find.text(currentAppLocalizations.remove), findsNothing);
-    });
-
-    testWidgets('a bare Escape closes without saving', (tester) async {
-      final container = _containerFor(tester);
-      await _pumpRecorder(
-        tester,
-        container,
-        const HotKeyAction(action: HotAction.mode),
-      );
+      await _pumpView(tester, container);
+      await startRecording(tester, HotAction.start);
 
       await _press(
         tester,
@@ -389,8 +299,65 @@ void main() {
         LogicalKeyboardKey.escape,
       );
 
-      expect(find.byType(HotKeyRecorder), findsNothing);
+      expect(find.byType(HotKeyView), findsOne);
+      expect(find.text(currentAppLocalizations.pressKeyboard), findsNothing);
+      expect(container.read(hotKeyRecordingProvider), isFalse);
+
+      await startRecording(tester, HotAction.start);
+      await tester.tap(find.text(HotAction.start.label));
+      await tester.pumpAndSettle();
+
+      expect(find.text(currentAppLocalizations.pressKeyboard), findsNothing);
+      expect(container.read(hotKeyRecordingProvider), isFalse);
       expect(container.read(hotKeyActionsProvider), isEmpty);
+    });
+
+    testWidgets('tapping another row moves the recording there', (
+      tester,
+    ) async {
+      final container = _containerFor(tester);
+      await _pumpView(tester, container);
+      await startRecording(tester, HotAction.start);
+      await startRecording(tester, HotAction.view);
+
+      await _pressControlA(tester);
+
+      expect(
+        container.read(hotKeyActionsProvider).single.action,
+        HotAction.view,
+      );
+    });
+
+    testWidgets('a recording row hides its remove button until cancelled', (
+      tester,
+    ) async {
+      final existing = HotKeyAction(
+        action: HotAction.start,
+        key: _keyB,
+        modifiers: const {KeyboardModifier.control},
+      );
+      final container = _containerFor(tester, hotKeyActions: [existing]);
+      await _pumpView(tester, container);
+      await startRecording(tester, HotAction.start);
+
+      expect(find.byTooltip(currentAppLocalizations.remove), findsNothing);
+      await tester.tap(find.text(HotAction.start.label));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip(currentAppLocalizations.remove));
+      await tester.pumpAndSettle();
+
+      expect(container.read(hotKeyActionsProvider), isEmpty);
+    });
+
+    testWidgets('leaving the page releases the paused hotkeys', (tester) async {
+      final container = _containerFor(tester);
+      await _pumpView(tester, container);
+      await startRecording(tester, HotAction.start);
+
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpAndSettle();
+
+      expect(container.read(hotKeyRecordingProvider), isFalse);
     });
   });
 }

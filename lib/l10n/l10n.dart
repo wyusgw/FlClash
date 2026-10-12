@@ -710,6 +710,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Gives a light tap when you switch pages from the bottom bar or drag the scrollbar`
+  String get hapticFeedbackDesc {
+    return Intl.message(
+      'Gives a light tap when you switch pages from the bottom bar or drag the scrollbar',
+      name: 'hapticFeedbackDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `About`
   String get about {
     return Intl.message('About', name: 'about', desc: '', args: []);

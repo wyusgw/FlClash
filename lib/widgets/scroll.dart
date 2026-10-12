@@ -8,6 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'haptics.dart';
 import 'inherited.dart';
 
 const _restThickness = 6.0;
@@ -255,7 +256,7 @@ class _AppScrollbarState extends RawScrollbarState<_AppScrollbar> {
     _scrubRate = 1.0;
     _syncEmphasis();
     if (isTouchPlatform(_platform)) {
-      HapticFeedback.selectionClick();
+      selectionHaptic(context);
     }
     widget.onScrub?.call(_scrubRate);
   }

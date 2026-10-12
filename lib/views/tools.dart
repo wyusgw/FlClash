@@ -46,6 +46,7 @@ class ToolsView extends ConsumerWidget {
           trayMode: state.trayMode,
           showSidebar: state.showSidebar,
           clipboardDetection: state.clipboardDetection,
+          hapticFeedback: state.hapticFeedback,
         ),
       ),
     );
@@ -148,6 +149,26 @@ class ToolsView extends ConsumerWidget {
               ),
             ],
           ),
+          if (system.isAndroid) ...[
+            const SizedBox(height: groupedSectionGap),
+            GroupedSection(
+              header: appLocalizations.other,
+              children: [
+                GroupedRow(
+                  leading: const GroupedIcon(AppGlyphs.vibrate),
+                  title: appLocalizations.hapticFeedback,
+                  trailing: GroupedSwitch(
+                    value: appSetting.hapticFeedback,
+                    onChanged: (value) => ref
+                        .read(appSettingProvider.notifier)
+                        .update(
+                          (state) => state.copyWith(hapticFeedback: value),
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           if (system.isDesktop) ...[
             const SizedBox(height: groupedSectionGap),
             GroupedSection(

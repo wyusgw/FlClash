@@ -416,6 +416,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "go": MessageLookupByLibrary.simpleMessage("開く"),
     "goDownload": MessageLookupByLibrary.simpleMessage("ダウンロードへ"),
     "handshake": MessageLookupByLibrary.simpleMessage("ハンドシェイク"),
+    "hapticFeedback": MessageLookupByLibrary.simpleMessage("触覚フィードバック"),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
       "Helper サービスが利用できないため、TUN モードを有効にできません。FlClash を再インストールしてください。",
     ),

@@ -11,6 +11,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'haptics.dart';
+
 const double _barHeight = 62;
 const double _barPadding = 4;
 const double _edgeMargin = 21;
@@ -868,7 +870,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
     _lens.springTo(position, _trackSpring);
     final index = _indexAt(position);
     if (index != _pressedIndex) {
-      HapticFeedback.selectionClick();
+      selectionHaptic(context);
       _pressedIndex = index;
     }
   }
@@ -894,7 +896,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
         .clamp(pressed - 1, pressed + 1)
         .clamp(0, _lastIndex);
     if (index != pressed) {
-      HapticFeedback.selectionClick();
+      selectionHaptic(context);
       _pressedIndex = index;
     }
   }

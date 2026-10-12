@@ -499,6 +499,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "go": MessageLookupByLibrary.simpleMessage("Перейти"),
     "goDownload": MessageLookupByLibrary.simpleMessage("Скачать"),
     "handshake": MessageLookupByLibrary.simpleMessage("Рукопожатие"),
+    "hapticFeedback": MessageLookupByLibrary.simpleMessage("Тактильный отклик"),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
       "Служба Helper недоступна, поэтому TUN-режим включить нельзя. Переустановите FlClash.",
     ),

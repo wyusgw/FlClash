@@ -1709,6 +1709,26 @@ abstract final class AppGlyphs {
     ], role: GlyphRole.line),
   ]);
 
+  static const vibrate = Glyph([
+    GlyphBox(8.5, 3.5, 15.5, 20.5, 2),
+    GlyphPolyline([
+      GlyphVertex(5.2, 9),
+      GlyphVertex(5.2, 15),
+    ], role: GlyphRole.detail),
+    GlyphPolyline([
+      GlyphVertex(2.6, 10.5),
+      GlyphVertex(2.6, 13.5),
+    ], role: GlyphRole.detail),
+    GlyphPolyline([
+      GlyphVertex(18.8, 9),
+      GlyphVertex(18.8, 15),
+    ], role: GlyphRole.detail),
+    GlyphPolyline([
+      GlyphVertex(21.4, 10.5),
+      GlyphVertex(21.4, 13.5),
+    ], role: GlyphRole.detail),
+  ]);
+
   static const speed = Glyph([
     GlyphPath(
       'M6.759 19.057 Q5.259 19.057 4.396 17.83 A8.8 8.8 0 1 1 19.604 17.83 '

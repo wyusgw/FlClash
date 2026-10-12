@@ -45,6 +45,7 @@ _AppSettingProps _$AppSettingPropsFromJson(
       $enumDecodeNullable(_$TrayModeEnumMap, json['trayMode']) ??
       TrayMode.embedded,
   showSidebar: json['showSidebar'] as bool? ?? true,
+  hapticFeedback: json['hapticFeedback'] as bool? ?? true,
   sidebarWidth:
       (json['sidebarWidth'] as num?)?.toDouble() ?? defaultSidebarWidth,
   archiveStats: json['archiveStats'] as bool? ?? false,
@@ -101,6 +102,7 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'showTrayTitle': instance.showTrayTitle,
       'trayMode': _$TrayModeEnumMap[instance.trayMode]!,
       'showSidebar': instance.showSidebar,
+      'hapticFeedback': instance.hapticFeedback,
       'sidebarWidth': instance.sidebarWidth,
       'archiveStats': instance.archiveStats,
       'geoRegion': instance.geoRegion,

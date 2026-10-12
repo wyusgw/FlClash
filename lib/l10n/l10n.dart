@@ -450,6 +450,16 @@ class AppLocalizations {
     return Intl.message('Other', name: 'other', desc: '', args: []);
   }
 
+  /// `Haptic feedback`
+  String get hapticFeedback {
+    return Intl.message(
+      'Haptic feedback',
+      name: 'hapticFeedback',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `About`
   String get about {
     return Intl.message('About', name: 'about', desc: '', args: []);

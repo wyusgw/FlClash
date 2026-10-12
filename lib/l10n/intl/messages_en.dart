@@ -486,6 +486,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "go": MessageLookupByLibrary.simpleMessage("Go"),
     "goDownload": MessageLookupByLibrary.simpleMessage("Download"),
     "handshake": MessageLookupByLibrary.simpleMessage("Handshake"),
+    "hapticFeedback": MessageLookupByLibrary.simpleMessage("Haptic feedback"),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
       "Helper service unavailable; TUN mode cannot be enabled. Reinstall FlClash to restore it.",
     ),

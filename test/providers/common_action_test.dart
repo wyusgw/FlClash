@@ -8,6 +8,7 @@ import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/core.dart';
+import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -15,6 +16,16 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:riverpod/riverpod.dart';
 
 class MockCoreHandlerInterface extends Mock implements CoreHandlerInterface {}
+
+class _RecordingSetupAction extends SetupAction {
+  final runs = <bool>[];
+
+  @override
+  Future<bool> setRunning(bool running, {bool initialize = false}) async {
+    runs.add(running);
+    return true;
+  }
+}
 
 const runningVersion = '0.8.96';
 
@@ -61,6 +72,51 @@ void main() {
 
       expect(seen.sublist(0, Mode.values.length), Mode.values);
       expect(seen.last, Mode.values.first, reason: 'wraps after the last mode');
+    });
+  });
+
+  group('CommonAction start and stop', () {
+    late _RecordingSetupAction setup;
+    late ProviderContainer container;
+
+    setUp(() {
+      setup = _RecordingSetupAction();
+      container = ProviderContainer(
+        overrides: [
+          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+          setupActionProvider.overrideWith(() => setup),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.listen(isStartProvider, (_, _) {});
+    });
+
+    void run(void Function(CommonAction action) call) {
+      call(container.read(commonActionProvider.notifier));
+    }
+
+    test('start runs a stopped core and leaves a running one alone', () {
+      run((action) => action.start());
+      container.read(runTimeProvider.notifier).value = 1;
+      run((action) => action.start());
+
+      expect(setup.runs, [true]);
+    });
+
+    test('stop stops a running core and leaves a stopped one alone', () {
+      run((action) => action.stop());
+      container.read(runTimeProvider.notifier).value = 1;
+      run((action) => action.stop());
+
+      expect(setup.runs, [false]);
+    });
+
+    test('toggle flips whatever the state is', () {
+      run((action) => action.toggleRunning());
+      container.read(runTimeProvider.notifier).value = 1;
+      run((action) => action.toggleRunning());
+
+      expect(setup.runs, [true, false]);
     });
   });
 

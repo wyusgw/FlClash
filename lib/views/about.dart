@@ -174,9 +174,42 @@ class AboutView extends ConsumerWidget {
   }
 }
 
-/// The link schemes the app opens, each copied with a tap.
+/// The links the app answers, grouped by what they do; a tap copies one.
 class UrlSchemesView extends StatelessWidget {
   const UrlSchemesView({super.key});
+
+  Future<void> _copy(BuildContext context, String link) async {
+    await Clipboard.setData(ClipboardData(text: link));
+    if (context.mounted) {
+      context.showNotifier(
+        context.appLocalizations.copySuccess,
+        level: MessageLevel.success,
+      );
+    }
+  }
+
+  Widget _group(
+    BuildContext context,
+    String header,
+    List<String> paths, {
+    String? footer,
+  }) {
+    final scheme = protocolSchemes.last;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: groupedSectionGap),
+      child: GroupedSection(
+        header: header,
+        footer: footer,
+        children: [
+          for (final path in paths)
+            GroupedRow(
+              title: '$scheme://$path',
+              onTap: () => unawaited(_copy(context, '$scheme://$path')),
+            ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -192,24 +225,30 @@ class UrlSchemesView extends StatelessWidget {
           20 + BottomInsetScope.of(context),
         ),
         children: [
-          GroupedSection(
-            footer: appLocalizations.copyScheme,
-            children: [
-              for (final scheme in protocolSchemes)
-                GroupedRow(
-                  title: '$scheme://',
-                  onTap: () async {
-                    await Clipboard.setData(ClipboardData(text: '$scheme://'));
-                    if (context.mounted) {
-                      context.showNotifier(
-                        appLocalizations.copySuccess,
-                        level: MessageLevel.success,
-                      );
-                    }
-                  },
-                ),
-            ],
-          ),
+          _group(context, appLocalizations.schemeStart, [
+            appLinkPaths[AppLinkAction.start]!,
+          ]),
+          _group(context, appLocalizations.schemeStop, [
+            appLinkPaths[AppLinkAction.stop]!,
+          ]),
+          _group(context, appLocalizations.schemeToggle, [
+            appLinkPaths[AppLinkAction.toggle]!,
+          ]),
+          _group(context, appLocalizations.schemeServer, [
+            '$serverLinkPath/{name}',
+          ]),
+          _group(context, appLocalizations.schemeAdd, ['$addLinkPath/{url}']),
+          _group(context, appLocalizations.connectivityTest, [
+            appLinkPaths[AppLinkAction.connectivityTest]!,
+          ]),
+          _group(context, appLocalizations.schemeUpdateProfiles, [
+            appLinkPaths[AppLinkAction.updateProfiles]!,
+          ]),
+          _group(context, appLocalizations.schemeRoute, [
+            appLinkPaths[AppLinkAction.routeRule]!,
+            appLinkPaths[AppLinkAction.routeGlobal]!,
+            appLinkPaths[AppLinkAction.routeDirect]!,
+          ], footer: appLocalizations.copyScheme),
         ],
       ),
     );

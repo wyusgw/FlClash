@@ -8,8 +8,21 @@ class CommonAction extends _$CommonAction {
   @override
   void build() {}
 
-  void toggleRunning() {
-    final running = !ref.read(isStartProvider);
+  void toggleRunning() => _changeRunning(!ref.read(isStartProvider));
+
+  void start() {
+    if (!ref.read(isStartProvider)) {
+      _changeRunning(true);
+    }
+  }
+
+  void stop() {
+    if (ref.read(isStartProvider)) {
+      _changeRunning(false);
+    }
+  }
+
+  void _changeRunning(bool running) {
     unawaited(
       globalState.safeRun(
         () => ref

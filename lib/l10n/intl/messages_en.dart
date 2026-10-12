@@ -898,6 +898,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "save": MessageLookupByLibrary.simpleMessage("Save"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("Save the changes?"),
     "saveSuccess": MessageLookupByLibrary.simpleMessage("Saved successfully"),
+    "schemeAdd": MessageLookupByLibrary.simpleMessage("Add a server"),
+    "schemeRoute": MessageLookupByLibrary.simpleMessage("Switch routing"),
+    "schemeServer": MessageLookupByLibrary.simpleMessage("Switch server"),
+    "schemeStart": MessageLookupByLibrary.simpleMessage("Start the VPN tunnel"),
+    "schemeStop": MessageLookupByLibrary.simpleMessage("Stop the VPN tunnel"),
+    "schemeToggle": MessageLookupByLibrary.simpleMessage(
+      "Toggle the VPN tunnel",
+    ),
+    "schemeUpdateProfiles": MessageLookupByLibrary.simpleMessage(
+      "Update subscriptions",
+    ),
     "script": MessageLookupByLibrary.simpleMessage("Script"),
     "scrollToSelected": MessageLookupByLibrary.simpleMessage(
       "Scroll to selected",

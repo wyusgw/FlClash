@@ -929,6 +929,23 @@ class MessageLookup extends MessageLookupByLibrary {
     "save": MessageLookupByLibrary.simpleMessage("Сохранить"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("Сохранить изменения?"),
     "saveSuccess": MessageLookupByLibrary.simpleMessage("Сохранено"),
+    "schemeAdd": MessageLookupByLibrary.simpleMessage("Добавить сервер"),
+    "schemeRoute": MessageLookupByLibrary.simpleMessage(
+      "Переключить маршрутизацию",
+    ),
+    "schemeServer": MessageLookupByLibrary.simpleMessage("Переключить сервер"),
+    "schemeStart": MessageLookupByLibrary.simpleMessage(
+      "Запустить VPN-туннель",
+    ),
+    "schemeStop": MessageLookupByLibrary.simpleMessage(
+      "Остановить VPN-туннель",
+    ),
+    "schemeToggle": MessageLookupByLibrary.simpleMessage(
+      "Переключить VPN-туннель",
+    ),
+    "schemeUpdateProfiles": MessageLookupByLibrary.simpleMessage(
+      "Обновить подписки",
+    ),
     "script": MessageLookupByLibrary.simpleMessage("Скрипт"),
     "scrollToSelected": MessageLookupByLibrary.simpleMessage(
       "Прокрутить к выбранному",

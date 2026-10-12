@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:fl_clash/common/link.dart';
 import 'package:fl_clash/common/request.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -126,8 +127,15 @@ void main() {
     await tester.tap(find.widgetWithText(GroupedRow, 'URL Schemes'));
     await tester.pumpAndSettle();
     expect(find.byType(UrlSchemesView), findsOneWidget);
-    expect(find.text('clash://'), findsOneWidget);
-    expect(find.text('flclash://'), findsOneWidget);
+    for (final path in [...appLinkPaths.values, '$addLinkPath/{url}']) {
+      expect(find.text('flclash://$path'), findsOneWidget);
+    }
+    expect(find.text('Toggle the VPN tunnel'), findsOneWidget);
+    expect(find.text('Start the VPN tunnel'), findsOneWidget);
+    expect(find.text('Stop the VPN tunnel'), findsOneWidget);
+    expect(find.text('Switch server'), findsOneWidget);
+    expect(find.text('Add a server'), findsOneWidget);
+    expect(find.text('Switch routing'), findsOneWidget);
   });
 
   testWidgets('about view shows progress while checking for updates', (

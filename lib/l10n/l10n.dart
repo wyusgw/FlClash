@@ -1660,6 +1660,71 @@ class AppLocalizations {
     );
   }
 
+  /// `Toggle the VPN tunnel`
+  String get schemeToggle {
+    return Intl.message(
+      'Toggle the VPN tunnel',
+      name: 'schemeToggle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start the VPN tunnel`
+  String get schemeStart {
+    return Intl.message(
+      'Start the VPN tunnel',
+      name: 'schemeStart',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stop the VPN tunnel`
+  String get schemeStop {
+    return Intl.message(
+      'Stop the VPN tunnel',
+      name: 'schemeStop',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Switch server`
+  String get schemeServer {
+    return Intl.message(
+      'Switch server',
+      name: 'schemeServer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add a server`
+  String get schemeAdd {
+    return Intl.message('Add a server', name: 'schemeAdd', desc: '', args: []);
+  }
+
+  /// `Update subscriptions`
+  String get schemeUpdateProfiles {
+    return Intl.message(
+      'Update subscriptions',
+      name: 'schemeUpdateProfiles',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Switch routing`
+  String get schemeRoute {
+    return Intl.message(
+      'Switch routing',
+      name: 'schemeRoute',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Only count proxy traffic`
   String get onlyStatisticsProxy {
     return Intl.message(

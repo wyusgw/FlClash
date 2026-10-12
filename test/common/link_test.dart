@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fl_clash/common/clipboard_import.dart';
 import 'package:fl_clash/common/link.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -53,6 +54,127 @@ void main() {
     await emit('flclash://open-profile?url=https://example.com/a.yaml');
 
     expect(received, isEmpty);
+  });
+
+  group('links with no payload', () {
+    late List<AppLinkAction> actions;
+
+    setUp(() {
+      actions = [];
+    });
+
+    Future<void> listenForActions() {
+      return linkManager.initAppLinksListen(
+        received.add,
+        actionCallBack: actions.add,
+      );
+    }
+
+    test('each action is answered at its own path', () async {
+      await listenForActions();
+
+      for (final entry in appLinkPaths.entries) {
+        await emit('flclash://${entry.value}');
+      }
+
+      expect(actions, appLinkPaths.keys.toList());
+      expect(received, isEmpty);
+    });
+
+    test('every registered scheme answers them', () async {
+      await listenForActions();
+
+      for (final scheme in ['clash', 'clashmeta', 'flclash']) {
+        await emit('$scheme://toggle');
+      }
+
+      expect(actions, everyElement(AppLinkAction.toggle));
+      expect(actions, hasLength(3));
+    });
+
+    test('an unknown route is ignored', () async {
+      await listenForActions();
+
+      await emit('flclash://route/scene');
+      await emit('flclash://route');
+
+      expect(actions, isEmpty);
+    });
+  });
+
+  group('the server link', () {
+    late List<String> servers;
+
+    setUp(() {
+      servers = [];
+    });
+
+    Future<void> listenForServers() {
+      return linkManager.initAppLinksListen(
+        received.add,
+        serverCallBack: servers.add,
+      );
+    }
+
+    test('names the server to switch to, decoded', () async {
+      await listenForServers();
+
+      await emit('flclash://server/%E6%97%A5%E6%9C%AC%2001');
+      await emit('flclash://server/Tokyo');
+
+      expect(servers, ['日本 01', 'Tokyo']);
+      expect(received, isEmpty);
+    });
+
+    test('ignores a link with no name or more than one segment', () async {
+      await listenForServers();
+
+      await emit('flclash://server');
+      await emit('flclash://server/');
+      await emit('flclash://server/a/b');
+
+      expect(servers, isEmpty);
+    });
+  });
+
+  group('the add link', () {
+    test('takes a raw url, query included', () async {
+      await listen();
+
+      await emit('flclash://add/https://example.com/sub?token=1&flag=a');
+
+      expect(received, ['https://example.com/sub?token=1&flag=a']);
+    });
+
+    test('takes a percent-encoded url', () async {
+      await listen();
+
+      await emit('flclash://add/https%3A%2F%2Fexample.com%2Fsub%3Ftoken%3D1');
+
+      expect(received, ['https://example.com/sub?token=1']);
+    });
+
+    test('takes a share link as a node', () async {
+      final nodes = <ClipboardNodes>[];
+      await linkManager.initAppLinksListen(
+        received.add,
+        nodesCallBack: nodes.add,
+      );
+
+      await emit('flclash://add/trojan://secret@example.org:443#Osaka');
+
+      expect(received, isEmpty);
+      expect(nodes.single.outbounds, hasLength(1));
+    });
+
+    test('ignores a payload that is not a url', () async {
+      await listen();
+
+      await emit('flclash://add/not-a-url');
+      await emit('flclash://add');
+
+      expect(received, isEmpty);
+    });
   });
 
   test('listening again replaces the previous subscription', () async {

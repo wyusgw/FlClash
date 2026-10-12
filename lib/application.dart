@@ -11,6 +11,7 @@ import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/manager/hotkey_manager.dart';
 import 'package:fl_clash/manager/manager.dart';
+import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
@@ -144,10 +145,66 @@ class ApplicationState extends ConsumerState<Application> {
     unawaited(ref.read(profilesActionProvider.notifier).addProfileFormURL(url));
   }
 
+  Future<void> _importNodesLink(ClipboardNodes nodes) async {
+    unawaited(window?.show());
+    final res = await dialogs.showMessage(
+      title: currentAppLocalizations.addProfile,
+      message: TextSpan(
+        text: currentAppLocalizations.importNodesFromClipboardTip(
+          nodes.outbounds.length,
+        ),
+      ),
+    );
+    if (res != true) return;
+    unawaited(
+      ref.read(profilesActionProvider.notifier).importFromClipboard(nodes),
+    );
+  }
+
+  void _switchServerLink(String name) {
+    final group = ref.read(groupsProvider).getGroup(nodeGroupName);
+    if (group == null || !group.all.any((proxy) => proxy.name == name)) {
+      return;
+    }
+    unawaited(
+      ref
+          .read(proxiesActionProvider.notifier)
+          .changeProxy(groupName: nodeGroupName, proxyName: name),
+    );
+  }
+
+  void _runLinkAction(AppLinkAction action) {
+    switch (action) {
+      case AppLinkAction.start:
+        ref.read(commonActionProvider.notifier).start();
+      case AppLinkAction.stop:
+        ref.read(commonActionProvider.notifier).stop();
+      case AppLinkAction.toggle:
+        ref.read(commonActionProvider.notifier).toggleRunning();
+      case AppLinkAction.connectivityTest:
+        unawaited(
+          ref
+              .read(proxiesActionProvider.notifier)
+              .delayTestPageGroup(nodeGroupName),
+        );
+      case AppLinkAction.updateProfiles:
+        unawaited(ref.read(profilesActionProvider.notifier).updateProfiles());
+      case AppLinkAction.routeRule:
+        ref.read(setupActionProvider.notifier).changeMode(Mode.rule);
+      case AppLinkAction.routeGlobal:
+        ref.read(setupActionProvider.notifier).changeMode(Mode.global);
+      case AppLinkAction.routeDirect:
+        ref.read(setupActionProvider.notifier).changeMode(Mode.direct);
+    }
+  }
+
   void _initLink() {
     linkManager.initAppLinksListen(
       _importProfileLink,
       colorCallBack: _importColorLink,
+      actionCallBack: _runLinkAction,
+      nodesCallBack: _importNodesLink,
+      serverCallBack: _switchServerLink,
     );
   }
 

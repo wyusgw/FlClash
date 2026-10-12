@@ -1,6 +1,7 @@
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:fl_clash/widgets/sidebar.dart';
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -67,6 +68,46 @@ void main() {
     expect(fillOf('Profiles'), accent);
     expect(fillOf('Home'), isNot(accent));
     expect(fillOf('Settings'), isNot(accent));
+  });
+
+  testWidgets('no destination takes a shade under the pointer', (tester) async {
+    await tester.pumpWidget(_sidebar(selectedIndex: 1));
+
+    for (final label in ['Home', 'Profiles', 'Settings']) {
+      final inkWell = tester.widget<InkWell>(
+        find
+            .ancestor(of: find.text(label), matching: find.byType(InkWell))
+            .first,
+      );
+      expect(inkWell.hoverColor, Colors.transparent, reason: label);
+    }
+  });
+
+  testWidgets('a mouse resting on a destination paints nothing over it', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_sidebar(selectedIndex: 1));
+    final palette = GroupedPalette.of(
+      tester.element(find.byType(NavigationSidebar)),
+    );
+    final material = find
+        .ancestor(of: find.text('Home'), matching: find.byType(Material))
+        .first;
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: Offset.zero);
+    addTearDown(mouse.removePointer);
+
+    await mouse.moveTo(tester.getCenter(find.text('Home')));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.renderObject(material),
+      isNot(paints..rect(color: palette.hover)),
+    );
+    expect(
+      tester.renderObject(material),
+      isNot(paints..rect(color: palette.hoverShade)),
+    );
   });
 
   testWidgets('tapping a destination reports its index', (tester) async {

@@ -103,7 +103,7 @@ class _SidebarItem extends StatelessWidget {
           customBorder: _itemShape,
           mouseCursor: SystemMouseCursors.basic,
           splashFactory: NoSplash.splashFactory,
-          hoverColor: selected ? Colors.transparent : palette.hover,
+          hoverColor: Colors.transparent,
           highlightColor: Colors.transparent,
           child: SizedBox(
             height: _itemHeight,

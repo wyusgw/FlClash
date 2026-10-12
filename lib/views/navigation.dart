@@ -20,9 +20,8 @@ class Navigation implements NavigationPort {
       ),
       NavigationItem(
         glyph: AppGlyphs.folder,
-        label: PageLabel.profiles,
-        builder: (_) =>
-            const ProfilesView(key: GlobalObjectKey(PageLabel.profiles)),
+        label: PageLabel.rules,
+        builder: (_) => const RulesView(key: GlobalObjectKey(PageLabel.rules)),
       ),
       NavigationItem(
         glyph: AppGlyphs.pulse,

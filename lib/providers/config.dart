@@ -94,6 +94,23 @@ class ExcludeSSIDs extends _$ExcludeSSIDs with AutoDisposeNotifierMixin {
   }
 }
 
+@riverpod
+class RuleSets extends _$RuleSets with AutoDisposeNotifierMixin {
+  @override
+  List<RuleSet> build() {
+    return [];
+  }
+}
+
+@riverpod
+class CurrentRuleSetId extends _$CurrentRuleSetId
+    with AutoDisposeNotifierMixin {
+  @override
+  int? build() {
+    return null;
+  }
+}
+
 @Riverpod(name: 'configProvider')
 Config _config(Ref ref) {
   final appSettingProps = ref.watch(appSettingProvider);
@@ -107,6 +124,8 @@ Config _config(Ref ref) {
   final proxiesStyleProps = ref.watch(proxiesStyleSettingProvider);
   final coreConfig = ref.watch(coreSettingProvider);
   final excludeSSIDs = ref.watch(excludeSSIDsProvider);
+  final ruleSets = ref.watch(ruleSetsProvider);
+  final currentRuleSetId = ref.watch(currentRuleSetIdProvider);
   return Config(
     appSettingProps: appSettingProps,
     windowProps: windowProps,
@@ -119,6 +138,8 @@ Config _config(Ref ref) {
     proxiesStyleProps: proxiesStyleProps,
     coreConfig: coreConfig,
     excludeSSIDs: excludeSSIDs,
+    ruleSets: ruleSets,
+    currentRuleSetId: currentRuleSetId,
   );
 }
 
@@ -135,6 +156,8 @@ void writeConfig(Ref ref, Config config) {
       config.proxiesStyleProps;
   ref.read(coreSettingProvider.notifier).value = config.coreConfig;
   ref.read(excludeSSIDsProvider.notifier).value = config.excludeSSIDs;
+  ref.read(ruleSetsProvider.notifier).value = config.ruleSets;
+  ref.read(currentRuleSetIdProvider.notifier).value = config.currentRuleSetId;
 }
 
 List<Override> buildConfigOverrides(Config config) {
@@ -154,5 +177,9 @@ List<Override> buildConfigOverrides(Config config) {
     ),
     coreSettingProvider.overrideWithBuild((_, _) => config.coreConfig),
     excludeSSIDsProvider.overrideWithBuild((_, _) => config.excludeSSIDs),
+    ruleSetsProvider.overrideWithBuild((_, _) => config.ruleSets),
+    currentRuleSetIdProvider.overrideWithBuild(
+      (_, _) => config.currentRuleSetId,
+    ),
   ];
 }

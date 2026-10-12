@@ -86,17 +86,19 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m29(label) => "${label} は 1024〜49151 の範囲で指定してください";
 
-  static String m30(appName) => "${appName}（セーフモード）";
+  static String m30(count) => "${count} 件のルール";
 
-  static String m31(count) => "${count} 件選択中";
+  static String m31(appName) => "${appName}（セーフモード）";
 
-  static String m32(time) => "${time} に検査";
+  static String m32(count) => "${count} 件選択中";
 
-  static String m33(label) => "${label}は1項目のみ指定できます";
+  static String m33(time) => "${time} に検査";
 
-  static String m34(label) => "${label}はURLである必要があります";
+  static String m34(label) => "${label}は1項目のみ指定できます";
 
-  static String m35(count) => "${count} 年前";
+  static String m35(label) => "${label}はURLである必要があります";
+
+  static String m36(count) => "${count} 年前";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -130,6 +132,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "actionView": MessageLookupByLibrary.simpleMessage("表示/非表示"),
     "add": MessageLookupByLibrary.simpleMessage("追加"),
     "addProfile": MessageLookupByLibrary.simpleMessage("プロファイルを追加"),
+    "addRule": MessageLookupByLibrary.simpleMessage("ルールを追加"),
+    "addRuleSet": MessageLookupByLibrary.simpleMessage("ルールセットを追加"),
+    "addRuleSetDesc": MessageLookupByLibrary.simpleMessage(
+      "URL を空にすると空のルールセットを作成し、手動でルールを追加できます。ファイルや URL には Xray のルーティングルール（設定全体、routing オブジェクト、またはルールの配列）を指定します。",
+    ),
     "addSsid": MessageLookupByLibrary.simpleMessage("SSIDを追加"),
     "addSuccess": MessageLookupByLibrary.simpleMessage("追加しました"),
     "addWidget": MessageLookupByLibrary.simpleMessage("ウィジェットを追加"),
@@ -204,6 +211,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "behavior": MessageLookupByLibrary.simpleMessage("動作"),
     "bind": MessageLookupByLibrary.simpleMessage("連携"),
     "blacklistMode": MessageLookupByLibrary.simpleMessage("ブラックリストモード"),
+    "builtInRules": MessageLookupByLibrary.simpleMessage("組み込みルール"),
+    "builtInRulesDesc": MessageLookupByLibrary.simpleMessage(
+      "中国本土は直接接続、それ以外はプロキシ経由",
+    ),
     "bypassDomain": MessageLookupByLibrary.simpleMessage("除外ドメイン"),
     "bypassDomainDesc": MessageLookupByLibrary.simpleMessage(
       "システムプロキシが有効な場合のみ適用されます",
@@ -323,6 +334,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "delete": MessageLookupByLibrary.simpleMessage("削除"),
     "deleteAllNodes": MessageLookupByLibrary.simpleMessage("すべてのノードを削除"),
     "deleteAllNodesTip": MessageLookupByLibrary.simpleMessage("削除してもよろしいですか？"),
+    "deleteRuleSet": MessageLookupByLibrary.simpleMessage("ルールセットを削除"),
     "deleteSuccess": MessageLookupByLibrary.simpleMessage("削除しました"),
     "deleteTip": m6,
     "desc": MessageLookupByLibrary.simpleMessage(
@@ -454,6 +466,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "import": MessageLookupByLibrary.simpleMessage("インポート"),
     "importColorsTip": m13,
+    "importEllipsis": MessageLookupByLibrary.simpleMessage("インポート…"),
     "importFile": MessageLookupByLibrary.simpleMessage("ファイルからインポート"),
     "importFromURL": MessageLookupByLibrary.simpleMessage("URLからインポート"),
     "importNodesFromClipboardTip": m14,
@@ -528,6 +541,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "listen": MessageLookupByLibrary.simpleMessage("リッスン"),
     "loading": MessageLookupByLibrary.simpleMessage("読み込み中…"),
     "local": MessageLookupByLibrary.simpleMessage("ローカル"),
+    "localFiles": MessageLookupByLibrary.simpleMessage("ローカルファイル"),
     "localNetworkDeniedTip": MessageLookupByLibrary.simpleMessage(
       "ローカルネットワークの権限が拒否されたため gvisor スタックを使用します。LAN にはアクセスできません。",
     ),
@@ -552,6 +566,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "logsTest": MessageLookupByLibrary.simpleMessage("ログテスト"),
     "loopback": MessageLookupByLibrary.simpleMessage("UWP ループバック解除"),
     "loose": MessageLookupByLibrary.simpleMessage("ゆったり"),
+    "matchDomain": MessageLookupByLibrary.simpleMessage("完全一致ドメイン"),
+    "matchDomainSuffix": MessageLookupByLibrary.simpleMessage("ドメインサフィックス"),
+    "matchKeyword": MessageLookupByLibrary.simpleMessage("ドメインキーワード"),
+    "matchRegexp": MessageLookupByLibrary.simpleMessage("ドメイン正規表現"),
     "maxLengthTip": m17,
     "maximize": MessageLookupByLibrary.simpleMessage("最大化"),
     "memoryAppResident": MessageLookupByLibrary.simpleMessage("常駐メモリ"),
@@ -624,6 +642,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "noLongerRemind": MessageLookupByLibrary.simpleMessage("今後表示しない"),
     "noNetwork": MessageLookupByLibrary.simpleMessage("ネットワークがありません"),
     "noNetworkApp": MessageLookupByLibrary.simpleMessage("ネットワーク不使用アプリ"),
+    "noRules": MessageLookupByLibrary.simpleMessage("ルールはまだありません"),
     "noSearchResults": MessageLookupByLibrary.simpleMessage("一致する結果はありません"),
     "nodeInvalid": MessageLookupByLibrary.simpleMessage(
       "これらの値では使用可能なサーバーを作成できません。",
@@ -669,6 +688,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "pleaseUploadValidQrcode": MessageLookupByLibrary.simpleMessage(
       "有効なQRコードをアップロードしてください",
     ),
+    "policyBlock": MessageLookupByLibrary.simpleMessage("拒否"),
+    "policyDirect": MessageLookupByLibrary.simpleMessage("直接接続"),
+    "policyProxy": MessageLookupByLibrary.simpleMessage("プロキシ"),
     "port": MessageLookupByLibrary.simpleMessage("ポート"),
     "portTip": m29,
     "prerequisites": MessageLookupByLibrary.simpleMessage("前提条件"),
@@ -747,6 +769,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "restartCoreTip": MessageLookupByLibrary.simpleMessage("コアを再起動してもよろしいですか？"),
     "restore": MessageLookupByLibrary.simpleMessage("復元"),
     "restoreAllData": MessageLookupByLibrary.simpleMessage("すべてのデータを復元"),
+    "restoreDefaultRules": MessageLookupByLibrary.simpleMessage("デフォルト設定に戻す"),
     "restoreOnlyConfig": MessageLookupByLibrary.simpleMessage("プロファイルのみ復元"),
     "restoreStrategy": MessageLookupByLibrary.simpleMessage("復元方式"),
     "restoreStrategyCompatible": MessageLookupByLibrary.simpleMessage("互換"),
@@ -761,12 +784,27 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeModeConfig": MessageLookupByLibrary.simpleMessage("設定を使用"),
     "ru": MessageLookupByLibrary.simpleMessage("ロシア語"),
     "rule": MessageLookupByLibrary.simpleMessage("ルール"),
+    "ruleCount": m30,
+    "ruleMatch": MessageLookupByLibrary.simpleMessage("一致条件"),
     "ruleModeDesc": MessageLookupByLibrary.simpleMessage("ルールに従ってトラフィックを転送します"),
+    "rulePolicy": MessageLookupByLibrary.simpleMessage("ポリシー"),
     "ruleProviders": MessageLookupByLibrary.simpleMessage("ルールプロバイダー"),
+    "ruleSets": MessageLookupByLibrary.simpleMessage("ルールセット"),
+    "ruleValue": MessageLookupByLibrary.simpleMessage("値"),
+    "ruleValueHint": MessageLookupByLibrary.simpleMessage("複数はカンマで区切ります"),
     "rules": MessageLookupByLibrary.simpleMessage("ルール"),
+    "rulesFooter": MessageLookupByLibrary.simpleMessage(
+      "ルールはルールモードでのみ有効です。どのルールにも一致しない通信はプロキシを経由します。",
+    ),
+    "rulesInvalid": MessageLookupByLibrary.simpleMessage(
+      "Xray のルーティングルールが見つかりません",
+    ),
+    "rulesLegend": MessageLookupByLibrary.simpleMessage(
+      "ドットはデフォルト設定、チェックは使用中の設定を表します。",
+    ),
     "runTime": MessageLookupByLibrary.simpleMessage("起動時間"),
     "safeMode": MessageLookupByLibrary.simpleMessage("セーフモード"),
-    "safeModeAppTitle": m30,
+    "safeModeAppTitle": m31,
     "save": MessageLookupByLibrary.simpleMessage("保存"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("変更を保存しますか？"),
     "saveSuccess": MessageLookupByLibrary.simpleMessage("保存しました"),
@@ -786,7 +824,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "security": MessageLookupByLibrary.simpleMessage("セキュリティ"),
     "selectAll": MessageLookupByLibrary.simpleMessage("すべて選択"),
     "selected": MessageLookupByLibrary.simpleMessage("選択済み"),
-    "selectedCountTitle": m31,
+    "selectedCountTitle": m32,
     "server": MessageLookupByLibrary.simpleMessage("サーバー"),
     "serverName": MessageLookupByLibrary.simpleMessage("サーバー名 (SNI)"),
     "serverNodes": MessageLookupByLibrary.simpleMessage("サーバーノード"),
@@ -794,7 +832,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "serviceBlocked": MessageLookupByLibrary.simpleMessage("ブロック済み"),
     "serviceCheck": MessageLookupByLibrary.simpleMessage("検査"),
     "serviceCheckAll": MessageLookupByLibrary.simpleMessage("すべて検査"),
-    "serviceCheckedAt": m32,
+    "serviceCheckedAt": m33,
     "serviceComingSoon": MessageLookupByLibrary.simpleMessage("近日提供予定"),
     "serviceDisallowedIsp": MessageLookupByLibrary.simpleMessage(
       "許可されていない ISP",
@@ -828,7 +866,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "起動時にウィンドウを表示しません",
     ),
     "singleAdd": MessageLookupByLibrary.simpleMessage("個別追加"),
-    "singleValueTip": m33,
+    "singleValueTip": m34,
     "size": MessageLookupByLibrary.simpleMessage("サイズ"),
     "slide": MessageLookupByLibrary.simpleMessage("スライド"),
     "sort": MessageLookupByLibrary.simpleMessage("並べ替え"),
@@ -863,6 +901,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "tab": MessageLookupByLibrary.simpleMessage("タブ"),
     "tabAnimation": MessageLookupByLibrary.simpleMessage("タブアニメーション"),
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage("タップして許可"),
+    "testRules": MessageLookupByLibrary.simpleMessage("ルールをテスト"),
+    "testRulesGeoNote": MessageLookupByLibrary.simpleMessage(
+      "GeoSite と GeoIP の項目はコアでしか判定できないため、ここではスキップします。",
+    ),
+    "testRulesHint": MessageLookupByLibrary.simpleMessage("ドメインまたは IP"),
+    "testRulesMatched": MessageLookupByLibrary.simpleMessage("一致したルール"),
+    "testRulesNoMatch": MessageLookupByLibrary.simpleMessage(
+      "一致するルールがないため、プロキシを経由します",
+    ),
     "testUrl": MessageLookupByLibrary.simpleMessage("テストURL"),
     "testUrlDesc": MessageLookupByLibrary.simpleMessage("テストする URL を指定します。"),
     "textScale": MessageLookupByLibrary.simpleMessage("テキストの拡大縮小"),
@@ -912,7 +959,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlDesc": MessageLookupByLibrary.simpleMessage("URLからプロファイルを取得します"),
     "urlSchemes": MessageLookupByLibrary.simpleMessage("URL スキーム"),
     "urlTestSettings": MessageLookupByLibrary.simpleMessage("URL テスト設定"),
-    "urlTip": m34,
+    "urlTip": m35,
     "usedDownloadTraffic": MessageLookupByLibrary.simpleMessage("ダウンロード使用量"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("使用済みトラフィック"),
     "usedUploadTraffic": MessageLookupByLibrary.simpleMessage("アップロード使用量"),
@@ -932,7 +979,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "vpnTip": MessageLookupByLibrary.simpleMessage("変更はVPNの再起動後に有効になります"),
     "webDAVConfiguration": MessageLookupByLibrary.simpleMessage("WebDAV設定"),
     "whitelistMode": MessageLookupByLibrary.simpleMessage("ホワイトリストモード"),
-    "yearsAgo": m35,
+    "yearsAgo": m36,
     "zhCN": MessageLookupByLibrary.simpleMessage("簡体字中国語"),
   };
 }

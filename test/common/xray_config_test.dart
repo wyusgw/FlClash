@@ -28,6 +28,7 @@ MakeRealProfileState _state({
   List<String> authentication = const [],
   bool tunInbound = false,
   bool safeMode = false,
+  List<Map<String, dynamic>> rules = const [],
 }) {
   return MakeRealProfileState(
     outbounds: outbounds ?? parseSubscription(_subscription),
@@ -37,6 +38,7 @@ MakeRealProfileState _state({
     authentication: authentication,
     tunInbound: tunInbound,
     safeMode: safeMode,
+    rules: rules,
   );
 }
 
@@ -317,5 +319,75 @@ void main() {
     expect(first.md5, second.md5);
     expect(first.md5, isNot(other.md5));
     expect(json.decode(first.json), isA<Map<String, dynamic>>());
+  });
+
+  group('a rule set in rule mode', () {
+    List<Map<String, dynamic>> routingRules(MakeRealProfileState state) {
+      final routing = buildXrayConfig(state)['routing'] as Map;
+      return (routing['rules'] as List).cast<Map<String, dynamic>>();
+    }
+
+    test('replaces the built-in rules and ends with the proxy', () {
+      final rules = routingRules(
+        _state(
+          selectedNode: 'trojan-ws',
+          rules: const [
+            {
+              'domain': ['domain:example.com'],
+              'outboundTag': 'direct',
+            },
+            {
+              'ip': ['1.1.1.1/32'],
+              'outboundTag': 'block',
+            },
+            {
+              'domain': ['keyword:google'],
+              'outboundTag': 'proxy',
+              'balancerTag': 'b',
+            },
+          ],
+        ),
+      );
+
+      expect(rules.any((rule) => '$rule'.contains('geosite:cn')), isFalse);
+      expect(rules[2], {
+        'domain': ['domain:example.com'],
+        'outboundTag': directOutboundTag,
+      });
+      expect(rules[3]['outboundTag'], blockOutboundTag);
+      expect(rules[4], {
+        'domain': ['keyword:google'],
+        'outboundTag': 'trojan-ws',
+      });
+      expect(rules.last, {'network': 'tcp,udp', 'outboundTag': 'trojan-ws'});
+    });
+
+    test('is left out in global and direct mode', () {
+      for (final mode in [Mode.global, Mode.direct]) {
+        final rules = routingRules(
+          _state(
+            config: CoreConfig(mode: mode),
+            rules: const [
+              {
+                'domain': ['domain:example.com'],
+                'outboundTag': 'direct',
+              },
+            ],
+          ),
+        );
+
+        expect(
+          rules.any((rule) => '$rule'.contains('example.com')),
+          isFalse,
+          reason: '$mode',
+        );
+      }
+    });
+
+    test('without one the built-in rules apply', () {
+      final rules = routingRules(_state());
+
+      expect(rules.any((rule) => '$rule'.contains('geosite:cn')), isTrue);
+    });
   });
 }

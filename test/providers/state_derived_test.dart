@@ -245,7 +245,7 @@ void main() {
     expect(state.viewMode, ViewMode.desktop);
     expect(state.navigationItems.map((item) => item.label), [
       PageLabel.dashboard,
-      PageLabel.profiles,
+      PageLabel.rules,
       PageLabel.logs,
       PageLabel.tools,
     ]);

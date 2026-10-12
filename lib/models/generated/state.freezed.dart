@@ -7338,7 +7338,7 @@ as String,
 /// @nodoc
 mixin _$MakeRealProfileState {
 
- List<Map<String, dynamic>> get outbounds; CoreConfig get coreConfig; RouteMode get routeMode; String? get selectedNode; List<String> get authentication; bool get tunInbound; bool get safeMode;
+ List<Map<String, dynamic>> get outbounds; CoreConfig get coreConfig; RouteMode get routeMode; String? get selectedNode; List<String> get authentication; bool get tunInbound; bool get safeMode; List<Map<String, dynamic>> get rules;
 /// Create a copy of MakeRealProfileState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -7350,20 +7350,20 @@ $MakeRealProfileStateCopyWith<MakeRealProfileState> get copyWith => _$MakeRealPr
 @override
 bool operator ==(Object other) {
   final _this = this as MakeRealProfileState;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MakeRealProfileState&&const DeepCollectionEquality().equals(other.outbounds, _this.outbounds)&&(identical(other.coreConfig, _this.coreConfig) || other.coreConfig == _this.coreConfig)&&(identical(other.routeMode, _this.routeMode) || other.routeMode == _this.routeMode)&&(identical(other.selectedNode, _this.selectedNode) || other.selectedNode == _this.selectedNode)&&const DeepCollectionEquality().equals(other.authentication, _this.authentication)&&(identical(other.tunInbound, _this.tunInbound) || other.tunInbound == _this.tunInbound)&&(identical(other.safeMode, _this.safeMode) || other.safeMode == _this.safeMode));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MakeRealProfileState&&const DeepCollectionEquality().equals(other.outbounds, _this.outbounds)&&(identical(other.coreConfig, _this.coreConfig) || other.coreConfig == _this.coreConfig)&&(identical(other.routeMode, _this.routeMode) || other.routeMode == _this.routeMode)&&(identical(other.selectedNode, _this.selectedNode) || other.selectedNode == _this.selectedNode)&&const DeepCollectionEquality().equals(other.authentication, _this.authentication)&&(identical(other.tunInbound, _this.tunInbound) || other.tunInbound == _this.tunInbound)&&(identical(other.safeMode, _this.safeMode) || other.safeMode == _this.safeMode)&&const DeepCollectionEquality().equals(other.rules, _this.rules));
 }
 
 
 @override
 int get hashCode {
   final _this = this as MakeRealProfileState;
-  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.outbounds),_this.coreConfig,_this.routeMode,_this.selectedNode,const DeepCollectionEquality().hash(_this.authentication),_this.tunInbound,_this.safeMode);
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.outbounds),_this.coreConfig,_this.routeMode,_this.selectedNode,const DeepCollectionEquality().hash(_this.authentication),_this.tunInbound,_this.safeMode,const DeepCollectionEquality().hash(_this.rules));
 }
 
 @override
 String toString() {
   final _this = this as MakeRealProfileState;
-  return 'MakeRealProfileState(outbounds: ${_this.outbounds}, coreConfig: ${_this.coreConfig}, routeMode: ${_this.routeMode}, selectedNode: ${_this.selectedNode}, authentication: ${_this.authentication}, tunInbound: ${_this.tunInbound}, safeMode: ${_this.safeMode})';
+  return 'MakeRealProfileState(outbounds: ${_this.outbounds}, coreConfig: ${_this.coreConfig}, routeMode: ${_this.routeMode}, selectedNode: ${_this.selectedNode}, authentication: ${_this.authentication}, tunInbound: ${_this.tunInbound}, safeMode: ${_this.safeMode}, rules: ${_this.rules})';
 }
 
 
@@ -7374,7 +7374,7 @@ abstract mixin class $MakeRealProfileStateCopyWith<$Res>  {
   factory $MakeRealProfileStateCopyWith(MakeRealProfileState value, $Res Function(MakeRealProfileState) _then) = _$MakeRealProfileStateCopyWithImpl;
 @useResult
 $Res call({
- List<Map<String, dynamic>> outbounds, CoreConfig coreConfig, RouteMode routeMode, String? selectedNode, List<String> authentication, bool tunInbound, bool safeMode
+ List<Map<String, dynamic>> outbounds, CoreConfig coreConfig, RouteMode routeMode, String? selectedNode, List<String> authentication, bool tunInbound, bool safeMode, List<Map<String, dynamic>> rules
 });
 
 
@@ -7391,7 +7391,7 @@ class _$MakeRealProfileStateCopyWithImpl<$Res>
 
 /// Create a copy of MakeRealProfileState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? outbounds = null,Object? coreConfig = null,Object? routeMode = null,Object? selectedNode = freezed,Object? authentication = null,Object? tunInbound = null,Object? safeMode = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? outbounds = null,Object? coreConfig = null,Object? routeMode = null,Object? selectedNode = freezed,Object? authentication = null,Object? tunInbound = null,Object? safeMode = null,Object? rules = null,}) {
   return _then(MakeRealProfileState(
 outbounds: null == outbounds ? _self.outbounds : outbounds // ignore: cast_nullable_to_non_nullable
 as List<Map<String, dynamic>>,coreConfig: null == coreConfig ? _self.coreConfig : coreConfig // ignore: cast_nullable_to_non_nullable
@@ -7400,7 +7400,8 @@ as RouteMode,selectedNode: freezed == selectedNode ? _self.selectedNode : select
 as String?,authentication: null == authentication ? _self.authentication : authentication // ignore: cast_nullable_to_non_nullable
 as List<String>,tunInbound: null == tunInbound ? _self.tunInbound : tunInbound // ignore: cast_nullable_to_non_nullable
 as bool,safeMode: null == safeMode ? _self.safeMode : safeMode // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,rules: null == rules ? _self.rules : rules // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,
   ));
 }
 /// Create a copy of MakeRealProfileState
@@ -7494,10 +7495,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<Map<String, dynamic>> outbounds,  CoreConfig coreConfig,  RouteMode routeMode,  String? selectedNode,  List<String> authentication,  bool tunInbound,  bool safeMode)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<Map<String, dynamic>> outbounds,  CoreConfig coreConfig,  RouteMode routeMode,  String? selectedNode,  List<String> authentication,  bool tunInbound,  bool safeMode,  List<Map<String, dynamic>> rules)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MakeRealProfileState() when $default != null:
-return $default(_that.outbounds,_that.coreConfig,_that.routeMode,_that.selectedNode,_that.authentication,_that.tunInbound,_that.safeMode);case _:
+return $default(_that.outbounds,_that.coreConfig,_that.routeMode,_that.selectedNode,_that.authentication,_that.tunInbound,_that.safeMode,_that.rules);case _:
   return orElse();
 
 }
@@ -7515,10 +7516,10 @@ return $default(_that.outbounds,_that.coreConfig,_that.routeMode,_that.selectedN
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<Map<String, dynamic>> outbounds,  CoreConfig coreConfig,  RouteMode routeMode,  String? selectedNode,  List<String> authentication,  bool tunInbound,  bool safeMode)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<Map<String, dynamic>> outbounds,  CoreConfig coreConfig,  RouteMode routeMode,  String? selectedNode,  List<String> authentication,  bool tunInbound,  bool safeMode,  List<Map<String, dynamic>> rules)  $default,) {final _that = this;
 switch (_that) {
 case _MakeRealProfileState():
-return $default(_that.outbounds,_that.coreConfig,_that.routeMode,_that.selectedNode,_that.authentication,_that.tunInbound,_that.safeMode);case _:
+return $default(_that.outbounds,_that.coreConfig,_that.routeMode,_that.selectedNode,_that.authentication,_that.tunInbound,_that.safeMode,_that.rules);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -7535,10 +7536,10 @@ return $default(_that.outbounds,_that.coreConfig,_that.routeMode,_that.selectedN
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<Map<String, dynamic>> outbounds,  CoreConfig coreConfig,  RouteMode routeMode,  String? selectedNode,  List<String> authentication,  bool tunInbound,  bool safeMode)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<Map<String, dynamic>> outbounds,  CoreConfig coreConfig,  RouteMode routeMode,  String? selectedNode,  List<String> authentication,  bool tunInbound,  bool safeMode,  List<Map<String, dynamic>> rules)?  $default,) {final _that = this;
 switch (_that) {
 case _MakeRealProfileState() when $default != null:
-return $default(_that.outbounds,_that.coreConfig,_that.routeMode,_that.selectedNode,_that.authentication,_that.tunInbound,_that.safeMode);case _:
+return $default(_that.outbounds,_that.coreConfig,_that.routeMode,_that.selectedNode,_that.authentication,_that.tunInbound,_that.safeMode,_that.rules);case _:
   return null;
 
 }
@@ -7550,7 +7551,7 @@ return $default(_that.outbounds,_that.coreConfig,_that.routeMode,_that.selectedN
 
 
 class _MakeRealProfileState implements MakeRealProfileState {
-  const _MakeRealProfileState({required  List<Map<String, dynamic>> outbounds, required this.coreConfig, required this.routeMode, this.selectedNode,  List<String> authentication = const [], this.tunInbound = false, this.safeMode = false}): _outbounds = outbounds,_authentication = authentication;
+  const _MakeRealProfileState({required  List<Map<String, dynamic>> outbounds, required this.coreConfig, required this.routeMode, this.selectedNode,  List<String> authentication = const [], this.tunInbound = false, this.safeMode = false,  List<Map<String, dynamic>> rules = const []}): _outbounds = outbounds,_authentication = authentication,_rules = rules;
   
 
  final  List<Map<String, dynamic>> _outbounds;
@@ -7572,6 +7573,13 @@ class _MakeRealProfileState implements MakeRealProfileState {
 
 @override@JsonKey() final  bool tunInbound;
 @override@JsonKey() final  bool safeMode;
+ final  List<Map<String, dynamic>> _rules;
+@override@JsonKey() List<Map<String, dynamic>> get rules {
+  if (_rules is EqualUnmodifiableListView) return _rules;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_rules);
+}
+
 
 /// Create a copy of MakeRealProfileState
 /// with the given fields replaced by the non-null parameter values.
@@ -7583,18 +7591,18 @@ _$MakeRealProfileStateCopyWith<_MakeRealProfileState> get copyWith => __$MakeRea
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MakeRealProfileState&&const DeepCollectionEquality().equals(other.outbounds, _outbounds)&&(identical(other.coreConfig, coreConfig) || other.coreConfig == coreConfig)&&(identical(other.routeMode, routeMode) || other.routeMode == routeMode)&&(identical(other.selectedNode, selectedNode) || other.selectedNode == selectedNode)&&const DeepCollectionEquality().equals(other.authentication, _authentication)&&(identical(other.tunInbound, tunInbound) || other.tunInbound == tunInbound)&&(identical(other.safeMode, safeMode) || other.safeMode == safeMode));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MakeRealProfileState&&const DeepCollectionEquality().equals(other.outbounds, _outbounds)&&(identical(other.coreConfig, coreConfig) || other.coreConfig == coreConfig)&&(identical(other.routeMode, routeMode) || other.routeMode == routeMode)&&(identical(other.selectedNode, selectedNode) || other.selectedNode == selectedNode)&&const DeepCollectionEquality().equals(other.authentication, _authentication)&&(identical(other.tunInbound, tunInbound) || other.tunInbound == tunInbound)&&(identical(other.safeMode, safeMode) || other.safeMode == safeMode)&&const DeepCollectionEquality().equals(other.rules, _rules));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_outbounds),coreConfig,routeMode,selectedNode,const DeepCollectionEquality().hash(_authentication),tunInbound,safeMode);
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_outbounds),coreConfig,routeMode,selectedNode,const DeepCollectionEquality().hash(_authentication),tunInbound,safeMode,const DeepCollectionEquality().hash(_rules));
 }
 
 @override
 String toString() {
-    return 'MakeRealProfileState(outbounds: $outbounds, coreConfig: $coreConfig, routeMode: $routeMode, selectedNode: $selectedNode, authentication: $authentication, tunInbound: $tunInbound, safeMode: $safeMode)';
+    return 'MakeRealProfileState(outbounds: $outbounds, coreConfig: $coreConfig, routeMode: $routeMode, selectedNode: $selectedNode, authentication: $authentication, tunInbound: $tunInbound, safeMode: $safeMode, rules: $rules)';
 }
 
 
@@ -7605,7 +7613,7 @@ abstract mixin class _$MakeRealProfileStateCopyWith<$Res> implements $MakeRealPr
   factory _$MakeRealProfileStateCopyWith(_MakeRealProfileState value, $Res Function(_MakeRealProfileState) _then) = __$MakeRealProfileStateCopyWithImpl;
 @override @useResult
 $Res call({
- List<Map<String, dynamic>> outbounds, CoreConfig coreConfig, RouteMode routeMode, String? selectedNode, List<String> authentication, bool tunInbound, bool safeMode
+ List<Map<String, dynamic>> outbounds, CoreConfig coreConfig, RouteMode routeMode, String? selectedNode, List<String> authentication, bool tunInbound, bool safeMode, List<Map<String, dynamic>> rules
 });
 
 
@@ -7622,7 +7630,7 @@ class __$MakeRealProfileStateCopyWithImpl<$Res>
 
 /// Create a copy of MakeRealProfileState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? outbounds = null,Object? coreConfig = null,Object? routeMode = null,Object? selectedNode = freezed,Object? authentication = null,Object? tunInbound = null,Object? safeMode = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? outbounds = null,Object? coreConfig = null,Object? routeMode = null,Object? selectedNode = freezed,Object? authentication = null,Object? tunInbound = null,Object? safeMode = null,Object? rules = null,}) {
   return _then(_MakeRealProfileState(
 outbounds: null == outbounds ? _self._outbounds : outbounds // ignore: cast_nullable_to_non_nullable
 as List<Map<String, dynamic>>,coreConfig: null == coreConfig ? _self.coreConfig : coreConfig // ignore: cast_nullable_to_non_nullable
@@ -7631,7 +7639,8 @@ as RouteMode,selectedNode: freezed == selectedNode ? _self.selectedNode : select
 as String?,authentication: null == authentication ? _self._authentication : authentication // ignore: cast_nullable_to_non_nullable
 as List<String>,tunInbound: null == tunInbound ? _self.tunInbound : tunInbound // ignore: cast_nullable_to_non_nullable
 as bool,safeMode: null == safeMode ? _self.safeMode : safeMode // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,rules: null == rules ? _self._rules : rules // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,
   ));
 }
 

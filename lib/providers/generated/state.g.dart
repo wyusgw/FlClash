@@ -8,6 +8,58 @@ part of '../state.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// The rules of the rule set in use; empty while the built-in rules apply.
+
+@ProviderFor(activeRules)
+final activeRulesProvider = ActiveRulesProvider._();
+
+/// The rules of the rule set in use; empty while the built-in rules apply.
+
+final class ActiveRulesProvider
+    extends
+        $FunctionalProvider<
+          List<Map<String, dynamic>>,
+          List<Map<String, dynamic>>,
+          List<Map<String, dynamic>>
+        >
+    with $Provider<List<Map<String, dynamic>>> {
+  /// The rules of the rule set in use; empty while the built-in rules apply.
+  ActiveRulesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'activeRulesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$activeRulesHash();
+
+  @$internal
+  @override
+  $ProviderElement<List<Map<String, dynamic>>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  List<Map<String, dynamic>> create(Ref ref) {
+    return activeRules(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(List<Map<String, dynamic>> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<List<Map<String, dynamic>>>(value),
+    );
+  }
+}
+
+String _$activeRulesHash() => r'7a7fc76905e32df9ecad76a6441059f86c4607df';
+
 /// Everything the generated config is built from besides the profile itself.
 
 @ProviderFor(configInputs)
@@ -22,16 +74,19 @@ final class ConfigInputsProvider
             List<String> authentication,
             CoreConfig config,
             RouteMode routeMode,
+            List<Map<String, dynamic>> rules,
           }),
           ({
             List<String> authentication,
             CoreConfig config,
             RouteMode routeMode,
+            List<Map<String, dynamic>> rules,
           }),
           ({
             List<String> authentication,
             CoreConfig config,
             RouteMode routeMode,
+            List<Map<String, dynamic>> rules,
           })
         >
     with
@@ -40,6 +95,7 @@ final class ConfigInputsProvider
             List<String> authentication,
             CoreConfig config,
             RouteMode routeMode,
+            List<Map<String, dynamic>> rules,
           })
         > {
   /// Everything the generated config is built from besides the profile itself.
@@ -60,19 +116,34 @@ final class ConfigInputsProvider
   @$internal
   @override
   $ProviderElement<
-    ({List<String> authentication, CoreConfig config, RouteMode routeMode})
+    ({
+      List<String> authentication,
+      CoreConfig config,
+      RouteMode routeMode,
+      List<Map<String, dynamic>> rules,
+    })
   >
   $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
-  ({List<String> authentication, CoreConfig config, RouteMode routeMode})
+  ({
+    List<String> authentication,
+    CoreConfig config,
+    RouteMode routeMode,
+    List<Map<String, dynamic>> rules,
+  })
   create(Ref ref) {
     return configInputs(ref);
   }
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(
-    ({List<String> authentication, CoreConfig config, RouteMode routeMode})
+    ({
+      List<String> authentication,
+      CoreConfig config,
+      RouteMode routeMode,
+      List<Map<String, dynamic>> rules,
+    })
     value,
   ) {
     return $ProviderOverride(
@@ -83,13 +154,14 @@ final class ConfigInputsProvider
               List<String> authentication,
               CoreConfig config,
               RouteMode routeMode,
+              List<Map<String, dynamic>> rules,
             })
           >(value),
     );
   }
 }
 
-String _$configInputsHash() => r'fa7ca0a112db2775cf3fc06cc717f370e46e750a';
+String _$configInputsHash() => r'c82c7a15aa4eec910627d10ed90734dc6baa6613';
 
 @ProviderFor(trayState)
 final trayStateProvider = TrayStateProvider._();

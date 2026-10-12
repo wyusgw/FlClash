@@ -344,6 +344,7 @@ class SetupAction extends _$SetupAction {
         authentication: network.authentication.credentials,
         tunInbound: system.isDesktop,
         safeMode: ref.read(safeModeProvider),
+        rules: ref.read(activeRulesProvider),
       ),
     );
   }

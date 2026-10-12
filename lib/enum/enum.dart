@@ -290,7 +290,7 @@ enum IpQualitySource {
 
 enum IpQualitySourceStatus { noType, timeout, rateLimited, failed, ipMismatch }
 
-enum PageLabel { dashboard, proxies, profiles, tools, logs }
+enum PageLabel { dashboard, proxies, profiles, rules, tools, logs }
 
 enum RestoreStrategy { compatible, override }
 

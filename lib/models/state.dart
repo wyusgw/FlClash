@@ -289,6 +289,7 @@ abstract class MakeRealProfileState with _$MakeRealProfileState {
     @Default([]) List<String> authentication,
     @Default(false) bool tunInbound,
     @Default(false) bool safeMode,
+    @Default([]) List<Map<String, dynamic>> rules,
   }) = _MakeRealProfileState;
 }
 

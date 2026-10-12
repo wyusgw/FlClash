@@ -330,6 +330,8 @@ abstract class Config with _$Config {
     @JsonKey(readValue: _readCoreConfig, fromJson: CoreConfig.safeFormJson)
     CoreConfig coreConfig,
     @Default([]) List<String> excludeSSIDs,
+    @Default([]) List<RuleSet> ruleSets,
+    int? currentRuleSetId,
   }) = _Config;
 
   factory Config.fromJson(Map<String, Object?> json) => _$ConfigFromJson(json);

@@ -6,5 +6,6 @@ export 'config.dart';
 export 'core.dart';
 export 'ip_quality.dart';
 export 'profile.dart';
+export 'rule.dart';
 export 'state.dart';
 export 'stats.dart';

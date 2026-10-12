@@ -62,3 +62,4 @@ export 'task_pool.dart';
 export 'text.dart';
 export 'webdav.dart';
 export 'xray_config.dart';
+export 'xray_rules.dart';

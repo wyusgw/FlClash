@@ -84,17 +84,19 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m29(label) => "${label} 必须在 1024 到 49151 之间";
 
-  static String m30(appName) => "${appName}（安全模式）";
+  static String m30(count) => "${count} 条规则";
 
-  static String m31(count) => "已选择 ${count} 项";
+  static String m31(appName) => "${appName}（安全模式）";
 
-  static String m32(time) => "检测于 ${time}";
+  static String m32(count) => "已选择 ${count} 项";
 
-  static String m33(label) => "${label}只能是一项";
+  static String m33(time) => "检测于 ${time}";
 
-  static String m34(label) => "${label}必须为URL";
+  static String m34(label) => "${label}只能是一项";
 
-  static String m35(count) => "${count} 年前";
+  static String m35(label) => "${label}必须为URL";
+
+  static String m36(count) => "${count} 年前";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -126,6 +128,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "actionView": MessageLookupByLibrary.simpleMessage("显示/隐藏"),
     "add": MessageLookupByLibrary.simpleMessage("添加"),
     "addProfile": MessageLookupByLibrary.simpleMessage("添加配置"),
+    "addRule": MessageLookupByLibrary.simpleMessage("添加规则"),
+    "addRuleSet": MessageLookupByLibrary.simpleMessage("添加规则配置"),
+    "addRuleSetDesc": MessageLookupByLibrary.simpleMessage(
+      "URL 留空会建立空白规则配置，再手动添加规则。文件或 URL 接受 Xray 路由规则：完整配置、其中的 routing 对象或规则列表皆可。",
+    ),
     "addSsid": MessageLookupByLibrary.simpleMessage("添加SSID"),
     "addSuccess": MessageLookupByLibrary.simpleMessage("添加成功"),
     "addWidget": MessageLookupByLibrary.simpleMessage("添加组件"),
@@ -192,6 +199,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "behavior": MessageLookupByLibrary.simpleMessage("行为"),
     "bind": MessageLookupByLibrary.simpleMessage("绑定"),
     "blacklistMode": MessageLookupByLibrary.simpleMessage("黑名单模式"),
+    "builtInRules": MessageLookupByLibrary.simpleMessage("内置规则"),
+    "builtInRulesDesc": MessageLookupByLibrary.simpleMessage("中国大陆直连，其余走代理"),
     "bypassDomain": MessageLookupByLibrary.simpleMessage("排除域名"),
     "bypassDomainDesc": MessageLookupByLibrary.simpleMessage("仅在系统代理启用时生效"),
     "cache": MessageLookupByLibrary.simpleMessage("缓存"),
@@ -297,6 +306,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "delete": MessageLookupByLibrary.simpleMessage("删除"),
     "deleteAllNodes": MessageLookupByLibrary.simpleMessage("删除所有节点"),
     "deleteAllNodesTip": MessageLookupByLibrary.simpleMessage("你确定要删除？"),
+    "deleteRuleSet": MessageLookupByLibrary.simpleMessage("删除规则配置"),
     "deleteSuccess": MessageLookupByLibrary.simpleMessage("删除成功"),
     "deleteTip": m6,
     "desc": MessageLookupByLibrary.simpleMessage(
@@ -410,6 +420,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ignoreBatteryOptimization": MessageLookupByLibrary.simpleMessage("忽略电池优化"),
     "import": MessageLookupByLibrary.simpleMessage("导入"),
     "importColorsTip": m13,
+    "importEllipsis": MessageLookupByLibrary.simpleMessage("导入…"),
     "importFile": MessageLookupByLibrary.simpleMessage("通过文件导入"),
     "importFromURL": MessageLookupByLibrary.simpleMessage("从URL导入"),
     "importNodesFromClipboardTip": m14,
@@ -478,6 +489,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "listen": MessageLookupByLibrary.simpleMessage("监听"),
     "loading": MessageLookupByLibrary.simpleMessage("加载中…"),
     "local": MessageLookupByLibrary.simpleMessage("本地"),
+    "localFiles": MessageLookupByLibrary.simpleMessage("本地文件"),
     "localNetworkDeniedTip": MessageLookupByLibrary.simpleMessage(
       "本地网络权限被拒绝：已改用 gvisor 栈，局域网无法访问。",
     ),
@@ -502,6 +514,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "logsTest": MessageLookupByLibrary.simpleMessage("日志测试"),
     "loopback": MessageLookupByLibrary.simpleMessage("UWP 回环解锁"),
     "loose": MessageLookupByLibrary.simpleMessage("宽松"),
+    "matchDomain": MessageLookupByLibrary.simpleMessage("完整域名"),
+    "matchDomainSuffix": MessageLookupByLibrary.simpleMessage("域名后缀"),
+    "matchKeyword": MessageLookupByLibrary.simpleMessage("域名关键字"),
+    "matchRegexp": MessageLookupByLibrary.simpleMessage("域名正则"),
     "maxLengthTip": m17,
     "maximize": MessageLookupByLibrary.simpleMessage("最大化"),
     "memoryAppResident": MessageLookupByLibrary.simpleMessage("常驻内存"),
@@ -570,6 +586,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "noLongerRemind": MessageLookupByLibrary.simpleMessage("不再提示"),
     "noNetwork": MessageLookupByLibrary.simpleMessage("无网络"),
     "noNetworkApp": MessageLookupByLibrary.simpleMessage("无网络应用"),
+    "noRules": MessageLookupByLibrary.simpleMessage("还没有规则"),
     "noSearchResults": MessageLookupByLibrary.simpleMessage("没有匹配的结果"),
     "nodeInvalid": MessageLookupByLibrary.simpleMessage("这些值无法组成可用的服务器。"),
     "none": MessageLookupByLibrary.simpleMessage("无"),
@@ -605,6 +622,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "pleaseUploadValidQrcode": MessageLookupByLibrary.simpleMessage(
       "请上传有效的二维码",
     ),
+    "policyBlock": MessageLookupByLibrary.simpleMessage("拒绝"),
+    "policyDirect": MessageLookupByLibrary.simpleMessage("直连"),
+    "policyProxy": MessageLookupByLibrary.simpleMessage("代理"),
     "port": MessageLookupByLibrary.simpleMessage("端口"),
     "portTip": m29,
     "prerequisites": MessageLookupByLibrary.simpleMessage("前置条件"),
@@ -677,6 +697,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "restartCoreTip": MessageLookupByLibrary.simpleMessage("您确定要重启核心吗？"),
     "restore": MessageLookupByLibrary.simpleMessage("恢复"),
     "restoreAllData": MessageLookupByLibrary.simpleMessage("恢复所有数据"),
+    "restoreDefaultRules": MessageLookupByLibrary.simpleMessage("恢复默认配置"),
     "restoreOnlyConfig": MessageLookupByLibrary.simpleMessage("仅恢复配置文件"),
     "restoreStrategy": MessageLookupByLibrary.simpleMessage("恢复策略"),
     "restoreStrategyCompatible": MessageLookupByLibrary.simpleMessage("兼容"),
@@ -689,12 +710,25 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeModeConfig": MessageLookupByLibrary.simpleMessage("使用配置"),
     "ru": MessageLookupByLibrary.simpleMessage("俄语"),
     "rule": MessageLookupByLibrary.simpleMessage("规则"),
+    "ruleCount": m30,
+    "ruleMatch": MessageLookupByLibrary.simpleMessage("匹配类型"),
     "ruleModeDesc": MessageLookupByLibrary.simpleMessage("根据规则转发流量"),
+    "rulePolicy": MessageLookupByLibrary.simpleMessage("策略"),
     "ruleProviders": MessageLookupByLibrary.simpleMessage("规则集"),
+    "ruleSets": MessageLookupByLibrary.simpleMessage("规则配置"),
+    "ruleValue": MessageLookupByLibrary.simpleMessage("值"),
+    "ruleValueHint": MessageLookupByLibrary.simpleMessage("多个用逗号分隔"),
     "rules": MessageLookupByLibrary.simpleMessage("规则"),
+    "rulesFooter": MessageLookupByLibrary.simpleMessage(
+      "规则只在规则模式下生效，未匹配的流量走代理。",
+    ),
+    "rulesInvalid": MessageLookupByLibrary.simpleMessage("没有找到 Xray 路由规则"),
+    "rulesLegend": MessageLookupByLibrary.simpleMessage(
+      "圆点代表默认配置，复选标记代表正在使用的配置。",
+    ),
     "runTime": MessageLookupByLibrary.simpleMessage("启动时间"),
     "safeMode": MessageLookupByLibrary.simpleMessage("安全模式"),
-    "safeModeAppTitle": m30,
+    "safeModeAppTitle": m31,
     "save": MessageLookupByLibrary.simpleMessage("保存"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("是否保存更改？"),
     "saveSuccess": MessageLookupByLibrary.simpleMessage("保存成功"),
@@ -712,7 +746,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "security": MessageLookupByLibrary.simpleMessage("安全"),
     "selectAll": MessageLookupByLibrary.simpleMessage("全选"),
     "selected": MessageLookupByLibrary.simpleMessage("已选择"),
-    "selectedCountTitle": m31,
+    "selectedCountTitle": m32,
     "server": MessageLookupByLibrary.simpleMessage("服务器"),
     "serverName": MessageLookupByLibrary.simpleMessage("服务器名称 (SNI)"),
     "serverNodes": MessageLookupByLibrary.simpleMessage("服务器节点"),
@@ -720,7 +754,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "serviceBlocked": MessageLookupByLibrary.simpleMessage("已被封禁"),
     "serviceCheck": MessageLookupByLibrary.simpleMessage("检测"),
     "serviceCheckAll": MessageLookupByLibrary.simpleMessage("全部检测"),
-    "serviceCheckedAt": m32,
+    "serviceCheckedAt": m33,
     "serviceComingSoon": MessageLookupByLibrary.simpleMessage("即将上线"),
     "serviceDisallowedIsp": MessageLookupByLibrary.simpleMessage("不允许的 ISP"),
     "serviceFailed": MessageLookupByLibrary.simpleMessage("检测失败"),
@@ -748,7 +782,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "silentLaunch": MessageLookupByLibrary.simpleMessage("静默启动"),
     "silentLaunchDesc": MessageLookupByLibrary.simpleMessage("启动时不显示窗口"),
     "singleAdd": MessageLookupByLibrary.simpleMessage("单条添加"),
-    "singleValueTip": m33,
+    "singleValueTip": m34,
     "size": MessageLookupByLibrary.simpleMessage("尺寸"),
     "slide": MessageLookupByLibrary.simpleMessage("滑动"),
     "sort": MessageLookupByLibrary.simpleMessage("排序"),
@@ -781,6 +815,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "tab": MessageLookupByLibrary.simpleMessage("标签页"),
     "tabAnimation": MessageLookupByLibrary.simpleMessage("选项卡动画"),
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage("点击授权"),
+    "testRules": MessageLookupByLibrary.simpleMessage("测试规则"),
+    "testRulesGeoNote": MessageLookupByLibrary.simpleMessage(
+      "GeoSite 与 GeoIP 条目只能由内核判断，这里会跳过。",
+    ),
+    "testRulesHint": MessageLookupByLibrary.simpleMessage("域名或 IP"),
+    "testRulesMatched": MessageLookupByLibrary.simpleMessage("命中规则"),
+    "testRulesNoMatch": MessageLookupByLibrary.simpleMessage("没有规则命中，走代理"),
     "testUrl": MessageLookupByLibrary.simpleMessage("测速链接"),
     "testUrlDesc": MessageLookupByLibrary.simpleMessage("指定要测试的 URL。"),
     "textScale": MessageLookupByLibrary.simpleMessage("文本缩放"),
@@ -826,7 +867,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlDesc": MessageLookupByLibrary.simpleMessage("通过URL获取配置文件"),
     "urlSchemes": MessageLookupByLibrary.simpleMessage("URL Schemes"),
     "urlTestSettings": MessageLookupByLibrary.simpleMessage("URL 测试设置"),
-    "urlTip": m34,
+    "urlTip": m35,
     "usedDownloadTraffic": MessageLookupByLibrary.simpleMessage("已用下载流量"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("已用流量"),
     "usedUploadTraffic": MessageLookupByLibrary.simpleMessage("已用上传流量"),
@@ -846,7 +887,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "vpnTip": MessageLookupByLibrary.simpleMessage("重启VPN后改变生效"),
     "webDAVConfiguration": MessageLookupByLibrary.simpleMessage("WebDAV配置"),
     "whitelistMode": MessageLookupByLibrary.simpleMessage("白名单模式"),
-    "yearsAgo": m35,
+    "yearsAgo": m36,
     "zhCN": MessageLookupByLibrary.simpleMessage("中文简体"),
   };
 }

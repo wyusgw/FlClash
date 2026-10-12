@@ -65,6 +65,246 @@ class AppLocalizations {
     return Intl.message('Rules', name: 'rules', desc: '', args: []);
   }
 
+  /// `Rule sets`
+  String get ruleSets {
+    return Intl.message('Rule sets', name: 'ruleSets', desc: '', args: []);
+  }
+
+  /// `Built-in rules`
+  String get builtInRules {
+    return Intl.message(
+      'Built-in rules',
+      name: 'builtInRules',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mainland China direct, the rest through the proxy`
+  String get builtInRulesDesc {
+    return Intl.message(
+      'Mainland China direct, the rest through the proxy',
+      name: 'builtInRulesDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Rules apply in rule mode. Traffic no rule matches goes through the proxy.`
+  String get rulesFooter {
+    return Intl.message(
+      'Rules apply in rule mode. Traffic no rule matches goes through the proxy.',
+      name: 'rulesFooter',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add rule set`
+  String get addRuleSet {
+    return Intl.message('Add rule set', name: 'addRuleSet', desc: '', args: []);
+  }
+
+  /// `Leave the URL empty to start with no rules and add them by hand. A file or a URL takes Xray routing rules: a whole config, its routing object, or the rule list.`
+  String get addRuleSetDesc {
+    return Intl.message(
+      'Leave the URL empty to start with no rules and add them by hand. A file or a URL takes Xray routing rules: a whole config, its routing object, or the rule list.',
+      name: 'addRuleSetDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add rule`
+  String get addRule {
+    return Intl.message('Add rule', name: 'addRule', desc: '', args: []);
+  }
+
+  /// `Rules: {count}`
+  String ruleCount(Object count) {
+    return Intl.message(
+      'Rules: $count',
+      name: 'ruleCount',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `No rules yet`
+  String get noRules {
+    return Intl.message('No rules yet', name: 'noRules', desc: '', args: []);
+  }
+
+  /// `Match`
+  String get ruleMatch {
+    return Intl.message('Match', name: 'ruleMatch', desc: '', args: []);
+  }
+
+  /// `Value`
+  String get ruleValue {
+    return Intl.message('Value', name: 'ruleValue', desc: '', args: []);
+  }
+
+  /// `Separate several with commas`
+  String get ruleValueHint {
+    return Intl.message(
+      'Separate several with commas',
+      name: 'ruleValueHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Policy`
+  String get rulePolicy {
+    return Intl.message('Policy', name: 'rulePolicy', desc: '', args: []);
+  }
+
+  /// `Proxy`
+  String get policyProxy {
+    return Intl.message('Proxy', name: 'policyProxy', desc: '', args: []);
+  }
+
+  /// `Direct`
+  String get policyDirect {
+    return Intl.message('Direct', name: 'policyDirect', desc: '', args: []);
+  }
+
+  /// `Reject`
+  String get policyBlock {
+    return Intl.message('Reject', name: 'policyBlock', desc: '', args: []);
+  }
+
+  /// `Domain suffix`
+  String get matchDomainSuffix {
+    return Intl.message(
+      'Domain suffix',
+      name: 'matchDomainSuffix',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Full domain`
+  String get matchDomain {
+    return Intl.message('Full domain', name: 'matchDomain', desc: '', args: []);
+  }
+
+  /// `Domain keyword`
+  String get matchKeyword {
+    return Intl.message(
+      'Domain keyword',
+      name: 'matchKeyword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Domain regex`
+  String get matchRegexp {
+    return Intl.message(
+      'Domain regex',
+      name: 'matchRegexp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete rule set`
+  String get deleteRuleSet {
+    return Intl.message(
+      'Delete rule set',
+      name: 'deleteRuleSet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No Xray routing rules found`
+  String get rulesInvalid {
+    return Intl.message(
+      'No Xray routing rules found',
+      name: 'rulesInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Restore default config`
+  String get restoreDefaultRules {
+    return Intl.message(
+      'Restore default config',
+      name: 'restoreDefaultRules',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Import…`
+  String get importEllipsis {
+    return Intl.message('Import…', name: 'importEllipsis', desc: '', args: []);
+  }
+
+  /// `Test rules`
+  String get testRules {
+    return Intl.message('Test rules', name: 'testRules', desc: '', args: []);
+  }
+
+  /// `Local files`
+  String get localFiles {
+    return Intl.message('Local files', name: 'localFiles', desc: '', args: []);
+  }
+
+  /// `A dot marks the default config; a check marks the one in use.`
+  String get rulesLegend {
+    return Intl.message(
+      'A dot marks the default config; a check marks the one in use.',
+      name: 'rulesLegend',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Domain or IP`
+  String get testRulesHint {
+    return Intl.message(
+      'Domain or IP',
+      name: 'testRulesHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Matched rule`
+  String get testRulesMatched {
+    return Intl.message(
+      'Matched rule',
+      name: 'testRulesMatched',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No rule matches, so it goes through the proxy`
+  String get testRulesNoMatch {
+    return Intl.message(
+      'No rule matches, so it goes through the proxy',
+      name: 'testRulesNoMatch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `GeoSite and GeoIP entries can only be checked by the core, so they are skipped here.`
+  String get testRulesGeoNote {
+    return Intl.message(
+      'GeoSite and GeoIP entries can only be checked by the core, so they are skipped here.',
+      name: 'testRulesGeoNote',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Global`
   String get global {
     return Intl.message('Global', name: 'global', desc: '', args: []);

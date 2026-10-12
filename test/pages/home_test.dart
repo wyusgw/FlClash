@@ -311,7 +311,7 @@ void main() {
   );
 
   testWidgets(
-    'profile trailing controls stay valid while a maximized window restores',
+    'rule set trailing controls stay valid while a maximized window restores',
     (tester) async {
       tester.view.physicalSize = const Size(1440, 900);
       tester.view.devicePixelRatio = 1;
@@ -324,13 +324,26 @@ void main() {
           profilesProvider.overrideWith(() => _HomeTestProfiles([profile])),
           currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
           versionProvider.overrideWithBuild((_, _) => 15),
+          ruleSetsProvider.overrideWithBuild(
+            (_, _) => const [
+              RuleSet(
+                id: 1,
+                label: 'A rule set with a name long enough to crowd its row',
+                rules: [
+                  {
+                    'domain': ['domain:example.com'],
+                    'outboundTag': 'direct',
+                  },
+                ],
+              ),
+            ],
+          ),
+          currentRuleSetIdProvider.overrideWithBuild((_, _) => 1),
         ],
       );
       addTearDown(container.dispose);
       globalState.container = container;
-      container
-          .read(currentPageLabelProvider.notifier)
-          .toPage(PageLabel.profiles);
+      container.read(currentPageLabelProvider.notifier).toPage(PageLabel.rules);
 
       await tester.pumpWidget(
         UncontrolledProviderScope(

@@ -93,17 +93,19 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m29(label) => "${label} must be between 1024 and 49151";
 
-  static String m30(appName) => "${appName} (Safe mode)";
+  static String m30(count) => "Rules: ${count}";
 
-  static String m31(count) => "${count} selected";
+  static String m31(appName) => "${appName} (Safe mode)";
 
-  static String m32(time) => "Checked at ${time}";
+  static String m32(count) => "${count} selected";
 
-  static String m33(label) => "${label} must be a single item";
+  static String m33(time) => "Checked at ${time}";
 
-  static String m34(label) => "${label} must be a URL";
+  static String m34(label) => "${label} must be a single item";
 
-  static String m35(count) =>
+  static String m35(label) => "${label} must be a URL";
+
+  static String m36(count) =>
       "${Intl.plural(count, one: '1 year ago', other: '${count} years ago')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -144,6 +146,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "actionView": MessageLookupByLibrary.simpleMessage("Show/Hide"),
     "add": MessageLookupByLibrary.simpleMessage("Add"),
     "addProfile": MessageLookupByLibrary.simpleMessage("Add profile"),
+    "addRule": MessageLookupByLibrary.simpleMessage("Add rule"),
+    "addRuleSet": MessageLookupByLibrary.simpleMessage("Add rule set"),
+    "addRuleSetDesc": MessageLookupByLibrary.simpleMessage(
+      "Leave the URL empty to start with no rules and add them by hand. A file or a URL takes Xray routing rules: a whole config, its routing object, or the rule list.",
+    ),
     "addSsid": MessageLookupByLibrary.simpleMessage("Add SSID"),
     "addSuccess": MessageLookupByLibrary.simpleMessage("Added successfully"),
     "addWidget": MessageLookupByLibrary.simpleMessage("Add widget"),
@@ -238,6 +245,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "behavior": MessageLookupByLibrary.simpleMessage("Behavior"),
     "bind": MessageLookupByLibrary.simpleMessage("Bind"),
     "blacklistMode": MessageLookupByLibrary.simpleMessage("Blacklist mode"),
+    "builtInRules": MessageLookupByLibrary.simpleMessage("Built-in rules"),
+    "builtInRulesDesc": MessageLookupByLibrary.simpleMessage(
+      "Mainland China direct, the rest through the proxy",
+    ),
     "bypassDomain": MessageLookupByLibrary.simpleMessage("Bypass domains"),
     "bypassDomainDesc": MessageLookupByLibrary.simpleMessage(
       "Only takes effect while the system proxy is enabled",
@@ -383,6 +394,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteAllNodesTip": MessageLookupByLibrary.simpleMessage(
       "Are you sure you want to delete?",
     ),
+    "deleteRuleSet": MessageLookupByLibrary.simpleMessage("Delete rule set"),
     "deleteSuccess": MessageLookupByLibrary.simpleMessage(
       "Deleted successfully",
     ),
@@ -526,15 +538,17 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "import": MessageLookupByLibrary.simpleMessage("Import"),
     "importColorsTip": m13,
+    "importEllipsis": MessageLookupByLibrary.simpleMessage("Import…"),
     "importFile": MessageLookupByLibrary.simpleMessage("Import from file"),
     "importFromURL": MessageLookupByLibrary.simpleMessage("Import from URL"),
     "importNodesFromClipboardTip": m14,
     "inbound": MessageLookupByLibrary.simpleMessage("Inbound"),
     "infiniteTime": MessageLookupByLibrary.simpleMessage("Never expires"),
     "init": MessageLookupByLibrary.simpleMessage("Init"),
-    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
-      "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
-    ),
+    "installedAppsPermissionDeniedMessage":
+        MessageLookupByLibrary.simpleMessage(
+          "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
+        ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "This system hides the installed app list until the permission is granted. Authorize it to configure the per-app proxy.",
     ),
@@ -607,6 +621,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "listen": MessageLookupByLibrary.simpleMessage("Listen"),
     "loading": MessageLookupByLibrary.simpleMessage("Loading…"),
     "local": MessageLookupByLibrary.simpleMessage("Local"),
+    "localFiles": MessageLookupByLibrary.simpleMessage("Local files"),
     "localNetworkDeniedTip": MessageLookupByLibrary.simpleMessage(
       "Local network permission denied: using the gvisor stack, LAN is unreachable.",
     ),
@@ -637,6 +652,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "logsTest": MessageLookupByLibrary.simpleMessage("Logs test"),
     "loopback": MessageLookupByLibrary.simpleMessage("UWP loopback exemption"),
     "loose": MessageLookupByLibrary.simpleMessage("Loose"),
+    "matchDomain": MessageLookupByLibrary.simpleMessage("Full domain"),
+    "matchDomainSuffix": MessageLookupByLibrary.simpleMessage("Domain suffix"),
+    "matchKeyword": MessageLookupByLibrary.simpleMessage("Domain keyword"),
+    "matchRegexp": MessageLookupByLibrary.simpleMessage("Domain regex"),
     "maxLengthTip": m17,
     "maximize": MessageLookupByLibrary.simpleMessage("Maximize"),
     "memoryAppResident": MessageLookupByLibrary.simpleMessage(
@@ -719,6 +738,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "noNetwork": MessageLookupByLibrary.simpleMessage("No network"),
     "noNetworkApp": MessageLookupByLibrary.simpleMessage("No-network apps"),
+    "noRules": MessageLookupByLibrary.simpleMessage("No rules yet"),
     "noSearchResults": MessageLookupByLibrary.simpleMessage(
       "No matching results",
     ),
@@ -772,6 +792,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "pleaseUploadValidQrcode": MessageLookupByLibrary.simpleMessage(
       "Please upload a valid QR code",
     ),
+    "policyBlock": MessageLookupByLibrary.simpleMessage("Reject"),
+    "policyDirect": MessageLookupByLibrary.simpleMessage("Direct"),
+    "policyProxy": MessageLookupByLibrary.simpleMessage("Proxy"),
     "port": MessageLookupByLibrary.simpleMessage("Port"),
     "portTip": m29,
     "prerequisites": MessageLookupByLibrary.simpleMessage("Prerequisites"),
@@ -868,6 +891,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "restore": MessageLookupByLibrary.simpleMessage("Restore"),
     "restoreAllData": MessageLookupByLibrary.simpleMessage("Restore all data"),
+    "restoreDefaultRules": MessageLookupByLibrary.simpleMessage(
+      "Restore default config",
+    ),
     "restoreOnlyConfig": MessageLookupByLibrary.simpleMessage(
       "Restore profiles only",
     ),
@@ -888,14 +914,31 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeModeConfig": MessageLookupByLibrary.simpleMessage("Use config"),
     "ru": MessageLookupByLibrary.simpleMessage("Russian"),
     "rule": MessageLookupByLibrary.simpleMessage("Rule"),
+    "ruleCount": m30,
+    "ruleMatch": MessageLookupByLibrary.simpleMessage("Match"),
     "ruleModeDesc": MessageLookupByLibrary.simpleMessage(
       "Forward traffic by the routing rules",
     ),
+    "rulePolicy": MessageLookupByLibrary.simpleMessage("Policy"),
     "ruleProviders": MessageLookupByLibrary.simpleMessage("Rule providers"),
+    "ruleSets": MessageLookupByLibrary.simpleMessage("Rule sets"),
+    "ruleValue": MessageLookupByLibrary.simpleMessage("Value"),
+    "ruleValueHint": MessageLookupByLibrary.simpleMessage(
+      "Separate several with commas",
+    ),
     "rules": MessageLookupByLibrary.simpleMessage("Rules"),
+    "rulesFooter": MessageLookupByLibrary.simpleMessage(
+      "Rules apply in rule mode. Traffic no rule matches goes through the proxy.",
+    ),
+    "rulesInvalid": MessageLookupByLibrary.simpleMessage(
+      "No Xray routing rules found",
+    ),
+    "rulesLegend": MessageLookupByLibrary.simpleMessage(
+      "A dot marks the default config; a check marks the one in use.",
+    ),
     "runTime": MessageLookupByLibrary.simpleMessage("Run time"),
     "safeMode": MessageLookupByLibrary.simpleMessage("Safe mode"),
-    "safeModeAppTitle": m30,
+    "safeModeAppTitle": m31,
     "save": MessageLookupByLibrary.simpleMessage("Save"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("Save the changes?"),
     "saveSuccess": MessageLookupByLibrary.simpleMessage("Saved successfully"),
@@ -919,7 +962,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "security": MessageLookupByLibrary.simpleMessage("Security"),
     "selectAll": MessageLookupByLibrary.simpleMessage("Select all"),
     "selected": MessageLookupByLibrary.simpleMessage("Selected"),
-    "selectedCountTitle": m31,
+    "selectedCountTitle": m32,
     "server": MessageLookupByLibrary.simpleMessage("Server"),
     "serverName": MessageLookupByLibrary.simpleMessage("Server name (SNI)"),
     "serverNodes": MessageLookupByLibrary.simpleMessage("Server nodes"),
@@ -927,7 +970,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "serviceBlocked": MessageLookupByLibrary.simpleMessage("Blocked"),
     "serviceCheck": MessageLookupByLibrary.simpleMessage("Check"),
     "serviceCheckAll": MessageLookupByLibrary.simpleMessage("Check all"),
-    "serviceCheckedAt": m32,
+    "serviceCheckedAt": m33,
     "serviceComingSoon": MessageLookupByLibrary.simpleMessage("Coming soon"),
     "serviceDisallowedIsp": MessageLookupByLibrary.simpleMessage(
       "Disallowed ISP",
@@ -967,7 +1010,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Start without showing the window",
     ),
     "singleAdd": MessageLookupByLibrary.simpleMessage("Single add"),
-    "singleValueTip": m33,
+    "singleValueTip": m34,
     "size": MessageLookupByLibrary.simpleMessage("Size"),
     "slide": MessageLookupByLibrary.simpleMessage("Slide"),
     "sort": MessageLookupByLibrary.simpleMessage("Sort"),
@@ -1006,6 +1049,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "tab": MessageLookupByLibrary.simpleMessage("Tab"),
     "tabAnimation": MessageLookupByLibrary.simpleMessage("Tab animation"),
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage("Tap to authorize"),
+    "testRules": MessageLookupByLibrary.simpleMessage("Test rules"),
+    "testRulesGeoNote": MessageLookupByLibrary.simpleMessage(
+      "GeoSite and GeoIP entries can only be checked by the core, so they are skipped here.",
+    ),
+    "testRulesHint": MessageLookupByLibrary.simpleMessage("Domain or IP"),
+    "testRulesMatched": MessageLookupByLibrary.simpleMessage("Matched rule"),
+    "testRulesNoMatch": MessageLookupByLibrary.simpleMessage(
+      "No rule matches, so it goes through the proxy",
+    ),
     "testUrl": MessageLookupByLibrary.simpleMessage("Test URL"),
     "testUrlDesc": MessageLookupByLibrary.simpleMessage("The URL to test."),
     "textScale": MessageLookupByLibrary.simpleMessage("Text scaling"),
@@ -1069,7 +1121,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlTestSettings": MessageLookupByLibrary.simpleMessage(
       "URL test settings",
     ),
-    "urlTip": m34,
+    "urlTip": m35,
     "usedDownloadTraffic": MessageLookupByLibrary.simpleMessage(
       "Download used",
     ),
@@ -1095,7 +1147,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "WebDAV configuration",
     ),
     "whitelistMode": MessageLookupByLibrary.simpleMessage("Whitelist mode"),
-    "yearsAgo": m35,
+    "yearsAgo": m36,
     "zhCN": MessageLookupByLibrary.simpleMessage("Simplified Chinese"),
   };
 }

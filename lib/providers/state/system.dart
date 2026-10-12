@@ -1,8 +1,29 @@
 part of '../state.dart';
 
+/// The rules of the rule set in use; empty while the built-in rules apply.
+@riverpod
+List<Map<String, dynamic>> activeRules(Ref ref) {
+  final id = ref.watch(currentRuleSetIdProvider);
+  if (id == null) {
+    return const [];
+  }
+  final sets = ref.watch(ruleSetsProvider);
+  for (final set in sets) {
+    if (set.id == id) {
+      return set.rules;
+    }
+  }
+  return const [];
+}
+
 /// Everything the generated config is built from besides the profile itself.
 @riverpod
-({CoreConfig config, RouteMode routeMode, List<String> authentication})
+({
+  CoreConfig config,
+  RouteMode routeMode,
+  List<String> authentication,
+  List<Map<String, dynamic>> rules,
+})
 configInputs(Ref ref) {
   final routeMode = ref.watch(
     networkSettingProvider.select((state) => state.routeMode),
@@ -11,7 +32,13 @@ configInputs(Ref ref) {
     networkSettingProvider.select((state) => state.authentication.credentials),
   );
   final config = ref.watch(coreSettingProvider);
-  return (config: config, routeMode: routeMode, authentication: authentication);
+  final rules = ref.watch(activeRulesProvider);
+  return (
+    config: config,
+    routeMode: routeMode,
+    authentication: authentication,
+    rules: rules,
+  );
 }
 
 @riverpod

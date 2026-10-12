@@ -581,6 +581,110 @@ abstract class _$ExcludeSSIDs extends $Notifier<List<String>> {
   }
 }
 
+@ProviderFor(RuleSets)
+final ruleSetsProvider = RuleSetsProvider._();
+
+final class RuleSetsProvider
+    extends $NotifierProvider<RuleSets, List<RuleSet>> {
+  RuleSetsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'ruleSetsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$ruleSetsHash();
+
+  @$internal
+  @override
+  RuleSets create() => RuleSets();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(List<RuleSet> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<List<RuleSet>>(value),
+    );
+  }
+}
+
+String _$ruleSetsHash() => r'3fa33c5c9ee35cd0f899ece1c4d26937dbea7f6a';
+
+abstract class _$RuleSets extends $Notifier<List<RuleSet>> {
+  List<RuleSet> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<List<RuleSet>, List<RuleSet>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<List<RuleSet>, List<RuleSet>>,
+              List<RuleSet>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(CurrentRuleSetId)
+final currentRuleSetIdProvider = CurrentRuleSetIdProvider._();
+
+final class CurrentRuleSetIdProvider
+    extends $NotifierProvider<CurrentRuleSetId, int?> {
+  CurrentRuleSetIdProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'currentRuleSetIdProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$currentRuleSetIdHash();
+
+  @$internal
+  @override
+  CurrentRuleSetId create() => CurrentRuleSetId();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int?>(value),
+    );
+  }
+}
+
+String _$currentRuleSetIdHash() => r'5cd48f8f6fb6f0517524a54148f7b5dc2ea9ffe9';
+
+abstract class _$CurrentRuleSetId extends $Notifier<int?> {
+  int? build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<int?, int?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<int?, int?>,
+              int?,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(_config)
 final configProvider = _ConfigProvider._();
 
@@ -619,4 +723,4 @@ final class _ConfigProvider extends $FunctionalProvider<Config, Config, Config>
   }
 }
 
-String _$_configHash() => r'bd7f0afe31002151cdb55f3a14b9f7a7bf5c8a4d';
+String _$_configHash() => r'42d4735c2f1a72d262f24939ddcc65b1d4316c14';

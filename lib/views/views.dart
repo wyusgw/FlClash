@@ -7,3 +7,4 @@ export 'developer.dart';
 export 'logs.dart';
 export 'profiles/profiles.dart';
 export 'tools.dart';
+export 'rules.dart';

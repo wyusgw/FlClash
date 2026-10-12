@@ -4,6 +4,8 @@ import 'package:fl_clash/common/string.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 
+import 'xray_rules.dart';
+
 /// Tags of the outbounds the app adds beside the user's nodes. The leading
 /// character is reserved: node tags never start with it, so no selector that
 /// names a node by prefix can pick one of these up.
@@ -82,6 +84,19 @@ String? _proxiedNode(MakeRealProfileState state) {
   return tags.firstOrNull;
 }
 
+/// A rule from the user's rule set, pointed at the app's own outbounds.
+Map<String, dynamic> _userRule(
+  Map<String, dynamic> rule,
+  Map<String, dynamic> proxyTarget,
+) {
+  final target = switch (rulePolicyOf(rule)) {
+    RulePolicy.direct => {'outboundTag': directOutboundTag},
+    RulePolicy.block => {'outboundTag': blockOutboundTag},
+    RulePolicy.proxy => proxyTarget,
+  };
+  return {...rule, ...target}..remove('balancerTag');
+}
+
 Map<String, dynamic> _routing(MakeRealProfileState state) {
   final config = state.coreConfig;
   final node = _proxiedNode(state);
@@ -103,15 +118,9 @@ Map<String, dynamic> _routing(MakeRealProfileState state) {
     case Mode.global:
       rules.add({'network': 'tcp,udp', ...proxyTarget});
     case Mode.rule:
+      final userRules = state.rules.isEmpty ? builtInRules : state.rules;
       rules.addAll([
-        {
-          'domain': ['geosite:cn'],
-          'outboundTag': directOutboundTag,
-        },
-        {
-          'ip': ['geoip:cn'],
-          'outboundTag': directOutboundTag,
-        },
+        for (final rule in userRules) _userRule(rule, proxyTarget),
         {'network': 'tcp,udp', ...proxyTarget},
       ]);
   }

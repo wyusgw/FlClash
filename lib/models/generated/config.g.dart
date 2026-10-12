@@ -435,6 +435,12 @@ _Config _$ConfigFromJson(Map<String, dynamic> json) => _Config(
           ?.map((e) => e as String)
           .toList() ??
       const [],
+  ruleSets:
+      (json['ruleSets'] as List<dynamic>?)
+          ?.map((e) => RuleSet.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  currentRuleSetId: (json['currentRuleSetId'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$ConfigToJson(_Config instance) => <String, dynamic>{
@@ -449,4 +455,6 @@ Map<String, dynamic> _$ConfigToJson(_Config instance) => <String, dynamic>{
   'windowProps': instance.windowProps,
   'coreConfig': instance.coreConfig,
   'excludeSSIDs': instance.excludeSSIDs,
+  'ruleSets': instance.ruleSets,
+  'currentRuleSetId': instance.currentRuleSetId,
 };

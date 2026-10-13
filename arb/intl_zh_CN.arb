@@ -568,6 +568,7 @@
   "restoreAllData": "恢复所有数据",
   "addProfile": "添加配置",
   "delayTest": "延迟测试",
+  "test": "测试",
   "optional": "可选",
   "strategy": "策略",
   "tolerance": "容差",

@@ -568,6 +568,7 @@
   "restoreAllData": "Восстановить все данные",
   "addProfile": "Добавить профиль",
   "delayTest": "Тест задержки",
+  "test": "Тест",
   "optional": "Необязательно",
   "strategy": "Стратегия",
   "tolerance": "Допуск",

@@ -904,6 +904,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "tab": MessageLookupByLibrary.simpleMessage("タブ"),
     "tabAnimation": MessageLookupByLibrary.simpleMessage("タブアニメーション"),
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage("タップして許可"),
+    "test": MessageLookupByLibrary.simpleMessage("テスト"),
     "testRules": MessageLookupByLibrary.simpleMessage("ルールをテスト"),
     "testRulesGeoNote": MessageLookupByLibrary.simpleMessage(
       "GeoSite と GeoIP の項目はコアでしか判定できないため、ここではスキップします。",

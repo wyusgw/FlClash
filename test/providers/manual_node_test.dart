@@ -329,4 +329,54 @@ void main() {
       expect(await actions.readNodeOutbound(profile, 'gone'), isNull);
     });
   });
+
+  group('deleteNode', () {
+    Future<Profile> twoNodes() async {
+      build();
+      await add(_node('first'));
+      await add(_node('second'));
+      return container.read(profilesProvider).single;
+    }
+
+    Future<void> delete(Profile profile, String tag) {
+      return container
+          .read(profilesActionProvider.notifier)
+          .deleteNode(profile, tag);
+    }
+
+    test('removes the one node and keeps the rest', () async {
+      final profile = await twoNodes();
+
+      await delete(profile, 'first');
+
+      expect((await outboundsOf(profile)).map((node) => node['tag']), [
+        'second',
+      ]);
+    });
+
+    test('the chosen node, once deleted, is no longer chosen', () async {
+      final profile = await twoNodes();
+      container
+          .read(profilesProvider.notifier)
+          .put(profile.copyWith(selectedMap: {nodeGroupName: 'second'}));
+
+      await delete(container.read(profilesProvider).single, 'second');
+
+      expect(
+        container.read(profilesProvider).single.selectedMap,
+        isNot(contains(nodeGroupName)),
+      );
+    });
+
+    test('a name the profile does not hold changes nothing', () async {
+      final profile = await twoNodes();
+
+      await delete(profile, 'gone');
+
+      expect((await outboundsOf(profile)).map((node) => node['tag']), [
+        'first',
+        'second',
+      ]);
+    });
+  });
 }

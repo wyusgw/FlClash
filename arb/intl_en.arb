@@ -568,6 +568,7 @@
   "restoreAllData": "Restore all data",
   "addProfile": "Add profile",
   "delayTest": "Delay test",
+  "test": "Test",
   "optional": "Optional",
   "strategy": "Strategy",
   "tolerance": "Tolerance",

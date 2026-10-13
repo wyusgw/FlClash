@@ -7,6 +7,7 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/views/profiles/add.dart';
 import 'package:fl_clash/views/profiles/edit.dart';
+import 'package:fl_clash/views/home/node_share.dart';
 import 'package:fl_clash/views/home/route_mode.dart';
 import 'package:fl_clash/widgets/haptics.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -651,68 +652,127 @@ class _SubscriptionSection extends ConsumerWidget {
           _NodeMenuTarget(
             profile: profile,
             node: node,
-            child: GroupedRow(
-              key: ValueKey('${profile.id}.${node.name}'),
-              leading: editing
-                  ? Row(
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: _selectGap,
-                      children: [
-                        GroupedSelectMark(
-                          selected: edit.isSelected(
-                            _nodeKey(profile.id, node.name),
+            child: _NodeSwipe(
+              profile: profile,
+              node: node,
+              enabled: !editing,
+              child: GroupedRow(
+                key: ValueKey('${profile.id}.${node.name}'),
+                leading: editing
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        spacing: _selectGap,
+                        children: [
+                          GroupedSelectMark(
+                            selected: edit.isSelected(
+                              _nodeKey(profile.id, node.name),
+                            ),
                           ),
-                        ),
-                        NodeIcon(
-                          name: node.name,
-                          region: node.region,
-                          address: node.address,
-                        ),
-                      ],
-                    )
-                  : NodeIcon(
-                      name: node.name,
-                      region: node.region,
-                      address: node.address,
-                    ),
-              leadingWidth: editing
-                  ? groupedLeadingSize * 2 + _selectGap
-                  : groupedLeadingSize,
-              title: node.name,
-              subtitle: [
-                node.type,
-                if (node.network != null) node.network!,
-              ].map((part) => part.toUpperCase()).join(' / '),
-              titleWidget: EmojiText(
-                nodeDisplayName(node.name),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: palette.rowTitle.copyWith(
-                  color: node.name == selected ? palette.accent : null,
+                          NodeIcon(
+                            name: node.name,
+                            region: node.region,
+                            address: node.address,
+                          ),
+                        ],
+                      )
+                    : NodeIcon(
+                        name: node.name,
+                        region: node.region,
+                        address: node.address,
+                      ),
+                leadingWidth: editing
+                    ? groupedLeadingSize * 2 + _selectGap
+                    : groupedLeadingSize,
+                title: node.name,
+                subtitle: [
+                  node.type,
+                  if (node.network != null) node.network!,
+                ].map((part) => part.toUpperCase()).join(' / '),
+                titleWidget: EmojiText(
+                  nodeDisplayName(node.name),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: palette.rowTitle.copyWith(
+                    color: node.name == selected ? palette.accent : null,
+                  ),
                 ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 10,
+                  children: [
+                    _NodeDelay(name: node.name),
+                    if (!editing)
+                      _RoundAction(
+                        glyph: AppGlyphs.info,
+                        tooltip: appLocalizations.details(node.name),
+                        onPressed: () =>
+                            showNodeDetail(context, ref, profile, node),
+                      ),
+                  ],
+                ),
+                onTap: editing
+                    ? () => edit.toggle(_nodeKey(profile.id, node.name))
+                    : () => ref
+                          .read(proxiesActionProvider.notifier)
+                          .changeProxyDebounce(nodeGroupName, node.name),
               ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 10,
-                children: [
-                  _NodeDelay(name: node.name),
-                  if (!editing)
-                    _RoundAction(
-                      glyph: AppGlyphs.info,
-                      tooltip: appLocalizations.details(node.name),
-                      onPressed: () =>
-                          showNodeDetail(context, ref, profile, node),
-                    ),
-                ],
-              ),
-              onTap: editing
-                  ? () => edit.toggle(_nodeKey(profile.id, node.name))
-                  : () => ref
-                        .read(proxiesActionProvider.notifier)
-                        .changeProxyDebounce(nodeGroupName, node.name),
             ),
           ),
       ],
+    );
+  }
+}
+
+/// A node row that slides aside on a touch screen: right for test and copy,
+/// left for its QR code and delete.
+class _NodeSwipe extends ConsumerWidget {
+  const _NodeSwipe({
+    required this.profile,
+    required this.node,
+    required this.enabled,
+    required this.child,
+  });
+
+  final Profile profile;
+  final Proxy node;
+  final bool enabled;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    return SwipeActions(
+      enabled: enabled && !system.isDesktop,
+      leading: [
+        SwipeAction(
+          label: appLocalizations.test,
+          color: swipeActionGo,
+          onPressed: () => unawaited(
+            ref
+                .read(proxiesActionProvider.notifier)
+                .proxyDelayTest(node, ref.read(appSettingProvider).testUrl),
+          ),
+        ),
+        SwipeAction(
+          label: appLocalizations.copy,
+          color: swipeActionNeutral,
+          onPressed: () => unawaited(copyNode(context, ref, profile, node)),
+        ),
+      ],
+      trailing: [
+        SwipeAction(
+          label: appLocalizations.qrcode,
+          color: swipeActionNeutral,
+          onPressed: () =>
+              unawaited(showNodeQrCode(context, ref, profile, node)),
+        ),
+        SwipeAction(
+          label: appLocalizations.delete,
+          color: groupedDanger,
+          onPressed: () => unawaited(deleteNode(context, ref, profile, node)),
+        ),
+      ],
+      child: child,
     );
   }
 }
@@ -773,6 +833,22 @@ class _NodeMenuTarget extends ConsumerWidget {
             height: 30,
             child: Text(appLocalizations.copyAddress),
           ),
+        PopupMenuItem(
+          value: _NodeAction.copy,
+          height: 30,
+          child: Text(appLocalizations.copy),
+        ),
+        PopupMenuItem(
+          value: _NodeAction.qrcode,
+          height: 30,
+          child: Text(appLocalizations.qrcode),
+        ),
+        const PopupMenuDivider(height: 1),
+        PopupMenuItem(
+          value: _NodeAction.delete,
+          height: 30,
+          child: Text(appLocalizations.delete),
+        ),
       ],
     );
     if (chosen == null || !context.mounted) {
@@ -791,6 +867,12 @@ class _NodeMenuTarget extends ConsumerWidget {
         await Clipboard.setData(ClipboardData(text: node.name));
       case _NodeAction.copyAddress:
         await Clipboard.setData(ClipboardData(text: node.address!));
+      case _NodeAction.copy:
+        await copyNode(context, ref, profile, node);
+      case _NodeAction.qrcode:
+        await showNodeQrCode(context, ref, profile, node);
+      case _NodeAction.delete:
+        await deleteNode(context, ref, profile, node);
     }
   }
 
@@ -806,7 +888,7 @@ class _NodeMenuTarget extends ConsumerWidget {
   }
 }
 
-enum _NodeAction { test, details, copyName, copyAddress }
+enum _NodeAction { test, details, copyName, copyAddress, copy, qrcode, delete }
 
 class _RoundAction extends StatelessWidget {
   const _RoundAction({

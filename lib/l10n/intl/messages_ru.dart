@@ -1104,6 +1104,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage(
       "Нажмите, чтобы разрешить",
     ),
+    "test": MessageLookupByLibrary.simpleMessage("Тест"),
     "testRules": MessageLookupByLibrary.simpleMessage("Проверить правила"),
     "testRulesGeoNote": MessageLookupByLibrary.simpleMessage(
       "Записи GeoSite и GeoIP проверяет только ядро, здесь они пропускаются.",

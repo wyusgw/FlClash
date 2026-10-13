@@ -568,6 +568,7 @@
   "restoreAllData": "すべてのデータを復元",
   "addProfile": "プロファイルを追加",
   "delayTest": "遅延テスト",
+  "test": "テスト",
   "optional": "任意",
   "strategy": "戦略",
   "tolerance": "許容値",

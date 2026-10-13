@@ -4465,6 +4465,11 @@ class AppLocalizations {
     return Intl.message('Delay test', name: 'delayTest', desc: '', args: []);
   }
 
+  /// `Test`
+  String get test {
+    return Intl.message('Test', name: 'test', desc: '', args: []);
+  }
+
   /// `Optional`
   String get optional {
     return Intl.message('Optional', name: 'optional', desc: '', args: []);

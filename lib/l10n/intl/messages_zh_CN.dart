@@ -820,6 +820,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "tab": MessageLookupByLibrary.simpleMessage("标签页"),
     "tabAnimation": MessageLookupByLibrary.simpleMessage("选项卡动画"),
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage("点击授权"),
+    "test": MessageLookupByLibrary.simpleMessage("测试"),
     "testRules": MessageLookupByLibrary.simpleMessage("测试规则"),
     "testRulesGeoNote": MessageLookupByLibrary.simpleMessage(
       "GeoSite 与 GeoIP 条目只能由内核判断，这里会跳过。",

@@ -73,6 +73,7 @@ void main() {
     List<Proxy> nodes = const [],
     Widget page = const HomeView(),
     List<Override> overrides = const [],
+    List<Profile> others = const [],
   }) async {
     tester.view.physicalSize = const Size(900, 900);
     tester.view.devicePixelRatio = 1;
@@ -81,7 +82,9 @@ void main() {
     container = ProviderContainer(
       overrides: [
         ...overrides,
-        profilesProvider.overrideWith(() => TestProfiles([?profile])),
+        profilesProvider.overrideWith(
+          () => TestProfiles([?profile, ...others]),
+        ),
         currentProfileIdProvider.overrideWithBuild((_, _) => profile?.id),
       ],
     );
@@ -282,6 +285,71 @@ void main() {
 
     expect(find.text('SHADOWSOCKS / TCP'), findsOneWidget);
     expect(find.text('VLESS / WS'), findsOneWidget);
+  });
+
+  group('several subscriptions', () {
+    const other = Profile(
+      id: 2,
+      label: 'Second subscription',
+      autoUpdateDuration: Duration.zero,
+      url: 'https://example.com/second',
+    );
+    const otherNodes = [Proxy(name: '美国 03', type: 'trojan', network: 'grpc')];
+
+    Future<void> pumpTwo(WidgetTester tester) => pumpHome(
+      tester,
+      profile: _profile(),
+      nodes: _nodes,
+      others: [other],
+      overrides: [
+        profileNodesProvider(
+          other.id,
+          other.lastUpdateDate,
+        ).overrideWith((_) async => otherNodes),
+      ],
+    );
+
+    testWidgets('only the one in use starts open', (tester) async {
+      await pumpTwo(tester);
+
+      expect(find.text('VLESS / WS'), findsOneWidget);
+      expect(find.text('TROJAN / GRPC'), findsNothing);
+    });
+
+    testWidgets('another opens beside it without being switched to', (
+      tester,
+    ) async {
+      await pumpTwo(tester);
+
+      await tester.tap(find.text('Second subscription'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('VLESS / WS'), findsOneWidget);
+      expect(find.text('TROJAN / GRPC'), findsOneWidget);
+      expect(container.read(currentProfileIdProvider), _profile().id);
+
+      await tester.tap(find.text('Second subscription'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('TROJAN / GRPC'), findsNothing);
+      expect(find.text('VLESS / WS'), findsOneWidget);
+    });
+
+    testWidgets('a node of another one switches to it with that node', (
+      tester,
+    ) async {
+      await pumpTwo(tester);
+      await tester.tap(find.text('Second subscription'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('美国 03', findRichText: true));
+      await tester.pump();
+
+      expect(container.read(currentProfileIdProvider), other.id);
+      expect(container.read(currentProfileProvider)?.selectedMap, {
+        nodeGroupName: '美国 03',
+      });
+    });
   });
 
   testWidgets('the routing row opens the routing page', (tester) async {

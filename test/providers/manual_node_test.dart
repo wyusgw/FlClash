@@ -12,6 +12,7 @@ import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/core.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/database.dart';
+import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -378,5 +379,19 @@ void main() {
         'second',
       ]);
     });
+  });
+
+  test('another profile\'s nodes are read from its file', () async {
+    build();
+    await add(_node('first'));
+    await add(_node('second'));
+    final profile = container.read(profilesProvider).single;
+
+    final nodes = await container.read(
+      profileNodesProvider(profile.id, profile.lastUpdateDate).future,
+    );
+
+    expect(nodes.map((node) => node.name), ['first', 'second']);
+    expect(nodes.first.type, 'shadowsocks');
   });
 }

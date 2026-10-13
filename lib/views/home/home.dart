@@ -191,26 +191,20 @@ class _HomeBody extends ConsumerStatefulWidget {
 }
 
 class _HomeBodyState extends ConsumerState<_HomeBody> {
-  final _collapsed = <int>{};
+  late final _expanded = <int>{?ref.read(currentProfileIdProvider)};
 
   void _toggle(Profile profile) {
-    final currentId = ref.read(currentProfileIdProvider);
-    if (profile.id != currentId) {
-      ref.read(currentProfileIdProvider.notifier).value = profile.id;
-      setState(() => _collapsed.remove(profile.id));
-      return;
-    }
     setState(() {
-      if (!_collapsed.add(profile.id)) {
-        _collapsed.remove(profile.id);
+      if (!_expanded.add(profile.id)) {
+        _expanded.remove(profile.id);
       }
     });
   }
 
-  Widget _section(Profile profile, int? currentId, {int? dragIndex}) {
+  Widget _section(Profile profile, {int? dragIndex}) {
     return _SubscriptionSection(
       profile: profile,
-      expanded: profile.id == currentId && !_collapsed.contains(profile.id),
+      expanded: _expanded.contains(profile.id),
       onToggle: () => _toggle(profile),
       dragIndex: dragIndex,
     );
@@ -219,7 +213,6 @@ class _HomeBodyState extends ConsumerState<_HomeBody> {
   @override
   Widget build(BuildContext context) {
     final profiles = ref.watch(profilesProvider);
-    final currentId = ref.watch(currentProfileIdProvider);
     final editing = _EditScope.of(context).editing;
     return CustomScrollView(
       key: homeStoreKey,
@@ -256,17 +249,13 @@ class _HomeBodyState extends ConsumerState<_HomeBody> {
                   itemBuilder: (_, index) => Padding(
                     key: ValueKey(profiles[index].id),
                     padding: const EdgeInsets.only(bottom: groupedSectionGap),
-                    child: _section(
-                      profiles[index],
-                      currentId,
-                      dragIndex: index,
-                    ),
+                    child: _section(profiles[index], dragIndex: index),
                   ),
                 )
               : SliverList(
                   delegate: SliverChildListDelegate([
                     for (final profile in profiles) ...[
-                      _section(profile, currentId),
+                      _section(profile),
                       const SizedBox(height: groupedSectionGap),
                     ],
                   ]),
@@ -569,19 +558,49 @@ class _SubscriptionSection extends ConsumerWidget {
         'EXPIRES:$expire';
   }
 
+  void _choose(WidgetRef ref, Proxy node, {required bool current}) {
+    if (current) {
+      ref
+          .read(proxiesActionProvider.notifier)
+          .changeProxyDebounce(nodeGroupName, node.name);
+      return;
+    }
+    ref
+        .read(profilesProvider.notifier)
+        .put(
+          profile.copyWith(
+            selectedMap: {...profile.selectedMap, nodeGroupName: node.name},
+          ),
+        );
+    ref.read(groupsProvider.notifier).value = const [];
+    ref.read(currentProfileIdProvider.notifier).value = profile.id;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = GroupedPalette.of(context);
     final appLocalizations = context.appLocalizations;
     final isUpdating = ref.watch(isUpdatingProvider(profile.updatingKey));
-    final nodes = expanded
+    final current = ref.watch(currentProfileIdProvider) == profile.id;
+    final running = expanded && current
         ? ref.watch(
             groupsProvider.select(
               (state) => state.getGroup(nodeGroupName)?.all,
             ),
           )
         : null;
-    final selected = ref.watch(selectedProxyNameProvider(nodeGroupName));
+    // Until the core has the subscription just switched to, its nodes come
+    // from its file like any other's.
+    final nodes = !expanded
+        ? null
+        : running != null && running.isNotEmpty
+        ? running
+        : ref
+              .watch(profileNodesProvider(profile.id, profile.lastUpdateDate))
+              .value;
+    final selected = current
+        ? ref.watch(selectedProxyNameProvider(nodeGroupName))
+        : null;
     final edit = _EditScope.of(context);
     final editing = edit.editing;
     final chevron = GlyphIcon(
@@ -652,9 +671,11 @@ class _SubscriptionSection extends ConsumerWidget {
           _NodeMenuTarget(
             profile: profile,
             node: node,
+            current: current,
             child: _NodeSwipe(
               profile: profile,
               node: node,
+              current: current,
               enabled: !editing,
               child: GroupedRow(
                 key: ValueKey('${profile.id}.${node.name}'),
@@ -700,7 +721,7 @@ class _SubscriptionSection extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   spacing: 10,
                   children: [
-                    _NodeDelay(name: node.name),
+                    if (current) _NodeDelay(name: node.name),
                     if (!editing)
                       _RoundAction(
                         glyph: AppGlyphs.info,
@@ -712,9 +733,7 @@ class _SubscriptionSection extends ConsumerWidget {
                 ),
                 onTap: editing
                     ? () => edit.toggle(_nodeKey(profile.id, node.name))
-                    : () => ref
-                          .read(proxiesActionProvider.notifier)
-                          .changeProxyDebounce(nodeGroupName, node.name),
+                    : () => _choose(ref, node, current: current),
               ),
             ),
           ),
@@ -729,12 +748,16 @@ class _NodeSwipe extends ConsumerWidget {
   const _NodeSwipe({
     required this.profile,
     required this.node,
+    required this.current,
     required this.enabled,
     required this.child,
   });
 
   final Profile profile;
   final Proxy node;
+
+  /// Only the subscription in use can be tested: the core runs no other.
+  final bool current;
   final bool enabled;
   final Widget child;
 
@@ -744,15 +767,16 @@ class _NodeSwipe extends ConsumerWidget {
     return SwipeActions(
       enabled: enabled && !system.isDesktop,
       leading: [
-        SwipeAction(
-          label: appLocalizations.test,
-          color: swipeActionGo,
-          onPressed: () => unawaited(
-            ref
-                .read(proxiesActionProvider.notifier)
-                .proxyDelayTest(node, ref.read(appSettingProvider).testUrl),
+        if (current)
+          SwipeAction(
+            label: appLocalizations.test,
+            color: swipeActionGo,
+            onPressed: () => unawaited(
+              ref
+                  .read(proxiesActionProvider.notifier)
+                  .proxyDelayTest(node, ref.read(appSettingProvider).testUrl),
+            ),
           ),
-        ),
         SwipeAction(
           label: appLocalizations.copy,
           color: swipeActionNeutral,
@@ -782,11 +806,13 @@ class _NodeMenuTarget extends ConsumerWidget {
   const _NodeMenuTarget({
     required this.profile,
     required this.node,
+    required this.current,
     required this.child,
   });
 
   final Profile profile;
   final Proxy node;
+  final bool current;
   final Widget child;
 
   Future<void> _open(
@@ -811,11 +837,12 @@ class _NodeMenuTarget extends ConsumerWidget {
           child: Text(node.name, maxLines: 1, overflow: TextOverflow.ellipsis),
         ),
         const PopupMenuDivider(height: 1),
-        PopupMenuItem(
-          value: _NodeAction.test,
-          height: 30,
-          child: Text(appLocalizations.delayTest),
-        ),
+        if (current)
+          PopupMenuItem(
+            value: _NodeAction.test,
+            height: 30,
+            child: Text(appLocalizations.delayTest),
+          ),
         PopupMenuItem(
           value: _NodeAction.details,
           height: 30,

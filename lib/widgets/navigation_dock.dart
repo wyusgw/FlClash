@@ -11,6 +11,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'grouped_list.dart';
 import 'haptics.dart';
 
 const double _barHeight = 62;
@@ -25,8 +26,8 @@ const double _iconSize = 24;
 const double _trailingIconSize = 28;
 const double _labelGap = 2;
 const double _labelInset = 2;
-const double _labelSize = 10;
-const double _minLabelSize = 9;
+const double _labelSize = 12;
+const double _minLabelSize = 10;
 const double _pressGrowth = 1 / 8;
 const double _maxPressGrowth = 16;
 const double _lensGrowth = 14;
@@ -46,6 +47,7 @@ const _slotExitDuration = Duration(milliseconds: 220);
 const double _slotEnterScale = 0.5;
 const double _slotExitScale = 0.7;
 const double _slotBlur = 6;
+const double _glassBlur = 24;
 const _slotRevealCurve = Interval(0, 0.5, curve: Curves.easeOut);
 // No bounce: an overshoot would drive the slot's width below zero.
 final _slotSizeCurve = SpringCurve(
@@ -921,7 +923,6 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
     final labelStyle = context.textTheme.labelSmall?.copyWith(
       fontSize: _labelSize,
       fontWeight: FontWeight.w500,
@@ -939,85 +940,97 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
       0.0,
       (height, label) => math.max(height, label.height),
     );
-    final bar = DecoratedBox(
-      decoration: const ShapeDecoration(shape: AppShape.full),
-      child: Material(
-        color: colorScheme.surfaceContainer,
-        shape: AppShape.full,
-        // Raw pointers rather than recognizers: a drag has nothing to win the
-        // arena from, and a tap waiting on one lifts the lens late.
-        child: Listener(
-          behavior: HitTestBehavior.opaque,
-          onPointerDown: _handlePointerDown,
-          onPointerMove: _handlePointerMove,
-          onPointerUp: _handlePointerEnd,
-          onPointerCancel: _handlePointerEnd,
-          child: MouseRegion(
-            onHover: _handleHover,
-            onExit: _handleExit,
-            child: Padding(
-              padding: const EdgeInsets.all(_barPadding),
-              // Above the LayoutBuilder: rebuilding anything under one relays
-              // it out, and that repaint would otherwise reach the whole dock.
-              child: RepaintBoundary(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final extent =
-                        constraints.maxWidth /
-                        math.max(1, widget.destinations.length);
-                    final room = extent - _labelInset * 2;
-                    final labelScale = widest <= room
-                        ? 1.0
-                        : math.max(room / widest, _minLabelSize / _labelSize);
-                    return Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        if (widget.destinations.isNotEmpty)
-                          AnimatedBuilder(
-                            animation: _motion,
-                            builder: (_, _) => _Lens(
-                              position: _lens.value,
-                              velocity: _lens.velocity,
-                              extent: extent,
-                              height: constraints.maxHeight,
-                              lift: _lift.value,
-                            ),
-                          ),
-                        if (widget.destinations.isNotEmpty)
-                          AnimatedBuilder(
-                            animation: _hoverMotion,
-                            builder: (_, _) => _HoverHighlight(
-                              position: _hover.value,
-                              extent: extent,
-                              opacity: _hoverShow.value,
-                            ),
-                          ),
-                        Row(
-                          children: [
-                            for (final (index, destination)
-                                in widget.destinations.indexed)
-                              Expanded(
-                                child: _FloatingBarItem(
-                                  destination: destination,
-                                  selected: index == _selectedIndex,
-                                  index: index,
-                                  lens: _lens,
-                                  hoverAt: _hoverAt,
-                                  lift: _lift,
-                                  labelStyle: labelStyle?.copyWith(
-                                    fontSize: _labelSize * labelScale,
-                                  ),
-                                  labelHeight: lineHeight,
-                                  labelOverflows:
-                                      labels[index].width * labelScale > room,
-                                  onActivate: () => widget.onSelected(index),
-                                ),
+    final palette = GroupedPalette.of(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final bar = ClipPath(
+      clipper: const ShapeBorderClipper(shape: AppShape.full),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: _glassBlur, sigmaY: _glassBlur),
+        child: Material(
+          color: palette.bar.withValues(alpha: dark ? 0.6 : 0.72),
+          shape: AppShape.full.copyWith(
+            side: BorderSide(
+              color: (dark ? Colors.white : Colors.black).withValues(
+                alpha: dark ? 0.12 : 0.06,
+              ),
+              width: 0.5,
+            ),
+          ),
+          // Raw pointers rather than recognizers: a drag has nothing to win the
+          // arena from, and a tap waiting on one lifts the lens late.
+          child: Listener(
+            behavior: HitTestBehavior.opaque,
+            onPointerDown: _handlePointerDown,
+            onPointerMove: _handlePointerMove,
+            onPointerUp: _handlePointerEnd,
+            onPointerCancel: _handlePointerEnd,
+            child: MouseRegion(
+              onHover: _handleHover,
+              onExit: _handleExit,
+              child: Padding(
+                padding: const EdgeInsets.all(_barPadding),
+                // Above the LayoutBuilder: rebuilding anything under one relays
+                // it out, and that repaint would otherwise reach the whole dock.
+                child: RepaintBoundary(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final extent =
+                          constraints.maxWidth /
+                          math.max(1, widget.destinations.length);
+                      final room = extent - _labelInset * 2;
+                      final labelScale = widest <= room
+                          ? 1.0
+                          : math.max(room / widest, _minLabelSize / _labelSize);
+                      return Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          if (widget.destinations.isNotEmpty)
+                            AnimatedBuilder(
+                              animation: _motion,
+                              builder: (_, _) => _Lens(
+                                position: _lens.value,
+                                velocity: _lens.velocity,
+                                extent: extent,
+                                height: constraints.maxHeight,
+                                lift: _lift.value,
                               ),
-                          ],
-                        ),
-                      ],
-                    );
-                  },
+                            ),
+                          if (widget.destinations.isNotEmpty)
+                            AnimatedBuilder(
+                              animation: _hoverMotion,
+                              builder: (_, _) => _HoverHighlight(
+                                position: _hover.value,
+                                extent: extent,
+                                opacity: _hoverShow.value,
+                              ),
+                            ),
+                          Row(
+                            children: [
+                              for (final (index, destination)
+                                  in widget.destinations.indexed)
+                                Expanded(
+                                  child: _FloatingBarItem(
+                                    destination: destination,
+                                    selected: index == _selectedIndex,
+                                    index: index,
+                                    lens: _lens,
+                                    hoverAt: _hoverAt,
+                                    lift: _lift,
+                                    labelStyle: labelStyle?.copyWith(
+                                      fontSize: _labelSize * labelScale,
+                                    ),
+                                    labelHeight: lineHeight,
+                                    labelOverflows:
+                                        labels[index].width * labelScale > room,
+                                    onActivate: () => widget.onSelected(index),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -1090,7 +1103,7 @@ class _Lens extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
+    final label = GroupedPalette.of(context).label;
     final rect = _lensRect(
       position: position,
       velocity: velocity,
@@ -1105,12 +1118,7 @@ class _Lens extends StatelessWidget {
       height: rect.height,
       child: DecoratedBox(
         decoration: ShapeDecoration(
-          color: Color.alphaBlend(
-            colorScheme.onSecondaryContainer.withValues(
-              alpha: 0.08 * lift.clamp(0.0, 1.0),
-            ),
-            colorScheme.secondaryContainer,
-          ),
+          color: label.withValues(alpha: 0.16 + 0.06 * lift.clamp(0.0, 1.0)),
           shape: AppShape.full,
         ),
       ),
@@ -1199,13 +1207,14 @@ class _FloatingBarItemState extends State<_FloatingBarItem>
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
-    final color = colorScheme.onSurfaceVariant;
+    final palette = GroupedPalette.of(context);
+    final color = palette.label;
     final content = _LensTint(
       lens: widget.lens,
       lift: widget.lift,
       parallax: _parallax,
       index: widget.index,
-      color: colorScheme.primary,
+      color: palette.accent,
       textDirection: Directionality.of(context),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: _labelInset),
@@ -1216,7 +1225,7 @@ class _FloatingBarItemState extends State<_FloatingBarItem>
               widget.destination.glyph,
               size: _iconSize,
               color: color,
-              fill: 1,
+              fill: 0,
             ),
             const SizedBox(height: _labelGap),
             SizedBox(

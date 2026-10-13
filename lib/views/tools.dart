@@ -157,14 +157,12 @@ class ToolsView extends ConsumerWidget {
                 GroupedRow(
                   leading: const GroupedIcon(AppGlyphs.vibrate),
                   title: appLocalizations.hapticFeedback,
-                  trailing: GroupedSwitch(
-                    value: appSetting.hapticFeedback,
-                    onChanged: (value) => ref
-                        .read(appSettingProvider.notifier)
-                        .update(
-                          (state) => state.copyWith(hapticFeedback: value),
-                        ),
-                  ),
+                  value: appSetting.hapticFeedback
+                      ? appLocalizations.on
+                      : appLocalizations.off,
+                  chevron: true,
+                  onTap: () =>
+                      BaseNavigator.push(context, const HapticFeedbackView()),
                 ),
               ],
             ),
@@ -331,6 +329,25 @@ class ClipboardView extends StatelessWidget {
       write: (ref, value) => ref
           .read(appSettingProvider.notifier)
           .update((state) => state.copyWith(clipboardDetection: value)),
+    );
+  }
+}
+
+/// Whether moving through the bottom bar or the scrollbar gives a light tick.
+class HapticFeedbackView extends StatelessWidget {
+  const HapticFeedbackView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
+    return GroupedTogglePage(
+      title: appLocalizations.hapticFeedback,
+      description: appLocalizations.hapticFeedbackDesc,
+      read: (ref) =>
+          ref.watch(appSettingProvider.select((state) => state.hapticFeedback)),
+      write: (ref, value) => ref
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(hapticFeedback: value)),
     );
   }
 }

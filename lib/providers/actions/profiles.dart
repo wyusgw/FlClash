@@ -241,6 +241,40 @@ class ProfilesAction extends _$ProfilesAction {
     _notifySuccess(appLocalizations.saveSuccess);
   }
 
+  /// A subscription brings the node back on its next update.
+  Future<void> deleteNode(Profile profile, String tag) async {
+    final appLocalizations = currentAppLocalizations;
+    final text = await readTextFileTask(
+      await appPath.getProfilePath(profile.id.toString()),
+    );
+    final nodes = text == null
+        ? <Map<String, dynamic>>[]
+        : parseSubscription(text);
+    final left = [
+      for (final node in nodes)
+        if (node['tag'] != tag) node,
+    ];
+    if (left.length == nodes.length) return;
+    final saved = await globalState.loadingRun(
+      tag: LoadingTag.profiles,
+      () => profile.saveFile(
+        Uint8List.fromList(utf8.encode(json.encode({'outbounds': left}))),
+        validate: (path) => _core.validateConfig(path),
+      ),
+      title: appLocalizations.delete,
+    );
+    if (saved == null) return;
+    final selectedMap = {...saved.selectedMap};
+    if (selectedMap[nodeGroupName] == tag) {
+      selectedMap.remove(nodeGroupName);
+    }
+    putProfile(saved.copyWith(selectedMap: selectedMap));
+    if (saved.id == ref.read(currentProfileIdProvider)) {
+      ref.read(setupActionProvider.notifier).applyProfileDebounce();
+      await ref.read(proxiesActionProvider.notifier).updateGroups();
+    }
+  }
+
   Future<void> addProfileFormFile() async {
     final platformFile = await globalState.safeRun(picker.pickerFile);
     if (platformFile == null) return;

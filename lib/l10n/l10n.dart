@@ -710,6 +710,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Vibrates when you turn the proxy on or off, switch pages from the bottom bar or drag the scrollbar`
+  String get hapticFeedbackDesc {
+    return Intl.message(
+      'Vibrates when you turn the proxy on or off, switch pages from the bottom bar or drag the scrollbar',
+      name: 'hapticFeedbackDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `About`
   String get about {
     return Intl.message('About', name: 'about', desc: '', args: []);
@@ -4453,6 +4463,11 @@ class AppLocalizations {
   /// `Delay test`
   String get delayTest {
     return Intl.message('Delay test', name: 'delayTest', desc: '', args: []);
+  }
+
+  /// `Test`
+  String get test {
+    return Intl.message('Test', name: 'test', desc: '', args: []);
   }
 
   /// `Optional`

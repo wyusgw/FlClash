@@ -274,3 +274,31 @@ String proxyDesc(Ref ref, Proxy proxy) {
   );
   return (isProxies: isProxies, sortNum: sortNum, sortType: sortType);
 }
+
+/// [updated] reloads the nodes once the profile is saved.
+@riverpod
+Future<List<Proxy>> profileNodes(
+  Ref ref,
+  int profileId,
+  DateTime? updated,
+) async {
+  final sortType = ref.watch(
+    proxiesStyleSettingProvider.select((state) => state.sortType),
+  );
+  final delayMap = ref.read(delayDataSourceProvider);
+  final testUrl = ref.read(appSettingProvider.select((state) => state.testUrl));
+  final text = await readTextFileTask(
+    await appPath.getProfilePath(profileId.toString()),
+  );
+  if (text == null) return const [];
+  final groups = await toGroupsTask(
+    ComputeGroupsState(
+      nodes: [for (final node in parseSubscription(text)) nodeToProxy(node)],
+      sortType: sortType,
+      delayMap: delayMap,
+      selectedMap: const {},
+      defaultTestUrl: testUrl,
+    ),
+  );
+  return groups.getGroup(nodeGroupName)?.all ?? const [];
+}

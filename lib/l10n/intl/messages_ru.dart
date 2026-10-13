@@ -513,6 +513,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "goDownload": MessageLookupByLibrary.simpleMessage("Скачать"),
     "handshake": MessageLookupByLibrary.simpleMessage("Рукопожатие"),
     "hapticFeedback": MessageLookupByLibrary.simpleMessage("Тактильный отклик"),
+    "hapticFeedbackDesc": MessageLookupByLibrary.simpleMessage(
+      "Вибрация при включении и выключении прокси, переключении страниц на нижней панели и перетаскивании полосы прокрутки",
+    ),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
       "Служба Helper недоступна, поэтому TUN-режим включить нельзя. Переустановите FlClash.",
     ),
@@ -1101,6 +1104,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage(
       "Нажмите, чтобы разрешить",
     ),
+    "test": MessageLookupByLibrary.simpleMessage("Тест"),
     "testRules": MessageLookupByLibrary.simpleMessage("Проверить правила"),
     "testRulesGeoNote": MessageLookupByLibrary.simpleMessage(
       "Записи GeoSite и GeoIP проверяет только ядро, здесь они пропускаются.",

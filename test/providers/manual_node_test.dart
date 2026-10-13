@@ -12,6 +12,7 @@ import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/core.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/database.dart';
+import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -328,5 +329,69 @@ void main() {
       );
       expect(await actions.readNodeOutbound(profile, 'gone'), isNull);
     });
+  });
+
+  group('deleteNode', () {
+    Future<Profile> twoNodes() async {
+      build();
+      await add(_node('first'));
+      await add(_node('second'));
+      return container.read(profilesProvider).single;
+    }
+
+    Future<void> delete(Profile profile, String tag) {
+      return container
+          .read(profilesActionProvider.notifier)
+          .deleteNode(profile, tag);
+    }
+
+    test('removes the one node and keeps the rest', () async {
+      final profile = await twoNodes();
+
+      await delete(profile, 'first');
+
+      expect((await outboundsOf(profile)).map((node) => node['tag']), [
+        'second',
+      ]);
+    });
+
+    test('the chosen node, once deleted, is no longer chosen', () async {
+      final profile = await twoNodes();
+      container
+          .read(profilesProvider.notifier)
+          .put(profile.copyWith(selectedMap: {nodeGroupName: 'second'}));
+
+      await delete(container.read(profilesProvider).single, 'second');
+
+      expect(
+        container.read(profilesProvider).single.selectedMap,
+        isNot(contains(nodeGroupName)),
+      );
+    });
+
+    test('a name the profile does not hold changes nothing', () async {
+      final profile = await twoNodes();
+
+      await delete(profile, 'gone');
+
+      expect((await outboundsOf(profile)).map((node) => node['tag']), [
+        'first',
+        'second',
+      ]);
+    });
+  });
+
+  test('another profile\'s nodes are read from its file', () async {
+    build();
+    await add(_node('first'));
+    await add(_node('second'));
+    final profile = container.read(profilesProvider).single;
+
+    final nodes = await container.read(
+      profileNodesProvider(profile.id, profile.lastUpdateDate).future,
+    );
+
+    expect(nodes.map((node) => node.name), ['first', 'second']);
+    expect(nodes.first.type, 'shadowsocks');
   });
 }

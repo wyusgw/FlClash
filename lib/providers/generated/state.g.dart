@@ -2118,6 +2118,90 @@ final class NeedUpdateGroupsProvider
 
 String _$needUpdateGroupsHash() => r'90b7cb35c96bda157cf436e32f251e58721ef757';
 
+/// [updated] reloads the nodes once the profile is saved.
+
+@ProviderFor(profileNodes)
+final profileNodesProvider = ProfileNodesFamily._();
+
+/// [updated] reloads the nodes once the profile is saved.
+
+final class ProfileNodesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Proxy>>,
+          List<Proxy>,
+          FutureOr<List<Proxy>>
+        >
+    with $FutureModifier<List<Proxy>>, $FutureProvider<List<Proxy>> {
+  /// [updated] reloads the nodes once the profile is saved.
+  ProfileNodesProvider._({
+    required ProfileNodesFamily super.from,
+    required (int, DateTime?) super.argument,
+  }) : super(
+         retry: null,
+         name: r'profileNodesProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$profileNodesHash();
+
+  @override
+  String toString() {
+    return r'profileNodesProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Proxy>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Proxy>> create(Ref ref) {
+    final argument = this.argument as (int, DateTime?);
+    return profileNodes(ref, argument.$1, argument.$2);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ProfileNodesProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$profileNodesHash() => r'efa8d226f54b368703f2c5273d7970ee7ab40fac';
+
+/// [updated] reloads the nodes once the profile is saved.
+
+final class ProfileNodesFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<Proxy>>, (int, DateTime?)> {
+  ProfileNodesFamily._()
+    : super(
+        retry: null,
+        name: r'profileNodesProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// [updated] reloads the nodes once the profile is saved.
+
+  ProfileNodesProvider call(int profileId, DateTime? updated) =>
+      ProfileNodesProvider._(argument: (profileId, updated), from: this);
+
+  @override
+  String toString() => r'profileNodesProvider';
+}
+
 @ProviderFor(navigationItemsState)
 final navigationItemsStateProvider = NavigationItemsStateProvider._();
 

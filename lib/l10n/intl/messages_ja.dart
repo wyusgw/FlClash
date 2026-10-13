@@ -428,6 +428,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "goDownload": MessageLookupByLibrary.simpleMessage("ダウンロードへ"),
     "handshake": MessageLookupByLibrary.simpleMessage("ハンドシェイク"),
     "hapticFeedback": MessageLookupByLibrary.simpleMessage("触覚フィードバック"),
+    "hapticFeedbackDesc": MessageLookupByLibrary.simpleMessage(
+      "プロキシをオン・オフしたとき、下部バーでページを切り替えたとき、スクロールバーをドラッグしたときに振動します",
+    ),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
       "Helper サービスが利用できないため、TUN モードを有効にできません。FlClash を再インストールしてください。",
     ),
@@ -901,6 +904,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "tab": MessageLookupByLibrary.simpleMessage("タブ"),
     "tabAnimation": MessageLookupByLibrary.simpleMessage("タブアニメーション"),
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage("タップして許可"),
+    "test": MessageLookupByLibrary.simpleMessage("テスト"),
     "testRules": MessageLookupByLibrary.simpleMessage("ルールをテスト"),
     "testRulesGeoNote": MessageLookupByLibrary.simpleMessage(
       "GeoSite と GeoIP の項目はコアでしか判定できないため、ここではスキップします。",

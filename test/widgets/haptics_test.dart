@@ -48,6 +48,12 @@ void main() {
 
   bool ticked() => calls.any((call) => call.method == 'HapticFeedback.vibrate');
 
+  bool knocked() => calls.any(
+    (call) =>
+        call.method == 'HapticFeedback.vibrate' &&
+        call.arguments == 'HapticFeedbackType.mediumImpact',
+  );
+
   testWidgets('ticks while haptic feedback is on, which is the default', (
     tester,
   ) async {
@@ -76,5 +82,19 @@ void main() {
     selectionHaptic(captured);
 
     expect(ticked(), isTrue);
+  });
+
+  testWidgets('the toggle knocks while haptic feedback is on', (tester) async {
+    toggleHaptic(await pump(tester));
+
+    expect(knocked(), isTrue);
+  });
+
+  testWidgets('the toggle stays silent once haptic feedback is off', (
+    tester,
+  ) async {
+    toggleHaptic(await pump(tester, hapticFeedback: false));
+
+    expect(ticked(), isFalse);
   });
 }

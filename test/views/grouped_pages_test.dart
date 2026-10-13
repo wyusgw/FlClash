@@ -786,6 +786,28 @@ void main() {
     });
   });
 
+  group('haptic feedback setting', () {
+    testWidgets('the page checks On and turns it off', (tester) async {
+      await pumpPage(tester, const HapticFeedbackView());
+      final l10n = AppLocalizations.current;
+      Finder checkIn(String choice) => find.descendant(
+        of: find.widgetWithText(GroupedRow, choice),
+        matching: find.byGlyph(AppGlyphs.check),
+      );
+
+      expect(find.text(l10n.hapticFeedbackDesc), findsOneWidget);
+      expect(checkIn(l10n.on), findsOneWidget);
+      expect(checkIn(l10n.off), findsNothing);
+
+      await tester.tap(find.widgetWithText(GroupedRow, l10n.off));
+      await tester.pumpAndSettle();
+
+      expect(container.read(appSettingProvider).hapticFeedback, isFalse);
+      expect(checkIn(l10n.off), findsOneWidget);
+      expect(checkIn(l10n.on), findsNothing);
+    });
+  });
+
   group('reset page', () {
     testWidgets('the settings page lists it', (tester) async {
       await pumpPage(tester, const ToolsView());

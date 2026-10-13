@@ -498,6 +498,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "goDownload": MessageLookupByLibrary.simpleMessage("Download"),
     "handshake": MessageLookupByLibrary.simpleMessage("Handshake"),
     "hapticFeedback": MessageLookupByLibrary.simpleMessage("Haptic feedback"),
+    "hapticFeedbackDesc": MessageLookupByLibrary.simpleMessage(
+      "Vibrates when you turn the proxy on or off, switch pages from the bottom bar or drag the scrollbar",
+    ),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
       "Helper service unavailable; TUN mode cannot be enabled. Reinstall FlClash to restore it.",
     ),
@@ -1048,6 +1051,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "tab": MessageLookupByLibrary.simpleMessage("Tab"),
     "tabAnimation": MessageLookupByLibrary.simpleMessage("Tab animation"),
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage("Tap to authorize"),
+    "test": MessageLookupByLibrary.simpleMessage("Test"),
     "testRules": MessageLookupByLibrary.simpleMessage("Test rules"),
     "testRulesGeoNote": MessageLookupByLibrary.simpleMessage(
       "GeoSite and GeoIP entries can only be checked by the core, so they are skipped here.",

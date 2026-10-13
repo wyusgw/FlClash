@@ -388,6 +388,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "goDownload": MessageLookupByLibrary.simpleMessage("前往下载"),
     "handshake": MessageLookupByLibrary.simpleMessage("握手"),
     "hapticFeedback": MessageLookupByLibrary.simpleMessage("触觉反馈"),
+    "hapticFeedbackDesc": MessageLookupByLibrary.simpleMessage(
+      "开启或关闭代理、从底部栏切换页面或拖动滚动条时振动",
+    ),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
       "Helper 服务不可用，无法启用 TUN 模式，请重新安装 FlClash。",
     ),
@@ -817,6 +820,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "tab": MessageLookupByLibrary.simpleMessage("标签页"),
     "tabAnimation": MessageLookupByLibrary.simpleMessage("选项卡动画"),
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage("点击授权"),
+    "test": MessageLookupByLibrary.simpleMessage("测试"),
     "testRules": MessageLookupByLibrary.simpleMessage("测试规则"),
     "testRulesGeoNote": MessageLookupByLibrary.simpleMessage(
       "GeoSite 与 GeoIP 条目只能由内核判断，这里会跳过。",

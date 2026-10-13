@@ -21,6 +21,31 @@
           "type": "feat",
           "entries": [
             {
+              "id": "5e0c536",
+              "scope": "home",
+              "text": "Several subscriptions can be expanded at once, and choosing a node in another one switches to it"
+            },
+            {
+              "id": "39b4615",
+              "scope": "ui",
+              "text": "The bottom tab bar on phones is frosted glass with outlined icons and larger labels"
+            },
+            {
+              "id": "b8611f7",
+              "scope": "home",
+              "text": "Node rows swipe right to test or copy a node and left to show its QR code or delete it"
+            },
+            {
+              "id": "da468cc",
+              "scope": "home",
+              "text": "Turning the proxy on or off from the home screen vibrates while haptic feedback is on"
+            },
+            {
+              "id": "4d2c382",
+              "scope": "settings",
+              "text": "Haptic feedback opens its own page with On and Off and a description"
+            },
+            {
               "id": "213c5b6",
               "scope": "rules",
               "text": "Rule configs have a right-click menu to rename, edit, edit as plain text or delete, and the default config can be edited"

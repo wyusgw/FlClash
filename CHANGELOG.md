@@ -8,6 +8,11 @@
 
 **Features**
 
+- **home** Several subscriptions can be expanded at once, and choosing a node in another one switches to it (5e0c536)
+- **ui** The bottom tab bar on phones is frosted glass with outlined icons and larger labels (39b4615)
+- **home** Node rows swipe right to test or copy a node and left to show its QR code or delete it (b8611f7)
+- **home** Turning the proxy on or off from the home screen vibrates while haptic feedback is on (da468cc)
+- **settings** Haptic feedback opens its own page with On and Off and a description (4d2c382)
 - **rules** Rule configs have a right-click menu to rename, edit, edit as plain text or delete, and the default config can be edited (213c5b6)
 - **rules** The config tab holds Xray rule configs that can be written by hand, imported, downloaded or tested (ef4593a)
 - **settings** Android has a haptic feedback switch under Other in the settings (605bdc4)

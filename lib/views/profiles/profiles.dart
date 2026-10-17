@@ -173,7 +173,7 @@ class _ProfileRowState extends ConsumerState<_ProfileRow> {
       future: _size,
       builder: (_, snapshot) => SwipeActions(
         enabled: !isUpdating && !system.isDesktop,
-        trailing: [
+        leading: [
           SwipeAction(
             label: context.appLocalizations.delete,
             color: groupedDanger,

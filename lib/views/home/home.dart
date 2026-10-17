@@ -8,6 +8,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/add.dart';
 import 'package:fl_clash/views/profiles/edit.dart';
+import 'package:fl_clash/views/profiles/profiles.dart';
 import 'package:fl_clash/views/home/node_context_menu.dart';
 import 'package:fl_clash/views/home/node_share.dart';
 import 'package:fl_clash/views/home/route_mode.dart';
@@ -622,64 +623,87 @@ class _SubscriptionSection extends ConsumerWidget {
     );
     return GroupedSection(
       children: [
-        GroupedRow(
-          leading: editing
-              ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: _selectGap,
-                  children: [
-                    GroupedSelectMark(
-                      selected: edit.isSelected(_profileKey(profile.id)),
-                    ),
-                    chevron,
-                  ],
-                )
-              : chevron,
-          leadingWidth: editing
-              ? groupedLeadingSize * 2 + _selectGap
-              : groupedLeadingSize,
-          title: profile.realLabel,
-          subtitle: _usage(profile.subscriptionInfo),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 12,
-            children: [
-              if (profile.type == ProfileType.url)
-                _RoundAction(
-                  glyph: AppGlyphs.refresh,
-                  tooltip: appLocalizations.update,
-                  busy: isUpdating,
-                  onPressed: () => unawaited(
-                    globalState.safeRun(
-                      () => ref
-                          .read(profilesActionProvider.notifier)
-                          .updateProfile(profile, showLoading: true),
-                    ),
-                  ),
+        SwipeActions(
+          enabled: !editing && !system.isDesktop,
+          leading: [
+            if (current)
+              SwipeAction(
+                label: appLocalizations.test,
+                color: swipeActionGo,
+                onPressed: () => unawaited(
+                  ref
+                      .read(proxiesActionProvider.notifier)
+                      .delayTestPageGroup(nodeGroupName),
                 ),
-              if (editing && dragIndex != null)
-                ReorderableDragStartListener(
-                  index: dragIndex!,
-                  child: GlyphIcon(
-                    AppGlyphs.dragHandle,
-                    size: 21,
-                    color: palette.tertiary,
+              ),
+            SwipeAction(
+              label: appLocalizations.delete,
+              color: groupedDanger,
+              fullSwipe: true,
+              slideOut: true,
+              onPressed: () =>
+                  ProfileActions(profile).deleteProfile(context, ref),
+            ),
+          ],
+          child: GroupedRow(
+            leading: editing
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: _selectGap,
+                    children: [
+                      GroupedSelectMark(
+                        selected: edit.isSelected(_profileKey(profile.id)),
+                      ),
+                      chevron,
+                    ],
+                  )
+                : chevron,
+            leadingWidth: editing
+                ? groupedLeadingSize * 2 + _selectGap
+                : groupedLeadingSize,
+            title: profile.realLabel,
+            subtitle: _usage(profile.subscriptionInfo),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 12,
+              children: [
+                if (profile.type == ProfileType.url)
+                  _RoundAction(
+                    glyph: AppGlyphs.refresh,
+                    tooltip: appLocalizations.update,
+                    busy: isUpdating,
+                    onPressed: () => unawaited(
+                      globalState.safeRun(
+                        () => ref
+                            .read(profilesActionProvider.notifier)
+                            .updateProfile(profile, showLoading: true),
+                      ),
+                    ),
                   ),
-                )
-              else
-                _RoundAction(
-                  glyph: AppGlyphs.info,
-                  tooltip: appLocalizations.edit,
-                  onPressed: () => BaseNavigator.push(
-                    context,
-                    EditProfileView(profile: profile),
+                if (editing && dragIndex != null)
+                  ReorderableDragStartListener(
+                    index: dragIndex!,
+                    child: GlyphIcon(
+                      AppGlyphs.dragHandle,
+                      size: 21,
+                      color: palette.tertiary,
+                    ),
+                  )
+                else
+                  _RoundAction(
+                    glyph: AppGlyphs.info,
+                    tooltip: appLocalizations.edit,
+                    onPressed: () => BaseNavigator.push(
+                      context,
+                      EditProfileView(profile: profile),
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
+            onTap: editing
+                ? () => edit.toggle(_profileKey(profile.id))
+                : onToggle,
           ),
-          onTap: editing
-              ? () => edit.toggle(_profileKey(profile.id))
-              : onToggle,
         ),
         for (final node in nodes ?? const <Proxy>[])
           _NodeMenuTarget(

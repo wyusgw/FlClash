@@ -5,13 +5,13 @@ import 'package:material_ui/material_ui.dart';
 
 import 'text_menu.dart';
 
-const groupedRowHeight = 37.0;
-const groupedRowPadding = 12.0;
-const groupedLeadingSize = 19.0;
-const groupedLeadingGap = 11.0;
+const groupedRowHeight = 44.0;
+const groupedRowPadding = 16.0;
+const groupedLeadingSize = 24.0;
+const groupedLeadingGap = 14.0;
 const groupedBarHeight = 62.0;
-const groupedPageInset = 14.0;
-const groupedSectionGap = 27.0;
+const groupedPageInset = 16.0;
+const groupedSectionGap = 35.0;
 
 /// What marks a row or an answer that destroys something.
 const groupedDanger = Color(0xFFFF453A);
@@ -192,20 +192,20 @@ class GroupedPalette {
   Color get hoverShade => hover.withValues(alpha: 0.55);
 
   TextStyle get rowTitle =>
-      TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: label);
+      TextStyle(fontSize: 17, fontWeight: FontWeight.w400, color: label);
 
   TextStyle get rowSubtitle => TextStyle(
-    fontSize: 8.5,
-    fontWeight: FontWeight.w500,
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
     color: secondary,
-    height: 1.15,
+    height: 1.2,
   );
 
   TextStyle get rowValue =>
-      TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: secondary);
+      TextStyle(fontSize: 17, fontWeight: FontWeight.w400, color: secondary);
 
   TextStyle get sectionLabel =>
-      TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: secondary);
+      TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: secondary);
 }
 
 /// The rounded surface of a grouped section.
@@ -372,10 +372,13 @@ class GroupedRow extends GroupedItem {
         hoverColor: palette.hoverShade,
         highlightColor: palette.hover,
         splashColor: Colors.transparent,
-        child: SizedBox(
-          height: groupedRowHeight,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: groupedRowHeight),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: groupedRowPadding),
+            padding: const EdgeInsets.symmetric(
+              horizontal: groupedRowPadding,
+              vertical: 6,
+            ),
             child: LayoutBuilder(
               builder: (context, box) => Row(
                 children: [
@@ -555,11 +558,11 @@ class GroupedFieldRow extends GroupedItem {
                 obscureText: obscure,
                 contextMenuBuilder: systemTextContextMenu,
                 cursorColor: palette.accent,
-                style: palette.rowTitle.copyWith(fontWeight: FontWeight.w500),
+                style: palette.rowTitle.copyWith(fontWeight: FontWeight.w400),
                 decoration: InputDecoration.collapsed(
                   hintText: hint,
                   hintStyle: palette.rowTitle.copyWith(
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w400,
                     color: palette.tertiary,
                   ),
                 ),
@@ -722,11 +725,11 @@ class GroupedSearchField extends StatelessWidget {
                   onChanged: onChanged,
                   contextMenuBuilder: systemTextContextMenu,
                   cursorColor: palette.accent,
-                  style: palette.rowTitle.copyWith(fontWeight: FontWeight.w500),
+                  style: palette.rowTitle.copyWith(fontWeight: FontWeight.w400),
                   decoration: InputDecoration.collapsed(
                     hintText: hint,
                     hintStyle: palette.rowTitle.copyWith(
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w400,
                       color: palette.tertiary,
                     ),
                   ),

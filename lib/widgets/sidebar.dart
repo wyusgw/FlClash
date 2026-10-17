@@ -181,10 +181,7 @@ class _SidebarItem extends StatelessWidget {
                     destination.label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: palette.rowTitle.copyWith(
-                      fontSize: 13,
-                      color: palette.label,
-                    ),
+                    style: palette.rowSubtitle.copyWith(color: palette.label),
                   ),
                 ),
               ],

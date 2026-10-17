@@ -117,9 +117,8 @@ class IosButton extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: palette.subhead.copyWith(
                     color: foreground,
-                    fontSize: 15,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

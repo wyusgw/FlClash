@@ -264,9 +264,8 @@ class _DnsServerSectionState extends State<_DnsServerSection> {
                     ),
                     child: Text(
                       appLocalizations.delete,
-                      style: const TextStyle(
+                      style: GroupedPalette.of(context).subhead.copyWith(
                         color: Colors.white,
-                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

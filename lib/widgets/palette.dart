@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:material_color_utilities/hct/hct.dart';
 
 import 'color_scheme_box.dart';
+import 'grouped_list.dart';
 import 'theme.dart';
 
 const _trackHeight = 28.0;
@@ -355,11 +356,10 @@ class _ToneCellState extends State<_ToneCell> {
                 fit: BoxFit.scaleDown,
                 child: Text(
                   '${widget.tone}',
-                  style: TextStyle(
+                  style: GroupedPalette.of(context).caption2.copyWith(
                     color: foregroundColor.withValues(
                       alpha: widget.isSelected ? 1 : 0.72,
                     ),
-                    fontSize: 11,
                     fontWeight: widget.isSelected
                         ? FontWeight.w700
                         : FontWeight.w500,
@@ -426,9 +426,8 @@ class _ColorSchemePreview extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Text(
                           label,
-                          style: TextStyle(
+                          style: GroupedPalette.of(context).caption2.copyWith(
                             color: onColor,
-                            fontSize: 11,
                             fontWeight: FontWeight.w500,
                           ),
                           maxLines: 1,

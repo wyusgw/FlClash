@@ -180,8 +180,7 @@ class _LetterIndex extends StatelessWidget {
                       child: Center(
                         child: Text(
                           letter,
-                          style: TextStyle(
-                            fontSize: 9,
+                          style: palette.caption2.copyWith(
                             fontWeight: FontWeight.w700,
                             color: palette.accent,
                           ),

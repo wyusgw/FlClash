@@ -206,6 +206,23 @@ class GroupedPalette {
 
   TextStyle get sectionLabel =>
       TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: secondary);
+
+  /// The sizes of iOS below and above the row text: caption 2, caption 1, the
+  /// subhead and headline of dialogs, and title 2.
+  TextStyle get caption2 =>
+      TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: secondary);
+
+  TextStyle get caption =>
+      TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: secondary);
+
+  TextStyle get subhead =>
+      TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: label);
+
+  TextStyle get headline =>
+      TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: label);
+
+  TextStyle get title2 =>
+      TextStyle(fontSize: 22, fontWeight: FontWeight.w400, color: secondary);
 }
 
 /// The rounded surface of a grouped section.

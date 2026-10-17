@@ -78,20 +78,13 @@ class ConfirmDialog extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
               ],
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: palette.rowTitle.copyWith(fontSize: 15),
-              ),
+              Text(title, textAlign: TextAlign.center, style: palette.subhead),
               const SizedBox(height: 8),
               Flexible(
                 child: SingleChildScrollView(
                   child: SelectableText.rich(
                     TextSpan(
-                      style: palette.rowTitle.copyWith(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: palette.rowSubtitle.copyWith(color: palette.label),
                       children: [message],
                     ),
                     textAlign: TextAlign.center,
@@ -214,14 +207,7 @@ class ChoiceDialog<T> extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: palette.rowTitle.copyWith(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text(title, textAlign: TextAlign.center, style: palette.headline),
               const SizedBox(height: 8),
               Flexible(
                 child: SingleChildScrollView(

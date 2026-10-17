@@ -245,9 +245,8 @@ class _SwipeActionsState extends State<SwipeActions>
                   action.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: GroupedPalette.of(context).subhead.copyWith(
                     color: Colors.white,
-                    fontSize: 15,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

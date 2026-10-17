@@ -25,13 +25,9 @@ class RecordTextStyles {
 
   factory RecordTextStyles.of(BuildContext context) {
     final palette = GroupedPalette.of(context);
-    final secondary = TextStyle(
-      fontSize: 13,
-      height: 1.3,
-      color: palette.secondary,
-    );
+    final secondary = palette.rowSubtitle.copyWith(height: 1.3);
     return RecordTextStyles._(
-      primary: TextStyle(fontSize: 15, height: 1.3, color: palette.label),
+      primary: palette.subhead.copyWith(height: 1.3),
       secondary: secondary,
       muted: secondary.copyWith(color: palette.tertiary),
     );
@@ -91,9 +87,7 @@ class RecordHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final trailing = this.trailing;
     return DefaultTextStyle.merge(
-      style: TextStyle(
-        fontSize: 13,
-        color: GroupedPalette.of(context).secondary,
+      style: GroupedPalette.of(context).rowSubtitle.copyWith(
         fontFeatures: const [FontFeature.tabularFigures()],
       ),
       child: SizedBox(
@@ -140,9 +134,8 @@ class RecordLabel extends StatelessWidget {
         label,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
+        style: palette.caption.copyWith(
           color: color,
-          fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
       ),

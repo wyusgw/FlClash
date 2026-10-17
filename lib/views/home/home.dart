@@ -415,8 +415,7 @@ class _NodeDelay extends ConsumerWidget {
     }
     return Text(
       delay > 0 ? '${delay}ms' : context.appLocalizations.timeout,
-      style: TextStyle(
-        fontSize: 10.5,
+      style: GroupedPalette.of(context).caption2.copyWith(
         fontWeight: FontWeight.w500,
         color: context.colorScheme.delayColor(delay),
       ),

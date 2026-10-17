@@ -105,14 +105,7 @@ class _InputDialogState extends State<InputDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: palette.rowTitle.copyWith(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text(title, textAlign: TextAlign.center, style: palette.headline),
               const SizedBox(height: 12),
               Flexible(
                 child: SingleChildScrollView(
@@ -128,7 +121,7 @@ class _InputDialogState extends State<InputDialog> {
                       minLines: 1,
                       controller: _textController,
                       cursorColor: palette.accent,
-                      style: palette.rowTitle.copyWith(fontSize: 15),
+                      style: palette.subhead,
                       contextMenuBuilder: systemTextContextMenu,
                       onChanged: (_) => setState(() {}),
                       onFieldSubmitted: (_) => _handleUpdate(),

@@ -543,10 +543,7 @@ class _TextScaleFactorItemState extends ConsumerState<_TextScaleFactorItem> {
                 spacing: 12,
                 children: [
                   ExcludeSemantics(
-                    child: Text(
-                      'A',
-                      style: TextStyle(fontSize: 13, color: palette.secondary),
-                    ),
+                    child: Text('A', style: palette.rowSubtitle),
                   ),
                   Expanded(
                     child: SliderTheme(
@@ -574,16 +571,7 @@ class _TextScaleFactorItemState extends ConsumerState<_TextScaleFactorItem> {
                       ),
                     ),
                   ),
-                  ExcludeSemantics(
-                    child: Text(
-                      'A',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w500,
-                        color: palette.secondary,
-                      ),
-                    ),
-                  ),
+                  ExcludeSemantics(child: Text('A', style: palette.title2)),
                 ],
               ),
             ),

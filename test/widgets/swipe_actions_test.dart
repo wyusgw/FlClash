@@ -119,4 +119,66 @@ void main() {
 
     expect(find.text('one test'), findsNothing);
   });
+
+  Future<void> pumpFull(WidgetTester tester) {
+    return tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SwipeActions(
+            leading: [
+              SwipeAction(
+                label: 'test',
+                color: swipeActionGo,
+                fullSwipe: true,
+                onPressed: () => pressed.add('test'),
+              ),
+            ],
+            trailing: [
+              action('qr'),
+              SwipeAction(
+                label: 'delete',
+                color: swipeActionNeutral,
+                fullSwipe: true,
+                onPressed: () => pressed.add('delete'),
+              ),
+            ],
+            child: const ListTile(title: Text('row')),
+          ),
+        ),
+      ),
+    );
+  }
+
+  testWidgets('dragging all the way left runs the full swipe action', (
+    tester,
+  ) async {
+    await pumpFull(tester);
+
+    await tester.drag(find.text('row'), const Offset(-700, 0));
+    await tester.pumpAndSettle();
+
+    expect(pressed, ['delete']);
+    expect(find.text('delete'), findsNothing);
+  });
+
+  testWidgets('dragging all the way right runs the full swipe action', (
+    tester,
+  ) async {
+    await pumpFull(tester);
+
+    await tester.drag(find.text('row'), const Offset(700, 0));
+    await tester.pumpAndSettle();
+
+    expect(pressed, ['test']);
+  });
+
+  testWidgets('a drag short of the end only opens the buttons', (tester) async {
+    await pumpFull(tester);
+
+    await tester.drag(find.text('row'), const Offset(-200, 0));
+    await tester.pumpAndSettle();
+
+    expect(pressed, isEmpty);
+    expect(find.text('delete'), findsOneWidget);
+  });
 }

@@ -2,6 +2,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'grouped_list.dart';
+import 'haptics.dart';
 
 /// The green of a swipe action that runs something harmless, such as a test.
 const swipeActionGo = Color(0xFF34C759);
@@ -15,15 +16,20 @@ class SwipeAction {
     required this.label,
     required this.color,
     required this.onPressed,
+    this.fullSwipe = false,
   });
 
   final String label;
   final Color color;
   final VoidCallback onPressed;
+
+  /// Whether dragging the row all the way across runs this action.
+  final bool fullSwipe;
 }
 
 const _buttonWidth = 74.0;
 const _gap = 8.0;
+const _fullSwipeFraction = 0.55;
 
 double _extent(List<SwipeAction> actions) =>
     actions.isEmpty ? 0 : actions.length * (_buttonWidth + _gap) + _gap;
@@ -31,7 +37,9 @@ double _extent(List<SwipeAction> actions) =>
 /// A row that slides aside to reveal buttons: dragged right it shows
 /// [leading] at its start, dragged left [trailing] at its end. A tap on a
 /// button runs it and closes the row; a tap on the row while it is open, or
-/// opening another row, only closes it.
+/// opening another row, only closes it. Dragging on across the row, to an
+/// action marked [SwipeAction.fullSwipe], ticks once it is armed and runs it
+/// on release.
 class SwipeActions extends StatefulWidget {
   const SwipeActions({
     super.key,
@@ -61,6 +69,27 @@ class _SwipeActionsState extends State<SwipeActions>
 
   double get _leadingExtent => _extent(widget.leading);
   double get _trailingExtent => _extent(widget.trailing);
+
+  SwipeAction? _full(List<SwipeAction> actions) =>
+      actions.where((action) => action.fullSwipe).firstOrNull;
+
+  double get _width => context.size?.width ?? 0;
+
+  double _reach(List<SwipeAction> actions, double extent) =>
+      _full(actions) == null ? extent : _width;
+
+  double _threshold(double extent) =>
+      (_width * _fullSwipeFraction).clamp(extent * 1.3, double.infinity);
+
+  bool _armed(double offset) {
+    if (offset > 0 && _full(widget.leading) != null) {
+      return offset >= _threshold(_leadingExtent);
+    }
+    if (offset < 0 && _full(widget.trailing) != null) {
+      return -offset >= _threshold(_trailingExtent);
+    }
+    return false;
+  }
 
   @override
   void didUpdateWidget(covariant SwipeActions oldWidget) {
@@ -101,16 +130,24 @@ class _SwipeActionsState extends State<SwipeActions>
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
+    final wasArmed = _armed(_offset.value);
     _offset.value = (_offset.value + details.primaryDelta!).clamp(
-      -_trailingExtent,
-      _leadingExtent,
+      -_reach(widget.trailing, _trailingExtent),
+      _reach(widget.leading, _leadingExtent),
     );
+    if (_armed(_offset.value) != wasArmed) {
+      selectionHaptic(context);
+    }
   }
 
   void _handleDragEnd(DragEndDetails details) {
     final velocity = details.primaryVelocity ?? 0;
     final value = _offset.value;
-    if (value > 0) {
+    if (_armed(value)) {
+      final action = _full(value > 0 ? widget.leading : widget.trailing)!;
+      _close();
+      action.onPressed();
+    } else if (value > 0) {
       final open =
           velocity > 300 || (velocity > -300 && value > _leadingExtent / 2);
       _animateTo(open ? _leadingExtent : 0);
@@ -121,48 +158,61 @@ class _SwipeActionsState extends State<SwipeActions>
     }
   }
 
-  Widget _buttons(List<SwipeAction> actions, Alignment alignment) {
+  Widget _buttons(
+    List<SwipeAction> actions,
+    Alignment alignment,
+    double reveal,
+  ) {
+    final stretch = reveal > _extent(actions) ? _full(actions) : null;
     return Align(
       alignment: alignment,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: _gap / 2, vertical: 6),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final action in actions)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: _gap / 2),
-                child: SizedBox(
-                  width: _buttonWidth,
-                  child: Material(
-                    color: action.color,
-                    shape: AppShape.full,
-                    clipBehavior: Clip.antiAlias,
-                    child: InkWell(
-                      onTap: () {
-                        _close();
-                        action.onPressed();
-                      },
-                      child: Center(
-                        child: Text(
-                          action.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
+        child: SizedBox(
+          width: stretch == null ? null : reveal - _gap,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final action in actions)
+                _button(action, stretch: action == stretch),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Widget _button(SwipeAction action, {required bool stretch}) {
+    final button = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: _gap / 2),
+      child: SizedBox(
+        width: stretch ? null : _buttonWidth,
+        child: Material(
+          color: action.color,
+          shape: AppShape.full,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () {
+              _close();
+              action.onPressed();
+            },
+            child: Center(
+              child: Text(
+                action.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    return stretch ? Expanded(child: button) : button;
   }
 
   @override
@@ -188,8 +238,16 @@ class _SwipeActionsState extends State<SwipeActions>
                     child: ColoredBox(
                       color: palette.canvas,
                       child: offset > 0
-                          ? _buttons(widget.leading, Alignment.centerLeft)
-                          : _buttons(widget.trailing, Alignment.centerRight),
+                          ? _buttons(
+                              widget.leading,
+                              Alignment.centerLeft,
+                              offset,
+                            )
+                          : _buttons(
+                              widget.trailing,
+                              Alignment.centerRight,
+                              -offset,
+                            ),
                     ),
                   ),
                 Transform.translate(

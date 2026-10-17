@@ -504,10 +504,11 @@ class _ScannerError extends StatelessWidget {
         description: appLocalizations.cameraPermissionDesc,
         illustration: NullStatusIllustration.permission,
         action: ElasticButton(
-          child: FilledButton.tonalIcon(
+          child: IosButton(
+            tonal: true,
             onPressed: onOpenSettings,
-            icon: const GlyphIcon(AppGlyphs.settings, fill: 1),
-            label: Text(appLocalizations.settings),
+            glyph: AppGlyphs.settings,
+            label: appLocalizations.settings,
           ),
         ),
       ),
@@ -519,10 +520,11 @@ class _ScannerError extends StatelessWidget {
         label: appLocalizations.cameraUnavailable,
         illustration: NullStatusIllustration.camera,
         action: ElasticButton(
-          child: FilledButton.tonalIcon(
+          child: IosButton(
+            tonal: true,
             onPressed: onRetry,
-            icon: const GlyphIcon(AppGlyphs.refresh, fill: 1),
-            label: Text(appLocalizations.retry),
+            glyph: AppGlyphs.refresh,
+            label: appLocalizations.retry,
           ),
         ),
       ),

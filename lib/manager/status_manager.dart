@@ -545,15 +545,14 @@ class _MessageContent extends StatelessWidget {
         ),
         if (actionState != null) ...[
           const SizedBox(height: 14),
-          CommonMinFilledButtonTheme(
-            child: ElasticButton(
-              child: FilledButton.tonal(
-                onPressed: () {
-                  onDismiss(message.id);
-                  actionState.action();
-                },
-                child: Text(actionState.actionText),
-              ),
+          ElasticButton(
+            child: IosButton(
+              tonal: true,
+              onPressed: () {
+                onDismiss(message.id);
+                actionState.action();
+              },
+              label: actionState.actionText,
             ),
           ),
         ],

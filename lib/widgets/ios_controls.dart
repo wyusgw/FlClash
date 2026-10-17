@@ -1,0 +1,130 @@
+import 'dart:math' as math;
+
+import 'package:fl_clash/common/shape.dart';
+import 'package:fl_clash/icons/icons.dart';
+import 'package:material_ui/material_ui.dart';
+
+import 'grouped_list.dart';
+
+/// The spinner of iOS: twelve spokes that fade behind a turning head.
+class IosSpinner extends StatefulWidget {
+  const IosSpinner({super.key, this.size = 19, this.color});
+
+  final double size;
+
+  /// The spokes' colour; the secondary text colour where it is null.
+  final Color? color;
+
+  @override
+  State<IosSpinner> createState() => _IosSpinnerState();
+}
+
+class _IosSpinnerState extends State<IosSpinner>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1000),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = widget.color ?? GroupedPalette.of(context).secondary;
+    return RepaintBoundary(
+      child: CustomPaint(
+        size: Size.square(widget.size),
+        painter: _SpinnerPainter(animation: _controller, color: color),
+      ),
+    );
+  }
+}
+
+class _SpinnerPainter extends CustomPainter {
+  _SpinnerPainter({required this.animation, required this.color})
+    : super(repaint: animation);
+
+  static const _spokes = 12;
+
+  final Animation<double> animation;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final radius = size.shortestSide / 2;
+    final paint = Paint()
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = radius / 4.5;
+    final head = (animation.value * _spokes).floor();
+    canvas.translate(size.width / 2, size.height / 2);
+    for (var i = 0; i < _spokes; i++) {
+      final age = (head - i) % _spokes;
+      paint.color = color.withValues(alpha: 1 - age / _spokes * 0.85);
+      final angle = 2 * math.pi * i / _spokes;
+      final direction = Offset(math.sin(angle), -math.cos(angle));
+      canvas.drawLine(
+        direction * (radius * 0.55),
+        direction * (radius * 0.95),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SpinnerPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+/// A pill button in the manner of iOS: the accent colour with white text, or
+/// with [tonal] the grey of a secondary answer with the accent colour's text.
+class IosButton extends StatelessWidget {
+  const IosButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.glyph,
+    this.tonal = false,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final Glyph? glyph;
+  final bool tonal;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    final foreground = tonal ? palette.accent : const Color(0xFFFFFFFF);
+    return Material(
+      color: tonal ? palette.hover : palette.accent,
+      shape: AppShape.full,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 8,
+            children: [
+              if (glyph != null)
+                GlyphIcon(glyph!, fill: 1, size: 18, color: foreground),
+              Text(
+                label,
+                style: TextStyle(
+                  color: foreground,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

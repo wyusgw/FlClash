@@ -24,6 +24,7 @@ export 'grouped_list.dart';
 export 'grouped_page.dart';
 export 'icon.dart';
 export 'info_message_button.dart';
+export 'ios_controls.dart';
 export 'inherited.dart';
 export 'input.dart';
 export 'keep_scope.dart';

@@ -691,10 +691,7 @@ class _RuleSetViewState extends ConsumerState<RuleSetView> {
                   trailing: _updating
                       ? SizedBox.square(
                           dimension: 14,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: palette.secondary,
-                          ),
+                          child: IosSpinner(color: palette.secondary),
                         )
                       : null,
                   onTap: _updating ? null : () => unawaited(_update(url)),

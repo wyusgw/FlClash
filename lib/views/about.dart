@@ -101,10 +101,7 @@ class AboutView extends ConsumerWidget {
                 trailing: isLoading
                     ? SizedBox.square(
                         dimension: 14,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: palette.secondary,
-                        ),
+                        child: IosSpinner(color: palette.secondary),
                       )
                     : null,
                 chevron: !isLoading,

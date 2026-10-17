@@ -634,7 +634,7 @@ void main() {
       final settings = tester.getRect(
         find.ancestor(
           of: find.text(currentAppLocalizations.settings),
-          matching: find.bySubtype<FilledButton>(),
+          matching: find.byType(IosButton),
         ),
       );
       final close = tester.getRect(

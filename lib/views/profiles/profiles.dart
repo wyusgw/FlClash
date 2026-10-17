@@ -194,10 +194,7 @@ class _ProfileRowState extends ConsumerState<_ProfileRow> {
               if (isUpdating)
                 SizedBox.square(
                   dimension: 19,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: palette.icon,
-                  ),
+                  child: IosSpinner(color: palette.icon),
                 )
               else
                 CommonPopupBox(

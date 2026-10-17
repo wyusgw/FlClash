@@ -154,11 +154,11 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byType(IosSpinner), findsNothing);
 
     await tester.tap(find.text('Check for updates'));
     await tester.pump();
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(IosSpinner), findsOneWidget);
 
     await tester.tap(find.text('Check for updates'));
     await tester.pump(const Duration(milliseconds: 100));

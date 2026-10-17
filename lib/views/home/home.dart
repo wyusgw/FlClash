@@ -363,10 +363,7 @@ class _ConnectivityRow extends ConsumerWidget {
       trailing: testing
           ? SizedBox.square(
               dimension: 19,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: palette.icon,
-              ),
+              child: IosSpinner(color: palette.icon),
             )
           : Tooltip(
               message: context.appLocalizations.delayTestMethod,
@@ -410,7 +407,7 @@ class _NodeDelay extends ConsumerWidget {
     if (phase != null) {
       return SizedBox.square(
         dimension: 12,
-        child: CircularProgressIndicator(strokeWidth: 1.5, color: palette.icon),
+        child: IosSpinner(color: palette.icon),
       );
     }
     if (delay == null) {
@@ -1059,10 +1056,7 @@ class _RoundAction extends StatelessWidget {
         child: busy
             ? SizedBox.square(
                 dimension: 19,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: palette.icon,
-                ),
+                child: IosSpinner(color: palette.icon),
               )
             : GlyphIcon(glyph, size: 21, color: palette.icon),
       ),

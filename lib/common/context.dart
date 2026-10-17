@@ -62,25 +62,6 @@ extension BuildContextExtension on BuildContext {
     );
   }
 
-  void showSnackBar(String message, {SnackBarAction? action}) {
-    final width = MediaQuery.sizeOf(this).width;
-    EdgeInsets margin;
-    if (width < 600) {
-      margin = const EdgeInsets.only(bottom: 16, right: 16, left: 16);
-    } else {
-      margin = EdgeInsets.only(bottom: 16, left: 16, right: width - 316);
-    }
-    ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        action: action,
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(milliseconds: 1500),
-        margin: margin,
-      ),
-    );
-  }
-
   ColorScheme get colorScheme => Theme.of(this).colorScheme;
 
   bool get disableAnimations => MediaQuery.disableAnimationsOf(this);

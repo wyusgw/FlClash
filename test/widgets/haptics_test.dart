@@ -51,7 +51,7 @@ void main() {
   bool knocked() => calls.any(
     (call) =>
         call.method == 'HapticFeedback.vibrate' &&
-        call.arguments == 'HapticFeedbackType.mediumImpact',
+        call.arguments == 'HapticFeedbackType.heavyImpact',
   );
 
   testWidgets('ticks while haptic feedback is on, which is the default', (

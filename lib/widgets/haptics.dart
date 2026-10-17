@@ -18,9 +18,10 @@ void selectionHaptic(BuildContext context) {
   }
 }
 
-/// A firmer knock for turning the proxy on or off.
+/// A firmer knock for turning the proxy on or off. Android maps
+/// `mediumImpact` to KEYBOARD_TAP, which many devices leave silent.
 void toggleHaptic(BuildContext context) {
   if (_hapticsOn(context)) {
-    HapticFeedback.mediumImpact();
+    HapticFeedback.heavyImpact();
   }
 }

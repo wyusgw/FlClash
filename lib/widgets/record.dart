@@ -1,11 +1,20 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
-import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
-import 'chip.dart';
 import 'grouped_list.dart';
-import 'list.dart';
+
+const _warningColor = Color(0xFFFF9F0A);
+
+/// What a tone is drawn in: orange for a warning, red for an error and the
+/// greys of the text colours for the rest.
+Color recordToneColor(GroupedPalette palette, RecordTone tone) =>
+    switch (tone) {
+      RecordTone.warning => _warningColor,
+      RecordTone.error => groupedDanger,
+      RecordTone.neutral => palette.secondary,
+      RecordTone.muted => palette.tertiary,
+    };
 
 class RecordTextStyles {
   final TextStyle? primary;
@@ -16,12 +25,11 @@ class RecordTextStyles {
 
   factory RecordTextStyles.of(BuildContext context) {
     final palette = GroupedPalette.of(context);
-    final textTheme = context.textTheme;
-    final secondary = textTheme.bodySmall?.copyWith(color: palette.secondary);
+    final secondary = palette.rowSubtitle.copyWith(height: 1.3);
     return RecordTextStyles._(
-      primary: textTheme.bodyMedium?.copyWith(color: palette.label),
+      primary: palette.subhead.copyWith(height: 1.3),
       secondary: secondary,
-      muted: secondary?.copyWith(color: palette.tertiary),
+      muted: secondary.copyWith(color: palette.tertiary),
     );
   }
 }
@@ -42,12 +50,16 @@ class RecordListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = Material(
-      color: tone.tintColor(context) ?? Colors.transparent,
+    final palette = GroupedPalette.of(context);
+    final flagged = tone == RecordTone.warning || tone == RecordTone.error;
+    return Material(
+      color: flagged
+          ? recordToneColor(palette, tone).withValues(alpha: 0.08)
+          : Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        hoverColor: GroupedPalette.of(context).hover,
-        highlightColor: GroupedPalette.of(context).hover,
+        hoverColor: palette.hover,
+        highlightColor: palette.hover,
         splashColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
@@ -62,17 +74,6 @@ class RecordListItem extends StatelessWidget {
         ),
       ),
     );
-    final accentColor = tone.accentColor(context);
-    if (accentColor == null) {
-      return item;
-    }
-    return DecoratedBox(
-      position: DecorationPosition.foreground,
-      decoration: BoxDecoration(
-        border: Border(left: BorderSide(color: accentColor, width: 3)),
-      ),
-      child: item,
-    );
   }
 }
 
@@ -86,9 +87,7 @@ class RecordHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final trailing = this.trailing;
     return DefaultTextStyle.merge(
-      style: context.textTheme.labelMedium?.copyWith(
-        color: context.colorScheme.onSurfaceVariant,
-        fontWeight: FontWeight.w400,
+      style: GroupedPalette.of(context).rowSubtitle.copyWith(
         fontFeatures: const [FontFeature.tabularFigures()],
       ),
       child: SizedBox(
@@ -127,11 +126,27 @@ class RecordLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TonalChip(
-      label: label,
-      color: tone.labelContainerColor(context),
-      foregroundColor: tone.labelColor(context),
-      onPressed: onPressed,
+    final palette = GroupedPalette.of(context);
+    final color = recordToneColor(palette, tone);
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: palette.caption.copyWith(
+          color: color,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+    return Material(
+      color: color.withValues(alpha: 0.15),
+      shape: AppShape.full,
+      clipBehavior: Clip.antiAlias,
+      child: onPressed == null
+          ? content
+          : InkWell(onTap: onPressed, child: content),
     );
   }
 }
@@ -143,6 +158,7 @@ class RecordTimestamp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
     final split = dateTime.lastIndexOf(' ');
     return Text.rich(
       TextSpan(
@@ -150,7 +166,7 @@ class RecordTimestamp extends StatelessWidget {
           if (split > 0)
             TextSpan(
               text: dateTime.substring(0, split + 1),
-              style: TextStyle(color: context.colorScheme.outline),
+              style: TextStyle(color: palette.tertiary),
             ),
           TextSpan(text: split > 0 ? dateTime.substring(split + 1) : dateTime),
         ],
@@ -168,54 +184,6 @@ class RecordArrow extends StatelessWidget {
     return Text(
       '→',
       style: RecordTextStyles.of(context).muted?.toJetBrainsMono,
-    );
-  }
-}
-
-class DetailRow extends StatelessWidget {
-  final String title;
-  final Widget? value;
-  final String? copyText;
-
-  const DetailRow({super.key, required this.title, this.value, this.copyText});
-
-  DetailRow.text({super.key, required this.title, required String value})
-    : value = Text(value),
-      copyText = value;
-
-  Future<void> _copy(BuildContext context, String text) async {
-    await Clipboard.setData(ClipboardData(text: text));
-    if (!context.mounted) return;
-    context.showNotifier(context.appLocalizations.copySuccess);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final value = this.value;
-    final copyText = this.copyText;
-    return DecorationListItem(
-      onPressed: copyText == null ? null : () => _copy(context, copyText),
-      title: value == null
-          ? Text(title)
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              spacing: 20,
-              children: [
-                Text(title),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: DefaultTextStyle.merge(
-                      textAlign: TextAlign.end,
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: context.colorScheme.onSurfaceVariant,
-                      ),
-                      child: value,
-                    ),
-                  ),
-                ),
-              ],
-            ),
     );
   }
 }

@@ -139,6 +139,7 @@ void main() {
                 label: 'delete',
                 color: swipeActionNeutral,
                 fullSwipe: true,
+                slideOut: true,
                 onPressed: () => pressed.add('delete'),
               ),
             ],
@@ -159,6 +160,21 @@ void main() {
 
     expect(pressed, ['delete']);
     expect(find.text('delete'), findsNothing);
+    expect(tester.getTopLeft(find.text('row')).dx, lessThan(100));
+  });
+
+  testWidgets('a slide-out row leaves the screen before its action runs', (
+    tester,
+  ) async {
+    await pumpFull(tester);
+
+    await tester.drag(find.text('row'), const Offset(-700, 0));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(pressed, isEmpty);
+    await tester.pumpAndSettle();
+    expect(pressed, ['delete']);
   });
 
   testWidgets('dragging all the way right runs the full swipe action', (

@@ -286,7 +286,12 @@ class LogItem extends StatelessWidget {
           ),
         ],
       ),
-      body: _LogBody(payload: payload, errorColor: tone.accentColor(context)),
+      body: _LogBody(
+        payload: payload,
+        errorColor: tone == RecordTone.warning || tone == RecordTone.error
+            ? recordToneColor(GroupedPalette.of(context), tone)
+            : null,
+      ),
     );
   }
 }
@@ -339,7 +344,7 @@ class _LogBody extends StatelessWidget {
           TextSpan(
             text: route.proxy,
             style: styles.secondary?.copyWith(
-              color: context.colorScheme.primary,
+              color: GroupedPalette.of(context).accent,
               fontWeight: FontWeight.w500,
             ),
           ),

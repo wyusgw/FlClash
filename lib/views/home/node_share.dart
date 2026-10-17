@@ -95,7 +95,7 @@ class _NodeQrCodeView extends StatelessWidget {
           SelectableText(
             text,
             textAlign: TextAlign.center,
-            style: TextStyle(color: palette.secondary, fontSize: 12),
+            style: palette.caption,
           ),
         ],
       ),

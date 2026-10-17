@@ -5,13 +5,13 @@ import 'package:material_ui/material_ui.dart';
 
 import 'text_menu.dart';
 
-const groupedRowHeight = 37.0;
-const groupedRowPadding = 12.0;
-const groupedLeadingSize = 19.0;
-const groupedLeadingGap = 11.0;
+const groupedRowHeight = 44.0;
+const groupedRowPadding = 16.0;
+const groupedLeadingSize = 24.0;
+const groupedLeadingGap = 14.0;
 const groupedBarHeight = 62.0;
-const groupedPageInset = 14.0;
-const groupedSectionGap = 27.0;
+const groupedPageInset = 16.0;
+const groupedSectionGap = 35.0;
 
 /// What marks a row or an answer that destroys something.
 const groupedDanger = Color(0xFFFF453A);
@@ -192,20 +192,37 @@ class GroupedPalette {
   Color get hoverShade => hover.withValues(alpha: 0.55);
 
   TextStyle get rowTitle =>
-      TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: label);
+      TextStyle(fontSize: 17, fontWeight: FontWeight.w400, color: label);
 
   TextStyle get rowSubtitle => TextStyle(
-    fontSize: 8.5,
-    fontWeight: FontWeight.w500,
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
     color: secondary,
-    height: 1.15,
+    height: 1.2,
   );
 
   TextStyle get rowValue =>
-      TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: secondary);
+      TextStyle(fontSize: 17, fontWeight: FontWeight.w400, color: secondary);
 
   TextStyle get sectionLabel =>
-      TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: secondary);
+      TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: secondary);
+
+  /// The sizes of iOS below and above the row text: caption 2, caption 1, the
+  /// subhead and headline of dialogs, and title 2.
+  TextStyle get caption2 =>
+      TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: secondary);
+
+  TextStyle get caption =>
+      TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: secondary);
+
+  TextStyle get subhead =>
+      TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: label);
+
+  TextStyle get headline =>
+      TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: label);
+
+  TextStyle get title2 =>
+      TextStyle(fontSize: 22, fontWeight: FontWeight.w400, color: secondary);
 }
 
 /// The rounded surface of a grouped section.
@@ -372,10 +389,13 @@ class GroupedRow extends GroupedItem {
         hoverColor: palette.hoverShade,
         highlightColor: palette.hover,
         splashColor: Colors.transparent,
-        child: SizedBox(
-          height: groupedRowHeight,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: groupedRowHeight),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: groupedRowPadding),
+            padding: const EdgeInsets.symmetric(
+              horizontal: groupedRowPadding,
+              vertical: 6,
+            ),
             child: LayoutBuilder(
               builder: (context, box) => Row(
                 children: [
@@ -555,11 +575,11 @@ class GroupedFieldRow extends GroupedItem {
                 obscureText: obscure,
                 contextMenuBuilder: systemTextContextMenu,
                 cursorColor: palette.accent,
-                style: palette.rowTitle.copyWith(fontWeight: FontWeight.w500),
+                style: palette.rowTitle.copyWith(fontWeight: FontWeight.w400),
                 decoration: InputDecoration.collapsed(
                   hintText: hint,
                   hintStyle: palette.rowTitle.copyWith(
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w400,
                     color: palette.tertiary,
                   ),
                 ),
@@ -594,32 +614,44 @@ class GroupedIcon extends StatelessWidget {
   }
 }
 
+/// The iOS green of a switch that is on.
+const groupedSwitchOn = Color(0xFF34C759);
+
 class GroupedSwitch extends StatelessWidget {
   const GroupedSwitch({super.key, required this.value, this.onChanged});
 
   final bool value;
   final ValueChanged<bool>? onChanged;
 
-  static const _width = 40.0;
-  static const _height = 23.0;
-  static const _thumb = 19.0;
+  static const _width = 51.0;
+  static const _height = 31.0;
+  static const _thumb = 27.0;
 
   @override
   Widget build(BuildContext context) {
     final palette = GroupedPalette.of(context);
+    final onChanged = this.onChanged;
     return Semantics(
       toggled: value,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: onChanged == null ? null : () => onChanged!(!value),
+        onTap: onChanged == null ? null : () => onChanged(!value),
+        onHorizontalDragEnd: onChanged == null
+            ? null
+            : (details) {
+                final velocity = details.primaryVelocity ?? 0;
+                if (velocity != 0 && (velocity > 0) != value) {
+                  onChanged(velocity > 0);
+                }
+              },
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+          duration: const Duration(milliseconds: 220),
           curve: Curves.easeOut,
           width: _width,
           height: _height,
           padding: const EdgeInsets.all((_height - _thumb) / 2),
           decoration: ShapeDecoration(
-            color: value ? palette.icon : palette.switchOff,
+            color: value ? groupedSwitchOn : palette.switchOff,
             shape: AppShape.full,
           ),
           alignment: value ? Alignment.centerRight : Alignment.centerLeft,
@@ -703,11 +735,11 @@ class GroupedSearchField extends StatelessWidget {
                   onChanged: onChanged,
                   contextMenuBuilder: systemTextContextMenu,
                   cursorColor: palette.accent,
-                  style: palette.rowTitle.copyWith(fontWeight: FontWeight.w500),
+                  style: palette.rowTitle.copyWith(fontWeight: FontWeight.w400),
                   decoration: InputDecoration.collapsed(
                     hintText: hint,
                     hintStyle: palette.rowTitle.copyWith(
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w400,
                       color: palette.tertiary,
                     ),
                   ),

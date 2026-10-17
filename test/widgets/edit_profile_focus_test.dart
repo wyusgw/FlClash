@@ -273,12 +273,14 @@ void main() {
     expect(copied, 'https://example.com/sub');
   });
 
-  testWidgets('deleting removes the profile without asking and closes', (
+  testWidgets('deleting asks first, then removes the profile and closes', (
     tester,
   ) async {
     await openEdit(tester);
 
     await tester.tap(find.text(currentAppLocalizations.delete));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(currentAppLocalizations.confirm));
     await tester.pump();
     for (var i = 0; i < 50; i++) {
       if (find.byType(EditProfileView).evaluate().isEmpty) break;

@@ -208,6 +208,7 @@ class Bootstrap {
     final res = await dialogs.showMessage(
       title: currentAppLocalizations.tip,
       message: TextSpan(text: currentAppLocalizations.cacheCorrupt),
+      destructive: true,
     );
     if (res == true) {
       final file = File(await appPath.sharedPreferencesPath);

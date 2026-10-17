@@ -171,44 +171,53 @@ class _ProfileRowState extends ConsumerState<_ProfileRow> {
     final actions = ProfileActions(profile);
     return FutureBuilder<int?>(
       future: _size,
-      builder: (_, snapshot) => GroupedRow(
-        title: profile.realLabel,
-        subtitle: _subtitle(snapshot.data),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 12,
-          children: [
-            if (widget.selected)
-              GlyphIcon(AppGlyphs.check, size: 18, color: palette.icon),
-            if (isUpdating)
-              SizedBox.square(
-                dimension: 19,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: palette.icon,
-                ),
-              )
-            else
-              CommonPopupBox(
-                popupBuilder: (_) =>
-                    CommonPopupMenu(items: actions.menuItems(context, ref)),
-                targetBuilder: (open) => Tooltip(
-                  message: context.appLocalizations.more,
-                  child: InkResponse(
-                    onTap: open,
-                    radius: 16,
-                    child: GlyphIcon(
-                      AppGlyphs.info,
-                      size: 21,
-                      color: palette.icon,
+      builder: (_, snapshot) => SwipeActions(
+        enabled: !isUpdating && !system.isDesktop,
+        leading: [
+          SwipeAction(
+            label: context.appLocalizations.delete,
+            color: groupedDanger,
+            fullSwipe: true,
+            slideOut: true,
+            onPressed: () => actions.deleteProfile(context, ref),
+          ),
+        ],
+        child: GroupedRow(
+          title: profile.realLabel,
+          subtitle: _subtitle(snapshot.data),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 12,
+            children: [
+              if (widget.selected)
+                GlyphIcon(AppGlyphs.check, size: 18, color: palette.icon),
+              if (isUpdating)
+                SizedBox.square(
+                  dimension: 19,
+                  child: IosSpinner(color: palette.icon),
+                )
+              else
+                CommonPopupBox(
+                  popupBuilder: (_) =>
+                      CommonPopupMenu(items: actions.menuItems(context, ref)),
+                  targetBuilder: (open) => Tooltip(
+                    message: context.appLocalizations.more,
+                    child: InkResponse(
+                      onTap: open,
+                      radius: 16,
+                      child: GlyphIcon(
+                        AppGlyphs.info,
+                        size: 21,
+                        color: palette.icon,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
+          onTap: () =>
+              ref.read(currentProfileIdProvider.notifier).value = profile.id,
         ),
-        onTap: () =>
-            ref.read(currentProfileIdProvider.notifier).value = profile.id,
       ),
     );
   }
@@ -221,6 +230,15 @@ class ProfileActions {
   final Profile profile;
 
   Future<void> deleteProfile(BuildContext context, WidgetRef ref) async {
+    final appLocalizations = context.appLocalizations;
+    final confirmed = await dialogs.showMessage(
+      title: profile.realLabel,
+      message: TextSpan(
+        text: appLocalizations.deleteTip(appLocalizations.profile),
+      ),
+      destructive: true,
+    );
+    if (confirmed != true) return;
     await ref.read(profilesActionProvider.notifier).deleteProfile(profile.id);
   }
 

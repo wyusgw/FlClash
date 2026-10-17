@@ -801,7 +801,7 @@ void main() {
       expect(find.text('Confirm'), findsNothing);
     });
 
-    testWidgets('deleting a ticked profile removes it without asking', (
+    testWidgets('deleting a ticked profile asks first and then removes it', (
       tester,
     ) async {
       await pumpHome(tester, profile: _profile(), nodes: _nodes);
@@ -810,6 +810,8 @@ void main() {
       await tester.tap(find.text('My subscription'));
       await tester.pump();
       await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Confirm'));
       await tester.pump();
       for (var i = 0; i < 50; i++) {
         if (container.read(profilesProvider).isEmpty) break;
@@ -818,6 +820,7 @@ void main() {
         );
         await tester.pump();
       }
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('Confirm'), findsNothing);
       expect(container.read(profilesProvider), isEmpty);

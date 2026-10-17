@@ -120,24 +120,37 @@ class _UserAgentsViewState extends ConsumerState<UserAgentsView> {
     required bool isSelected,
     required VoidCallback onSelected,
     Widget? menu,
+    Future<void> Function()? onDelete,
   }) {
     final palette = GroupedPalette.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (index > 0) const GroupedHairline(inset: groupedRowPadding + 1),
-        GroupedRow(
-          title: label,
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 8,
-            children: [
-              if (isSelected)
-                GlyphIcon(AppGlyphs.check, size: 18, color: palette.icon),
-              ?menu,
-            ],
+        SwipeActions(
+          enabled: onDelete != null && !system.isDesktop,
+          trailing: [
+            SwipeAction(
+              label: context.appLocalizations.delete,
+              color: groupedDanger,
+              fullSwipe: true,
+              slideOut: true,
+              onPressed: () => onDelete?.call(),
+            ),
+          ],
+          child: GroupedRow(
+            title: label,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 8,
+              children: [
+                if (isSelected)
+                  GlyphIcon(AppGlyphs.check, size: 18, color: palette.icon),
+                ?menu,
+              ],
+            ),
+            onTap: onSelected,
           ),
-          onTap: onSelected,
         ),
       ],
     );
@@ -153,6 +166,7 @@ class _UserAgentsViewState extends ConsumerState<UserAgentsView> {
       label: userAgent,
       isSelected: userAgent == selected,
       onSelected: () => _select(userAgent),
+      onDelete: () => _handleDelete(userAgent),
       menu: _UserAgentItemMenu(
         onEdit: () => _handleEdit(userAgent),
         onDelete: () => _handleDelete(userAgent),

@@ -8,6 +8,8 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/add.dart';
 import 'package:fl_clash/views/profiles/edit.dart';
+import 'package:fl_clash/views/profiles/profiles.dart';
+import 'package:fl_clash/views/home/node_context_menu.dart';
 import 'package:fl_clash/views/home/node_share.dart';
 import 'package:fl_clash/views/home/route_mode.dart';
 import 'package:fl_clash/widgets/haptics.dart';
@@ -92,6 +94,14 @@ class _HomeViewState extends ConsumerState<HomeView> {
         if (_edit.isSelected(_profileKey(profile.id))) profile.id,
     ];
     if (ids.isEmpty) return;
+    final appLocalizations = context.appLocalizations;
+    final confirmed = await dialogs.showMessage(
+      message: TextSpan(
+        text: appLocalizations.deleteTip(appLocalizations.profile),
+      ),
+      destructive: true,
+    );
+    if (confirmed != true) return;
     final profilesAction = ref.read(profilesActionProvider.notifier);
     for (final id in ids) {
       await profilesAction.deleteProfile(id);
@@ -353,10 +363,7 @@ class _ConnectivityRow extends ConsumerWidget {
       trailing: testing
           ? SizedBox.square(
               dimension: 19,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: palette.icon,
-              ),
+              child: IosSpinner(color: palette.icon),
             )
           : Tooltip(
               message: context.appLocalizations.delayTestMethod,
@@ -400,7 +407,7 @@ class _NodeDelay extends ConsumerWidget {
     if (phase != null) {
       return SizedBox.square(
         dimension: 12,
-        child: CircularProgressIndicator(strokeWidth: 1.5, color: palette.icon),
+        child: IosSpinner(color: palette.icon),
       );
     }
     if (delay == null) {
@@ -408,8 +415,7 @@ class _NodeDelay extends ConsumerWidget {
     }
     return Text(
       delay > 0 ? '${delay}ms' : context.appLocalizations.timeout,
-      style: TextStyle(
-        fontSize: 10.5,
+      style: GroupedPalette.of(context).caption2.copyWith(
         fontWeight: FontWeight.w500,
         color: context.colorScheme.delayColor(delay),
       ),
@@ -613,64 +619,87 @@ class _SubscriptionSection extends ConsumerWidget {
     );
     return GroupedSection(
       children: [
-        GroupedRow(
-          leading: editing
-              ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: _selectGap,
-                  children: [
-                    GroupedSelectMark(
-                      selected: edit.isSelected(_profileKey(profile.id)),
-                    ),
-                    chevron,
-                  ],
-                )
-              : chevron,
-          leadingWidth: editing
-              ? groupedLeadingSize * 2 + _selectGap
-              : groupedLeadingSize,
-          title: profile.realLabel,
-          subtitle: _usage(profile.subscriptionInfo),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 12,
-            children: [
-              if (profile.type == ProfileType.url)
-                _RoundAction(
-                  glyph: AppGlyphs.refresh,
-                  tooltip: appLocalizations.update,
-                  busy: isUpdating,
-                  onPressed: () => unawaited(
-                    globalState.safeRun(
-                      () => ref
-                          .read(profilesActionProvider.notifier)
-                          .updateProfile(profile, showLoading: true),
-                    ),
-                  ),
+        SwipeActions(
+          enabled: !editing && !system.isDesktop,
+          leading: [
+            if (current)
+              SwipeAction(
+                label: appLocalizations.test,
+                color: swipeActionGo,
+                onPressed: () => unawaited(
+                  ref
+                      .read(proxiesActionProvider.notifier)
+                      .delayTestPageGroup(nodeGroupName),
                 ),
-              if (editing && dragIndex != null)
-                ReorderableDragStartListener(
-                  index: dragIndex!,
-                  child: GlyphIcon(
-                    AppGlyphs.dragHandle,
-                    size: 21,
-                    color: palette.tertiary,
+              ),
+            SwipeAction(
+              label: appLocalizations.delete,
+              color: groupedDanger,
+              fullSwipe: true,
+              slideOut: true,
+              onPressed: () =>
+                  ProfileActions(profile).deleteProfile(context, ref),
+            ),
+          ],
+          child: GroupedRow(
+            leading: editing
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: _selectGap,
+                    children: [
+                      GroupedSelectMark(
+                        selected: edit.isSelected(_profileKey(profile.id)),
+                      ),
+                      chevron,
+                    ],
+                  )
+                : chevron,
+            leadingWidth: editing
+                ? groupedLeadingSize * 2 + _selectGap
+                : groupedLeadingSize,
+            title: profile.realLabel,
+            subtitle: _usage(profile.subscriptionInfo),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 12,
+              children: [
+                if (profile.type == ProfileType.url)
+                  _RoundAction(
+                    glyph: AppGlyphs.refresh,
+                    tooltip: appLocalizations.update,
+                    busy: isUpdating,
+                    onPressed: () => unawaited(
+                      globalState.safeRun(
+                        () => ref
+                            .read(profilesActionProvider.notifier)
+                            .updateProfile(profile, showLoading: true),
+                      ),
+                    ),
                   ),
-                )
-              else
-                _RoundAction(
-                  glyph: AppGlyphs.info,
-                  tooltip: appLocalizations.edit,
-                  onPressed: () => BaseNavigator.push(
-                    context,
-                    EditProfileView(profile: profile),
+                if (editing && dragIndex != null)
+                  ReorderableDragStartListener(
+                    index: dragIndex!,
+                    child: GlyphIcon(
+                      AppGlyphs.dragHandle,
+                      size: 21,
+                      color: palette.tertiary,
+                    ),
+                  )
+                else
+                  _RoundAction(
+                    glyph: AppGlyphs.info,
+                    tooltip: appLocalizations.edit,
+                    onPressed: () => BaseNavigator.push(
+                      context,
+                      EditProfileView(profile: profile),
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
+            onTap: editing
+                ? () => edit.toggle(_profileKey(profile.id))
+                : onToggle,
           ),
-          onTap: editing
-              ? () => edit.toggle(_profileKey(profile.id))
-              : onToggle,
         ),
         for (final node in nodes ?? const <Proxy>[])
           _NodeMenuTarget(
@@ -800,7 +829,8 @@ class _NodeSwipe extends ConsumerWidget {
           label: appLocalizations.delete,
           color: groupedDanger,
           fullSwipe: true,
-          onPressed: () => unawaited(deleteNode(context, ref, profile, node)),
+          slideOut: true,
+          onPressed: () => deleteNode(context, ref, profile, node),
         ),
       ],
       child: child,
@@ -831,7 +861,74 @@ class _NodeMenuTarget extends ConsumerWidget {
     final overlay =
         Overlay.of(context).context.findRenderObject()! as RenderBox;
     final testUrl = ref.read(appSettingProvider).testUrl;
-    final chosen = await showMenu<_NodeAction>(
+    final chosen = system.isDesktop
+        ? await _showDesktopMenu(context, overlay, position)
+        : await showNodeContextMenu<_NodeAction>(
+            context: context,
+            title: node.name,
+            anchor: position,
+            groups: [
+              if (current)
+                [
+                  NodeMenuEntry(
+                    value: _NodeAction.test,
+                    label: appLocalizations.delayTest,
+                    glyph: AppGlyphs.send,
+                  ),
+                ],
+              [
+                NodeMenuEntry(
+                  value: _NodeAction.details,
+                  label: appLocalizations.details(node.name),
+                  glyph: AppGlyphs.document,
+                ),
+                NodeMenuEntry(
+                  value: _NodeAction.copy,
+                  label: appLocalizations.copy,
+                  glyph: AppGlyphs.duplicate,
+                ),
+              ],
+              [
+                NodeMenuEntry(
+                  value: _NodeAction.qrcode,
+                  label: appLocalizations.qrcode,
+                  glyph: AppGlyphs.qrCode,
+                ),
+                if (node.address != null)
+                  NodeMenuEntry(
+                    value: _NodeAction.copyAddress,
+                    label: appLocalizations.copyAddress,
+                    glyph: AppGlyphs.copy,
+                  ),
+                NodeMenuEntry(
+                  value: _NodeAction.copyName,
+                  label: appLocalizations.copyName,
+                  glyph: AppGlyphs.textShort,
+                ),
+              ],
+              [
+                NodeMenuEntry(
+                  value: _NodeAction.delete,
+                  label: appLocalizations.delete,
+                  glyph: AppGlyphs.delete,
+                  danger: true,
+                ),
+              ],
+            ],
+          );
+    if (chosen == null || !context.mounted) {
+      return;
+    }
+    await _run(context, ref, chosen, testUrl);
+  }
+
+  Future<_NodeAction?> _showDesktopMenu(
+    BuildContext context,
+    RenderBox overlay,
+    Offset position,
+  ) {
+    final appLocalizations = context.appLocalizations;
+    return showMenu<_NodeAction>(
       context: context,
       position: RelativeRect.fromRect(
         position & const Size(1, 1),
@@ -885,9 +982,14 @@ class _NodeMenuTarget extends ConsumerWidget {
         ),
       ],
     );
-    if (chosen == null || !context.mounted) {
-      return;
-    }
+  }
+
+  Future<void> _run(
+    BuildContext context,
+    WidgetRef ref,
+    _NodeAction chosen,
+    String testUrl,
+  ) async {
     switch (chosen) {
       case _NodeAction.test:
         unawaited(
@@ -915,8 +1017,10 @@ class _NodeMenuTarget extends ConsumerWidget {
     return GestureDetector(
       onSecondaryTapDown: (details) =>
           unawaited(_open(context, ref, details.globalPosition)),
-      onLongPressStart: (details) =>
-          unawaited(_open(context, ref, details.globalPosition)),
+      onLongPressStart: (details) {
+        selectionHaptic(context);
+        unawaited(_open(context, ref, details.globalPosition));
+      },
       child: child,
     );
   }
@@ -951,10 +1055,7 @@ class _RoundAction extends StatelessWidget {
         child: busy
             ? SizedBox.square(
                 dimension: 19,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: palette.icon,
-                ),
+                child: IosSpinner(color: palette.icon),
               )
             : GlyphIcon(glyph, size: 21, color: palette.icon),
       ),

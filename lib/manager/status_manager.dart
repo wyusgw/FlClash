@@ -7,8 +7,8 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/widgets/ios_controls.dart';
 import 'package:fl_clash/widgets/navigation_dock.dart';
-import 'package:fl_clash/widgets/theme.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -545,15 +545,14 @@ class _MessageContent extends StatelessWidget {
         ),
         if (actionState != null) ...[
           const SizedBox(height: 14),
-          CommonMinFilledButtonTheme(
-            child: ElasticButton(
-              child: FilledButton.tonal(
-                onPressed: () {
-                  onDismiss(message.id);
-                  actionState.action();
-                },
-                child: Text(actionState.actionText),
-              ),
+          ElasticButton(
+            child: IosButton(
+              tonal: true,
+              onPressed: () {
+                onDismiss(message.id);
+                actionState.action();
+              },
+              label: actionState.actionText,
             ),
           ),
         ],

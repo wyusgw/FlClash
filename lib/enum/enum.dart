@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:fl_clash/common/system.dart';
 import 'package:fl_clash/icons/icons.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -90,48 +89,6 @@ enum ViewMode { mobile, laptop, desktop }
 enum LogLevel { debug, info, warning, error, silent }
 
 enum RecordTone { muted, neutral, warning, error }
-
-extension RecordToneExt on RecordTone {
-  Color? accentColor(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return switch (this) {
-      RecordTone.warning => colorScheme.tertiary,
-      RecordTone.error => colorScheme.error,
-      RecordTone.muted || RecordTone.neutral => null,
-    };
-  }
-
-  Color? tintColor(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return switch (this) {
-      RecordTone.warning => colorScheme.tertiaryContainer.withValues(
-        alpha: 0.2,
-      ),
-      RecordTone.error => colorScheme.errorContainer.withValues(alpha: 0.2),
-      RecordTone.muted || RecordTone.neutral => null,
-    };
-  }
-
-  Color labelColor(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return switch (this) {
-      RecordTone.muted => colorScheme.outline,
-      RecordTone.neutral => colorScheme.onSurfaceVariant,
-      RecordTone.warning => colorScheme.onTertiaryContainer,
-      RecordTone.error => colorScheme.onErrorContainer,
-    };
-  }
-
-  Color labelContainerColor(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return switch (this) {
-      RecordTone.muted => colorScheme.surfaceContainerHigh,
-      RecordTone.neutral => colorScheme.surfaceContainerHighest,
-      RecordTone.warning => colorScheme.tertiaryContainer,
-      RecordTone.error => colorScheme.errorContainer,
-    };
-  }
-}
 
 enum MessageLevel { info, success, warning, error }
 

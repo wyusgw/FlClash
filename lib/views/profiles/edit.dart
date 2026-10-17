@@ -117,6 +117,15 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
   }
 
   Future<void> _delete() async {
+    final appLocalizations = context.appLocalizations;
+    final confirmed = await dialogs.showMessage(
+      title: widget.profile.realLabel,
+      message: TextSpan(
+        text: appLocalizations.deleteTip(appLocalizations.profile),
+      ),
+      destructive: true,
+    );
+    if (confirmed != true) return;
     await ref
         .read(profilesActionProvider.notifier)
         .deleteProfile(widget.profile.id);

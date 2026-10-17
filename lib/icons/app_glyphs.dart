@@ -639,6 +639,34 @@ abstract final class AppGlyphs {
     ], role: GlyphRole.detail),
   ]);
 
+  static const document = Glyph([
+    GlyphPolyline([
+      GlyphVertex(5, 3, 2.5),
+      GlyphVertex(13, 3),
+      GlyphVertex(19, 9),
+      GlyphVertex(19, 21, 2.5),
+      GlyphVertex(5, 21, 2.5),
+    ], closed: true),
+    GlyphPolyline([
+      GlyphVertex(13, 3.4),
+      GlyphVertex(13, 9, 1),
+      GlyphVertex(18.6, 9),
+    ], role: GlyphRole.detail),
+  ]);
+
+  static const duplicate = Glyph([
+    GlyphBox(8, 3, 21, 16, 2.5),
+    GlyphCircle(7, 17, 4.6),
+    GlyphPolyline([
+      GlyphVertex(7, 14.8),
+      GlyphVertex(7, 19.2),
+    ], role: GlyphRole.detail),
+    GlyphPolyline([
+      GlyphVertex(4.8, 17),
+      GlyphVertex(9.2, 17),
+    ], role: GlyphRole.detail),
+  ]);
+
   static const compose = Glyph([
     GlyphPolyline([
       GlyphVertex(9.4, 6.2),

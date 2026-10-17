@@ -8,6 +8,7 @@ import 'package:fl_clash/common/request.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/widgets/ios_controls.dart';
 import 'package:fl_clash/views/about.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:material_ui/material_ui.dart';
@@ -154,11 +155,11 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byType(IosSpinner), findsNothing);
 
     await tester.tap(find.text('Check for updates'));
     await tester.pump();
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(IosSpinner), findsOneWidget);
 
     await tester.tap(find.text('Check for updates'));
     await tester.pump(const Duration(milliseconds: 100));
@@ -177,7 +178,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pumpAndSettle();
 
-    expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(find.byType(IosProgressBar), findsNothing);
     expect(find.text('The app is already up to date'), findsOneWidget);
     expect(tester.takeException(), null);
   });

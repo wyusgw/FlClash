@@ -5,16 +5,11 @@ import 'package:fl_clash/manager/status_manager.dart';
 import 'package:fl_clash/models/state.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/widgets/inherited.dart';
-import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:fl_clash/widgets/sheet.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 extension BuildContextExtension on BuildContext {
-  CommonScaffoldState? get commonScaffoldState {
-    return findAncestorStateOfType<CommonScaffoldState>();
-  }
-
   bool get isMobileView {
     return ProviderScope.containerOf(
       this,
@@ -59,25 +54,6 @@ extension BuildContextExtension on BuildContext {
       text,
       level: level,
       actionState: actionState,
-    );
-  }
-
-  void showSnackBar(String message, {SnackBarAction? action}) {
-    final width = MediaQuery.sizeOf(this).width;
-    EdgeInsets margin;
-    if (width < 600) {
-      margin = const EdgeInsets.only(bottom: 16, right: 16, left: 16);
-    } else {
-      margin = EdgeInsets.only(bottom: 16, left: 16, right: width - 316);
-    }
-    ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        action: action,
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(milliseconds: 1500),
-        margin: margin,
-      ),
     );
   }
 

@@ -8,6 +8,7 @@ import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/activate_box.dart';
+import 'package:fl_clash/widgets/ios_controls.dart';
 import 'package:fl_clash/widgets/navigation_dock.dart';
 import 'package:fl_clash/widgets/null_status.dart';
 import 'package:fl_clash/widgets/grouped_page.dart';
@@ -504,10 +505,11 @@ class _ScannerError extends StatelessWidget {
         description: appLocalizations.cameraPermissionDesc,
         illustration: NullStatusIllustration.permission,
         action: ElasticButton(
-          child: FilledButton.tonalIcon(
+          child: IosButton(
+            tonal: true,
             onPressed: onOpenSettings,
-            icon: const GlyphIcon(AppGlyphs.settings, fill: 1),
-            label: Text(appLocalizations.settings),
+            glyph: AppGlyphs.settings,
+            label: appLocalizations.settings,
           ),
         ),
       ),
@@ -519,10 +521,11 @@ class _ScannerError extends StatelessWidget {
         label: appLocalizations.cameraUnavailable,
         illustration: NullStatusIllustration.camera,
         action: ElasticButton(
-          child: FilledButton.tonalIcon(
+          child: IosButton(
+            tonal: true,
             onPressed: onRetry,
-            icon: const GlyphIcon(AppGlyphs.refresh, fill: 1),
-            label: Text(appLocalizations.retry),
+            glyph: AppGlyphs.refresh,
+            label: appLocalizations.retry,
           ),
         ),
       ),
@@ -566,18 +569,34 @@ class _TorchButton extends StatelessWidget {
             opacity: available ? 1 : 0,
             duration: kThemeAnimationDuration,
             child: ElasticButton(
-              child: IconButton.filled(
-                tooltip: context.appLocalizations.torch,
-                isSelected: lit,
-                iconSize: 32,
-                style: IconButton.styleFrom(fixedSize: const Size.square(64)),
-                onPressed: controller.toggleTorch,
-                icon: const GlyphIcon(AppGlyphs.torchOff, fill: 1),
-                selectedIcon: GlyphIcon(
-                  torchState == TorchState.auto
-                      ? AppGlyphs.torchAuto
-                      : AppGlyphs.torch,
-                  fill: 1,
+              child: Tooltip(
+                message: context.appLocalizations.torch,
+                child: Material(
+                  color: lit
+                      ? const Color(0xFFFFFFFF)
+                      : const Color(0x73000000),
+                  shape: AppShape.circle,
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: controller.toggleTorch,
+                    child: SizedBox.square(
+                      dimension: 64,
+                      child: Center(
+                        child: GlyphIcon(
+                          !lit
+                              ? AppGlyphs.torchOff
+                              : torchState == TorchState.auto
+                              ? AppGlyphs.torchAuto
+                              : AppGlyphs.torch,
+                          fill: 1,
+                          size: 30,
+                          color: lit
+                              ? const Color(0xFF000000)
+                              : const Color(0xFFFFFFFF),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

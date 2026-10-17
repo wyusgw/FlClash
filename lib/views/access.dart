@@ -321,10 +321,10 @@ class _AccessViewState extends ConsumerState<AccessView> {
       description: appLocalizations.installedAppsPermissionDesc,
       illustration: NullStatusIllustration.permission,
       action: ElasticButton(
-        child: FilledButton.tonalIcon(
+        child: IosButton(
           onPressed: _handleGrantInstalledAppsPermission,
-          icon: const GlyphIcon(AppGlyphs.lockOpen, fill: 1),
-          label: Text(appLocalizations.authorize),
+          glyph: AppGlyphs.lockOpen,
+          label: appLocalizations.authorize,
         ),
       ),
     );
@@ -401,7 +401,7 @@ class _AccessViewState extends ConsumerState<AccessView> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (isLoading) const LinearProgressIndicator(minHeight: 2),
+            if (isLoading) const IosProgressBar(),
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 groupedPageInset,

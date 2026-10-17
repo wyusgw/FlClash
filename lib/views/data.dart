@@ -58,7 +58,7 @@ class _DataViewState extends ConsumerState<DataView> {
     } else {
       trailing = SizedBox.square(
         dimension: 12,
-        child: CircularProgressIndicator(strokeWidth: 1.5, color: palette.icon),
+        child: IosSpinner(color: palette.icon),
       );
     }
     return GroupedSection(

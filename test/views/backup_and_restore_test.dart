@@ -250,6 +250,8 @@ void main() {
 
       await tester.tap(find.text('Delete'));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Confirm'));
+      await tester.pumpAndSettle();
 
       expect(container.read(davSettingProvider), isNull);
     });

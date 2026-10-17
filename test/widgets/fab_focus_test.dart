@@ -18,10 +18,10 @@ Widget _buildPage({bool wrapNavigator = false}) {
           ),
       ],
     ),
-    floatingActionButton: CommonFloatingActionButton(
+    floatingActionButton: FloatingActionButton.extended(
       onPressed: () {},
       icon: const GlyphIcon(AppGlyphs.add),
-      label: 'add',
+      label: const Text('add'),
     ),
   );
   final scopedPage = PageFocusScope(child: page);

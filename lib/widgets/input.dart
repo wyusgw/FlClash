@@ -11,91 +11,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'grouped_input.dart';
 import 'grouped_list.dart';
 import 'grouped_page.dart';
-import 'list.dart';
 import 'text_menu.dart';
 part 'edit_view.dart';
-
-class OptionsDialog<T> extends StatelessWidget {
-  final String title;
-  final List<T> options;
-  final T value;
-  final String Function(T value) textBuilder;
-
-  const OptionsDialog({
-    super.key,
-    required this.title,
-    required this.options,
-    required this.textBuilder,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CommonDialog(
-      title: title,
-      padding: const EdgeInsets.fromLTRB(8, 16, 8, 8),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text(context.appLocalizations.cancel),
-        ),
-      ],
-      child: RadioGroup(
-        onChanged: (value) {
-          Navigator.of(context).pop(value);
-        },
-        groupValue: value,
-        child: Wrap(
-          children: [
-            for (final option in options)
-              Builder(
-                builder: (context) {
-                  if (value == option) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      Scrollable.ensureVisible(context);
-                    });
-                  }
-                  return ListItem.radio(
-                    value: option,
-                    onTap: () {
-                      Navigator.of(context).pop(option);
-                    },
-                    title: Text(textBuilder(option)),
-                  );
-                },
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class CommonCheckBox extends StatelessWidget {
-  final bool? value;
-  final ValueChanged<bool?>? onChanged;
-  final bool isCircle;
-
-  const CommonCheckBox({
-    required this.value,
-    required this.onChanged,
-    this.isCircle = false,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Checkbox(
-      materialTapTargetSize: MaterialTapTargetSize.padded,
-      visualDensity: VisualDensity.standard,
-      shape: isCircle ? AppShape.circle : null,
-      value: value,
-      onChanged: onChanged,
-    );
-  }
-}
 
 class InputDialog extends StatefulWidget {
   final String title;
@@ -170,53 +87,103 @@ class _InputDialogState extends State<InputDialog> {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    return CommonDialog(
-      title: title,
-      actions: [
-        if (widget.resetValue != null &&
-            _textController.value.text != widget.resetValue) ...[
-          TextButton(
-            onPressed: _handleReset,
-            child: Text(appLocalizations.reset),
-          ),
-        ] else
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(appLocalizations.cancel),
-          ),
-        TextButton(
-          onPressed: _handleUpdate,
-          child: Text(appLocalizations.submit),
-        ),
-      ],
-      child: Form(
-        autovalidateMode: widget.autovalidateMode,
-        key: _formKey,
-        child: Wrap(
-          runSpacing: 16,
-          children: [
-            TextFormField(
-              maxLength: widget.maxLength,
-              inputFormatters: widget.inputFormatters,
-              obscureText: widget.obscureText ?? false,
-              keyboardType: widget.keyboardType ?? TextInputType.url,
-              maxLines: widget.obscureText == true ? 1 : 5,
-              minLines: 1,
-              controller: _textController,
-              contextMenuBuilder: systemTextContextMenu,
-              onFieldSubmitted: (_) {
-                _handleUpdate();
-              },
-              decoration: InputDecoration(
-                suffixText: suffixText,
-                hintText: widget.hintText,
-                labelText: widget.labelText,
+    final palette = GroupedPalette.of(context);
+    final resettable =
+        widget.resetValue != null &&
+        _textController.value.text != widget.resetValue;
+    return Dialog(
+      backgroundColor: palette.bar,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      shape: AppShape.xxl,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 300),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(title, textAlign: TextAlign.center, style: palette.headline),
+              const SizedBox(height: 12),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Form(
+                    autovalidateMode: widget.autovalidateMode,
+                    key: _formKey,
+                    child: TextFormField(
+                      maxLength: widget.maxLength,
+                      inputFormatters: widget.inputFormatters,
+                      obscureText: widget.obscureText ?? false,
+                      keyboardType: widget.keyboardType ?? TextInputType.url,
+                      maxLines: widget.obscureText == true ? 1 : 5,
+                      minLines: 1,
+                      controller: _textController,
+                      cursorColor: palette.accent,
+                      style: palette.subhead,
+                      contextMenuBuilder: systemTextContextMenu,
+                      onChanged: (_) => setState(() {}),
+                      onFieldSubmitted: (_) => _handleUpdate(),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: palette.hover,
+                        border: const AppInputBorder(
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: const AppInputBorder(
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: const AppInputBorder(
+                          borderSide: BorderSide.none,
+                        ),
+                        errorBorder: const AppInputBorder(
+                          borderSide: BorderSide(color: groupedDanger),
+                        ),
+                        focusedErrorBorder: const AppInputBorder(
+                          borderSide: BorderSide(color: groupedDanger),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        suffixText: suffixText,
+                        hintText: widget.hintText,
+                        labelText: widget.labelText,
+                      ),
+                      validator: widget.validator,
+                    ),
+                  ),
+                ),
               ),
-              validator: widget.validator,
-            ),
-          ],
+              const SizedBox(height: 16),
+              Row(
+                spacing: 10,
+                children: [
+                  Expanded(
+                    child: DialogButton(
+                      label: resettable
+                          ? appLocalizations.reset
+                          : appLocalizations.cancel,
+                      color: palette.hover,
+                      foreground: palette.label,
+                      onPressed: resettable
+                          ? _handleReset
+                          : () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                  Expanded(
+                    child: DialogButton(
+                      label: appLocalizations.submit,
+                      color: palette.accent,
+                      foreground: const Color(0xFFFFFFFF),
+                      onPressed: _handleUpdate,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

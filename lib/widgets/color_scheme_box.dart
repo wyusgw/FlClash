@@ -4,7 +4,7 @@ import 'package:fl_clash/common/shape.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'card.dart';
+import 'select_icon.dart';
 
 class ColorSchemeBox extends StatelessWidget {
   final Color? primaryColor;

@@ -201,7 +201,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byKey(const ValueKey('dns.server.9.9.9.9')),
-        matching: find.widgetWithText(FilledButton, 'Delete'),
+        matching: find.widgetWithText(InkWell, 'Delete').first,
       ),
     );
     await tester.pumpAndSettle();
@@ -221,7 +221,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+    await tester.tap(find.widgetWithText(InkWell, 'Delete').first);
     await tester.pumpAndSettle();
 
     expect(canSave(tester), isFalse);
@@ -256,10 +256,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+    await tester.tap(find.widgetWithText(InkWell, 'Delete').first);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Back'));
+    await tester.tap(find.byTooltip('Cancel'));
     await tester.pumpAndSettle();
 
     expect(settings().proxyDns, defaultProxyDnsServers);

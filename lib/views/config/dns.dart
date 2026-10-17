@@ -232,6 +232,8 @@ class _DnsServerSectionState extends State<_DnsServerSection> {
         SwipeAction(
           label: appLocalizations.delete,
           color: groupedDanger,
+          fullSwipe: true,
+          slideOut: true,
           onPressed: () => _delete(server),
         ),
       ],

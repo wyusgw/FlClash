@@ -105,19 +105,23 @@ class IosButton extends StatelessWidget {
       child: InkWell(
         onTap: onPressed,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            spacing: 8,
+            spacing: 6,
             children: [
               if (glyph != null)
                 GlyphIcon(glyph!, fill: 1, size: 18, color: foreground),
-              Text(
-                label,
-                style: TextStyle(
-                  color: foreground,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w500,
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: foreground,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],

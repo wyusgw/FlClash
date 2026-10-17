@@ -644,13 +644,6 @@ class GroupedSwitch extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Color(0xFFFFFFFF),
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0x40000000),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
               ),
             ),
           ),

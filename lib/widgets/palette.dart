@@ -174,7 +174,7 @@ class _GradientTrackShape extends SliderTrackShape {
     return Rect.fromLTWH(
       offset.dx + _thumbRadius,
       offset.dy + (parentBox.size.height - trackHeight) / 2,
-      parentBox.size.width - _thumbRadius * 2,
+      max(0.0, parentBox.size.width - _thumbRadius * 2),
       trackHeight,
     );
   }

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/widgets/grouped_page.dart';
 import 'package:fl_clash/widgets/sheet.dart';
 import 'package:fl_clash/widgets/sheet_header.dart';
 import 'package:fl_clash/widgets/side_sheet.dart';
@@ -12,14 +11,14 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../helpers/sheet_page.dart';
 import '../helpers/test_app.dart';
 
 const _mobile = Size(400, 900);
 const _desktop = Size(1200, 900);
 
 Widget _sheet(BuildContext context, ScrollController? controller) {
-  return GroupedPage(
-    title: 'title',
+  return SheetTestPage(
     body: ListView.builder(
       controller: controller,
       itemCount: 60,
@@ -346,8 +345,7 @@ void main() {
   ) async {
     await openSheet(
       tester,
-      builder: (_, controller) => GroupedPage(
-        title: 'title',
+      builder: (_, controller) => SheetTestPage(
         body: ListView(
           controller: controller,
           children: const [SizedBox(height: 40, child: Text('0'))],

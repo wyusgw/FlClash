@@ -3,20 +3,19 @@ import 'dart:async';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/paged_sheet.dart';
-import 'package:fl_clash/widgets/grouped_page.dart';
 import 'package:fl_clash/widgets/sheet.dart';
 import 'package:fl_clash/widgets/sheet_header.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../helpers/sheet_page.dart';
 import '../helpers/test_app.dart';
 
 const _view = Size(400, 900);
 const _rowHeight = 48.0;
 
 Widget _list(int rows) {
-  return GroupedPage(
-    title: 'title',
+  return SheetTestPage(
     body: ListView(
       shrinkWrap: true,
       children: [
@@ -209,8 +208,7 @@ void main() {
     'still hand a drag down to the sheet',
     (tester) async {
       final dismissals = <bool>[];
-      Widget page(String name, {VoidCallback? onNext}) => GroupedPage(
-        title: 'title',
+      Widget page(String name, {VoidCallback? onNext}) => SheetTestPage(
         body: ListView(
           children: [
             if (onNext != null)

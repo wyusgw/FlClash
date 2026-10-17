@@ -1,11 +1,9 @@
 export 'activate_box.dart';
-export 'motion_grid.dart';
 export 'active_polling.dart';
 export 'animated_visibility.dart';
 export 'builder.dart';
 export 'caret_popup.dart';
 export 'color_scheme_box.dart';
-export 'defer_pointer.dart';
 export 'config_item.dart';
 export 'dialog.dart';
 export 'disabled_mask.dart';

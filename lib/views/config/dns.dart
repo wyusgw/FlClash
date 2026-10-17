@@ -103,7 +103,11 @@ class _DnsViewState extends ConsumerState<DnsView> {
     final appLocalizations = context.appLocalizations;
     return GroupedPage(
       title: appLocalizations.configureDns,
-      onBack: () => Navigator.of(context).maybePop(),
+      leading: GroupedBarAction(
+        label: appLocalizations.cancel,
+        tooltip: appLocalizations.cancel,
+        onPressed: () => Navigator.of(context).maybePop(),
+      ),
       trailing: GroupedBarAction(
         label: appLocalizations.save,
         tooltip: appLocalizations.save,

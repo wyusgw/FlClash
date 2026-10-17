@@ -259,7 +259,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Back'));
+    await tester.tap(find.byTooltip('Cancel'));
     await tester.pumpAndSettle();
 
     expect(settings().proxyDns, defaultProxyDnsServers);

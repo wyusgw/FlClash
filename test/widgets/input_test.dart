@@ -1,6 +1,5 @@
 import 'dart:ui' as ui;
 
-import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -267,8 +266,6 @@ void main() {
     recorder.endRecording();
   });
 }
-
-String _optionText(String value) => value;
 
 Widget _textBuilder(String value) {
   return Text(value);

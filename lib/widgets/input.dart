@@ -159,7 +159,9 @@ class _InputDialogState extends State<InputDialog> {
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: palette.hover,
-                        border: const AppInputBorder(borderSide: BorderSide.none),
+                        border: const AppInputBorder(
+                          borderSide: BorderSide.none,
+                        ),
                         enabledBorder: const AppInputBorder(
                           borderSide: BorderSide.none,
                         ),

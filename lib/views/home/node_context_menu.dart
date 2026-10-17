@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:fl_clash/common/shape.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -39,11 +40,8 @@ Future<T?> showNodeContextMenu<T>({
     barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
     barrierColor: const Color(0x00000000),
     transitionDuration: const Duration(milliseconds: 220),
-    pageBuilder: (_, _, _) => _NodeContextMenu<T>(
-      title: title,
-      groups: groups,
-      anchor: anchor,
-    ),
+    pageBuilder: (_, _, _) =>
+        _NodeContextMenu<T>(title: title, groups: groups, anchor: anchor),
     transitionBuilder: (_, animation, _, child) {
       final curved = CurvedAnimation(
         parent: animation,
@@ -175,10 +173,7 @@ class _MenuLayout extends SingleChildLayoutDelegate {
   @override
   BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
     return BoxConstraints.loose(
-      Size(
-        constraints.maxWidth,
-        constraints.maxHeight - padding.vertical - 24,
-      ),
+      Size(constraints.maxWidth, constraints.maxHeight - padding.vertical - 24),
     );
   }
 

@@ -136,6 +136,7 @@ class ConfirmDialog extends StatelessWidget {
 /// [foreground].
 class DialogButton extends StatelessWidget {
   const DialogButton({
+    super.key,
     required this.label,
     required this.color,
     required this.foreground,

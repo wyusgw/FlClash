@@ -558,9 +558,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
           ValueListenableBuilder(
             valueListenable: _loadingNotifier,
             builder: (_, value, _) {
-              return value == true
-                  ? const IosProgressBar()
-                  : Container();
+              return value == true ? const IosProgressBar() : Container();
             },
           ),
         ],

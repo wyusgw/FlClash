@@ -75,8 +75,7 @@ class _SpinnerPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_SpinnerPainter oldDelegate) =>
-      oldDelegate.color != color;
+  bool shouldRepaint(_SpinnerPainter oldDelegate) => oldDelegate.color != color;
 }
 
 /// A pill button in the manner of iOS: the accent colour with white text, or

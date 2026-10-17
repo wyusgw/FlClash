@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/widgets/scaffold.dart';
+import 'package:fl_clash/widgets/grouped_page.dart';
 import 'package:fl_clash/widgets/sheet.dart';
 import 'package:fl_clash/widgets/sheet_header.dart';
 import 'package:fl_clash/widgets/side_sheet.dart';
@@ -18,7 +18,7 @@ const _mobile = Size(400, 900);
 const _desktop = Size(1200, 900);
 
 Widget _sheet(BuildContext context, ScrollController? controller) {
-  return CommonScaffold(
+  return GroupedPage(
     title: 'title',
     body: ListView.builder(
       controller: controller,
@@ -346,7 +346,7 @@ void main() {
   ) async {
     await openSheet(
       tester,
-      builder: (_, controller) => CommonScaffold(
+      builder: (_, controller) => GroupedPage(
         title: 'title',
         body: ListView(
           controller: controller,

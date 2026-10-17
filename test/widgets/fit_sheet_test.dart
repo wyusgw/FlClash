@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/paged_sheet.dart';
-import 'package:fl_clash/widgets/scaffold.dart';
+import 'package:fl_clash/widgets/grouped_page.dart';
 import 'package:fl_clash/widgets/sheet.dart';
 import 'package:fl_clash/widgets/sheet_header.dart';
 import 'package:material_ui/material_ui.dart';
@@ -15,7 +15,7 @@ const _view = Size(400, 900);
 const _rowHeight = 48.0;
 
 Widget _list(int rows) {
-  return CommonScaffold(
+  return GroupedPage(
     title: 'title',
     body: ListView(
       shrinkWrap: true,
@@ -209,7 +209,7 @@ void main() {
     'still hand a drag down to the sheet',
     (tester) async {
       final dismissals = <bool>[];
-      Widget page(String name, {VoidCallback? onNext}) => CommonScaffold(
+      Widget page(String name, {VoidCallback? onNext}) => GroupedPage(
         title: 'title',
         body: ListView(
           children: [

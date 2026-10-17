@@ -14,30 +14,6 @@ import 'grouped_page.dart';
 import 'text_menu.dart';
 part 'edit_view.dart';
 
-class CommonCheckBox extends StatelessWidget {
-  final bool? value;
-  final ValueChanged<bool?>? onChanged;
-  final bool isCircle;
-
-  const CommonCheckBox({
-    required this.value,
-    required this.onChanged,
-    this.isCircle = false,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Checkbox(
-      materialTapTargetSize: MaterialTapTargetSize.padded,
-      visualDensity: VisualDensity.standard,
-      shape: isCircle ? AppShape.circle : null,
-      value: value,
-      onChanged: onChanged,
-    );
-  }
-}
-
 class InputDialog extends StatefulWidget {
   final String title;
   final String value;

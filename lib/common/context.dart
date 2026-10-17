@@ -5,16 +5,11 @@ import 'package:fl_clash/manager/status_manager.dart';
 import 'package:fl_clash/models/state.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/widgets/inherited.dart';
-import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:fl_clash/widgets/sheet.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 extension BuildContextExtension on BuildContext {
-  CommonScaffoldState? get commonScaffoldState {
-    return findAncestorStateOfType<CommonScaffoldState>();
-  }
-
   bool get isMobileView {
     return ProviderScope.containerOf(
       this,

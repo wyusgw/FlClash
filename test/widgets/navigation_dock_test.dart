@@ -25,21 +25,8 @@ final _lens = find.descendant(
 );
 const _addLabel = 'Add';
 
-IconButtonData _addAction({bool isLoading = false}) {
-  return IconButtonData(
-    glyph: AppGlyphs.add,
-    onPressed: () {},
-    tooltip: _addLabel,
-    isLoading: isLoading,
-  );
-}
-
-Widget _page(String title, {IconButtonData? primaryAction}) {
-  return CommonScaffold(
-    title: title,
-    primaryAction: primaryAction,
-    body: Text('page:$title'),
-  );
+Widget _page(String title) {
+  return GroupedPage(title: title, body: Text('page:$title'));
 }
 
 Future<ProviderContainer> _pumpHome(
@@ -68,7 +55,7 @@ Future<ProviderContainer> _pumpHome(
             NavigationItem(
               glyph: AppGlyphs.profiles,
               label: PageLabel.profiles,
-              builder: (_) => _page('profiles', primaryAction: _addAction()),
+              builder: (_) => _page('profiles'),
             ),
             NavigationItem(
               glyph: AppGlyphs.tools,
@@ -329,67 +316,6 @@ void main() {
     await finger.up();
     await tester.pumpAndSettle();
     expect(positioned, findsOneWidget);
-  });
-
-  testWidgets('a phone page shows its primary action in its bar', (
-    tester,
-  ) async {
-    final container = await _pumpHome(tester);
-    container
-        .read(currentPageLabelProvider.notifier)
-        .toPage(PageLabel.profiles);
-    await tester.pumpAndSettle();
-
-    final action = find.byWidgetPredicate(
-      (widget) =>
-          widget is AppBarActionButton && widget.data.tooltip == _addLabel,
-    );
-    expect(action, findsOneWidget);
-    expect(
-      find.ancestor(of: action, matching: find.byType(AppBar)),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(
-        of: find.byType(CommonScaffold),
-        matching: find.byType(FloatingActionButton),
-      ),
-      findsNothing,
-    );
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('a page off the dock shows its primary action as a FAB', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      TestApp(
-        wrapInProviderScope: true,
-        child: _page('page', primaryAction: _addAction()),
-      ),
-    );
-
-    final fab = find.byType(FloatingActionButton);
-    expect(fab, findsOneWidget);
-    expect(find.text(_addLabel), findsOneWidget);
-    expect(find.byType(AppBarActionButton), findsNothing);
-
-    await tester.pumpWidget(
-      TestApp(
-        wrapInProviderScope: true,
-        child: _page('page', primaryAction: _addAction(isLoading: true)),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(
-      tester
-          .widget<AnimatedScale>(
-            find.ancestor(of: fab, matching: find.byType(AnimatedScale)),
-          )
-          .scale,
-      0,
-    );
-    expect(tester.takeException(), isNull);
   });
 
   testWidgets('four destinations keep to their width and five fill the row', (

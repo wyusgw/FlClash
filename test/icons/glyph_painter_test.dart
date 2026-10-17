@@ -61,6 +61,8 @@ final _glyphs = {
   'listAdd': AppGlyphs.listAdd,
   'edit': AppGlyphs.edit,
   'compose': AppGlyphs.compose,
+  'document': AppGlyphs.document,
+  'duplicate': AppGlyphs.duplicate,
   'delete': AppGlyphs.delete,
   'clearAll': AppGlyphs.clearAll,
   'copy': AppGlyphs.copy,

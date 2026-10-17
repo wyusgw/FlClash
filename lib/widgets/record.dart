@@ -5,7 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'chip.dart';
 import 'grouped_list.dart';
-import 'list.dart';
+import 'decoration_list_item.dart';
 
 class RecordTextStyles {
   final TextStyle? primary;

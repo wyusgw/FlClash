@@ -8,6 +8,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/add.dart';
 import 'package:fl_clash/views/profiles/edit.dart';
+import 'package:fl_clash/views/home/node_context_menu.dart';
 import 'package:fl_clash/views/home/node_share.dart';
 import 'package:fl_clash/views/home/route_mode.dart';
 import 'package:fl_clash/widgets/haptics.dart';
@@ -840,7 +841,74 @@ class _NodeMenuTarget extends ConsumerWidget {
     final overlay =
         Overlay.of(context).context.findRenderObject()! as RenderBox;
     final testUrl = ref.read(appSettingProvider).testUrl;
-    final chosen = await showMenu<_NodeAction>(
+    final chosen = system.isDesktop
+        ? await _showDesktopMenu(context, overlay, position)
+        : await showNodeContextMenu<_NodeAction>(
+            context: context,
+            title: node.name,
+            anchor: position,
+            groups: [
+              if (current)
+                [
+                  NodeMenuEntry(
+                    value: _NodeAction.test,
+                    label: appLocalizations.delayTest,
+                    glyph: AppGlyphs.send,
+                  ),
+                ],
+              [
+                NodeMenuEntry(
+                  value: _NodeAction.details,
+                  label: appLocalizations.details(node.name),
+                  glyph: AppGlyphs.edit,
+                ),
+                NodeMenuEntry(
+                  value: _NodeAction.copy,
+                  label: appLocalizations.copy,
+                  glyph: AppGlyphs.copy,
+                ),
+              ],
+              [
+                NodeMenuEntry(
+                  value: _NodeAction.qrcode,
+                  label: appLocalizations.qrcode,
+                  glyph: AppGlyphs.qrCode,
+                ),
+                if (node.address != null)
+                  NodeMenuEntry(
+                    value: _NodeAction.copyAddress,
+                    label: appLocalizations.copyAddress,
+                    glyph: AppGlyphs.link,
+                  ),
+                NodeMenuEntry(
+                  value: _NodeAction.copyName,
+                  label: appLocalizations.copyName,
+                  glyph: AppGlyphs.copy,
+                ),
+              ],
+              [
+                NodeMenuEntry(
+                  value: _NodeAction.delete,
+                  label: appLocalizations.delete,
+                  glyph: AppGlyphs.delete,
+                  danger: true,
+                ),
+              ],
+            ],
+          );
+    if (chosen == null || !context.mounted) {
+      return;
+    }
+    await _run(context, ref, chosen, testUrl);
+  }
+
+  Future<_NodeAction?> _showDesktopMenu(
+    BuildContext context,
+    RenderBox overlay,
+    Offset position,
+  ) {
+    final appLocalizations = context.appLocalizations;
+    return showMenu<_NodeAction>(
       context: context,
       position: RelativeRect.fromRect(
         position & const Size(1, 1),
@@ -894,9 +962,14 @@ class _NodeMenuTarget extends ConsumerWidget {
         ),
       ],
     );
-    if (chosen == null || !context.mounted) {
-      return;
-    }
+  }
+
+  Future<void> _run(
+    BuildContext context,
+    WidgetRef ref,
+    _NodeAction chosen,
+    String testUrl,
+  ) async {
     switch (chosen) {
       case _NodeAction.test:
         unawaited(
@@ -924,8 +997,10 @@ class _NodeMenuTarget extends ConsumerWidget {
     return GestureDetector(
       onSecondaryTapDown: (details) =>
           unawaited(_open(context, ref, details.globalPosition)),
-      onLongPressStart: (details) =>
-          unawaited(_open(context, ref, details.globalPosition)),
+      onLongPressStart: (details) {
+        selectionHaptic(context);
+        unawaited(_open(context, ref, details.globalPosition));
+      },
       child: child,
     );
   }

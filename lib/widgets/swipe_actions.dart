@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -17,14 +19,19 @@ class SwipeAction {
     required this.color,
     required this.onPressed,
     this.fullSwipe = false,
+    this.slideOut = false,
   });
 
   final String label;
   final Color color;
-  final VoidCallback onPressed;
+  final FutureOr<void> Function() onPressed;
 
   /// Whether dragging the row all the way across runs this action.
   final bool fullSwipe;
+
+  /// Whether a full swipe carries the row off the screen before running this
+  /// action. The row comes back if it is still there once the action ends.
+  final bool slideOut;
 }
 
 const _buttonWidth = 74.0;
@@ -156,8 +163,7 @@ class _SwipeActionsState extends State<SwipeActions>
         velocity.sign == value.sign &&
         value.abs() > (value > 0 ? _leadingExtent : _trailingExtent);
     if (action != null && (_armed(value) || flung)) {
-      _close();
-      action.onPressed();
+      unawaited(_runFullSwipe(action, value.sign));
     } else if (value > 0) {
       final open =
           velocity > 300 || (velocity > -300 && value > _leadingExtent / 2);
@@ -167,6 +173,21 @@ class _SwipeActionsState extends State<SwipeActions>
           velocity < -300 || (velocity < 300 && -value > _trailingExtent / 2);
       _animateTo(open ? -_trailingExtent : 0);
     }
+  }
+
+  Future<void> _runFullSwipe(SwipeAction action, double direction) async {
+    if (!action.slideOut) {
+      _close();
+      await action.onPressed();
+      return;
+    }
+    await _offset.animateTo(
+      direction * _width,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeIn,
+    );
+    await action.onPressed();
+    if (mounted) _close();
   }
 
   Widget _buttons(

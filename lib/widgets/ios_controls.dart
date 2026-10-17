@@ -182,3 +182,53 @@ class _IosProgressBarState extends State<IosProgressBar>
     );
   }
 }
+
+/// A round icon button of iOS: bare, or with [filled] on the grey disc of a
+/// toolbar button that is on or stands alone, like a close mark.
+class IosIconButton extends StatelessWidget {
+  const IosIconButton({
+    super.key,
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    this.filled = false,
+    this.size = 32,
+  });
+
+  final Widget icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
+  final bool filled;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    final enabled = onPressed != null;
+    return Tooltip(
+      message: tooltip,
+      child: Opacity(
+        opacity: enabled ? 1 : 0.35,
+        child: Material(
+          color: filled ? palette.hover : Colors.transparent,
+          shape: AppShape.circle,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onPressed,
+            highlightColor: palette.hover,
+            splashColor: Colors.transparent,
+            child: SizedBox.square(
+              dimension: size,
+              child: Center(
+                child: IconTheme.merge(
+                  data: IconThemeData(color: palette.accent, fill: 1),
+                  child: icon,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

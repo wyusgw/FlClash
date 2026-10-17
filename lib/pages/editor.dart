@@ -981,7 +981,8 @@ class FindPanel extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 const SizedBox(width: 2),
                 ElasticButton(
-                  child: IconButton.filledTonal(
+                  child: IosIconButton(
+                    filled: true,
                     tooltip: context.appLocalizations.close,
                     onPressed: controller.hide,
                     icon: const GlyphIcon(AppGlyphs.close, size: 16, fill: 1),
@@ -1110,8 +1111,13 @@ class FindPanel extends StatelessWidget implements PreferredSizeWidget {
         contextMenuBuilder: systemTextContextMenu,
         inputFormatters: TextInputLimits.limit(TextInputLimits.search),
         style: context.textTheme.bodyMedium,
-        decoration: const InputDecoration(
-          contentPadding: EdgeInsets.symmetric(horizontal: 12),
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: GroupedPalette.of(context).hover,
+          border: const AppInputBorder(borderSide: BorderSide.none),
+          enabledBorder: const AppInputBorder(borderSide: BorderSide.none),
+          focusedBorder: const AppInputBorder(borderSide: BorderSide.none),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
         ),
         onSubmitted: (_) {
           onSubmitted();
@@ -1127,19 +1133,14 @@ class FindPanel extends StatelessWidget implements PreferredSizeWidget {
     VoidCallback? onPressed,
     bool isSelected = false,
   }) {
-    if (isSelected) {
-      return ElasticButton(
-        enabled: onPressed != null,
-        child: IconButton.filledTonal(
-          tooltip: tooltip,
-          onPressed: onPressed,
-          icon: IconTheme.merge(
-            data: const IconThemeData(fill: 1),
-            child: icon,
-          ),
-        ),
-      );
-    }
-    return IconButton(tooltip: tooltip, onPressed: onPressed, icon: icon);
+    return ElasticButton(
+      enabled: onPressed != null,
+      child: IosIconButton(
+        filled: isSelected,
+        tooltip: tooltip ?? '',
+        onPressed: onPressed,
+        icon: icon,
+      ),
+    );
   }
 }

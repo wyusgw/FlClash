@@ -1,8 +1,28 @@
+import 'dart:io';
+
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/icons/icons.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('SupportPlatform', () {
+    test('names the platform the tests run on', () {
+      final expected = switch (Platform.operatingSystem) {
+        'windows' => SupportPlatform.Windows,
+        'macos' => SupportPlatform.MacOS,
+        'linux' => SupportPlatform.Linux,
+        'android' => SupportPlatform.Android,
+        _ => null,
+      };
+      if (expected == null) {
+        expect(() => SupportPlatform.currentPlatform, throwsUnsupportedError);
+      } else {
+        expect(SupportPlatform.currentPlatform, expected);
+      }
+    });
+  });
+
   group('GroupType', () {
     test('parses clash group type aliases case-insensitively', () {
       expect(GroupType.parse('url-test'), GroupType.URLTest);
@@ -13,6 +33,28 @@ void main() {
 
     test('throws for unsupported group type', () {
       expect(() => GroupType.parse('unknown'), throwsUnimplementedError);
+    });
+
+    test('parses a relay group but does not offer it', () {
+      expect(GroupType.parse('relay'), GroupType.Relay);
+      expect(GroupType.selectableValues, isNot(contains(GroupType.Relay)));
+      expect(GroupType.selectableValues, contains(GroupType.Selector));
+    });
+  });
+
+  group('MessageLevelExt', () {
+    test('draws each level with its own glyph', () {
+      expect(MessageLevel.info.glyph, AppGlyphs.info);
+      expect(MessageLevel.success.glyph, AppGlyphs.check);
+      expect(MessageLevel.warning.glyph, AppGlyphs.warning);
+      expect(MessageLevel.error.glyph, AppGlyphs.close);
+    });
+
+    test('keeps a more serious level on screen longer', () {
+      expect(MessageLevel.info.duration, const Duration(seconds: 3));
+      expect(MessageLevel.success.duration, const Duration(seconds: 3));
+      expect(MessageLevel.warning.duration, const Duration(seconds: 5));
+      expect(MessageLevel.error.duration, const Duration(seconds: 6));
     });
   });
 

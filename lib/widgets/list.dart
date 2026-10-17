@@ -6,6 +6,7 @@ import 'package:fl_clash/widgets/inherited.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'card.dart';
+import 'grouped_list.dart';
 import 'input.dart';
 import 'open_container.dart';
 import 'scaffold.dart';
@@ -462,7 +463,7 @@ class ListItem<T> extends StatelessWidget {
               : () {
                   toggleAction.onChanged!(!toggleAction.value);
                 },
-          trailing: Switch(
+          trailing: GroupedSwitch(
             value: toggleAction.value,
             onChanged: toggleAction.onChanged,
           ),

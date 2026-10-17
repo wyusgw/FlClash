@@ -594,32 +594,44 @@ class GroupedIcon extends StatelessWidget {
   }
 }
 
+/// The iOS green of a switch that is on.
+const groupedSwitchOn = Color(0xFF34C759);
+
 class GroupedSwitch extends StatelessWidget {
   const GroupedSwitch({super.key, required this.value, this.onChanged});
 
   final bool value;
   final ValueChanged<bool>? onChanged;
 
-  static const _width = 40.0;
-  static const _height = 23.0;
-  static const _thumb = 19.0;
+  static const _width = 51.0;
+  static const _height = 31.0;
+  static const _thumb = 27.0;
 
   @override
   Widget build(BuildContext context) {
     final palette = GroupedPalette.of(context);
+    final onChanged = this.onChanged;
     return Semantics(
       toggled: value,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: onChanged == null ? null : () => onChanged!(!value),
+        onTap: onChanged == null ? null : () => onChanged(!value),
+        onHorizontalDragEnd: onChanged == null
+            ? null
+            : (details) {
+                final velocity = details.primaryVelocity ?? 0;
+                if (velocity != 0 && (velocity > 0) != value) {
+                  onChanged(velocity > 0);
+                }
+              },
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+          duration: const Duration(milliseconds: 220),
           curve: Curves.easeOut,
           width: _width,
           height: _height,
           padding: const EdgeInsets.all((_height - _thumb) / 2),
           decoration: ShapeDecoration(
-            color: value ? palette.icon : palette.switchOff,
+            color: value ? groupedSwitchOn : palette.switchOff,
             shape: AppShape.full,
           ),
           alignment: value ? Alignment.centerRight : Alignment.centerLeft,
@@ -629,6 +641,13 @@ class GroupedSwitch extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Color(0xFFFFFFFF),
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x40000000),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
             ),
           ),

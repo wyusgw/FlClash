@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:fl_clash/common/system.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/common/shape.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
@@ -119,12 +120,14 @@ class ConfirmDialog extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset(
-                'assets/images/icon.png',
-                width: _icon,
-                height: _icon,
-              ),
-              const SizedBox(height: 14),
+              if (system.isDesktop) ...[
+                Image.asset(
+                  'assets/images/icon.png',
+                  width: _icon,
+                  height: _icon,
+                ),
+                const SizedBox(height: 14),
+              ],
               Text(
                 title,
                 textAlign: TextAlign.center,

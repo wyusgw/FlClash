@@ -321,10 +321,36 @@ class _AccessViewState extends ConsumerState<AccessView> {
       description: appLocalizations.installedAppsPermissionDesc,
       illustration: NullStatusIllustration.permission,
       action: ElasticButton(
-        child: FilledButton.tonalIcon(
-          onPressed: _handleGrantInstalledAppsPermission,
-          icon: const GlyphIcon(AppGlyphs.lockOpen, fill: 1),
-          label: Text(appLocalizations.authorize),
+        child: Material(
+          color: GroupedPalette.of(context).accent,
+          shape: AppShape.full,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: _handleGrantInstalledAppsPermission,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 8,
+                children: [
+                  const GlyphIcon(
+                    AppGlyphs.lockOpen,
+                    fill: 1,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  Text(
+                    appLocalizations.authorize,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

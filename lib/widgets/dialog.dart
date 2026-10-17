@@ -1,60 +1,10 @@
-import 'dart:math';
-
-import 'package:fl_clash/common/system.dart';
+import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/common/shape.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:fl_clash/widgets/text_menu.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-class CommonDialog extends ConsumerWidget {
-  final String title;
-  final Widget? trailing;
-  final Widget? child;
-  final List<Widget>? actions;
-  final EdgeInsets? padding;
-  final bool overrideScroll;
-  final Color? backgroundColor;
-
-  const CommonDialog({
-    super.key,
-    required this.title,
-    this.trailing,
-    this.actions,
-    this.child,
-    this.padding,
-    this.overrideScroll = false,
-    this.backgroundColor,
-  });
-
-  @override
-  Widget build(BuildContext context, ref) {
-    final size = ref.watch(viewSizeProvider);
-    return AlertDialog(
-      title: trailing == null
-          ? Text(title)
-          : Row(
-              children: [
-                Expanded(child: Text(title)),
-                trailing!,
-              ],
-            ),
-      actions: actions,
-      actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-      contentPadding: padding,
-      backgroundColor: backgroundColor,
-      content: Container(
-        constraints: BoxConstraints(
-          maxHeight: min(size.height - 40, 500),
-          maxWidth: 300,
-        ),
-        width: size.width - 40,
-        child: !overrideScroll ? SingleChildScrollView(child: child) : child,
-      ),
-    );
-  }
-}
 
 class CommonModal extends ConsumerWidget {
   final Widget? child;
@@ -155,7 +105,7 @@ class ConfirmDialog extends StatelessWidget {
                 children: [
                   if (cancelText != null)
                     Expanded(
-                      child: _DialogButton(
+                      child: DialogButton(
                         label: cancelText,
                         color: palette.hover,
                         foreground: palette.label,
@@ -163,7 +113,7 @@ class ConfirmDialog extends StatelessWidget {
                       ),
                     ),
                   Expanded(
-                    child: _DialogButton(
+                    child: DialogButton(
                       label: confirmText,
                       color: destructive ? palette.hover : palette.accent,
                       foreground: destructive
@@ -182,8 +132,10 @@ class ConfirmDialog extends StatelessWidget {
   }
 }
 
-class _DialogButton extends StatelessWidget {
-  const _DialogButton({
+/// A button of an iOS-style dialog: a filled bar in [color] with its label in
+/// [foreground].
+class DialogButton extends StatelessWidget {
+  const DialogButton({
     required this.label,
     required this.color,
     required this.foreground,
@@ -217,6 +169,129 @@ class _DialogButton extends StatelessWidget {
               ).rowTitle.copyWith(color: foreground),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A dialog that asks for one of [options], after an iOS action sheet: the
+/// [title] over a column of lines parted by hairlines and a Cancel under them.
+/// It pops the option tapped, or nothing on Cancel.
+class ChoiceDialog<T> extends StatelessWidget {
+  const ChoiceDialog({
+    super.key,
+    required this.title,
+    required this.options,
+    required this.labelOf,
+    this.value,
+  });
+
+  static const _width = 280.0;
+
+  final String title;
+  final List<T> options;
+  final String Function(T option) labelOf;
+
+  /// The option marked as the current one.
+  final T? value;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    return Dialog(
+      backgroundColor: palette.bar,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      shape: AppShape.xxl,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: _width),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: palette.rowTitle.copyWith(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      for (final (index, option) in options.indexed) ...[
+                        if (index > 0) const GroupedHairline(inset: 0),
+                        _ChoiceLine(
+                          label: labelOf(option),
+                          selected: option == value,
+                          onTap: () => Navigator.of(context).pop(option),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              DialogButton(
+                label: context.appLocalizations.cancel,
+                color: palette.hover,
+                foreground: palette.label,
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChoiceLine extends StatelessWidget {
+  const _ChoiceLine({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    return InkWell(
+      onTap: onTap,
+      highlightColor: palette.hover,
+      splashColor: Colors.transparent,
+      child: SizedBox(
+        height: groupedRowHeight,
+        child: Row(
+          children: [
+            const SizedBox(width: 24),
+            Expanded(
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: palette.rowTitle.copyWith(color: palette.accent),
+              ),
+            ),
+            SizedBox(
+              width: 24,
+              child: selected
+                  ? GlyphIcon(AppGlyphs.check, size: 18, color: palette.accent)
+                  : null,
+            ),
+          ],
         ),
       ),
     );

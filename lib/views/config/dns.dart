@@ -251,14 +251,27 @@ class _DnsServerSectionState extends State<_DnsServerSection> {
           () => setState(() => _deleting = _deleting == server ? null : server),
         ),
         trailing: _deleting == server
-            ? FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: groupedDanger,
-                  foregroundColor: Colors.white,
-                  visualDensity: VisualDensity.compact,
+            ? Material(
+                color: groupedDanger,
+                shape: AppShape.sm,
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () => _delete(server),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
+                    child: Text(
+                      appLocalizations.delete,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
                 ),
-                onPressed: () => _delete(server),
-                child: Text(appLocalizations.delete),
               )
             : null,
         onTap: () => setState(() {

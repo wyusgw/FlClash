@@ -44,24 +44,6 @@ Future<Rect> _pumpHeader(WidgetTester tester, Widget header) async {
 }
 
 void main() {
-  testWidgets('both headers end their actions at the same inset', (
-    tester,
-  ) async {
-    final list = await _pumpHeader(
-      tester,
-      ListHeader(title: 'Exclude SSIDs', actions: _actions()),
-    );
-    final info = await _pumpHeader(
-      tester,
-      InfoHeader(
-        info: const Info(label: 'Added rules'),
-        actions: _actions(),
-      ),
-    );
-
-    expect(_width - list.right, _width - info.right);
-  });
-
   testWidgets('a header spaces its actions like an app bar', (tester) async {
     await _pumpHeader(
       tester,

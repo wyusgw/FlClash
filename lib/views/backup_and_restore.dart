@@ -13,7 +13,6 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/widgets/fade_box.dart';
 import 'package:fl_clash/widgets/grouped_input.dart';
-import 'package:fl_clash/widgets/list.dart';
 import 'package:fl_clash/widgets/loading.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:fl_clash/widgets/grouped_page.dart';
@@ -305,41 +304,19 @@ class _RestoreStrategyPage extends ConsumerWidget {
   }
 }
 
-class RestoreOptionsDialog extends StatefulWidget {
+class RestoreOptionsDialog extends StatelessWidget {
   const RestoreOptionsDialog({super.key});
-
-  @override
-  State<RestoreOptionsDialog> createState() => _RestoreOptionsDialogState();
-}
-
-class _RestoreOptionsDialogState extends State<RestoreOptionsDialog> {
-  void _handleOnTab(RestoreOption? option) {
-    if (option == null) return;
-    Navigator.of(context).pop(option);
-  }
 
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    return CommonDialog(
+    return ChoiceDialog<RestoreOption>(
       title: appLocalizations.restore,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-      child: Wrap(
-        children: [
-          ListItem(
-            onTap: () {
-              _handleOnTab(RestoreOption.onlyProfiles);
-            },
-            title: Text(appLocalizations.restoreOnlyConfig),
-          ),
-          ListItem(
-            onTap: () {
-              _handleOnTab(RestoreOption.all);
-            },
-            title: Text(appLocalizations.restoreAllData),
-          ),
-        ],
-      ),
+      options: const [RestoreOption.onlyProfiles, RestoreOption.all],
+      labelOf: (option) => switch (option) {
+        RestoreOption.onlyProfiles => appLocalizations.restoreOnlyConfig,
+        RestoreOption.all => appLocalizations.restoreAllData,
+      },
     );
   }
 }

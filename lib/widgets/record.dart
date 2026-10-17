@@ -3,9 +3,20 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
-import 'chip.dart';
 import 'grouped_list.dart';
 import 'decoration_list_item.dart';
+
+const _warningColor = Color(0xFFFF9F0A);
+
+/// What a tone is drawn in: orange for a warning, red for an error and the
+/// greys of the text colours for the rest.
+Color recordToneColor(GroupedPalette palette, RecordTone tone) =>
+    switch (tone) {
+      RecordTone.warning => _warningColor,
+      RecordTone.error => groupedDanger,
+      RecordTone.neutral => palette.secondary,
+      RecordTone.muted => palette.tertiary,
+    };
 
 class RecordTextStyles {
   final TextStyle? primary;
@@ -16,12 +27,15 @@ class RecordTextStyles {
 
   factory RecordTextStyles.of(BuildContext context) {
     final palette = GroupedPalette.of(context);
-    final textTheme = context.textTheme;
-    final secondary = textTheme.bodySmall?.copyWith(color: palette.secondary);
+    final secondary = TextStyle(
+      fontSize: 13,
+      height: 1.3,
+      color: palette.secondary,
+    );
     return RecordTextStyles._(
-      primary: textTheme.bodyMedium?.copyWith(color: palette.label),
+      primary: TextStyle(fontSize: 15, height: 1.3, color: palette.label),
       secondary: secondary,
-      muted: secondary?.copyWith(color: palette.tertiary),
+      muted: secondary.copyWith(color: palette.tertiary),
     );
   }
 }
@@ -42,12 +56,16 @@ class RecordListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = Material(
-      color: tone.tintColor(context) ?? Colors.transparent,
+    final palette = GroupedPalette.of(context);
+    final flagged = tone == RecordTone.warning || tone == RecordTone.error;
+    return Material(
+      color: flagged
+          ? recordToneColor(palette, tone).withValues(alpha: 0.08)
+          : Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        hoverColor: GroupedPalette.of(context).hover,
-        highlightColor: GroupedPalette.of(context).hover,
+        hoverColor: palette.hover,
+        highlightColor: palette.hover,
         splashColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
@@ -62,17 +80,6 @@ class RecordListItem extends StatelessWidget {
         ),
       ),
     );
-    final accentColor = tone.accentColor(context);
-    if (accentColor == null) {
-      return item;
-    }
-    return DecoratedBox(
-      position: DecorationPosition.foreground,
-      decoration: BoxDecoration(
-        border: Border(left: BorderSide(color: accentColor, width: 3)),
-      ),
-      child: item,
-    );
   }
 }
 
@@ -86,9 +93,9 @@ class RecordHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final trailing = this.trailing;
     return DefaultTextStyle.merge(
-      style: context.textTheme.labelMedium?.copyWith(
-        color: context.colorScheme.onSurfaceVariant,
-        fontWeight: FontWeight.w400,
+      style: TextStyle(
+        fontSize: 13,
+        color: GroupedPalette.of(context).secondary,
         fontFeatures: const [FontFeature.tabularFigures()],
       ),
       child: SizedBox(
@@ -127,11 +134,28 @@ class RecordLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TonalChip(
-      label: label,
-      color: tone.labelContainerColor(context),
-      foregroundColor: tone.labelColor(context),
-      onPressed: onPressed,
+    final palette = GroupedPalette.of(context);
+    final color = recordToneColor(palette, tone);
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+    return Material(
+      color: color.withValues(alpha: 0.15),
+      shape: AppShape.full,
+      clipBehavior: Clip.antiAlias,
+      child: onPressed == null
+          ? content
+          : InkWell(onTap: onPressed, child: content),
     );
   }
 }
@@ -143,6 +167,7 @@ class RecordTimestamp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
     final split = dateTime.lastIndexOf(' ');
     return Text.rich(
       TextSpan(
@@ -150,7 +175,7 @@ class RecordTimestamp extends StatelessWidget {
           if (split > 0)
             TextSpan(
               text: dateTime.substring(0, split + 1),
-              style: TextStyle(color: context.colorScheme.outline),
+              style: TextStyle(color: palette.tertiary),
             ),
           TextSpan(text: split > 0 ? dateTime.substring(split + 1) : dateTime),
         ],

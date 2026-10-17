@@ -7,8 +7,8 @@ import 'package:material_color_utilities/hct/hct.dart';
 import 'color_scheme_box.dart';
 import 'theme.dart';
 
-const _trackHeight = 20.0;
-const _thumbRadius = 14.0;
+const _trackHeight = 28.0;
+const _thumbRadius = 17.0;
 const _trackTone = 60.0;
 const _previewInset = 8.0;
 
@@ -140,10 +140,7 @@ class _GradientSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliderTheme(
       data: SliderDefaultsM3(context).copyWith(
-        trackShape: _GradientTrackShape(
-          colors: colors,
-          outlineColor: Theme.of(context).colorScheme.outlineVariant,
-        ),
+        trackShape: _GradientTrackShape(colors: colors),
         trackHeight: _trackHeight,
         thumbShape: _ColorThumbShape(color: thumbColor),
         overlayShape: SliderComponentShape.noOverlay,
@@ -160,10 +157,9 @@ class _GradientSlider extends StatelessWidget {
 }
 
 class _GradientTrackShape extends SliderTrackShape {
-  const _GradientTrackShape({required this.colors, required this.outlineColor});
+  const _GradientTrackShape({required this.colors});
 
   final List<Color> colors;
-  final Color outlineColor;
 
   // The thumb travels between the pill's end caps so it never overhangs them.
   @override
@@ -216,13 +212,6 @@ class _GradientTrackShape extends SliderTrackShape {
       shape,
       Paint()..shader = LinearGradient(colors: colors).createShader(valueRect),
     );
-    canvas.drawRSuperellipse(
-      shape,
-      Paint()
-        ..color = outlineColor.withValues(alpha: 0.6)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1,
-    );
   }
 }
 
@@ -231,7 +220,7 @@ class _ColorThumbShape extends SliderComponentShape {
 
   final Color color;
 
-  static const _ringWidth = 3.0;
+  static const _ringWidth = 3.5;
 
   @override
   Size getPreferredSize(bool isEnabled, bool isDiscrete) =>
@@ -253,13 +242,13 @@ class _ColorThumbShape extends SliderComponentShape {
     required Size sizeWithOverflow,
   }) {
     final canvas = context.canvas;
-    final radius = _thumbRadius + activationAnimation.value * 2;
+    const radius = _thumbRadius;
     canvas.drawCircle(
-      center.translate(0, 1),
+      center.translate(0, 2),
       radius,
       Paint()
-        ..color = Colors.black.withValues(alpha: 0.28)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5),
+        ..color = Colors.black.withValues(alpha: 0.25)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
     );
     canvas.drawCircle(center, radius, Paint()..color = Colors.white);
     canvas.drawCircle(center, radius - _ringWidth, Paint()..color = color);

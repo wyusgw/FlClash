@@ -24,6 +24,12 @@ class _RecordingProfilesAction extends ProfilesAction {
   ) async {
     replaced.add((tag: tag, outbound: outbound));
   }
+
+  @override
+  Future<List<String>> readNodeTags(Profile profile) async => [
+    'Japan',
+    'relay',
+  ];
 }
 
 AppLocalizations get l10n => currentAppLocalizations;
@@ -33,7 +39,10 @@ void main() {
 
   late Map<String, dynamic> outbound;
 
-  Future<void> openPage(WidgetTester tester) async {
+  Future<void> openPage(
+    WidgetTester tester, {
+    Map<String, dynamic>? unformable,
+  }) async {
     const size = Size(1000, 1200);
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -60,12 +69,17 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: TestApp(
-          child: EditServerView(
-            profile: Profile.normal(label: 'mine'),
-            outbound: outbound,
-            kind: form.kind,
-            values: form.values,
-          ),
+          child: unformable != null
+              ? EditNodeEndpointView(
+                  profile: Profile.normal(label: 'mine'),
+                  outbound: unformable,
+                )
+              : EditServerView(
+                  profile: Profile.normal(label: 'mine'),
+                  outbound: outbound,
+                  kind: form.kind,
+                  values: form.values,
+                ),
         ),
       ),
     );
@@ -211,6 +225,27 @@ void main() {
     expect(copied, contains('"shadowsocks"'));
   });
 
+  testWidgets('another node can carry it, but not the node itself', (
+    tester,
+  ) async {
+    await openPage(tester);
+
+    await tester.tap(find.text(l10n.proxyVia));
+    await tester.pumpAndSettle();
+    expect(find.text('relay'), findsOneWidget);
+    expect(find.text('Japan'), findsNothing);
+    await tester.tap(find.text('relay'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.save));
+    await tester.pumpAndSettle();
+
+    final saved = action().replaced.single.outbound;
+    expect((saved['streamSettings'] as Map)['sockopt'], {
+      'dialerProxy': 'relay',
+    });
+    expect(nodeFormOf(saved)?.values['dialerProxy'], 'relay');
+  });
+
   testWidgets('the back arrow leaves without saving', (tester) async {
     await openPage(tester);
 
@@ -219,5 +254,56 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(action().replaced, isEmpty);
+  });
+
+  group('a node the form cannot hold', () {
+    final xhttp = {
+      'tag': 'Tokyo',
+      'protocol': 'vless',
+      'settings': {'address': 'a.example.com', 'port': 443, 'id': 'id'},
+      'streamSettings': {
+        'network': 'xhttp',
+        'xhttpSettings': {'path': '/x'},
+      },
+    };
+
+    testWidgets('changes its name and server and keeps the rest', (
+      tester,
+    ) async {
+      await openPage(tester, unformable: xhttp);
+      expect(find.text('VLESS'), findsOneWidget);
+      expect(find.text('XHTTP'), findsOneWidget);
+      expect(
+        tester.widget<TextField>(fieldOf('address')).controller!.text,
+        'a.example.com',
+      );
+      expect(tester.widget<InkResponse>(save()).onTap, isNull);
+
+      await tester.enterText(fieldOf('remark'), 'Osaka');
+      await tester.enterText(fieldOf('address'), 'b.example.com');
+      await tester.enterText(fieldOf('port'), '8443');
+      await tester.pump();
+      await tester.tap(find.text(l10n.save));
+      await tester.pumpAndSettle();
+
+      final replaced = action().replaced.single;
+      expect(replaced.tag, 'Tokyo');
+      expect(replaced.outbound['tag'], 'Osaka');
+      expect(replaced.outbound['settings'], {
+        'address': 'b.example.com',
+        'port': 8443,
+        'id': 'id',
+      });
+      expect(replaced.outbound['streamSettings'], xhttp['streamSettings']);
+    });
+
+    testWidgets('an empty name cannot be saved', (tester) async {
+      await openPage(tester, unformable: xhttp);
+
+      await tester.enterText(fieldOf('remark'), ' ');
+      await tester.pump();
+
+      expect(tester.widget<InkResponse>(save()).onTap, isNull);
+    });
   });
 }

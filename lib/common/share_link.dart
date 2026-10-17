@@ -8,7 +8,9 @@ String? nodeShareLink(Map<String, dynamic> outbound) {
   final stream = _map(outbound['streamSettings']);
   final address = '${settings['address'] ?? ''}';
   final port = settings['port'];
-  if (address.isEmpty || port == null) return null;
+  if (address.isEmpty) return null;
+  if (outbound['protocol'] == 'mieru') return _mieru(tag, settings);
+  if (port == null) return null;
   return switch ('${outbound['protocol']}') {
     'vmess' => _vmess(tag, settings, stream),
     'vless' => _uriLink('vless', '${settings['id'] ?? ''}', settings, stream, {
@@ -108,6 +110,8 @@ Map<String, String>? _transport(Map<String, dynamic> stream) {
       query['type'] = 'grpc';
       query['serviceName'] = '${options['serviceName'] ?? ''}';
       if (options['multiMode'] == true) query['mode'] = 'multi';
+    case 'kcp' || 'mkcp':
+      query['type'] = 'kcp';
     default:
       return null;
   }
@@ -281,4 +285,23 @@ String? _anytls(
   return 'anytls://${Uri.encodeComponent(password)}@'
       '${_host('${settings['address']}')}:${settings['port']}'
       '${_query(query)}${_fragment(tag)}';
+}
+
+/// mieru's simple link, as its own client exports it.
+String? _mieru(String tag, Map<String, dynamic> settings) {
+  final username = '${settings['username'] ?? ''}';
+  final password = '${settings['password'] ?? ''}';
+  final port = _text(settings['port']) ?? _text(settings['portRange']);
+  if (username.isEmpty || password.isEmpty || port == null) return null;
+  final query = <String, String>{
+    'handshake-mode': ?_text(settings['handshakeMode']),
+    'mtu': ?_text(settings['mtu']),
+    'multiplexing': ?_text(settings['multiplexing']),
+    'port': port,
+    'profile': tag.isEmpty ? 'default' : tag,
+    'protocol': '${settings['transport'] ?? 'TCP'}'.toUpperCase(),
+  };
+  return 'mierus://${Uri.encodeComponent(username)}:'
+      '${Uri.encodeComponent(password)}@${_host('${settings['address']}')}'
+      '${_query(query)}';
 }

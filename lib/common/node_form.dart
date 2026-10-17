@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'share_link.dart';
 import 'subscription.dart';
 
 /// The protocols a server can be typed in for.
@@ -19,6 +20,10 @@ enum NodeKind {
 
 enum NodeFieldType { text, secret, number, choice, toggle }
 
+/// Where a field is shown: on the server's own page, or on the page of its
+/// transport or of its TLS, each opened from a row of the server's page.
+enum NodeFieldGroup { main, transport, tls }
+
 /// One input of a server form. A field is shown only while [when] accepts the
 /// values entered so far.
 class NodeField {
@@ -29,6 +34,7 @@ class NodeField {
     this.options = const [],
     this.initial = '',
     this.when,
+    this.group = NodeFieldGroup.main,
   });
 
   final String key;
@@ -37,9 +43,13 @@ class NodeField {
   final List<String> options;
   final String initial;
   final bool Function(Map<String, String> values)? when;
+  final NodeFieldGroup group;
 
   bool visible(Map<String, String> values) => when?.call(values) ?? true;
 }
+
+/// The choice that leaves a setting to the Core.
+const nodeDefaultChoice = 'default';
 
 const shadowsocksMethods = [
   'aes-256-gcm',
@@ -51,47 +61,216 @@ const shadowsocksMethods = [
   '2022-blake3-chacha20-poly1305',
 ];
 
-const _networks = ['tcp', 'ws', 'grpc'];
-const _fingerprints = ['chrome', 'firefox', 'safari', 'ios', 'android', 'edge'];
+const _networks = ['raw', 'xhttp', 'kcp', 'grpc', 'ws', 'httpupgrade'];
+const _xhttpModes = ['auto', 'packet-up', 'stream-up', 'stream-one'];
 
-bool _ws(Map<String, String> v) => v['network'] == 'ws';
-bool _grpc(Map<String, String> v) => v['network'] == 'grpc';
-bool _tls(Map<String, String> v) => v['tls'] == 'true';
-bool _secured(Map<String, String> v) => v['security'] != 'none';
-bool _vlessTls(Map<String, String> v) => v['security'] == 'tls';
-bool _reality(Map<String, String> v) => v['security'] == 'reality';
+/// The uTLS fingerprints the Core knows by name, its own aliases first.
+const _fingerprints = [
+  nodeDefaultChoice,
+  'chrome',
+  'firefox',
+  'safari',
+  'ios',
+  'android',
+  'edge',
+  '360',
+  'qq',
+  'random',
+  'randomized',
+  'randomizednoalpn',
+  'hellochrome_120',
+  'hellochrome_131',
+  'hellochrome_133',
+  'hellofirefox_120',
+  'hellofirefox_148',
+  'hellosafari_26_3',
+  'helloios_14',
+  'helloedge_106',
+];
+
+String _network(Map<String, String> v) => v['network'] ?? 'raw';
+bool _rawHttp(Map<String, String> v) =>
+    _network(v) == 'raw' && v['headerType'] == 'http';
+bool _hasPath(Map<String, String> v) =>
+    _rawHttp(v) || const {'ws', 'httpupgrade', 'xhttp'}.contains(_network(v));
+
+/// Kinds that always speak TLS keep no `security` value.
+String _security(Map<String, String> v) => v['security'] ?? 'tls';
+bool _tls(Map<String, String> v) => _security(v) == 'tls';
+bool _reality(Map<String, String> v) => _security(v) == 'reality';
+bool _secured(Map<String, String> v) => _security(v) != 'none';
+bool _noFlow(Map<String, String> v) => (v['flow'] ?? 'none') == 'none';
 
 const _address = NodeField('address', NodeFieldType.text, required: true);
 const _port = NodeField('port', NodeFieldType.number, required: true);
 const _remark = NodeField('remark', NodeFieldType.text);
-const _sni = NodeField('sni', NodeFieldType.text);
-const _insecure = NodeField('allowInsecure', NodeFieldType.toggle);
+const _mux = NodeField('mux', NodeFieldType.toggle);
+const _muxWithoutFlow = NodeField('mux', NodeFieldType.toggle, when: _noFlow);
+const _fastOpen = NodeField('tcpFastOpen', NodeFieldType.toggle);
+const _dialerProxy = NodeField('dialerProxy', NodeFieldType.choice);
 
-List<NodeField> _transport() => const [
+const _transport = [
   NodeField(
     'network',
     NodeFieldType.choice,
     options: _networks,
-    initial: 'tcp',
+    initial: 'raw',
+    group: NodeFieldGroup.transport,
   ),
-  NodeField('path', NodeFieldType.text, when: _ws),
-  NodeField('host', NodeFieldType.text, when: _ws),
-  NodeField('serviceName', NodeFieldType.text, when: _grpc),
+  NodeField(
+    'headerType',
+    NodeFieldType.choice,
+    options: ['none', 'http'],
+    initial: 'none',
+    when: _isRaw,
+    group: NodeFieldGroup.transport,
+  ),
+  NodeField(
+    'path',
+    NodeFieldType.text,
+    when: _hasPath,
+    group: NodeFieldGroup.transport,
+  ),
+  NodeField(
+    'host',
+    NodeFieldType.text,
+    when: _hasPath,
+    group: NodeFieldGroup.transport,
+  ),
+  NodeField(
+    'mode',
+    NodeFieldType.choice,
+    options: _xhttpModes,
+    initial: 'auto',
+    when: _isXhttp,
+    group: NodeFieldGroup.transport,
+  ),
+  NodeField(
+    'serviceName',
+    NodeFieldType.text,
+    when: _isGrpc,
+    group: NodeFieldGroup.transport,
+  ),
+  NodeField(
+    'multiMode',
+    NodeFieldType.toggle,
+    when: _isGrpc,
+    group: NodeFieldGroup.transport,
+  ),
 ];
 
-const _mieruMultiplexing = ['off', 'low', 'middle', 'high'];
-const _mieruHandshakes = ['standard', 'no-wait'];
+bool _isRaw(Map<String, String> v) => _network(v) == 'raw';
+bool _isXhttp(Map<String, String> v) => _network(v) == 'xhttp';
+bool _isGrpc(Map<String, String> v) => _network(v) == 'grpc';
+
+/// The TLS page of a kind: [securities] lists what it may choose from, or is
+/// null for a kind that always speaks TLS; the rest says which settings its
+/// TLS takes. ECH, uTLS and fragmenting the hello need TLS over TCP.
+List<NodeField> _tlsFields({
+  List<String>? securities,
+  bool overTcp = true,
+  bool alpn = true,
+  bool pin = true,
+}) => [
+  if (securities != null)
+    NodeField(
+      'security',
+      NodeFieldType.choice,
+      options: securities,
+      initial: securities.first,
+      group: NodeFieldGroup.tls,
+    ),
+  const NodeField(
+    'allowInsecure',
+    NodeFieldType.toggle,
+    when: _tls,
+    group: NodeFieldGroup.tls,
+  ),
+  const NodeField(
+    'sni',
+    NodeFieldType.text,
+    when: _secured,
+    group: NodeFieldGroup.tls,
+  ),
+  if (overTcp)
+    const NodeField(
+      'ech',
+      NodeFieldType.text,
+      when: _tls,
+      group: NodeFieldGroup.tls,
+    ),
+  if (alpn)
+    const NodeField(
+      'alpn',
+      NodeFieldType.text,
+      when: _tls,
+      group: NodeFieldGroup.tls,
+    ),
+  if (securities?.contains('reality') ?? false) ...const [
+    NodeField(
+      'publicKey',
+      NodeFieldType.text,
+      required: true,
+      when: _reality,
+      group: NodeFieldGroup.tls,
+    ),
+    NodeField(
+      'shortId',
+      NodeFieldType.text,
+      when: _reality,
+      group: NodeFieldGroup.tls,
+    ),
+    NodeField(
+      'spiderX',
+      NodeFieldType.text,
+      when: _reality,
+      group: NodeFieldGroup.tls,
+    ),
+    NodeField(
+      'mldsa65Verify',
+      NodeFieldType.text,
+      when: _reality,
+      group: NodeFieldGroup.tls,
+    ),
+  ],
+  if (overTcp) ...const [
+    NodeField(
+      'fingerprint',
+      NodeFieldType.choice,
+      options: _fingerprints,
+      initial: nodeDefaultChoice,
+      when: _secured,
+      group: NodeFieldGroup.tls,
+    ),
+    NodeField(
+      'fragment',
+      NodeFieldType.toggle,
+      when: _secured,
+      group: NodeFieldGroup.tls,
+    ),
+  ],
+  if (pin)
+    const NodeField(
+      'pin',
+      NodeFieldType.text,
+      when: _tls,
+      group: NodeFieldGroup.tls,
+    ),
+];
+
+const _mieruMultiplexing = [nodeDefaultChoice, 'off', 'low', 'middle', 'high'];
+const _mieruHandshakes = [nodeDefaultChoice, 'standard', 'no-wait'];
 
 List<NodeField> nodeFields(NodeKind kind) {
   return switch (kind) {
-    NodeKind.socks || NodeKind.http => const [
+    NodeKind.socks || NodeKind.http => [
       _address,
       _port,
-      NodeField('username', NodeFieldType.text),
-      NodeField('password', NodeFieldType.secret),
-      NodeField('tls', NodeFieldType.toggle),
-      NodeField('sni', NodeFieldType.text, when: _tls),
-      NodeField('allowInsecure', NodeFieldType.toggle, when: _tls),
+      const NodeField('username', NodeFieldType.text),
+      const NodeField('password', NodeFieldType.secret),
+      ..._tlsFields(securities: const ['none', 'tls']),
+      _fastOpen,
+      _dialerProxy,
       _remark,
     ],
     NodeKind.mieru => const [
@@ -117,6 +296,7 @@ List<NodeField> nodeFields(NodeKind kind) {
         options: _mieruHandshakes,
         initial: 'standard',
       ),
+      NodeField('mtu', NodeFieldType.number),
       _remark,
     ],
     NodeKind.shadowsocks => const [
@@ -129,6 +309,9 @@ List<NodeField> nodeFields(NodeKind kind) {
         options: shadowsocksMethods,
         initial: 'aes-256-gcm',
       ),
+      _mux,
+      _fastOpen,
+      _dialerProxy,
       _remark,
     ],
     NodeKind.vmess => [
@@ -136,111 +319,106 @@ List<NodeField> nodeFields(NodeKind kind) {
       _port,
       const NodeField('uuid', NodeFieldType.secret, required: true),
       const NodeField(
-        'security',
+        'method',
         NodeFieldType.choice,
-        options: ['auto', 'aes-128-gcm', 'chacha20-poly1305'],
+        options: ['auto', 'aes-128-gcm', 'chacha20-poly1305', 'none', 'zero'],
         initial: 'auto',
       ),
-      ..._transport(),
-      const NodeField('tls', NodeFieldType.toggle),
-      const NodeField('sni', NodeFieldType.text, when: _tls),
+      ..._transport,
+      ..._tlsFields(securities: const ['none', 'tls']),
+      _mux,
+      _fastOpen,
+      _dialerProxy,
       _remark,
     ],
     NodeKind.vless => [
       _address,
       _port,
       const NodeField('uuid', NodeFieldType.secret, required: true),
+      const NodeField('encryption', NodeFieldType.text),
       const NodeField(
         'flow',
         NodeFieldType.choice,
         options: ['none', 'xtls-rprx-vision'],
         initial: 'none',
       ),
-      ..._transport(),
-      const NodeField(
-        'security',
-        NodeFieldType.choice,
-        options: ['tls', 'reality', 'none'],
-        initial: 'tls',
-      ),
-      const NodeField('sni', NodeFieldType.text, when: _secured),
-      const NodeField('allowInsecure', NodeFieldType.toggle, when: _vlessTls),
-      const NodeField(
-        'fingerprint',
-        NodeFieldType.choice,
-        options: _fingerprints,
-        initial: 'chrome',
-        when: _reality,
-      ),
-      const NodeField(
-        'publicKey',
-        NodeFieldType.text,
-        required: true,
-        when: _reality,
-      ),
-      const NodeField('shortId', NodeFieldType.text, when: _reality),
+      ..._transport,
+      ..._tlsFields(securities: const ['tls', 'reality', 'none']),
+      _muxWithoutFlow,
+      _fastOpen,
+      _dialerProxy,
       _remark,
     ],
     NodeKind.trojan => [
       _address,
       _port,
       const NodeField('password', NodeFieldType.secret, required: true),
-      ..._transport(),
-      _sni,
-      _insecure,
+      ..._transport,
+      ..._tlsFields(securities: const ['tls', 'reality', 'none']),
+      _mux,
+      _fastOpen,
+      _dialerProxy,
       _remark,
     ],
-    NodeKind.hysteria => const [
+    NodeKind.hysteria => [
       _address,
       _port,
-      NodeField('password', NodeFieldType.secret, required: true),
-      NodeField(
+      const NodeField('password', NodeFieldType.secret, required: true),
+      const NodeField(
         'uploadSpeed',
         NodeFieldType.number,
         required: true,
         initial: '100',
       ),
-      NodeField(
+      const NodeField(
         'downloadSpeed',
         NodeFieldType.number,
         required: true,
         initial: '100',
       ),
-      _sni,
-      _insecure,
-      NodeField('obfsPassword', NodeFieldType.secret),
+      const NodeField('obfsPassword', NodeFieldType.secret),
+      ..._tlsFields(overTcp: false, alpn: false, pin: false),
+      _dialerProxy,
       _remark,
     ],
-    NodeKind.hysteria2 => const [
+    NodeKind.hysteria2 => [
       _address,
       _port,
-      NodeField('password', NodeFieldType.secret, required: true),
-      _sni,
-      _insecure,
-      NodeField('obfsPassword', NodeFieldType.secret),
+      const NodeField('password', NodeFieldType.secret, required: true),
+      const NodeField('ports', NodeFieldType.text),
+      const NodeField('obfsPassword', NodeFieldType.secret),
+      ..._tlsFields(overTcp: false, alpn: false),
+      _dialerProxy,
       _remark,
     ],
-    NodeKind.tuic => const [
+    NodeKind.tuic => [
       _address,
       _port,
-      NodeField('uuid', NodeFieldType.secret, required: true),
-      NodeField('password', NodeFieldType.secret, required: true),
-      NodeField(
+      const NodeField('uuid', NodeFieldType.secret, required: true),
+      const NodeField('password', NodeFieldType.secret, required: true),
+      const NodeField(
         'congestion',
         NodeFieldType.choice,
         options: ['bbr', 'cubic', 'new_reno'],
         initial: 'bbr',
       ),
-      _sni,
-      _insecure,
+      const NodeField(
+        'udpRelay',
+        NodeFieldType.choice,
+        options: ['native', 'quic'],
+        initial: 'native',
+      ),
+      ..._tlsFields(overTcp: false),
+      _dialerProxy,
       _remark,
     ],
-    NodeKind.anytls => const [
+    NodeKind.anytls => [
       _address,
       _port,
-      NodeField('password', NodeFieldType.secret, required: true),
-      _sni,
-      _insecure,
+      const NodeField('password', NodeFieldType.secret, required: true),
+      ..._tlsFields(),
+      _fastOpen,
+      _dialerProxy,
       _remark,
     ],
   };
@@ -252,12 +430,35 @@ Map<String, String> nodeDefaults(NodeKind kind) => {
     field.key: field.type == NodeFieldType.toggle
         ? (field.initial.isEmpty ? 'false' : field.initial)
         : field.initial,
+  if (kind == NodeKind.tuic) 'alpn': 'h3',
   // Empty leaves the country to the server's name.
   'region': '',
 };
 
+final _portRanges = RegExp(r'^\d+(-\d+)?(,\d+(-\d+)?)*$');
+final _certHash = RegExp(r'^[0-9a-fA-F]{64}$');
+
+/// Certificate hashes as `openssl x509 -fingerprint -sha256` prints them, one
+/// or more split by commas; the Core refuses the whole config for a bad one.
+bool _validPin(String value) => value
+    .split(',')
+    .map((hash) => hash.trim().replaceAll(':', ''))
+    .where((hash) => hash.isNotEmpty)
+    .every(_certHash.hasMatch);
+
+/// An ECH config list in base64, or the DNS server to look it up from.
+bool _validEch(String value) {
+  if (value.contains('://')) return true;
+  try {
+    base64.decode(value);
+    return true;
+  } on FormatException {
+    return false;
+  }
+}
+
 /// The key of the first visible field that is required and empty, or whose
-/// number is not a port; null when the form is complete.
+/// number is out of range; null when the form is complete.
 String? nodeFormProblem(NodeKind kind, Map<String, String> values) {
   for (final field in nodeFields(kind)) {
     if (!field.visible(values)) continue;
@@ -271,6 +472,23 @@ String? nodeFormProblem(NodeKind kind, Map<String, String> values) {
       final speed = int.tryParse(value);
       if (speed == null || speed < 1) return field.key;
     }
+    if (value.isNotEmpty &&
+        switch (field.key) {
+          'ports' => !_portRanges.hasMatch(value),
+          'pin' => !_validPin(value),
+          'ech' => !_validEch(value),
+          _ => false,
+        }) {
+      return field.key;
+    }
+  }
+  // Xray refuses a VLESS server with neither TLS nor encryption unless it is
+  // on the local network.
+  if (kind == NodeKind.vless &&
+      values['security'] == 'none' &&
+      _text(values, 'encryption').isEmpty &&
+      !isPrivateHost(_text(values, 'address'))) {
+    return 'security';
   }
   return null;
 }
@@ -284,175 +502,287 @@ String? _nonEmpty(Map<String, String> v, String key) {
 
 bool _on(Map<String, String> v, String key) => v[key] == 'true';
 
-String _hostPart(String host) =>
-    host.contains(':') && !host.startsWith('[') ? '[$host]' : host;
-
-String _remarkOf(Map<String, String> v) => _text(v, 'remark');
-
-Map<String, String> _tlsQuery(Map<String, String> v, {bool insecure = true}) =>
-    {
-      'sni': ?_nonEmpty(v, 'sni'),
-      if (insecure && _on(v, 'allowInsecure')) 'allowInsecure': '1',
-    };
-
-Map<String, String> _transportQuery(Map<String, String> v) {
-  final network = _text(v, 'network');
-  return {
-    if (network.isNotEmpty) 'type': network,
-    if (network == 'ws') ...{
-      'path': ?_nonEmpty(v, 'path'),
-      'host': ?_nonEmpty(v, 'host'),
-    },
-    if (network == 'grpc') 'serviceName': ?_nonEmpty(v, 'serviceName'),
-  };
+List<String>? _list(Map<String, String> v, String key) {
+  final items = _text(
+    v,
+    key,
+  ).split(',').map((item) => item.trim()).where((item) => item.isNotEmpty);
+  return items.isEmpty ? null : items.toList();
 }
 
-String _uriLink(
-  String scheme,
-  Map<String, String> v, {
-  required String userInfo,
-  required Map<String, String> query,
+/// Whether [key] is a field [kind] shows for [values] and it is switched on.
+bool _active(NodeKind kind, Map<String, String> v, String key) =>
+    _on(v, key) &&
+    nodeFields(kind).any((field) => field.key == key && field.visible(v));
+
+String? _choice(Map<String, String> v, String key) {
+  final value = _text(v, key);
+  return value.isEmpty || value == nodeDefaultChoice ? null : value;
+}
+
+Map<String, dynamic> _tlsSettings(
+  NodeKind kind,
+  Map<String, String> v,
+  String serverName, {
+  List<String>? alpn,
 }) {
-  return Uri(
-    scheme: scheme,
-    userInfo: userInfo,
-    host: _text(v, 'address'),
-    port: int.parse(_text(v, 'port')),
-    queryParameters: query.isEmpty ? null : query,
-    fragment: _remarkOf(v).isEmpty ? null : _remarkOf(v),
-  ).toString();
-}
-
-/// The share link the form's values stand for, in the shape the subscription
-/// reader understands; null when the values cannot form a link.
-String? buildNodeLink(NodeKind kind, Map<String, String> values) {
-  if (nodeFormProblem(kind, values) != null) return null;
-  final v = values;
-  try {
-    return switch (kind) {
-      NodeKind.socks || NodeKind.http || NodeKind.mieru => null,
-      NodeKind.shadowsocks =>
-        'ss://${_text(v, 'method')}:${Uri.encodeComponent(_text(v, 'password'))}'
-            '@${_hostPart(_text(v, 'address'))}:${_text(v, 'port')}'
-            '${_remarkOf(v).isEmpty ? '' : '#${Uri.encodeComponent(_remarkOf(v))}'}',
-      NodeKind.vmess =>
-        'vmess://${base64.encode(utf8.encode(jsonEncode({'v': '2', 'ps': _remarkOf(v), 'add': _text(v, 'address'), 'port': _text(v, 'port'), 'id': _text(v, 'uuid'), 'scy': _text(v, 'security'), 'net': _text(v, 'network'), 'type': 'none', 'host': _text(v, 'host'), 'path': _text(v, 'network') == 'grpc' ? _text(v, 'serviceName') : _text(v, 'path'), 'tls': _on(v, 'tls') ? 'tls' : '', 'sni': _on(v, 'tls') ? _text(v, 'sni') : ''})))}',
-      NodeKind.vless => _uriLink(
-        'vless',
-        v,
-        userInfo: _text(v, 'uuid'),
-        query: {
-          'encryption': 'none',
-          'security': _text(v, 'security'),
-          if (_text(v, 'flow') != 'none' && _text(v, 'flow').isNotEmpty)
-            'flow': _text(v, 'flow'),
-          ..._transportQuery(v),
-          if (_secured(v)) ..._tlsQuery(v, insecure: _vlessTls(v)),
-          if (_reality(v)) ...{
-            'fp': _text(v, 'fingerprint'),
-            'pbk': _text(v, 'publicKey'),
-            'sid': ?_nonEmpty(v, 'shortId'),
-          },
-        },
-      ),
-      NodeKind.trojan => _uriLink(
-        'trojan',
-        v,
-        userInfo: _text(v, 'password'),
-        query: {'security': 'tls', ..._transportQuery(v), ..._tlsQuery(v)},
-      ),
-      NodeKind.hysteria => _uriLink(
-        'hysteria',
-        v,
-        userInfo: '',
-        query: {
-          'protocol': 'udp',
-          'auth': _text(v, 'password'),
-          'upmbps': _text(v, 'uploadSpeed'),
-          'downmbps': _text(v, 'downloadSpeed'),
-          'peer': ?_nonEmpty(v, 'sni'),
-          if (_on(v, 'allowInsecure')) 'insecure': '1',
-          if (_nonEmpty(v, 'obfsPassword') != null) ...{
-            'obfs': 'xplus',
-            'obfsParam': _text(v, 'obfsPassword'),
-          },
-        },
-      ),
-      NodeKind.hysteria2 => _uriLink(
-        'hysteria2',
-        v,
-        userInfo: _text(v, 'password'),
-        query: {
-          ..._tlsQuery(v),
-          if (_nonEmpty(v, 'obfsPassword') != null) ...{
-            'obfs': 'salamander',
-            'obfs-password': _text(v, 'obfsPassword'),
-          },
-        },
-      ),
-      NodeKind.tuic => _uriLink(
-        'tuic',
-        v,
-        userInfo: '${_text(v, 'uuid')}:${_text(v, 'password')}',
-        query: {'congestion_control': _text(v, 'congestion'), ..._tlsQuery(v)},
-      ),
-      NodeKind.anytls => _uriLink(
-        'anytls',
-        v,
-        userInfo: _text(v, 'password'),
-        query: _tlsQuery(v),
-      ),
-    };
-  } on FormatException {
-    return null;
-  }
-}
-
-Map<String, dynamic> _directOutbound(NodeKind kind, Map<String, String> v) {
-  final host = _text(v, 'address');
-  final port = int.parse(_text(v, 'port'));
-  final protocol = switch (kind) {
-    NodeKind.socks => 'socks',
-    NodeKind.http => 'http',
-    _ => 'mieru',
+  final has = {for (final field in nodeFields(kind)) field.key};
+  return {
+    'serverName': _nonEmpty(v, 'sni') ?? serverName,
+    'alpn': ?(has.contains('alpn') ? _list(v, 'alpn') : null) ?? alpn,
+    'fingerprint': ?(has.contains('fingerprint')
+        ? _choice(v, 'fingerprint')
+        : null),
+    if (_on(v, 'allowInsecure')) 'allowInsecure': true,
+    'echConfigList': ?(has.contains('ech') ? _nonEmpty(v, 'ech') : null),
+    'pinnedPeerCertSha256': ?(has.contains('pin') ? _nonEmpty(v, 'pin') : null),
   };
-  final tag = _remarkOf(v).isEmpty ? '$protocol-$host:$port' : _remarkOf(v);
-  if (kind == NodeKind.mieru) {
-    return {
-      'tag': tag,
-      'protocol': protocol,
-      'settings': {
-        'address': host,
-        'port': port,
+}
+
+/// The transport and security of a VMess, VLESS or Trojan server, in the
+/// shape the subscription reader gives its links.
+Map<String, dynamic> _stream(NodeKind kind, Map<String, String> v) {
+  final address = _text(v, 'address');
+  final path = _nonEmpty(v, 'path');
+  final host = _nonEmpty(v, 'host');
+  final stream = <String, dynamic>{};
+  switch (_network(v)) {
+    case 'raw':
+      if (_rawHttp(v)) {
+        stream['network'] = 'raw';
+        stream['rawSettings'] = {
+          'header': {
+            'type': 'http',
+            'request': {
+              'path': [path ?? '/'],
+              if (host != null) 'headers': {'Host': _list(v, 'host')},
+            },
+          },
+        };
+      }
+    case 'ws' || 'httpupgrade':
+      stream['network'] = _network(v);
+      stream['${_network(v)}Settings'] = {'path': ?path, 'host': ?host};
+    case 'xhttp':
+      stream['network'] = 'xhttp';
+      stream['xhttpSettings'] = {
+        'path': ?path,
+        'host': ?host,
+        'mode': _nonEmpty(v, 'mode') ?? 'auto',
+      };
+    case 'grpc':
+      stream['network'] = 'grpc';
+      stream['grpcSettings'] = {
+        'serviceName': _text(v, 'serviceName'),
+        'multiMode': _on(v, 'multiMode'),
+      };
+    case 'kcp':
+      stream['network'] = 'kcp';
+  }
+  final serverName = host ?? address;
+  if (_tls(v)) {
+    stream['security'] = 'tls';
+    stream['tlsSettings'] = _tlsSettings(kind, v, serverName);
+  } else if (_reality(v)) {
+    stream['security'] = 'reality';
+    stream['realitySettings'] = {
+      'serverName': _nonEmpty(v, 'sni') ?? serverName,
+      'fingerprint': _choice(v, 'fingerprint') ?? 'chrome',
+      'publicKey': _text(v, 'publicKey'),
+      'shortId': _text(v, 'shortId'),
+      'spiderX': _nonEmpty(v, 'spiderX') ?? '/',
+      'mldsa65Verify': ?_nonEmpty(v, 'mldsa65Verify'),
+    };
+  }
+  return stream;
+}
+
+const _fragmentMask = {
+  'type': 'fragment',
+  'settings': {'packets': 'tlshello', 'length': '100-200', 'delay': '10-20'},
+};
+
+const _muxSettings = {'enabled': true, 'concurrency': 8};
+
+String _protocolOf(NodeKind kind) => switch (kind) {
+  NodeKind.socks => 'socks',
+  NodeKind.http => 'http',
+  NodeKind.shadowsocks => 'shadowsocks',
+  NodeKind.vmess => 'vmess',
+  NodeKind.vless => 'vless',
+  NodeKind.trojan => 'trojan',
+  NodeKind.hysteria => 'hysteria',
+  NodeKind.hysteria2 => 'hysteria2',
+  NodeKind.tuic => 'tuic',
+  NodeKind.anytls => 'anytls',
+  NodeKind.mieru => 'mieru',
+};
+
+Map<String, dynamic> _outbound(NodeKind kind, Map<String, String> v) {
+  final address = _text(v, 'address');
+  final port = int.parse(_text(v, 'port'));
+  final protocol = _protocolOf(kind);
+  final remark = _text(v, 'remark');
+  final prefix = kind == NodeKind.shadowsocks ? 'ss' : protocol;
+  Map<String, dynamic> node(
+    Map<String, dynamic> settings, [
+    Map<String, dynamic> stream = const {},
+  ]) => {
+    'tag': remark.isEmpty ? '$prefix-$address:$port' : remark,
+    'protocol': protocol,
+    'settings': {'address': address, 'port': port, ...settings},
+    if (stream.isNotEmpty) 'streamSettings': stream,
+  };
+
+  switch (kind) {
+    case NodeKind.socks || NodeKind.http:
+      return node(
+        {'user': ?_nonEmpty(v, 'username'), 'pass': ?_nonEmpty(v, 'password')},
+        {
+          if (_tls(v)) ...{
+            'network': 'tcp',
+            'security': 'tls',
+            'tlsSettings': _tlsSettings(kind, v, address),
+          },
+        },
+      );
+    case NodeKind.mieru:
+      final multiplexing = _choice(v, 'multiplexing');
+      final handshake = _choice(v, 'handshake');
+      final mtu = int.tryParse(_text(v, 'mtu'));
+      return node({
         'username': _text(v, 'username'),
         'password': _text(v, 'password'),
         'transport': _text(v, 'transport'),
-        'multiplexing':
-            'MULTIPLEXING_${_text(v, 'multiplexing').toUpperCase()}',
-        'handshakeMode':
-            'HANDSHAKE_${_text(v, 'handshake').toUpperCase().replaceAll('-', '_')}',
-      },
+        if (multiplexing != null)
+          'multiplexing': 'MULTIPLEXING_${multiplexing.toUpperCase()}',
+        if (handshake != null)
+          'handshakeMode':
+              'HANDSHAKE_${handshake.toUpperCase().replaceAll('-', '_')}',
+        if (mtu != null && mtu > 0) 'mtu': mtu,
+      });
+    case NodeKind.shadowsocks:
+      return node({
+        'method': _text(v, 'method'),
+        'password': _text(v, 'password'),
+      });
+    case NodeKind.vmess:
+      return node({
+        'id': _text(v, 'uuid'),
+        'security': _text(v, 'method'),
+      }, _stream(kind, v));
+    case NodeKind.vless:
+      return node({
+        'id': _text(v, 'uuid'),
+        'encryption': _nonEmpty(v, 'encryption') ?? 'none',
+        if (!_noFlow(v)) 'flow': _text(v, 'flow'),
+      }, _stream(kind, v));
+    case NodeKind.trojan:
+      return node({'password': _text(v, 'password')}, _stream(kind, v));
+    case NodeKind.hysteria:
+      final obfs = _nonEmpty(v, 'obfsPassword');
+      return node({
+        'auth': _text(v, 'password'),
+        'up': '${_text(v, 'uploadSpeed')}mbps',
+        'down': '${_text(v, 'downloadSpeed')}mbps',
+        if (obfs != null) ...{'obfs': 'xplus', 'obfsPassword': obfs},
+        'serverName': ?_nonEmpty(v, 'sni'),
+        if (_on(v, 'allowInsecure')) 'allowInsecure': true,
+      });
+    case NodeKind.hysteria2:
+      final obfs = _nonEmpty(v, 'obfsPassword');
+      final ports = _nonEmpty(v, 'ports');
+      return node(
+        {'version': 2},
+        {
+          'network': 'hysteria2',
+          'security': 'tls',
+          'tlsSettings': _tlsSettings(kind, v, address, alpn: const ['h3']),
+          'hysteria2Settings': {'version': 2, 'auth': _text(v, 'password')},
+          if (obfs != null || ports != null)
+            'finalmask': {
+              'udp': [
+                if (obfs != null)
+                  {
+                    'type': 'salamander',
+                    'settings': {'password': obfs},
+                  },
+                if (ports != null)
+                  {
+                    'type': 'udphop',
+                    'settings': {
+                      'mode': 'intervalLocal',
+                      'interval': '30',
+                      'remotePorts': ports,
+                    },
+                  },
+              ],
+            },
+        },
+      );
+    case NodeKind.tuic:
+      return node(
+        {
+          'id': _text(v, 'uuid'),
+          'password': _text(v, 'password'),
+          'congestionControl': _text(v, 'congestion'),
+          'udpStream': v['udpRelay'] == 'quic',
+        },
+        {
+          'network': 'tuic',
+          'security': 'tls',
+          'tlsSettings': _tlsSettings(kind, v, address, alpn: const ['h3']),
+        },
+      );
+    case NodeKind.anytls:
+      return node(
+        {'password': _text(v, 'password')},
+        {
+          'network': 'tcp',
+          'security': 'tls',
+          'tlsSettings': _tlsSettings(kind, v, address),
+        },
+      );
+  }
+}
+
+/// [outbound] with the settings no share link carries: how its sockets are
+/// opened, the node they are opened through, and the multiplexing on top.
+Map<String, dynamic> _withExtras(
+  NodeKind kind,
+  Map<String, String> v,
+  Map<String, dynamic> outbound,
+) {
+  final dialerProxy = nodeFields(kind).any((f) => f.key == 'dialerProxy')
+      ? _nonEmpty(v, 'dialerProxy')
+      : null;
+  final sockopt = {
+    if (_active(kind, v, 'tcpFastOpen')) 'tcpFastOpen': true,
+    'dialerProxy': ?dialerProxy,
+  };
+  final fragment = _active(kind, v, 'fragment');
+  if (sockopt.isEmpty && !fragment && !_active(kind, v, 'mux')) {
+    return outbound;
+  }
+  final stream = {...?outbound['streamSettings'] as Map<String, dynamic>?};
+  if (sockopt.isNotEmpty) stream['sockopt'] = sockopt;
+  if (fragment) {
+    stream['finalmask'] = {
+      'tcp': [_fragmentMask],
     };
   }
   return {
-    'tag': tag,
-    'protocol': protocol,
-    'settings': {
-      'address': host,
-      'port': port,
-      if (_nonEmpty(v, 'username') != null) 'user': _text(v, 'username'),
-      if (_nonEmpty(v, 'password') != null) 'pass': _text(v, 'password'),
-    },
-    if (_on(v, 'tls'))
-      'streamSettings': {
-        'network': 'tcp',
-        'security': 'tls',
-        'tlsSettings': {
-          'serverName': _nonEmpty(v, 'sni') ?? host,
-          if (_on(v, 'allowInsecure')) 'allowInsecure': true,
-        },
-      },
+    ...outbound,
+    if (stream.isNotEmpty) 'streamSettings': stream,
+    if (_active(kind, v, 'mux')) 'mux': _muxSettings,
   };
+}
+
+/// The share link the form's values stand for; null when the values cannot
+/// form a node or its protocol has no link.
+String? buildNodeLink(NodeKind kind, Map<String, String> values) {
+  final outbound = buildNodeOutbound(kind, values);
+  return outbound == null ? null : nodeShareLink(outbound);
 }
 
 /// The outbound the form's values make, or null when they make none.
@@ -461,14 +791,10 @@ Map<String, dynamic>? buildNodeOutbound(
   Map<String, String> values,
 ) {
   if (nodeFormProblem(kind, values) != null) return null;
-  if (kind == NodeKind.socks ||
-      kind == NodeKind.http ||
-      kind == NodeKind.mieru) {
-    return _withRegion(_directOutbound(kind, values), values);
-  }
-  final link = buildNodeLink(kind, values);
-  final outbound = link == null ? null : parseShareLink(link);
-  return outbound == null ? null : _withRegion(outbound, values);
+  return _withRegion(
+    _withExtras(kind, values, _outbound(kind, values)),
+    values,
+  );
 }
 
 /// The country the user placed the server in is kept beside the outbound, not
@@ -485,6 +811,8 @@ Map<String, dynamic> _map(Object? value) =>
     value is Map ? Map<String, dynamic>.from(value) : const {};
 
 String _str(Object? value) => value == null ? '' : '$value';
+
+String _join(Object? value) => value is List ? value.join(',') : _str(value);
 
 bool _sameJson(Object? a, Object? b) {
   if (a is Map && b is Map) {
@@ -513,38 +841,75 @@ NodeKind? _kindOfProtocol(String protocol) => switch (protocol) {
   _ => null,
 };
 
-Map<String, String> _streamValues(Map<String, dynamic> outbound) {
-  final stream = _map(outbound['streamSettings']);
+Map<String, String> _tlsValues(Map<String, dynamic> tls) => {
+  'sni': _str(tls['serverName']),
+  'alpn': _join(tls['alpn']),
+  'fingerprint': tls['fingerprint'] == null
+      ? nodeDefaultChoice
+      : _str(tls['fingerprint']),
+  'allowInsecure': '${tls['allowInsecure'] == true}',
+  'ech': _str(tls['echConfigList']),
+  'pin': _str(tls['pinnedPeerCertSha256']),
+};
+
+Map<String, String> _streamValues(Map<String, dynamic> stream) {
   final network = _str(stream['network']);
-  final tls = _map(stream['tlsSettings']);
-  final reality = _map(stream['realitySettings']);
-  final ws = _map(stream['wsSettings']);
+  final header = _map(_map(stream['rawSettings'])['header']);
+  final request = _map(header['request']);
+  final options = _map(stream['${network}Settings']);
   final grpc = _map(stream['grpcSettings']);
+  final reality = _map(stream['realitySettings']);
   final security = _str(stream['security']);
+  final rawPath = request['path'];
   return {
-    'network': network.isEmpty ? 'tcp' : network,
-    'path': _str(ws['path']),
-    'host': _str(ws['host']),
+    'network': network.isEmpty || network == 'tcp' ? 'raw' : network,
+    'headerType': header['type'] == 'http' ? 'http' : 'none',
+    'path': header['type'] == 'http'
+        ? (rawPath is List && rawPath.isNotEmpty ? _str(rawPath.first) : '')
+        : _str(options['path']),
+    'host': header['type'] == 'http'
+        ? _join(_map(request['headers'])['Host'])
+        : _str(options['host']),
+    'mode': _str(options['mode']),
     'serviceName': _str(grpc['serviceName']),
-    'tls': '${security == 'tls'}',
+    'multiMode': '${grpc['multiMode'] == true}',
     'security': security.isEmpty ? 'none' : security,
-    'sni': _str(tls['serverName'] ?? reality['serverName']),
-    'allowInsecure': '${tls['allowInsecure'] == true}',
-    'fingerprint': _str(reality['fingerprint']),
-    'publicKey': _str(reality['publicKey']),
-    'shortId': _str(reality['shortId']),
+    ..._tlsValues(_map(stream['tlsSettings'])),
+    if (security == 'reality') ...{
+      'sni': _str(reality['serverName']),
+      'fingerprint': _str(reality['fingerprint']),
+      'publicKey': _str(reality['publicKey']),
+      'shortId': _str(reality['shortId']),
+      'spiderX': reality['spiderX'] == '/' ? '' : _str(reality['spiderX']),
+      'mldsa65Verify': _str(reality['mldsa65Verify']),
+    },
+  };
+}
+
+/// What the extras of [_withExtras] read back as.
+Map<String, String> _extraValues(Map<String, dynamic> outbound) {
+  final stream = _map(outbound['streamSettings']);
+  final sockopt = _map(stream['sockopt']);
+  final tcpMasks = _map(stream['finalmask'])['tcp'];
+  return {
+    'tcpFastOpen': '${sockopt['tcpFastOpen'] == true}',
+    'dialerProxy': _str(sockopt['dialerProxy']),
+    'fragment':
+        '${tcpMasks is List && tcpMasks.any((mask) => _map(mask)['type'] == 'fragment')}',
+    'mux': '${_map(outbound['mux'])['enabled'] == true}',
   };
 }
 
 Map<String, String> _valuesOf(NodeKind kind, Map<String, dynamic> outbound) {
   final settings = _map(outbound['settings']);
   final stream = _map(outbound['streamSettings']);
-  final tls = _map(stream['tlsSettings']);
+  final tls = _tlsValues(_map(stream['tlsSettings']));
   final common = {
     'address': _str(settings['address']),
     'port': _str(settings['port']),
     'remark': _str(outbound['tag']),
     'region': _str(outbound['region']),
+    ..._extraValues(outbound),
   };
   switch (kind) {
     case NodeKind.shadowsocks:
@@ -556,21 +921,23 @@ Map<String, String> _valuesOf(NodeKind kind, Map<String, dynamic> outbound) {
     case NodeKind.vmess:
       return {
         ...common,
-        ..._streamValues(outbound),
+        ..._streamValues(stream),
         'uuid': _str(settings['id']),
-        'security': _str(settings['security']),
+        'method': _str(settings['security']),
       };
     case NodeKind.vless:
+      final encryption = _str(settings['encryption']);
       return {
         ...common,
-        ..._streamValues(outbound),
+        ..._streamValues(stream),
         'uuid': _str(settings['id']),
+        'encryption': encryption == 'none' ? '' : encryption,
         'flow': settings['flow'] == null ? 'none' : _str(settings['flow']),
       };
     case NodeKind.trojan:
       return {
         ...common,
-        ..._streamValues(outbound),
+        ..._streamValues(stream),
         'password': _str(settings['password']),
       };
     case NodeKind.hysteria:
@@ -586,55 +953,55 @@ Map<String, String> _valuesOf(NodeKind kind, Map<String, dynamic> outbound) {
       };
     case NodeKind.hysteria2:
       final udp = _map(stream['finalmask'])['udp'];
-      final salamander = udp is List
-          ? udp.whereType<Map>().where((m) => m['type'] == 'salamander')
-          : const <Map>[];
+      Map<String, dynamic> mask(String type) {
+        final masks = udp is List
+            ? udp.map(_map)
+            : const <Map<String, dynamic>>[];
+        return _map(
+          masks.where((m) => m['type'] == type).firstOrNull?['settings'],
+        );
+      }
+
       return {
         ...common,
+        ...tls,
         'password': _str(_map(stream['hysteria2Settings'])['auth']),
-        'sni': _str(tls['serverName']),
-        'allowInsecure': '${tls['allowInsecure'] == true}',
-        'obfsPassword': salamander.isEmpty
-            ? ''
-            : _str(_map(salamander.first['settings'])['password']),
+        'ports': _str(mask('udphop')['remotePorts']),
+        'obfsPassword': _str(mask('salamander')['password']),
       };
     case NodeKind.tuic:
       return {
         ...common,
+        ...tls,
         'uuid': _str(settings['id']),
         'password': _str(settings['password']),
         'congestion': _str(settings['congestionControl']),
-        'sni': _str(tls['serverName']),
-        'allowInsecure': '${tls['allowInsecure'] == true}',
+        'udpRelay': settings['udpStream'] == true ? 'quic' : 'native',
       };
     case NodeKind.anytls:
-      return {
-        ...common,
-        'password': _str(settings['password']),
-        'sni': _str(tls['serverName']),
-        'allowInsecure': '${tls['allowInsecure'] == true}',
-      };
+      return {...common, ...tls, 'password': _str(settings['password'])};
     case NodeKind.socks || NodeKind.http:
       return {
         ...common,
+        ...tls,
         'username': _str(settings['user']),
         'password': _str(settings['pass']),
-        'tls': '${stream.isNotEmpty}',
-        'sni': _str(tls['serverName']),
-        'allowInsecure': '${tls['allowInsecure'] == true}',
+        'security': stream['security'] == 'tls' ? 'tls' : 'none',
       };
     case NodeKind.mieru:
+      String level(Object? value, String prefix) => value == null
+          ? nodeDefaultChoice
+          : _str(
+              value,
+            ).replaceFirst(prefix, '').toLowerCase().replaceAll('_', '-');
       return {
         ...common,
         'username': _str(settings['username']),
         'password': _str(settings['password']),
         'transport': _str(settings['transport']),
-        'multiplexing': _str(
-          settings['multiplexing'],
-        ).replaceFirst('MULTIPLEXING_', '').toLowerCase(),
-        'handshake': _str(
-          settings['handshakeMode'],
-        ).replaceFirst('HANDSHAKE_', '').toLowerCase().replaceAll('_', '-'),
+        'multiplexing': level(settings['multiplexing'], 'MULTIPLEXING_'),
+        'handshake': level(settings['handshakeMode'], 'HANDSHAKE_'),
+        'mtu': _str(settings['mtu']),
       };
   }
 }
@@ -647,7 +1014,8 @@ Map<String, String> _valuesOf(NodeKind kind, Map<String, dynamic> outbound) {
 ) {
   final kind = _kindOfProtocol(_str(outbound['protocol']));
   if (kind == null) return null;
-  final values = {...nodeDefaults(kind), ..._valuesOf(kind, outbound)};
+  final values = {...nodeDefaults(kind), ..._valuesOf(kind, outbound)}
+    ..removeWhere((key, _) => !nodeDefaults(kind).containsKey(key));
   final rebuilt = buildNodeOutbound(kind, values);
   if (rebuilt == null) return null;
   final original = {...outbound}..remove('tag');
@@ -663,9 +1031,24 @@ const _portableFields = {
   'password',
   'uuid',
   'username',
+  'network',
+  'headerType',
+  'path',
+  'host',
+  'mode',
+  'serviceName',
+  'multiMode',
   'sni',
   'allowInsecure',
+  'alpn',
+  'ech',
+  'pin',
+  'fingerprint',
+  'fragment',
   'obfsPassword',
+  'mux',
+  'tcpFastOpen',
+  'dialerProxy',
 };
 
 /// The values a server of [kind] starts with when it takes over [from] from
@@ -678,4 +1061,46 @@ Map<String, String> nodeValuesFor(NodeKind kind, Map<String, String> from) {
           ? from[entry.key]!
           : entry.value,
   };
+}
+
+/// The settings map that holds the server of [settings]: itself when flat, as
+/// the app writes it, or the first of `vnext` or `servers` of older configs.
+Map<String, dynamic>? _endpointHolder(Map<String, dynamic> settings) {
+  for (final key in ['vnext', 'servers']) {
+    final list = settings[key];
+    if (list is List && list.isNotEmpty && list.first is Map) {
+      return (list.first as Map).cast<String, dynamic>();
+    }
+  }
+  return settings.containsKey('address') ? settings : null;
+}
+
+/// Where the server of [outbound] is, or null when it names none, as with a
+/// protocol whose servers sit elsewhere.
+({String address, String port})? nodeEndpointOf(Map<String, dynamic> outbound) {
+  final holder = _endpointHolder(_map(outbound['settings']));
+  if (holder == null) return null;
+  return (address: _str(holder['address']), port: _str(holder['port']));
+}
+
+/// [outbound] with its name, address and port replaced and every other
+/// setting kept as it was.
+Map<String, dynamic> withNodeEndpoint(
+  Map<String, dynamic> outbound, {
+  required String name,
+  String? address,
+  int? port,
+}) {
+  final copy = (jsonDecode(jsonEncode(outbound)) as Map)
+      .cast<String, dynamic>();
+  copy['tag'] = name;
+  final settings = copy['settings'];
+  final holder = settings is Map
+      ? _endpointHolder(settings.cast<String, dynamic>())
+      : null;
+  if (holder != null) {
+    if (address != null) holder['address'] = address;
+    if (port != null) holder['port'] = port;
+  }
+  return copy;
 }

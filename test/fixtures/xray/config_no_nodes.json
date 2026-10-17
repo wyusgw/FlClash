@@ -43,6 +43,12 @@
     "rules": [
       {
         "inboundTag": [
+          "@node-dns"
+        ],
+        "outboundTag": "@direct"
+      },
+      {
+        "inboundTag": [
           "tun-in"
         ],
         "port": "53",

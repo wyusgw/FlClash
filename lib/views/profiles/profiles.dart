@@ -33,25 +33,19 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
     _isUpdating = true;
     final appLocalizations = context.appLocalizations;
     final profilesAction = ref.read(profilesActionProvider.notifier);
-    final messages = <UpdatingMessage>[];
     await Future.wait(
       profiles.map<Future>((profile) async {
         if (profile.type == ProfileType.file) return;
         try {
           await profilesAction.updateProfile(profile, showLoading: true);
         } catch (e) {
-          messages.add(
-            UpdatingMessage(
-              label: profile.realLabel,
-              message: userFacingErrorMessage(e, appLocalizations),
-            ),
+          dialogs.showNotifier(
+            '${profile.realLabel}：${userFacingErrorMessage(e, appLocalizations)}',
+            level: MessageLevel.error,
           );
         }
       }),
     );
-    if (messages.isNotEmpty) {
-      unawaited(dialogs.showAllUpdatingMessagesDialog(messages));
-    }
     _isUpdating = false;
   }
 
@@ -247,11 +241,15 @@ class ProfileActions {
 
   Future updateProfile(WidgetRef ref) async {
     if (profile.type == ProfileType.file) return;
-    await globalState.loadingRun(() async {
-      await ref
-          .read(profilesActionProvider.notifier)
-          .updateProfile(profile, showLoading: true);
-    }, tag: LoadingTag.profiles);
+    await globalState.loadingRun(
+      () async {
+        await ref
+            .read(profilesActionProvider.notifier)
+            .updateProfile(profile, showLoading: true);
+      },
+      tag: LoadingTag.profiles,
+      silence: true,
+    );
   }
 
   void showEditPage(BuildContext context) {

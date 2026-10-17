@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
@@ -27,7 +29,8 @@ void main() {
 
   late Directory tempDir;
 
-  setUpAll(() {
+  setUpAll(() async {
+    await AppLocalizations.load(const Locale('en'));
     tempDir = Directory.systemTemp.createTempSync('profile_save_test');
     PathProviderPlatform.instance = _FakePathProvider(tempDir.path);
   });
@@ -77,7 +80,13 @@ void main() {
             return '';
           },
         ),
-        throwsA(isA<MessageException>()),
+        throwsA(
+          isA<MessageException>().having(
+            (error) => error.message,
+            'message',
+            AppLocalizations.current.noUsableNodes,
+          ),
+        ),
       );
 
       expect(validated, isFalse);

@@ -28,7 +28,6 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
   late final TextEditingController _autoUpdateDurationController;
   late bool _autoUpdate;
   final _fileInfoNotifier = ValueNotifier<FileInfo?>(null);
-  late SetupAction _setupAction;
 
   @override
   void initState() {
@@ -39,7 +38,6 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
     _autoUpdateDurationController = TextEditingController(
       text: widget.profile.autoUpdateDuration.inMinutes.toString(),
     );
-    _setupAction = ref.read(setupActionProvider.notifier);
     _updateFileInfo();
   }
 
@@ -116,7 +114,6 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
     _autoUpdateDurationController.dispose();
     _fileInfoNotifier.dispose();
     super.dispose();
-    _setupAction.autoApplyProfile();
   }
 
   Future<void> _delete() async {

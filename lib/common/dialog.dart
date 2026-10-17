@@ -60,36 +60,6 @@ class Dialogs {
     );
   }
 
-  Future<bool?> showAllUpdatingMessagesDialog(
-    List<UpdatingMessage> messages,
-  ) async {
-    return showCommonDialog<bool>(
-      child: Builder(
-        builder: (context) {
-          final appLocalizations = context.appLocalizations;
-          return CommonDialog(
-            backgroundColor: context.colorScheme.surfaceContainerLow,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            title: appLocalizations.tip,
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(true);
-                },
-                child: Text(appLocalizations.confirm),
-              ),
-            ],
-            child: generateSectionV3(
-              items: messages.map(
-                (message) => _UpdatingMessageItem(message: message),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   void showNotifier(
     String text, {
     MessageLevel level = MessageLevel.info,
@@ -112,29 +82,6 @@ class Dialogs {
       return;
     }
     unawaited(launchUrl(Uri.parse(url)));
-  }
-}
-
-class _UpdatingMessageItem extends StatelessWidget {
-  final UpdatingMessage message;
-
-  const _UpdatingMessageItem({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return DecorationListItem(
-      minVerticalPadding: 12,
-      title: TooltipText(
-        text: Text(message.label, maxLines: 1, overflow: TextOverflow.ellipsis),
-      ),
-      subtitle: TooltipText(
-        text: Text(
-          message.message,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-    );
   }
 }
 

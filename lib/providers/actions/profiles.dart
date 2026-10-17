@@ -70,7 +70,9 @@ class ProfilesAction extends _$ProfilesAction {
   Future<void> updateProfiles() async {
     for (final profile in ref.read(profilesProvider)) {
       if (profile.type == ProfileType.file) continue;
-      await updateProfile(profile, showLoading: true);
+      await globalState.safeRun(
+        () => updateProfile(profile, showLoading: true),
+      );
     }
   }
 
@@ -106,15 +108,26 @@ class ProfilesAction extends _$ProfilesAction {
 
   /// Adds a server typed in by hand to the local profile: the one in use when
   /// it is a file, else the first file profile, else a new one.
-  Future<void> addManualNode(Map<String, dynamic> outbound) async {
+  Profile manualNodeProfile() {
     final current = ref.read(currentProfileProvider);
-    final target =
-        (current?.type == ProfileType.file ? current : null) ??
+    return (current?.type == ProfileType.file ? current : null) ??
         ref
             .read(profilesProvider)
             .where((profile) => profile.type == ProfileType.file)
             .firstOrNull ??
         Profile.normal(label: currentAppLocalizations.localProfile);
+  }
+
+  Future<List<String>> readNodeTags(Profile profile) async {
+    final text = await readTextFileTask(
+      await appPath.getProfilePath(profile.id.toString()),
+    );
+    if (text == null) return const [];
+    return [for (final node in parseSubscription(text)) '${node['tag']}'];
+  }
+
+  Future<void> addManualNode(Map<String, dynamic> outbound) async {
+    final target = manualNodeProfile();
     final saved = await globalState.loadingRun(
       tag: LoadingTag.profiles,
       () async {
@@ -134,6 +147,7 @@ class ProfilesAction extends _$ProfilesAction {
         );
       },
       title: currentAppLocalizations.addProfile,
+      silence: true,
     );
     if (saved == null) return;
     putProfile(saved);
@@ -218,6 +232,21 @@ class ProfilesAction extends _$ProfilesAction {
       return;
     }
     nodes[index] = outbound;
+    if (newTag != tag) {
+      for (final (i, node) in nodes.indexed) {
+        final stream = node['streamSettings'];
+        final sockopt = stream is Map ? stream['sockopt'] : null;
+        if (sockopt is Map && sockopt['dialerProxy'] == tag) {
+          nodes[i] = {
+            ...node,
+            'streamSettings': {
+              ...stream as Map<String, dynamic>,
+              'sockopt': {...sockopt, 'dialerProxy': newTag},
+            },
+          };
+        }
+      }
+    }
     final saved = await globalState.loadingRun(
       tag: LoadingTag.profiles,
       () => profile.saveFile(
@@ -279,8 +308,6 @@ class ProfilesAction extends _$ProfilesAction {
     final platformFile = await globalState.safeRun(picker.pickerFile);
     if (platformFile == null) return;
     final bytes = await platformFile.readBytes();
-    globalState.navigatorKey.currentState?.popUntil((route) => route.isFirst);
-    ref.read(currentPageLabelProvider.notifier).toProfiles();
     final profile = await globalState.loadingRun(
       tag: LoadingTag.profiles,
       () async {
@@ -289,6 +316,7 @@ class ProfilesAction extends _$ProfilesAction {
         ).saveFile(bytes, validate: (path) => _core.validateConfig(path));
       },
       title: currentAppLocalizations.addProfile,
+      silence: true,
     );
     if (profile != null) {
       putProfile(profile);
@@ -297,10 +325,6 @@ class ProfilesAction extends _$ProfilesAction {
   }
 
   Future<void> addProfileFormURL(String url, {String? label}) async {
-    if (globalState.navigatorKey.currentState?.canPop() ?? false) {
-      globalState.navigatorKey.currentState?.popUntil((route) => route.isFirst);
-    }
-    ref.read(currentPageLabelProvider.notifier).value = PageLabel.profiles;
     final profile = await globalState.loadingRun(
       tag: LoadingTag.profiles,
       () async {
@@ -310,6 +334,7 @@ class ProfilesAction extends _$ProfilesAction {
         ).update(validate: (path) => _core.validateConfig(path));
       },
       title: currentAppLocalizations.addProfile,
+      silence: true,
     );
     if (profile != null) {
       putProfile(profile);

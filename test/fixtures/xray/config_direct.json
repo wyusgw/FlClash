@@ -168,6 +168,19 @@
       }
     },
     {
+      "tag": "mieru-range",
+      "protocol": "mieru",
+      "settings": {
+        "address": "mi.example.com",
+        "portRange": "2000-2010",
+        "username": "user",
+        "password": "pass",
+        "transport": "UDP",
+        "multiplexing": "MULTIPLEXING_HIGH",
+        "mtu": 1400
+      }
+    },
+    {
       "tag": "@direct",
       "protocol": "freedom"
     },
@@ -183,6 +196,12 @@
   "routing": {
     "domainStrategy": "IpIfNonMatch",
     "rules": [
+      {
+        "inboundTag": [
+          "@node-dns"
+        ],
+        "outboundTag": "@direct"
+      },
       {
         "inboundTag": [
           "tun-in"

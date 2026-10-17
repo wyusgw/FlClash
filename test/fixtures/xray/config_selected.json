@@ -168,6 +168,19 @@
       }
     },
     {
+      "tag": "mieru-range",
+      "protocol": "mieru",
+      "settings": {
+        "address": "mi.example.com",
+        "portRange": "2000-2010",
+        "username": "user",
+        "password": "pass",
+        "transport": "UDP",
+        "multiplexing": "MULTIPLEXING_HIGH",
+        "mtu": 1400
+      }
+    },
+    {
       "tag": "@direct",
       "protocol": "freedom"
     },
@@ -183,6 +196,12 @@
   "routing": {
     "domainStrategy": "IpIfNonMatch",
     "rules": [
+      {
+        "inboundTag": [
+          "@node-dns"
+        ],
+        "outboundTag": "@direct"
+      },
       {
         "inboundTag": [
           "tun-in"
@@ -216,6 +235,34 @@
   },
   "dns": {
     "servers": [
+      {
+        "address": "223.5.5.5",
+        "domains": [
+          "full:vm.example.com",
+          "full:vl.example.com",
+          "full:tj.example.com",
+          "full:hy.example.com",
+          "full:tu.example.com",
+          "full:at.example.com",
+          "full:mi.example.com"
+        ],
+        "skipFallback": true,
+        "tag": "@node-dns"
+      },
+      {
+        "address": "119.29.29.29",
+        "domains": [
+          "full:vm.example.com",
+          "full:vl.example.com",
+          "full:tj.example.com",
+          "full:hy.example.com",
+          "full:tu.example.com",
+          "full:at.example.com",
+          "full:mi.example.com"
+        ],
+        "skipFallback": true,
+        "tag": "@node-dns"
+      },
       {
         "address": "223.5.5.5",
         "domains": [

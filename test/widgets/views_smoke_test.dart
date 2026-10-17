@@ -10,6 +10,7 @@ import 'package:fl_clash/views/config/user_agents.dart';
 import 'package:fl_clash/views/hotkey.dart';
 import 'package:fl_clash/views/theme.dart';
 import 'package:fl_clash/views/views.dart';
+import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -101,7 +102,7 @@ void main() {
       );
       await tester.pump();
 
-      final target = find.text(entry.key);
+      final target = find.widgetWithText(GroupedRow, entry.key);
       await tester.scrollUntilVisible(
         target,
         500,

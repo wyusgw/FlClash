@@ -64,6 +64,16 @@ class _StoredNodeAction extends ProfilesAction {
   ) async => outbound;
 }
 
+class _FailingUpdateAction extends ProfilesAction {
+  @override
+  Future<void> updateProfile(
+    Profile profile, {
+    bool showLoading = false,
+  }) async {
+    throw Exception('subscription unreachable');
+  }
+}
+
 void main() {
   late ProviderContainer container;
 
@@ -74,6 +84,7 @@ void main() {
     Widget page = const HomeView(),
     List<Override> overrides = const [],
     List<Profile> others = const [],
+    bool withStatusManager = false,
   }) async {
     tester.view.physicalSize = const Size(900, 900);
     tester.view.devicePixelRatio = 1;
@@ -100,7 +111,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: TestApp(child: page),
+        child: TestApp(withStatusManager: withStatusManager, child: page),
       ),
     );
     await tester.pump();
@@ -479,6 +490,25 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.textContaining('ms'), findsNothing);
+    });
+
+    testWidgets('an update that fails says so', (tester) async {
+      await pumpHome(
+        tester,
+        profile: _profile(),
+        nodes: _nodes,
+        overrides: [
+          profilesActionProvider.overrideWith(_FailingUpdateAction.new),
+        ],
+        withStatusManager: true,
+      );
+
+      await tester.tap(find.byTooltip('Update').first);
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.textContaining('subscription unreachable'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 5));
     });
 
     testWidgets('the buttons carry no hover or press shade', (tester) async {

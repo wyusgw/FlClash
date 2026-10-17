@@ -15,11 +15,14 @@ import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'
+    show UncontrolledProviderScope;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:riverpod/riverpod.dart';
 
+import '../helpers/test_app.dart';
 import '../helpers/test_profiles.dart';
 
 class _MockCore extends Mock implements CoreHandlerInterface {}
@@ -246,6 +249,31 @@ void main() {
     expect(container.read(currentProfileIdProvider), subscription.id);
   });
 
+  testWidgets(
+    'adding a subscription leaves the user on the page they were on',
+    (tester) async {
+      build();
+      container
+          .read(currentPageLabelProvider.notifier)
+          .toPage(PageLabel.proxies);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const TestApp(child: SizedBox()),
+        ),
+      );
+
+      await tester.runAsync(
+        () => container
+            .read(profilesActionProvider.notifier)
+            .addProfileFormURL('http://127.0.0.1:1/sub'),
+      );
+      await tester.pump();
+
+      expect(container.read(currentPageLabelProvider), PageLabel.proxies);
+    },
+  );
+
   group('replaceNode', () {
     Future<Profile> twoNodes() async {
       build();
@@ -306,6 +334,34 @@ void main() {
         'first',
         'renamed',
       ]);
+    });
+
+    test('a renamed node is still the one the others go through', () async {
+      final profile = await twoNodes();
+      await replace(profile, 'first', {
+        ..._node('first'),
+        'streamSettings': {
+          'sockopt': {'dialerProxy': 'second'},
+        },
+      });
+
+      await replace(profile, 'second', _node('renamed'));
+
+      final nodes = await outboundsOf(profile);
+      expect(nodes.first['streamSettings'], {
+        'sockopt': {'dialerProxy': 'renamed'},
+      });
+    });
+
+    test('lists the names of the nodes a profile holds', () async {
+      final profile = await twoNodes();
+
+      expect(
+        await container
+            .read(profilesActionProvider.notifier)
+            .readNodeTags(profile),
+        ['first', 'second'],
+      );
     });
 
     test('a name another node has is refused and nothing changes', () async {

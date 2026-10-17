@@ -22,9 +22,9 @@ const _messageSwipeBackDuration = Duration(milliseconds: 300);
 const _messageEnterScale = 0.94;
 const _swipeDismissFraction = 0.35;
 const _swipeDismissVelocity = 700.0;
-const _messageMinWidth = 132.0;
-const _messageMaxWidth = 280.0;
-const _messageGlyphSize = 34.0;
+const _messageMinWidth = 116.0;
+const _messageMaxWidth = 184.0;
+const _messageGlyphSize = 30.0;
 const _messageColor = Color(0xE62C2C2E);
 const _messageContentColor = Color(0xFFFFFFFF);
 
@@ -495,14 +495,14 @@ class _MessageCardState extends State<_MessageCard>
         child: Material(
           color: _messageColor,
           surfaceTintColor: Colors.transparent,
-          shape: AppShape.lg,
+          shape: AppShape.md,
           child: ConstrainedBox(
             constraints: const BoxConstraints(
               minWidth: _messageMinWidth,
               maxWidth: _messageMaxWidth,
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
               child: _MessageContent(
                 message: message,
                 onDismiss: widget.onDismiss,
@@ -532,13 +532,13 @@ class _MessageContent extends StatelessWidget {
           size: _messageGlyphSize,
           color: _messageContentColor,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 5),
         Text(
           message.text,
-          maxLines: 5,
+          maxLines: 8,
           textAlign: TextAlign.center,
           overflow: TextOverflow.ellipsis,
-          style: context.textTheme.labelLarge?.copyWith(
+          style: context.textTheme.labelMedium?.copyWith(
             color: _messageContentColor,
             fontWeight: FontWeight.w600,
           ),

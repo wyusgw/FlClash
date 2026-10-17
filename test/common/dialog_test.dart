@@ -1,17 +1,13 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/common/theme.dart';
-import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/manager/status_manager.dart';
-import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../helpers/glyph_finders.dart';
 import '../helpers/test_app.dart';
 
 Future<ProviderContainer> _pumpHost(
@@ -202,39 +198,6 @@ void main() {
     Navigator.of(outer).pop();
     await tester.pumpAndSettle();
     await result;
-  });
-
-  testWidgets('showAllUpdatingMessagesDialog lists every message', (
-    tester,
-  ) async {
-    await _pumpHost(tester);
-
-    const longMessage =
-        'failed to update provider because the Go core returned a very long '
-        'error message that cannot fit on a single line';
-    final result = dialogs.showAllUpdatingMessagesDialog(const [
-      UpdatingMessage(label: 'profile-a', message: 'updated'),
-      UpdatingMessage(label: 'profile-b', message: longMessage),
-    ]);
-    await tester.pumpAndSettle();
-
-    expect(find.text('profile-a'), findsOneWidget);
-    expect(find.text('profile-b'), findsOneWidget);
-    final messageText = tester.widget<Text>(find.text(longMessage));
-    expect(messageText.maxLines, 2);
-    expect(messageText.overflow, TextOverflow.ellipsis);
-    expect(find.byGlyph(AppGlyphs.error), findsNothing);
-    expect(
-      find.ancestor(
-        of: find.text(longMessage),
-        matching: find.byType(TooltipText),
-      ),
-      findsOneWidget,
-    );
-
-    await tester.tap(find.text('Confirm'));
-    await tester.pumpAndSettle();
-    expect(await result, isTrue);
   });
 
   testWidgets('showNotifier delivers text through the StatusManager host', (

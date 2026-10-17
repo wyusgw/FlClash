@@ -69,11 +69,11 @@ void main() {
       ),
       'HTTP 403': (
         dioError(DioExceptionType.badResponse, statusCode: 403),
-        (l) => l.networkAccessDeniedError(403),
+        (l) => l.networkAccessDeniedError,
       ),
       'HTTP 404': (
         dioError(DioExceptionType.badResponse, statusCode: 404),
-        (l) => l.networkNotFoundError(404),
+        (l) => l.networkNotFoundError,
       ),
       'HTTP 429': (
         dioError(DioExceptionType.badResponse, statusCode: 429),
@@ -81,11 +81,11 @@ void main() {
       ),
       'HTTP 502': (
         dioError(DioExceptionType.badResponse, statusCode: 502),
-        (l) => l.networkServerError(502),
+        (l) => l.networkServerError,
       ),
       'HTTP 400': (
         dioError(DioExceptionType.badResponse, statusCode: 400),
-        (l) => l.networkBadResponseError(400),
+        (l) => l.networkBadResponseError,
       ),
     };
     for (final MapEntry(key: name, value: (error, expected)) in cases.entries) {
@@ -122,13 +122,32 @@ void main() {
     expect(networkErrorMessage(StateError('boom'), appLocalizations), isNull);
   });
 
+  test('tells a server that never answered from one that refused', () {
+    for (final type in [
+      DioExceptionType.connectionTimeout,
+      DioExceptionType.connectionError,
+      DioExceptionType.badCertificate,
+      DioExceptionType.unknown,
+    ]) {
+      expect(isServerUnreachable(dioError(type)), isTrue, reason: '$type');
+    }
+    expect(
+      isServerUnreachable(
+        dioError(DioExceptionType.badResponse, statusCode: 404),
+      ),
+      isFalse,
+    );
+    expect(isServerUnreachable(dioError(DioExceptionType.cancel)), isFalse);
+    expect(isServerUnreachable(StateError('local')), isFalse);
+  });
+
   test('maps WebDAV status failures like any HTTP response', () {
     expect(
       networkErrorMessage(
         const DAVException(method: 'PUT', path: '/a', statusCode: 401),
         appLocalizations,
       ),
-      appLocalizations.networkAccessDeniedError(401),
+      appLocalizations.networkAccessDeniedError,
     );
   });
 
@@ -142,7 +161,7 @@ void main() {
         ),
         appLocalizations,
       ),
-      appLocalizations.networkAccessDeniedError(403),
+      appLocalizations.networkAccessDeniedError,
     );
     expect(
       networkErrorMessage(
@@ -152,7 +171,7 @@ void main() {
         ),
         appLocalizations,
       ),
-      appLocalizations.networkServerError(503),
+      appLocalizations.networkServerError,
     );
     expect(
       networkErrorMessage(

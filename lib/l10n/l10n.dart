@@ -4325,53 +4325,53 @@ class AppLocalizations {
     );
   }
 
-  /// `The server denied access (HTTP {code}). The link may have expired, or the credentials are wrong`
-  String networkAccessDeniedError(Object code) {
+  /// `The server denied access. The link may have expired, or the credentials are wrong`
+  String get networkAccessDeniedError {
     return Intl.message(
-      'The server denied access (HTTP $code). The link may have expired, or the credentials are wrong',
+      'The server denied access. The link may have expired, or the credentials are wrong',
       name: 'networkAccessDeniedError',
       desc: '',
-      args: [code],
+      args: [],
     );
   }
 
-  /// `Nothing was found at this address (HTTP {code}). Check that the URL is correct`
-  String networkNotFoundError(Object code) {
+  /// `Nothing was found at this address. Check that the URL is correct`
+  String get networkNotFoundError {
     return Intl.message(
-      'Nothing was found at this address (HTTP $code). Check that the URL is correct',
+      'Nothing was found at this address. Check that the URL is correct',
       name: 'networkNotFoundError',
       desc: '',
-      args: [code],
+      args: [],
     );
   }
 
-  /// `Too many requests (HTTP 429). Wait a moment and try again`
+  /// `Too many requests. Wait a moment and try again`
   String get networkRateLimitedError {
     return Intl.message(
-      'Too many requests (HTTP 429). Wait a moment and try again',
+      'Too many requests. Wait a moment and try again',
       name: 'networkRateLimitedError',
       desc: '',
       args: [],
     );
   }
 
-  /// `The server ran into a problem (HTTP {code}). Try again later`
-  String networkServerError(Object code) {
+  /// `The server ran into a problem. Try again later`
+  String get networkServerError {
     return Intl.message(
-      'The server ran into a problem (HTTP $code). Try again later',
+      'The server ran into a problem. Try again later',
       name: 'networkServerError',
       desc: '',
-      args: [code],
+      args: [],
     );
   }
 
-  /// `The server rejected the request (HTTP {code})`
-  String networkBadResponseError(Object code) {
+  /// `The server rejected the request`
+  String get networkBadResponseError {
     return Intl.message(
-      'The server rejected the request (HTTP $code)',
+      'The server rejected the request',
       name: 'networkBadResponseError',
       desc: '',
-      args: [code],
+      args: [],
     );
   }
 
@@ -5253,6 +5253,161 @@ class AppLocalizations {
       desc: '',
       args: [],
     );
+  }
+
+  /// `Transport`
+  String get transportMethod {
+    return Intl.message(
+      'Transport',
+      name: 'transportMethod',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Encryption`
+  String get encryption {
+    return Intl.message('Encryption', name: 'encryption', desc: '', args: []);
+  }
+
+  /// `Header type`
+  String get headerType {
+    return Intl.message('Header type', name: 'headerType', desc: '', args: []);
+  }
+
+  /// `Multi mode`
+  String get multiMode {
+    return Intl.message('Multi mode', name: 'multiMode', desc: '', args: []);
+  }
+
+  /// `Certificate SHA256`
+  String get certSha256 {
+    return Intl.message(
+      'Certificate SHA256',
+      name: 'certSha256',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Fragment`
+  String get fragment {
+    return Intl.message('Fragment', name: 'fragment', desc: '', args: []);
+  }
+
+  /// `TCP Fast Open`
+  String get tcpFastOpen {
+    return Intl.message(
+      'TCP Fast Open',
+      name: 'tcpFastOpen',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy via`
+  String get proxyVia {
+    return Intl.message('Proxy via', name: 'proxyVia', desc: '', args: []);
+  }
+
+  /// `UDP relay`
+  String get udpRelay {
+    return Intl.message('UDP relay', name: 'udpRelay', desc: '', args: []);
+  }
+
+  /// `Port hopping`
+  String get portHopping {
+    return Intl.message(
+      'Port hopping',
+      name: 'portHopping',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `There was a problem with the server URL. Please try again later. If the problem persists, turn off the VPN and try again, or contact your proxy service provider.`
+  String get subscriptionUrlError {
+    return Intl.message(
+      'There was a problem with the server URL. Please try again later. If the problem persists, turn off the VPN and try again, or contact your proxy service provider.',
+      name: 'subscriptionUrlError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No usable nodes were found. Check that the link or file is correct, or contact your service provider.`
+  String get noUsableNodes {
+    return Intl.message(
+      'No usable nodes were found. Check that the link or file is correct, or contact your service provider.',
+      name: 'noUsableNodes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `DNS server`
+  String get dnsServer {
+    return Intl.message('DNS server', name: 'dnsServer', desc: '', args: []);
+  }
+
+  /// `Enter an IP address (port optional), localhost, or an address such as https://, tcp:// or quic+local://`
+  String get dnsServerTip {
+    return Intl.message(
+      'Enter an IP address (port optional), localhost, or an address such as https://, tcp:// or quic+local://',
+      name: 'dnsServerTip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy DNS`
+  String get proxyDns {
+    return Intl.message('Proxy DNS', name: 'proxyDns', desc: '', args: []);
+  }
+
+  /// `Looks up domains that go through the proxy, asked through the node. The first one is tried first.`
+  String get proxyDnsDesc {
+    return Intl.message(
+      'Looks up domains that go through the proxy, asked through the node. The first one is tried first.',
+      name: 'proxyDnsDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Direct DNS`
+  String get directDns {
+    return Intl.message('Direct DNS', name: 'directDns', desc: '', args: []);
+  }
+
+  /// `Looks up mainland China domains and the nodes' own addresses, asked directly. The first one is tried first.`
+  String get directDnsDesc {
+    return Intl.message(
+      'Looks up mainland China domains and the nodes\' own addresses, asked directly. The first one is tried first.',
+      name: 'directDnsDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Configure DNS`
+  String get configureDns {
+    return Intl.message(
+      'Configure DNS',
+      name: 'configureDns',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Manual`
+  String get manual {
+    return Intl.message('Manual', name: 'manual', desc: '', args: []);
+  }
+
+  /// `Add Server`
+  String get addServer {
+    return Intl.message('Add Server', name: 'addServer', desc: '', args: []);
   }
 }
 

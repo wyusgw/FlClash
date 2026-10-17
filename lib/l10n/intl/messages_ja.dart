@@ -66,39 +66,29 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m20(count) => "${count} か月前";
 
-  static String m21(code) =>
-      "サーバーがアクセスを拒否しました（HTTP ${code}）。リンクの期限切れか、認証情報が誤っている可能性があります";
+  static String m21(detail) => "ネットワークリクエストに失敗しました：${detail}";
 
-  static String m22(code) => "サーバーがリクエストを拒否しました（HTTP ${code}）";
+  static String m22(label) => "${label}はまだありません";
 
-  static String m23(code) =>
-      "このアドレスには何も見つかりませんでした（HTTP ${code}）。URL が正しいか確認してください";
+  static String m23(label) => "${label}は数値である必要があります";
 
-  static String m24(detail) => "ネットワークリクエストに失敗しました：${detail}";
+  static String m24(appName) => "${appName} を開く";
 
-  static String m25(code) => "サーバーで問題が発生しました（HTTP ${code}）。しばらくしてから再試行してください";
+  static String m25(label) => "${label} は 1024〜49151 の範囲で指定してください";
 
-  static String m26(label) => "${label}はまだありません";
+  static String m26(count) => "${count} 件のルール";
 
-  static String m27(label) => "${label}は数値である必要があります";
+  static String m27(appName) => "${appName}（セーフモード）";
 
-  static String m28(appName) => "${appName} を開く";
+  static String m28(count) => "${count} 件選択中";
 
-  static String m29(label) => "${label} は 1024〜49151 の範囲で指定してください";
+  static String m29(time) => "${time} に検査";
 
-  static String m30(count) => "${count} 件のルール";
+  static String m30(label) => "${label}は1項目のみ指定できます";
 
-  static String m31(appName) => "${appName}（セーフモード）";
+  static String m31(label) => "${label}はURLである必要があります";
 
-  static String m32(count) => "${count} 件選択中";
-
-  static String m33(time) => "${time} に検査";
-
-  static String m34(label) => "${label}は1項目のみ指定できます";
-
-  static String m35(label) => "${label}はURLである必要があります";
-
-  static String m36(count) => "${count} 年前";
+  static String m32(count) => "${count} 年前";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -137,6 +127,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "addRuleSetDesc": MessageLookupByLibrary.simpleMessage(
       "URL を空にすると空のルールセットを作成し、手動でルールを追加できます。ファイルや URL には Xray のルーティングルール（設定全体、routing オブジェクト、またはルールの配列）を指定します。",
     ),
+    "addServer": MessageLookupByLibrary.simpleMessage("サーバを追加"),
     "addSsid": MessageLookupByLibrary.simpleMessage("SSIDを追加"),
     "addSuccess": MessageLookupByLibrary.simpleMessage("追加しました"),
     "addWidget": MessageLookupByLibrary.simpleMessage("ウィジェットを追加"),
@@ -229,6 +220,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "cameraUnavailable": MessageLookupByLibrary.simpleMessage("カメラを使用できません"),
     "cancel": MessageLookupByLibrary.simpleMessage("キャンセル"),
     "cancelSelectAll": MessageLookupByLibrary.simpleMessage("すべて選択解除"),
+    "certSha256": MessageLookupByLibrary.simpleMessage("証明書 SHA256"),
     "changeProxyFailedTip": MessageLookupByLibrary.simpleMessage(
       "プロキシの切り替えに失敗したため、前回の選択に戻しました",
     ),
@@ -266,6 +258,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "colors": MessageLookupByLibrary.simpleMessage("カラー"),
     "columns": MessageLookupByLibrary.simpleMessage("列数"),
     "compatible": MessageLookupByLibrary.simpleMessage("互換モード"),
+    "configureDns": MessageLookupByLibrary.simpleMessage("DNS を構成"),
     "confirm": MessageLookupByLibrary.simpleMessage("OK"),
     "confirmClearAllData": MessageLookupByLibrary.simpleMessage(
       "すべてのデータを消去してもよろしいですか？",
@@ -347,6 +340,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "開発者モードが有効になりました。",
     ),
     "direct": MessageLookupByLibrary.simpleMessage("ダイレクト"),
+    "directDns": MessageLookupByLibrary.simpleMessage("直接接続 DNS"),
+    "directDnsDesc": MessageLookupByLibrary.simpleMessage(
+      "中国本土のドメインとノード自身のアドレスを直接問い合わせます。上にあるものから優先して使います。",
+    ),
     "directModeDesc": MessageLookupByLibrary.simpleMessage(
       "プロキシを使わずにトラフィックを転送します",
     ),
@@ -358,6 +355,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "distribution": MessageLookupByLibrary.simpleMessage("内訳"),
     "dnsHijacking": MessageLookupByLibrary.simpleMessage("DNSハイジャック"),
     "dnsQueries": MessageLookupByLibrary.simpleMessage("DNSクエリ"),
+    "dnsServer": MessageLookupByLibrary.simpleMessage("DNS サーバー"),
+    "dnsServerTip": MessageLookupByLibrary.simpleMessage(
+      "IP アドレス（ポート指定可）、localhost、または https://、tcp://、quic+local:// などの形式のアドレスを入力してください",
+    ),
     "docked": MessageLookupByLibrary.simpleMessage("固定"),
     "domain": MessageLookupByLibrary.simpleMessage("ドメイン"),
     "done": MessageLookupByLibrary.simpleMessage("完了"),
@@ -372,6 +373,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "emptyTip": m8,
     "en": MessageLookupByLibrary.simpleMessage("英語"),
     "enabled": MessageLookupByLibrary.simpleMessage("有効"),
+    "encryption": MessageLookupByLibrary.simpleMessage("暗号化"),
     "entries": MessageLookupByLibrary.simpleMessage(" 件"),
     "error": MessageLookupByLibrary.simpleMessage("エラー"),
     "exclude": MessageLookupByLibrary.simpleMessage("最近のタスクから隠す"),
@@ -413,6 +415,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "コアを強制再起動してもよろしいですか？",
     ),
     "format": MessageLookupByLibrary.simpleMessage("形式"),
+    "fragment": MessageLookupByLibrary.simpleMessage("フラグメント"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("フルーツサラダ"),
     "general": MessageLookupByLibrary.simpleMessage("一般"),
     "geoRegion": MessageLookupByLibrary.simpleMessage("サーバーの国を検索"),
@@ -431,6 +434,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "hapticFeedbackDesc": MessageLookupByLibrary.simpleMessage(
       "プロキシをオン・オフしたとき、下部バーでページを切り替えたとき、スクロールバーをドラッグしたときに振動します",
     ),
+    "headerType": MessageLookupByLibrary.simpleMessage("ヘッダータイプ"),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
       "Helper サービスが利用できないため、TUN モードを有効にできません。FlClash を再インストールしてください。",
     ),
@@ -568,6 +572,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "logsTest": MessageLookupByLibrary.simpleMessage("ログテスト"),
     "loopback": MessageLookupByLibrary.simpleMessage("UWP ループバック解除"),
     "loose": MessageLookupByLibrary.simpleMessage("ゆったり"),
+    "manual": MessageLookupByLibrary.simpleMessage("手動"),
     "matchDomain": MessageLookupByLibrary.simpleMessage("完全一致ドメイン"),
     "matchDomainSuffix": MessageLookupByLibrary.simpleMessage("ドメインサフィックス"),
     "matchKeyword": MessageLookupByLibrary.simpleMessage("ドメインキーワード"),
@@ -606,12 +611,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "monochromeScheme": MessageLookupByLibrary.simpleMessage("モノクローム"),
     "monthsAgo": m20,
     "more": MessageLookupByLibrary.simpleMessage("その他"),
+    "multiMode": MessageLookupByLibrary.simpleMessage("マルチモード"),
     "multiplexing": MessageLookupByLibrary.simpleMessage("多重化"),
     "name": MessageLookupByLibrary.simpleMessage("名前"),
     "navigationBarStyle": MessageLookupByLibrary.simpleMessage("ボトムバー"),
     "network": MessageLookupByLibrary.simpleMessage("ネットワーク"),
-    "networkAccessDeniedError": m21,
-    "networkBadResponseError": m22,
+    "networkAccessDeniedError": MessageLookupByLibrary.simpleMessage(
+      "サーバーがアクセスを拒否しました。リンクの期限切れか、認証情報が誤っている可能性があります",
+    ),
+    "networkBadResponseError": MessageLookupByLibrary.simpleMessage(
+      "サーバーがリクエストを拒否しました",
+    ),
     "networkCancelledError": MessageLookupByLibrary.simpleMessage(
       "リクエストはキャンセルされました",
     ),
@@ -622,12 +632,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkHostLookupError": MessageLookupByLibrary.simpleMessage(
       "サーバーのアドレスを解決できませんでした。URL が正しいこと、DNS が使えることを確認してください",
     ),
-    "networkNotFoundError": m23,
-    "networkRateLimitedError": MessageLookupByLibrary.simpleMessage(
-      "リクエストが多すぎます（HTTP 429）。しばらく待ってから再試行してください",
+    "networkNotFoundError": MessageLookupByLibrary.simpleMessage(
+      "このアドレスには何も見つかりませんでした。URL が正しいか確認してください",
     ),
-    "networkRequestFailed": m24,
-    "networkServerError": m25,
+    "networkRateLimitedError": MessageLookupByLibrary.simpleMessage(
+      "リクエストが多すぎます。しばらく待ってから再試行してください",
+    ),
+    "networkRequestFailed": m21,
+    "networkServerError": MessageLookupByLibrary.simpleMessage(
+      "サーバーで問題が発生しました。しばらくしてから再試行してください",
+    ),
     "networkSpeed": MessageLookupByLibrary.simpleMessage("ネットワーク速度"),
     "networkTimeoutError": MessageLookupByLibrary.simpleMessage(
       "リクエストがタイムアウトしました。ネットワークまたはプロキシを確認してから再試行してください",
@@ -646,6 +660,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "noNetworkApp": MessageLookupByLibrary.simpleMessage("ネットワーク不使用アプリ"),
     "noRules": MessageLookupByLibrary.simpleMessage("ルールはまだありません"),
     "noSearchResults": MessageLookupByLibrary.simpleMessage("一致する結果はありません"),
+    "noUsableNodes": MessageLookupByLibrary.simpleMessage(
+      "使用できるノードが見つかりませんでした。リンクまたはファイルの内容が正しいか確認するか、サービス提供者にお問い合わせください。",
+    ),
     "nodeInvalid": MessageLookupByLibrary.simpleMessage(
       "これらの値では使用可能なサーバーを作成できません。",
     ),
@@ -657,8 +674,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "nullProfileDesc": MessageLookupByLibrary.simpleMessage(
       "プロファイルを追加して始めましょう",
     ),
-    "nullTip": m26,
-    "numberTip": m27,
+    "nullTip": m22,
+    "numberTip": m23,
     "obfsPassword": MessageLookupByLibrary.simpleMessage("難読化パスワード"),
     "off": MessageLookupByLibrary.simpleMessage("オフ"),
     "on": MessageLookupByLibrary.simpleMessage("オン"),
@@ -669,7 +686,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "onlyStatisticsProxy": MessageLookupByLibrary.simpleMessage(
       "プロキシトラフィックのみ集計",
     ),
-    "openApp": m28,
+    "openApp": m24,
     "optional": MessageLookupByLibrary.simpleMessage("任意"),
     "options": MessageLookupByLibrary.simpleMessage("オプション"),
     "other": MessageLookupByLibrary.simpleMessage("その他"),
@@ -694,7 +711,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "policyDirect": MessageLookupByLibrary.simpleMessage("直接接続"),
     "policyProxy": MessageLookupByLibrary.simpleMessage("プロキシ"),
     "port": MessageLookupByLibrary.simpleMessage("ポート"),
-    "portTip": m29,
+    "portHopping": MessageLookupByLibrary.simpleMessage("ポートホッピング"),
+    "portTip": m25,
     "prerequisites": MessageLookupByLibrary.simpleMessage("前提条件"),
     "pressKeyboard": MessageLookupByLibrary.simpleMessage("キーの組み合わせを押してください"),
     "preview": MessageLookupByLibrary.simpleMessage("プレビュー"),
@@ -723,9 +741,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "project": MessageLookupByLibrary.simpleMessage("プロジェクト"),
     "providers": MessageLookupByLibrary.simpleMessage("外部リソース"),
     "proxies": MessageLookupByLibrary.simpleMessage("プロキシ"),
+    "proxyDns": MessageLookupByLibrary.simpleMessage("プロキシ DNS"),
+    "proxyDnsDesc": MessageLookupByLibrary.simpleMessage(
+      "プロキシ経由のドメインを、ノードを通して問い合わせます。上にあるものから優先して使います。",
+    ),
     "proxyGroup": MessageLookupByLibrary.simpleMessage("プロキシグループ"),
     "proxyNode": MessageLookupByLibrary.simpleMessage("プロキシノード"),
     "proxyProviders": MessageLookupByLibrary.simpleMessage("プロキシプロバイダー"),
+    "proxyVia": MessageLookupByLibrary.simpleMessage("経由するプロキシ"),
     "pruneCache": MessageLookupByLibrary.simpleMessage("キャッシュを整理"),
     "publicKey": MessageLookupByLibrary.simpleMessage("公開鍵"),
     "pureBlack": MessageLookupByLibrary.simpleMessage("ピュアブラック"),
@@ -787,7 +810,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeModeConfig": MessageLookupByLibrary.simpleMessage("設定を使用"),
     "ru": MessageLookupByLibrary.simpleMessage("ロシア語"),
     "rule": MessageLookupByLibrary.simpleMessage("ルール"),
-    "ruleCount": m30,
+    "ruleCount": m26,
     "ruleMatch": MessageLookupByLibrary.simpleMessage("一致条件"),
     "ruleModeDesc": MessageLookupByLibrary.simpleMessage("ルールに従ってトラフィックを転送します"),
     "rulePolicy": MessageLookupByLibrary.simpleMessage("ポリシー"),
@@ -807,7 +830,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "runTime": MessageLookupByLibrary.simpleMessage("起動時間"),
     "safeMode": MessageLookupByLibrary.simpleMessage("セーフモード"),
-    "safeModeAppTitle": m31,
+    "safeModeAppTitle": m27,
     "save": MessageLookupByLibrary.simpleMessage("保存"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("変更を保存しますか？"),
     "saveSuccess": MessageLookupByLibrary.simpleMessage("保存しました"),
@@ -827,7 +850,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "security": MessageLookupByLibrary.simpleMessage("セキュリティ"),
     "selectAll": MessageLookupByLibrary.simpleMessage("すべて選択"),
     "selected": MessageLookupByLibrary.simpleMessage("選択済み"),
-    "selectedCountTitle": m32,
+    "selectedCountTitle": m28,
     "server": MessageLookupByLibrary.simpleMessage("サーバー"),
     "serverName": MessageLookupByLibrary.simpleMessage("サーバー名 (SNI)"),
     "serverNodes": MessageLookupByLibrary.simpleMessage("サーバーノード"),
@@ -835,7 +858,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "serviceBlocked": MessageLookupByLibrary.simpleMessage("ブロック済み"),
     "serviceCheck": MessageLookupByLibrary.simpleMessage("検査"),
     "serviceCheckAll": MessageLookupByLibrary.simpleMessage("すべて検査"),
-    "serviceCheckedAt": m33,
+    "serviceCheckedAt": m29,
     "serviceComingSoon": MessageLookupByLibrary.simpleMessage("近日提供予定"),
     "serviceDisallowedIsp": MessageLookupByLibrary.simpleMessage(
       "許可されていない ISP",
@@ -869,7 +892,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "起動時にウィンドウを表示しません",
     ),
     "singleAdd": MessageLookupByLibrary.simpleMessage("個別追加"),
-    "singleValueTip": m34,
+    "singleValueTip": m30,
     "size": MessageLookupByLibrary.simpleMessage("サイズ"),
     "slide": MessageLookupByLibrary.simpleMessage("スライド"),
     "sort": MessageLookupByLibrary.simpleMessage("並べ替え"),
@@ -895,6 +918,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "購読 URL または Xray JSON",
     ),
     "subscriptionInfo": MessageLookupByLibrary.simpleMessage("サブスクリプション情報"),
+    "subscriptionUrlError": MessageLookupByLibrary.simpleMessage(
+      "サーバー URL に問題が発生しました。しばらくしてから再度お試しください。問題が解決しない場合は、VPN 接続をオフにして再試行するか、プロキシサービスの提供者にお問い合わせください。",
+    ),
     "suspended": MessageLookupByLibrary.simpleMessage("一時停止中…"),
     "switchProfile": MessageLookupByLibrary.simpleMessage("プロファイルを切り替え"),
     "sync": MessageLookupByLibrary.simpleMessage("同期"),
@@ -904,6 +930,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "tab": MessageLookupByLibrary.simpleMessage("タブ"),
     "tabAnimation": MessageLookupByLibrary.simpleMessage("タブアニメーション"),
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage("タップして許可"),
+    "tcpFastOpen": MessageLookupByLibrary.simpleMessage("TCP Fast Open"),
     "test": MessageLookupByLibrary.simpleMessage("テスト"),
     "testRules": MessageLookupByLibrary.simpleMessage("ルールをテスト"),
     "testRulesGeoNote": MessageLookupByLibrary.simpleMessage(
@@ -943,12 +970,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "trafficAll": MessageLookupByLibrary.simpleMessage("すべて"),
     "trafficProxy": MessageLookupByLibrary.simpleMessage("プロキシ"),
     "trafficUsage": MessageLookupByLibrary.simpleMessage("トラフィック統計"),
+    "transportMethod": MessageLookupByLibrary.simpleMessage("トランスポート"),
     "transportMode": MessageLookupByLibrary.simpleMessage("トランスポート"),
     "tun": MessageLookupByLibrary.simpleMessage("TUN"),
     "tunDesc": MessageLookupByLibrary.simpleMessage("管理者モードでのみ有効"),
     "tunnel": MessageLookupByLibrary.simpleMessage("トンネル"),
     "turnOff": MessageLookupByLibrary.simpleMessage("オフにする"),
     "turnOn": MessageLookupByLibrary.simpleMessage("オンにする"),
+    "udpRelay": MessageLookupByLibrary.simpleMessage("UDP リレー"),
     "undo": MessageLookupByLibrary.simpleMessage("元に戻す"),
     "unknown": MessageLookupByLibrary.simpleMessage("不明"),
     "unknownNetworkError": MessageLookupByLibrary.simpleMessage("不明なネットワークエラー"),
@@ -963,7 +992,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlDesc": MessageLookupByLibrary.simpleMessage("URLからプロファイルを取得します"),
     "urlSchemes": MessageLookupByLibrary.simpleMessage("URL スキーム"),
     "urlTestSettings": MessageLookupByLibrary.simpleMessage("URL テスト設定"),
-    "urlTip": m35,
+    "urlTip": m31,
     "usedDownloadTraffic": MessageLookupByLibrary.simpleMessage("ダウンロード使用量"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("使用済みトラフィック"),
     "usedUploadTraffic": MessageLookupByLibrary.simpleMessage("アップロード使用量"),
@@ -983,7 +1012,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "vpnTip": MessageLookupByLibrary.simpleMessage("変更はVPNの再起動後に有効になります"),
     "webDAVConfiguration": MessageLookupByLibrary.simpleMessage("WebDAV設定"),
     "whitelistMode": MessageLookupByLibrary.simpleMessage("ホワイトリストモード"),
-    "yearsAgo": m36,
+    "yearsAgo": m32,
     "zhCN": MessageLookupByLibrary.simpleMessage("簡体字中国語"),
   };
 }

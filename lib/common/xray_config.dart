@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:fl_clash/common/string.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 
+import 'node_form.dart';
 import 'xray_rules.dart';
 
 /// Tags of the outbounds the app adds beside the user's nodes. The leading
@@ -12,6 +14,9 @@ import 'xray_rules.dart';
 const directOutboundTag = '@direct';
 const blockOutboundTag = '@block';
 const dnsOutboundTag = '@dns';
+
+/// Node domains resolve directly: through a node, the lookup would need itself.
+const _nodeDnsTag = '@node-dns';
 
 /// The key the chosen node is stored under: the node list is the only list the
 /// app shows, and Xray has no group to select from, so the choice is a rule.
@@ -103,6 +108,10 @@ Map<String, dynamic> _routing(MakeRealProfileState state) {
   final proxyTarget = {'outboundTag': node ?? directOutboundTag};
   final rules = <Map<String, dynamic>>[
     {
+      'inboundTag': [_nodeDnsTag],
+      'outboundTag': directOutboundTag,
+    },
+    {
       'inboundTag': [tunInboundTag],
       'port': '53',
       'outboundTag': dnsOutboundTag,
@@ -127,19 +136,55 @@ Map<String, dynamic> _routing(MakeRealProfileState state) {
   return {'domainStrategy': 'IpIfNonMatch', 'rules': rules};
 }
 
-Map<String, dynamic> _dns(CoreConfig config) {
+List<String> _nodeDomains(MakeRealProfileState state) => {
+  for (final node in state.outbounds)
+    if (nodeEndpointOf(node)?.address case final address?
+        when address.isNotEmpty && InternetAddress.tryParse(address) == null)
+      address,
+}.toList();
+
+/// Xray reads the string `ip:port` as a URL; with a port it must be an object.
+Object _dnsServer(String server, [Map<String, dynamic> options = const {}]) {
+  final uri = server.contains('://') ? null : Uri.tryParse('udp://$server');
+  final endpoint = uri != null && uri.hasPort
+      ? {
+          'address': uri.host.replaceAll(RegExp(r'^\[|\]$'), ''),
+          'port': uri.port,
+        }
+      : {'address': server};
+  return endpoint.length == 1 && options.isEmpty
+      ? server
+      : {...endpoint, ...options};
+}
+
+Map<String, dynamic> _dns(MakeRealProfileState state) {
+  final config = state.coreConfig;
+  final nodeDomains = _nodeDomains(state);
+  final nodes = [
+    if (nodeDomains.isNotEmpty)
+      for (final server in config.directDns)
+        _dnsServer(server, {
+          'domains': [for (final domain in nodeDomains) 'full:$domain'],
+          'skipFallback': true,
+          'tag': _nodeDnsTag,
+        }),
+  ];
   final direct = [
     for (final server in config.directDns)
-      {
-        'address': server,
+      _dnsServer(server, {
         'domains': ['geosite:cn'],
         'skipFallback': true,
-      },
+      }),
   ];
   return {
     'servers': config.mode == Mode.direct
-        ? [...config.directDns, 'localhost']
-        : [...direct, ...config.proxyDns, 'localhost'],
+        ? [...config.directDns.map(_dnsServer), 'localhost']
+        : [
+            ...nodes,
+            ...direct,
+            ...config.proxyDns.map(_dnsServer),
+            'localhost',
+          ],
     'queryStrategy': config.ipv6 ? 'UseIP' : 'UseIPv4',
   };
 }
@@ -158,7 +203,7 @@ Map<String, dynamic> buildXrayConfig(MakeRealProfileState state) {
       {'tag': dnsOutboundTag, 'protocol': 'dns'},
     ],
     'routing': _routing(state),
-    'dns': _dns(config),
+    'dns': _dns(state),
   };
 }
 

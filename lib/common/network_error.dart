@@ -33,6 +33,17 @@ String? networkErrorMessage(Object error, AppLocalizations appLocalizations) {
   return failure == null ? null : _messageOf(failure, appLocalizations);
 }
 
+/// Whether [error] means the server could not be reached at all, as opposed
+/// to one that answered with an HTTP status.
+bool isServerUnreachable(Object error) => switch (_failureOf(error)?.kind) {
+  _Kind.timeout ||
+  _Kind.hostLookup ||
+  _Kind.connection ||
+  _Kind.tls ||
+  _Kind.unknown => true,
+  _ => false,
+};
+
 /// Bare socket and timeout exceptions are left alone: outside an HTTP request
 /// they come from the local Core or Helper channel, where "check your network"
 /// would send the user the wrong way.
@@ -136,10 +147,10 @@ String _messageOf(_Failure failure, AppLocalizations appLocalizations) {
 
 String _httpStatusMessage(int statusCode, AppLocalizations appLocalizations) {
   return switch (statusCode) {
-    401 || 403 || 407 => appLocalizations.networkAccessDeniedError(statusCode),
-    404 || 410 => appLocalizations.networkNotFoundError(statusCode),
+    401 || 403 || 407 => appLocalizations.networkAccessDeniedError,
+    404 || 410 => appLocalizations.networkNotFoundError,
     429 => appLocalizations.networkRateLimitedError,
-    >= 500 && <= 599 => appLocalizations.networkServerError(statusCode),
-    _ => appLocalizations.networkBadResponseError(statusCode),
+    >= 500 && <= 599 => appLocalizations.networkServerError,
+    _ => appLocalizations.networkBadResponseError,
   };
 }

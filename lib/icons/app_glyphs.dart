@@ -404,6 +404,14 @@ abstract final class AppGlyphs {
     ], role: GlyphRole.detail),
   ]);
 
+  static const removeCircle = Glyph([
+    GlyphCircle(12, 12, 8.8),
+    GlyphPolyline([
+      GlyphVertex(7.8, 12),
+      GlyphVertex(16.2, 12),
+    ], role: GlyphRole.detail),
+  ]);
+
   static const remove = Glyph([
     GlyphPolyline([
       GlyphVertex(5, 12),

@@ -388,7 +388,7 @@ void main() {
       );
       await tester.pump();
 
-      final generalItem = find.text('General');
+      final generalItem = find.widgetWithText(GroupedRow, 'General');
       await tester.scrollUntilVisible(
         generalItem,
         500,

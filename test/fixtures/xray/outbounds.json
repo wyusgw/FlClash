@@ -143,6 +143,19 @@
       }
     },
     {
+      "tag": "mieru-range",
+      "protocol": "mieru",
+      "settings": {
+        "address": "mi.example.com",
+        "portRange": "2000-2010",
+        "username": "user",
+        "password": "pass",
+        "transport": "UDP",
+        "multiplexing": "MULTIPLEXING_HIGH",
+        "mtu": 1400
+      }
+    },
+    {
       "tag": "socks-proxy.example.com:1080",
       "protocol": "socks",
       "settings": {
@@ -188,6 +201,196 @@
         "tlsSettings": {
           "serverName": "sni.example.com",
           "allowInsecure": true
+        }
+      }
+    },
+    {
+      "tag": "vless-everything",
+      "protocol": "vless",
+      "settings": {
+        "address": "vl.example.com",
+        "port": 443,
+        "id": "b831381d-6324-4d53-ad4f-8cda48b30811",
+        "encryption": "none"
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "xhttpSettings": {
+          "path": "/x",
+          "mode": "stream-one"
+        },
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "vl.example.com",
+          "alpn": [
+            "h2",
+            "http/1.1"
+          ],
+          "fingerprint": "hellochrome_131",
+          "echConfigList": "AEX+DQBBAAAgACB4LaAY9V3ZxwH8+aqH9Vx3tvqiQ5o3qZ9V0bNQZ/8lOgAEAAEAAQASY2xvdWRmbGFyZS1lY2guY29tAAA=",
+          "pinnedPeerCertSha256": "AB:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD:CD"
+        },
+        "sockopt": {
+          "tcpFastOpen": true,
+          "dialerProxy": "vm-ws"
+        },
+        "finalmask": {
+          "tcp": [
+            {
+              "type": "fragment",
+              "settings": {
+                "packets": "tlshello",
+                "length": "100-200",
+                "delay": "10-20"
+              }
+            }
+          ]
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 8
+      }
+    },
+    {
+      "tag": "trojan-reality",
+      "protocol": "trojan",
+      "settings": {
+        "address": "tj.example.com",
+        "port": 443,
+        "password": "pw"
+      },
+      "streamSettings": {
+        "network": "grpc",
+        "grpcSettings": {
+          "serviceName": "gs",
+          "multiMode": true
+        },
+        "security": "reality",
+        "realitySettings": {
+          "serverName": "tj.example.com",
+          "fingerprint": "chrome",
+          "publicKey": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA",
+          "shortId": "6ba85179e30d4fc2",
+          "spiderX": "/"
+        }
+      }
+    },
+    {
+      "tag": "vmess-kcp",
+      "protocol": "vmess",
+      "settings": {
+        "address": "vm.example.com",
+        "port": 443,
+        "id": "b831381d-6324-4d53-ad4f-8cda48b30811",
+        "security": "zero"
+      },
+      "streamSettings": {
+        "network": "kcp"
+      }
+    },
+    {
+      "tag": "hysteria2-hop",
+      "protocol": "hysteria2",
+      "settings": {
+        "address": "hy.example.com",
+        "port": 443,
+        "version": 2
+      },
+      "streamSettings": {
+        "network": "hysteria2",
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "hy.example.com",
+          "alpn": [
+            "h3"
+          ],
+          "pinnedPeerCertSha256": "abababababababababababababababababababababababababababababababab"
+        },
+        "hysteria2Settings": {
+          "version": 2,
+          "auth": "pw"
+        },
+        "finalmask": {
+          "udp": [
+            {
+              "type": "udphop",
+              "settings": {
+                "mode": "intervalLocal",
+                "interval": "30",
+                "remotePorts": "20000-30000,443"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "tuic-quic",
+      "protocol": "tuic",
+      "settings": {
+        "address": "tu.example.com",
+        "port": 443,
+        "id": "b831381d-6324-4d53-ad4f-8cda48b30811",
+        "password": "pw",
+        "congestionControl": "bbr",
+        "udpStream": true
+      },
+      "streamSettings": {
+        "network": "tuic",
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "tu.example.com",
+          "alpn": [
+            "h3"
+          ]
+        }
+      }
+    },
+    {
+      "tag": "anytls-fp",
+      "protocol": "anytls",
+      "settings": {
+        "address": "at.example.com",
+        "port": 443,
+        "password": "pw"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "at.example.com",
+          "fingerprint": "firefox"
+        },
+        "sockopt": {
+          "tcpFastOpen": true
+        },
+        "finalmask": {
+          "tcp": [
+            {
+              "type": "fragment",
+              "settings": {
+                "packets": "tlshello",
+                "length": "100-200",
+                "delay": "10-20"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "socks-tls",
+      "protocol": "socks",
+      "settings": {
+        "address": "proxy.example.com",
+        "port": 1443
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "proxy.example.com"
         }
       }
     },

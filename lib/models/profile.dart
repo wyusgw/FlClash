@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart' show Response;
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -126,7 +127,13 @@ extension ProfileExtension on Profile {
   }
 
   Future<Profile> update({required ValidateConfig validate}) async {
-    final response = await request.getFileResponseForUrl(url);
+    final Response<Uint8List> response;
+    try {
+      response = await request.getFileResponseForUrl(url);
+    } catch (error) {
+      if (!isServerUnreachable(error)) rethrow;
+      throw MessageException(currentAppLocalizations.subscriptionUrlError);
+    }
     final disposition = response.headers.value('content-disposition');
     final userinfo = response.headers.value('subscription-userinfo');
     return copyWith(
@@ -148,7 +155,7 @@ extension ProfileExtension on Profile {
       utf8.decode(bytes, allowMalformed: true),
     );
     if (outbounds.isEmpty) {
-      throw const MessageException('No supported nodes in this subscription');
+      throw MessageException(currentAppLocalizations.noUsableNodes);
     }
     final path = await appPath.tempFilePath;
     final tempFile = File(path);

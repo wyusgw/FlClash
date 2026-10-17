@@ -33,7 +33,8 @@ void main() {
       expect(nodeDefaults(NodeKind.shadowsocks)['method'], 'aes-256-gcm');
       expect(nodeDefaults(NodeKind.vless)['security'], 'tls');
       expect(nodeDefaults(NodeKind.tuic)['congestion'], 'bbr');
-      expect(nodeDefaults(NodeKind.vmess)['tls'], 'false');
+      expect(nodeDefaults(NodeKind.vmess)['security'], 'none');
+      expect(nodeDefaults(NodeKind.vless)['network'], 'raw');
     });
 
     test('the first missing required field is named', () {
@@ -118,7 +119,7 @@ void main() {
           'network': 'ws',
           'path': '/ws',
           'host': 'cdn.example.com',
-          'tls': 'true',
+          'security': 'tls',
           'sni': 'sni.example.com',
           'remark': 'vm',
         }),
@@ -141,7 +142,7 @@ void main() {
           'uuid': _uuid,
           'network': 'grpc',
           'serviceName': 'svc',
-          'tls': 'true',
+          'security': 'tls',
         }),
       );
 
@@ -329,7 +330,7 @@ void main() {
       final outbound = _outbound(
         NodeKind.http,
         _values(NodeKind.http, {
-          'tls': 'true',
+          'security': 'tls',
           'sni': 'h.example.com',
           'remark': 'secure',
         }),
@@ -432,8 +433,15 @@ void main() {
           'network': 'ws',
           'path': '/ws',
           'host': 'cdn.example.com',
-          'tls': 'true',
+          'security': 'tls',
           'sni': 'node.example.com',
+          'alpn': 'h2,http/1.1',
+          'fingerprint': 'firefox',
+          'ech': 'AEX+DQBB',
+          'pin': List.filled(32, 'ab').join(),
+          'fragment': 'true',
+          'mux': 'true',
+          'dialerProxy': 'other',
           'remark': 'vm',
         },
         NodeKind.vless => {
@@ -443,12 +451,16 @@ void main() {
           'publicKey': 'AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA',
           'shortId': '6ba85179',
           'sni': 'www.microsoft.com',
+          'fingerprint': 'chrome',
+          'spiderX': '/crawl',
+          'tcpFastOpen': 'true',
           'remark': 'vl',
         },
         NodeKind.trojan => {
           'password': 'pw',
           'network': 'grpc',
           'serviceName': 'svc',
+          'multiMode': 'true',
           'sni': 'node.example.com',
           'allowInsecure': 'true',
         },
@@ -461,19 +473,28 @@ void main() {
         NodeKind.hysteria2 => {
           'password': 'auth',
           'obfsPassword': 'mask',
+          'ports': '20000-30000',
           'sni': 'node.example.com',
         },
         NodeKind.tuic => {
           'uuid': _uuid,
           'password': 'pw',
           'congestion': 'bbr',
+          'udpRelay': 'quic',
+          'alpn': 'h3,h2',
           'sni': 'node.example.com',
         },
-        NodeKind.anytls => {'password': 'pw', 'sni': 'node.example.com'},
+        NodeKind.anytls => {
+          'password': 'pw',
+          'sni': 'node.example.com',
+          'fingerprint': 'safari',
+          'fragment': 'true',
+          'tcpFastOpen': 'true',
+        },
         NodeKind.socks || NodeKind.http => {
           'username': 'u',
           'password': 'p',
-          'tls': 'true',
+          'security': 'tls',
           'sni': 'node.example.com',
         },
         NodeKind.mieru => {
@@ -482,6 +503,7 @@ void main() {
           'transport': 'UDP',
           'multiplexing': 'high',
           'handshake': 'no-wait',
+          'mtu': '1400',
         },
       };
       return _values(kind, more);
@@ -513,7 +535,7 @@ void main() {
       final outbound = _outbound(NodeKind.vless, sample(NodeKind.vless))
         ..['streamSettings'] = {
           ..._stream(_outbound(NodeKind.vless, sample(NodeKind.vless))),
-          'sockopt': {'tcpFastOpen': true},
+          'sockopt': {'mark': 255},
         };
 
       expect(nodeFormOf(outbound), isNull);
@@ -586,7 +608,82 @@ void main() {
       expect(values['address'], 'node.example.com');
       expect(values['remark'], 'keep');
       expect(values['password'], '');
-      expect(values.containsKey('security'), isFalse);
+      expect(values['security'], 'tls');
+    });
+  });
+
+  test('a mieru server copies as the link mieru itself reads', () {
+    final values = _values(NodeKind.mieru, {
+      'username': 'user',
+      'password': 'pass',
+      'remark': 'mine',
+    });
+    final link = buildNodeLink(NodeKind.mieru, values)!;
+
+    expect(link, startsWith('mierus://user:pass@node.example.com?'));
+    expect(parseShareLink(link), buildNodeOutbound(NodeKind.mieru, values));
+  });
+
+  group('withNodeEndpoint', () {
+    final xhttp = {
+      'tag': 'old',
+      'protocol': 'vless',
+      'settings': {'address': 'a.example.com', 'port': 443, 'id': _uuid},
+      'streamSettings': {
+        'network': 'xhttp',
+        'xhttpSettings': {'path': '/x'},
+      },
+    };
+
+    test('changes the name and server and keeps the rest', () {
+      expect(nodeFormOf(xhttp), isNull);
+      expect(nodeEndpointOf(xhttp), (address: 'a.example.com', port: '443'));
+
+      final edited = withNodeEndpoint(
+        xhttp,
+        name: 'new',
+        address: 'b.example.com',
+        port: 8443,
+      );
+
+      expect(edited, {
+        ...xhttp,
+        'tag': 'new',
+        'settings': {'address': 'b.example.com', 'port': 8443, 'id': _uuid},
+      });
+      expect((xhttp['settings'] as Map)['address'], 'a.example.com');
+    });
+
+    test('reaches the first server of a nested config', () {
+      final nested = {
+        'tag': 'old',
+        'protocol': 'vmess',
+        'settings': {
+          'vnext': [
+            {'address': 'a.example.com', 'port': 443, 'users': <Object>[]},
+          ],
+        },
+      };
+
+      final edited = withNodeEndpoint(nested, name: 'new', port: 80);
+
+      expect(nodeEndpointOf(nested)?.address, 'a.example.com');
+      expect(((edited['settings'] as Map)['vnext'] as List).first, {
+        'address': 'a.example.com',
+        'port': 80,
+        'users': <Object>[],
+      });
+    });
+
+    test('names no server for a protocol without one', () {
+      final wireguard = {
+        'tag': 'wg',
+        'protocol': 'wireguard',
+        'settings': {'peers': <Object>[]},
+      };
+
+      expect(nodeEndpointOf(wireguard), isNull);
+      expect(withNodeEndpoint(wireguard, name: 'new')['tag'], 'new');
     });
   });
 }

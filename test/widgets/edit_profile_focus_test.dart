@@ -30,11 +30,19 @@ class _FakePathProvider extends PathProviderPlatform {
   Future<String?> getApplicationCachePath() async => root;
 }
 
-/// The edit page schedules an auto-apply when it goes; keep that a no-op so
-/// the setup machinery never runs in a widget test.
+/// Keeps the setup machinery from running in a widget test.
 class _NoopSetupAction extends SetupAction {
+  var applied = 0;
+
   @override
-  void autoApplyProfile() {}
+  Future<bool> applyProfile({
+    bool silence = false,
+    bool force = false,
+    Future<void> Function()? preloadInvoke,
+  }) async {
+    applied++;
+    return true;
+  }
 
   @override
   Future<bool> setRunning(bool running, {bool initialize = false}) async =>
@@ -106,6 +114,22 @@ void main() {
     of: find.ancestor(of: find.text(label), matching: find.byType(Row)).first,
     matching: find.byType(TextField),
   );
+
+  testWidgets('going back leaves without applying the profile again', (
+    tester,
+  ) async {
+    await openEdit(tester);
+
+    await tester.tap(find.byTooltip(currentAppLocalizations.back));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(EditProfileView), findsNothing);
+    expect(
+      (container.read(setupActionProvider.notifier) as _NoopSetupAction)
+          .applied,
+      0,
+    );
+  });
 
   testWidgets('shows the type, the address and the name of a subscription', (
     tester,

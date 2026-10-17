@@ -5,7 +5,7 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/views/about.dart';
 import 'package:fl_clash/views/access.dart';
-import 'package:fl_clash/views/config/on_demand.dart';
+import 'package:fl_clash/views/config/dns.dart';
 import 'package:fl_clash/views/config/general.dart';
 import 'package:fl_clash/views/home/delay_test.dart';
 import 'package:fl_clash/views/hotkey.dart';
@@ -111,13 +111,13 @@ class ToolsView extends ConsumerWidget {
           ),
           const SizedBox(height: groupedSectionGap),
           GroupedSection(
-            header: appLocalizations.tunnel,
+            header: appLocalizations.general,
             children: [
               _open(
                 context,
-                glyph: AppGlyphs.wifi,
-                title: appLocalizations.onDemand,
-                page: const OnDemandView(),
+                glyph: AppGlyphs.dns,
+                title: 'DNS',
+                page: const DnsView(),
               ),
               if (system.isAndroid)
                 _open(

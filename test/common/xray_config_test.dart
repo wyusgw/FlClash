@@ -19,6 +19,7 @@ final _subscription = [
   'hysteria2://auth@hy.example.com:443?sni=hy.example.com&obfs=salamander&obfs-password=obfs#hy2',
   'tuic://$_uuid:pw@tu.example.com:443?congestion_control=bbr&alpn=h3&sni=tu.example.com#tuic',
   'anytls://pw@at.example.com:443?sni=at.example.com#anytls',
+  'mierus://user:pass@mi.example.com?mtu=1400&multiplexing=MULTIPLEXING_HIGH&port=2000-2010&profile=mieru-range&protocol=UDP',
 ].join('\n');
 
 MakeRealProfileState _state({
@@ -80,10 +81,86 @@ void main() {
         ...nodeDefaults(NodeKind.http),
         'address': 'proxy.example.com',
         'port': '8443',
-        'tls': 'true',
+        'security': 'tls',
         'sni': 'sni.example.com',
         'allowInsecure': 'true',
         'remark': 'https',
+      })!,
+      buildNodeOutbound(NodeKind.vless, {
+        ...nodeDefaults(NodeKind.vless),
+        'address': 'vl.example.com',
+        'port': '443',
+        'uuid': _uuid,
+        'network': 'xhttp',
+        'path': '/x',
+        'mode': 'stream-one',
+        'alpn': 'h2,http/1.1',
+        'fingerprint': 'hellochrome_131',
+        'ech':
+            'AEX+DQBBAAAgACB4LaAY9V3ZxwH8+aqH9Vx3tvqiQ5o3qZ9V0bNQZ/8lOgAEAAEAAQASY2xvdWRmbGFyZS1lY2guY29tAAA=',
+        'pin': 'AB:${List.filled(31, 'CD').join(':')}',
+        'fragment': 'true',
+        'mux': 'true',
+        'tcpFastOpen': 'true',
+        'dialerProxy': 'vm-ws',
+        'remark': 'vless-everything',
+      })!,
+      buildNodeOutbound(NodeKind.trojan, {
+        ...nodeDefaults(NodeKind.trojan),
+        'address': 'tj.example.com',
+        'port': '443',
+        'password': 'pw',
+        'network': 'grpc',
+        'serviceName': 'gs',
+        'multiMode': 'true',
+        'security': 'reality',
+        'publicKey': _publicKey,
+        'shortId': '6ba85179e30d4fc2',
+        'remark': 'trojan-reality',
+      })!,
+      buildNodeOutbound(NodeKind.vmess, {
+        ...nodeDefaults(NodeKind.vmess),
+        'address': 'vm.example.com',
+        'port': '443',
+        'uuid': _uuid,
+        'method': 'zero',
+        'network': 'kcp',
+        'remark': 'vmess-kcp',
+      })!,
+      buildNodeOutbound(NodeKind.hysteria2, {
+        ...nodeDefaults(NodeKind.hysteria2),
+        'address': 'hy.example.com',
+        'port': '443',
+        'password': 'pw',
+        'ports': '20000-30000,443',
+        'pin': List.filled(32, 'ab').join(),
+        'remark': 'hysteria2-hop',
+      })!,
+      buildNodeOutbound(NodeKind.tuic, {
+        ...nodeDefaults(NodeKind.tuic),
+        'address': 'tu.example.com',
+        'port': '443',
+        'uuid': _uuid,
+        'password': 'pw',
+        'udpRelay': 'quic',
+        'remark': 'tuic-quic',
+      })!,
+      buildNodeOutbound(NodeKind.anytls, {
+        ...nodeDefaults(NodeKind.anytls),
+        'address': 'at.example.com',
+        'port': '443',
+        'password': 'pw',
+        'fingerprint': 'firefox',
+        'fragment': 'true',
+        'tcpFastOpen': 'true',
+        'remark': 'anytls-fp',
+      })!,
+      buildNodeOutbound(NodeKind.socks, {
+        ...nodeDefaults(NodeKind.socks),
+        'address': 'proxy.example.com',
+        'port': '1443',
+        'security': 'tls',
+        'remark': 'socks-tls',
       })!,
       buildNodeOutbound(NodeKind.hysteria, {
         ...nodeDefaults(NodeKind.hysteria),
@@ -128,12 +205,13 @@ void main() {
       () {
         final rules = _rules(config);
 
-        expect(rules.first, {
+        expect(rules[1], {
           'inboundTag': [tunInboundTag],
           'port': '53',
           'outboundTag': dnsOutboundTag,
         });
         expect(rules.map((rule) => rule['outboundTag']).whereType<String>(), [
+          directOutboundTag,
           dnsOutboundTag,
           directOutboundTag,
           directOutboundTag,
@@ -158,7 +236,7 @@ void main() {
           .map((outbound) => (outbound as Map)['tag'])
           .toList();
 
-      expect(tags.skip(7), [
+      expect(tags.skip(8), [
         directOutboundTag,
         blockOutboundTag,
         dnsOutboundTag,
@@ -300,13 +378,87 @@ void main() {
     expect(level(LogLevel.silent), 'none');
   });
 
+  test('every server form the DNS page takes reaches the engine', () {
+    final config = buildXrayConfig(
+      _state(
+        config: const CoreConfig(
+          proxyDns: [
+            'https://dns.google/dns-query',
+            'h2c://dns.example.com/dns-query',
+            'tcp://8.8.8.8:53',
+            '9.9.9.9',
+            '[2606:4700:4700::1111]:53',
+          ],
+          directDns: [
+            '223.5.5.5:53',
+            'https+local://doh.pub/dns-query',
+            'tcp+local://119.29.29.29',
+            'quic+local://dns.alidns.com',
+            'localhost',
+          ],
+        ),
+      ),
+    );
+    final servers = (config['dns'] as Map)['servers'] as List;
+
+    expect(servers, contains('tcp://8.8.8.8:53'));
+    expect(
+      servers,
+      contains(equals({'address': '2606:4700:4700::1111', 'port': 53})),
+    );
+    expect(
+      servers,
+      contains(
+        equals({
+          'address': '223.5.5.5',
+          'port': 53,
+          'domains': ['geosite:cn'],
+          'skipFallback': true,
+        }),
+      ),
+    );
+    _expectFixture('config_dns', config);
+  });
+
   test('dns sends Chinese domains to the direct servers first', () {
     final servers =
         ((buildXrayConfig(_state())['dns'] as Map)['servers'] as List);
 
-    expect((servers.first as Map)['domains'], ['geosite:cn']);
+    expect(
+      servers.whereType<Map>().where((server) => server['tag'] == null).first,
+      containsPair('domains', ['geosite:cn']),
+    );
     expect(servers, contains('1.1.1.1'));
     expect(servers.last, 'localhost');
+  });
+
+  test('the nodes\' own domains are looked up directly', () {
+    final config = buildXrayConfig(_state());
+    final servers = ((config['dns'] as Map)['servers'] as List);
+    final first = servers.first as Map;
+
+    expect(first['address'], defaultDirectDnsServers.first);
+    expect(first['domains'], contains('full:vl.example.com'));
+    expect(first['domains'], isNot(contains('full:1.2.3.4')));
+    expect(_rules(config).first, {
+      'inboundTag': [first['tag']],
+      'outboundTag': directOutboundTag,
+    });
+  });
+
+  test('nodes given by IP add no lookup of their own', () {
+    final servers =
+        ((buildXrayConfig(
+                  _state(
+                    outbounds: parseSubscription(
+                      'ss://YWVzLTI1Ni1nY206cGFzc3dvcmQ@1.2.3.4:8388#ss',
+                    ),
+                  ),
+                )['dns']
+                as Map)['servers']
+            as List);
+
+    expect((servers.first as Map)['domains'], ['geosite:cn']);
   });
 
   test('encodeXrayConfig hashes what it encodes', () {
@@ -350,12 +502,12 @@ void main() {
       );
 
       expect(rules.any((rule) => '$rule'.contains('geosite:cn')), isFalse);
-      expect(rules[2], {
+      expect(rules[3], {
         'domain': ['domain:example.com'],
         'outboundTag': directOutboundTag,
       });
-      expect(rules[3]['outboundTag'], blockOutboundTag);
-      expect(rules[4], {
+      expect(rules[4]['outboundTag'], blockOutboundTag);
+      expect(rules[5], {
         'domain': ['keyword:google'],
         'outboundTag': 'trojan-ws',
       });

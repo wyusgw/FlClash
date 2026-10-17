@@ -44,36 +44,6 @@ class UaItem extends ConsumerWidget with GroupedPlainInset {
   }
 }
 
-class TestUrlItem extends ConsumerWidget with GroupedPlainInset {
-  const TestUrlItem({super.key});
-
-  @override
-  Widget build(BuildContext context, ref) {
-    final appLocalizations = context.appLocalizations;
-    final testUrl = ref.watch(
-      appSettingProvider.select((state) => state.testUrl),
-    );
-    return GroupedInputRow(
-      title: appLocalizations.testUrl,
-      value: testUrl,
-      resetValue: defaultTestUrl,
-      inputFormatters: TextInputLimits.limit(TextInputLimits.url),
-      validator: (value) {
-        if (value.isEmpty) {
-          return appLocalizations.emptyTip(appLocalizations.testUrl);
-        }
-        if (!value.isUrl) {
-          return appLocalizations.urlTip(appLocalizations.testUrl);
-        }
-        return null;
-      },
-      onSubmitted: (value) => ref
-          .read(appSettingProvider.notifier)
-          .update((state) => state.copyWith(testUrl: value)),
-    );
-  }
-}
-
 const _minPort = 1024;
 const _maxPort = 49151;
 
@@ -288,7 +258,6 @@ class GeneralView extends ConsumerWidget {
 
   List<Widget> _connectionItems() {
     return [
-      const TestUrlItem(),
       _appSettingToggle(
         title: (l) => l.onlyStatisticsProxy,
         select: (state) => state.onlyStatisticsProxy,

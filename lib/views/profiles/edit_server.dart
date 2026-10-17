@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/common/share_link.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
@@ -37,6 +38,22 @@ class EditServerView extends ConsumerStatefulWidget {
 class _EditServerViewState extends ConsumerState<EditServerView> {
   late NodeKind _kind = widget.kind;
   late Map<String, String> _values = widget.values;
+  List<String> _proxies = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    final tag = '${widget.outbound['tag']}';
+    unawaited(
+      ref
+          .read(profilesActionProvider.notifier)
+          .readNodeTags(widget.profile)
+          .then((tags) {
+            if (!mounted) return;
+            setState(() => _proxies = [...tags]..remove(tag));
+          }),
+    );
+  }
 
   Map<String, dynamic>? get _built => buildNodeOutbound(_kind, _values);
 
@@ -121,6 +138,160 @@ class _EditServerViewState extends ConsumerState<EditServerView> {
             kind: _kind,
             values: _values,
             onChanged: _setValue,
+            proxies: _proxies,
+          ),
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
+            children: [
+              GroupedRow(
+                leading: const GroupedIcon(AppGlyphs.code),
+                title: appLocalizations.copyJson,
+                chevron: true,
+                onTap: () => _copy(
+                  const JsonEncoder.withIndent('  ').convert(widget.outbound),
+                ),
+              ),
+              if (link != null)
+                GroupedRow(
+                  leading: const GroupedIcon(AppGlyphs.link),
+                  title: appLocalizations.copyLink,
+                  chevron: true,
+                  onTap: () => _copy(link),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The page of a server the protocol form cannot hold exactly: its name,
+/// address and port change, and whatever else it carries is saved untouched.
+class EditNodeEndpointView extends ConsumerStatefulWidget {
+  const EditNodeEndpointView({
+    super.key,
+    required this.profile,
+    required this.outbound,
+  });
+
+  final Profile profile;
+  final Map<String, dynamic> outbound;
+
+  @override
+  ConsumerState<EditNodeEndpointView> createState() =>
+      _EditNodeEndpointViewState();
+}
+
+class _EditNodeEndpointViewState extends ConsumerState<EditNodeEndpointView> {
+  late final _endpoint = nodeEndpointOf(widget.outbound);
+  late final _name = TextEditingController(text: '${widget.outbound['tag']}');
+  late final _address = TextEditingController(text: _endpoint?.address);
+  late final _port = TextEditingController(text: _endpoint?.port);
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _address.dispose();
+    _port.dispose();
+    super.dispose();
+  }
+
+  Map<String, dynamic>? get _built {
+    final name = _name.text.trim();
+    if (name.isEmpty) return null;
+    if (_endpoint == null) return withNodeEndpoint(widget.outbound, name: name);
+    final address = _address.text.trim();
+    final port = int.tryParse(_port.text.trim());
+    if (address.isEmpty || port == null || port < 1 || port > 65535) {
+      return null;
+    }
+    return withNodeEndpoint(
+      widget.outbound,
+      name: name,
+      address: address,
+      port: port,
+    );
+  }
+
+  void _save(Map<String, dynamic> built) {
+    Navigator.of(context).pop();
+    unawaited(
+      ref
+          .read(profilesActionProvider.notifier)
+          .replaceNode(widget.profile, '${widget.outbound['tag']}', built),
+    );
+  }
+
+  Future<void> _copy(String text) async {
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!mounted) return;
+    context.showNotifier(
+      context.appLocalizations.copySuccess,
+      level: MessageLevel.success,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
+    final built = _built;
+    final changed =
+        built != null && jsonEncode(built) != jsonEncode(widget.outbound);
+    final network = (widget.outbound['streamSettings'] as Map?)?['network'];
+    final link = built == null ? null : nodeShareLink(built);
+    return GroupedPage(
+      title: appLocalizations.editServer,
+      onBack: () => Navigator.of(context).maybePop(),
+      trailing: GroupedBarAction(
+        label: appLocalizations.save,
+        tooltip: appLocalizations.save,
+        onPressed: changed ? () => _save(built) : null,
+      ),
+      body: GroupedBody(
+        children: [
+          GroupedSection(
+            children: [
+              GroupedRow(
+                title: appLocalizations.profileType,
+                value: '${widget.outbound['protocol']}'.toUpperCase(),
+              ),
+              if (network != null)
+                GroupedRow(
+                  title: appLocalizations.network,
+                  value: '$network'.toUpperCase(),
+                ),
+            ],
+          ),
+          const SizedBox(height: groupedSectionGap),
+          GroupedSection(
+            children: [
+              GroupedFieldRow(
+                key: const ValueKey('field.remark'),
+                label: appLocalizations.name,
+                hint: appLocalizations.required,
+                controller: _name,
+                onChanged: (_) => setState(() {}),
+              ),
+              if (_endpoint != null) ...[
+                GroupedFieldRow(
+                  key: const ValueKey('field.address'),
+                  label: appLocalizations.address,
+                  hint: appLocalizations.required,
+                  controller: _address,
+                  onChanged: (_) => setState(() {}),
+                ),
+                GroupedFieldRow(
+                  key: const ValueKey('field.port'),
+                  label: appLocalizations.port,
+                  hint: appLocalizations.required,
+                  controller: _port,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  onChanged: (_) => setState(() {}),
+                ),
+              ],
+            ],
           ),
           const SizedBox(height: groupedSectionGap),
           GroupedSection(

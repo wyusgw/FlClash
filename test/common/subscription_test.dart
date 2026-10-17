@@ -254,6 +254,52 @@ void main() {
       );
     });
 
+    test('mieru keeps the first port and the transport it takes', () {
+      final node = _node(
+        'mierus://baozi:manlianpenfen@1.2.3.4?handshake-mode=HANDSHAKE_NO_WAIT'
+        '&mtu=1400&multiplexing=MULTIPLEXING_HIGH&port=6666&port=9998-9999'
+        '&profile=default&protocol=UDP&protocol=TCP',
+      );
+
+      expect(node, {
+        'tag': 'default',
+        'protocol': 'mieru',
+        'settings': {
+          'address': '1.2.3.4',
+          'port': 6666,
+          'username': 'baozi',
+          'password': 'manlianpenfen',
+          'transport': 'UDP',
+          'multiplexing': 'MULTIPLEXING_HIGH',
+          'handshakeMode': 'HANDSHAKE_NO_WAIT',
+          'mtu': 1400,
+        },
+      });
+    });
+
+    test('mieru leaves the defaults to the core and skips broken links', () {
+      final node = _node(
+        'mierus://u:p@mi.example.com?multiplexing=MULTIPLEXING_DEFAULT'
+        '&port=2000-2010&profile=p&protocol=TCP',
+      );
+
+      expect(node['settings'], {
+        'address': 'mi.example.com',
+        'portRange': '2000-2010',
+        'username': 'u',
+        'password': 'p',
+        'transport': 'TCP',
+      });
+      for (final link in [
+        'mierus://u@mi.example.com?port=1&profile=p&protocol=TCP',
+        'mierus://u:p@mi.example.com?port=1&port=2&profile=p&protocol=TCP',
+        'mierus://u:p@mi.example.com?port=70000&profile=p&protocol=TCP',
+        'mierus://u:p@mi.example.com?port=1&profile=p&protocol=QUIC',
+      ]) {
+        expect(parseSubscription(link), isEmpty, reason: link);
+      }
+    });
+
     test('a link with a bad port is skipped', () {
       expect(parseSubscription('trojan://p@tj.example.com:99999#x'), isEmpty);
     });

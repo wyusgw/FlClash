@@ -41,6 +41,7 @@ final _glyphs = {
   'upload': AppGlyphs.upload,
   'add': AppGlyphs.add,
   'addCircle': AppGlyphs.addCircle,
+  'removeCircle': AppGlyphs.removeCircle,
   'remove': AppGlyphs.remove,
   'close': AppGlyphs.close,
   'check': AppGlyphs.check,

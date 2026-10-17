@@ -259,10 +259,6 @@ class SetupAction extends _$SetupAction {
         .update((state) => state.copyWith(mode: mode));
   }
 
-  void autoApplyProfile() {
-    runAfterFrame(applyProfile);
-  }
-
   // False means building the profile, the config write, or the Core setup
   // step failed; a profile that fails to build is still pushed to the Core
   // as the empty config so it never keeps serving the previous one.

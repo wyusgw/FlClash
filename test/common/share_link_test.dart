@@ -21,6 +21,8 @@ final _links = [
   'hysteria://hy1.example.com:443?auth=a&upmbps=50&downmbps=100&peer=hy1.example.com&alpn=hysteria&obfs=xplus&obfsParam=o#hy1',
   'tuic://$_uuid:pw@tu.example.com:443?congestion_control=bbr&alpn=h3&sni=tu.example.com&udp_relay_mode=quic&allow_insecure=1#tuic',
   'anytls://pw@at.example.com:443?sni=at.example.com&insecure=1#anytls',
+  'mierus://user:p%40ss@mi.example.com?handshake-mode=HANDSHAKE_NO_WAIT&mtu=1400&multiplexing=MULTIPLEXING_HIGH&port=6666&profile=mieru&protocol=TCP',
+  'mierus://user:pass@[2001:db8::1]?port=9998-9999&profile=range&protocol=UDP',
 ];
 
 void main() {

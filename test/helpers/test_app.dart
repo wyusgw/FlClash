@@ -1,6 +1,7 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/common/theme.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/manager/status_manager.dart';
 import 'package:fl_clash/state.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +16,10 @@ class TestApp extends StatelessWidget {
   final Widget Function(Widget child) homeBuilder;
   final Locale? locale;
 
+  /// Mounts [StatusManager] above the navigator, as the app does, so that
+  /// notices sent through `dialogs` show up.
+  final bool withStatusManager;
+
   const TestApp({
     super.key,
     required this.child,
@@ -24,6 +29,7 @@ class TestApp extends StatelessWidget {
     this.overrides = const [],
     this.homeBuilder = _identity,
     this.locale,
+    this.withStatusManager = false,
   });
 
   static Widget _identity(Widget child) => child;
@@ -43,7 +49,7 @@ class TestApp extends StatelessWidget {
         if (setTheme) {
           globalState.theme = CommonTheme.of(context, 1);
         }
-        return child!;
+        return withStatusManager ? StatusManager(child: child!) : child!;
       },
       home: homeBuilder(child),
     );

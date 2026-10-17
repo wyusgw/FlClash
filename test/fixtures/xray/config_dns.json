@@ -1,0 +1,357 @@
+{
+  "log": {
+    "loglevel": "error",
+    "access": "none"
+  },
+  "inbounds": [
+    {
+      "tag": "mixed-in",
+      "protocol": "mixed",
+      "listen": "127.0.0.1",
+      "port": 7890,
+      "settings": {
+        "udp": true,
+        "auth": "noauth"
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ],
+        "routeOnly": true
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "vm-ws",
+      "protocol": "vmess",
+      "settings": {
+        "address": "vm.example.com",
+        "port": 443,
+        "id": "b831381d-6324-4d53-ad4f-8cda48b30811",
+        "security": "auto"
+      },
+      "streamSettings": {
+        "network": "ws",
+        "wsSettings": {
+          "path": "/ws",
+          "host": "vm.example.com"
+        },
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "vm.example.com"
+        }
+      }
+    },
+    {
+      "tag": "vless-reality",
+      "protocol": "vless",
+      "settings": {
+        "address": "vl.example.com",
+        "port": 443,
+        "id": "b831381d-6324-4d53-ad4f-8cda48b30811",
+        "encryption": "none",
+        "flow": "xtls-rprx-vision"
+      },
+      "streamSettings": {
+        "security": "reality",
+        "realitySettings": {
+          "serverName": "www.microsoft.com",
+          "fingerprint": "chrome",
+          "publicKey": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA",
+          "shortId": "6ba85179e30d4fc2",
+          "spiderX": "/"
+        }
+      }
+    },
+    {
+      "tag": "trojan-ws",
+      "protocol": "trojan",
+      "settings": {
+        "address": "tj.example.com",
+        "port": 443,
+        "password": "pass"
+      },
+      "streamSettings": {
+        "network": "ws",
+        "wsSettings": {
+          "path": "/tj"
+        },
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "tj.example.com"
+        }
+      }
+    },
+    {
+      "tag": "ss-sip002",
+      "protocol": "shadowsocks",
+      "settings": {
+        "address": "1.2.3.4",
+        "port": 8388,
+        "method": "aes-256-gcm",
+        "password": "password"
+      }
+    },
+    {
+      "tag": "hy2",
+      "protocol": "hysteria2",
+      "settings": {
+        "version": 2,
+        "address": "hy.example.com",
+        "port": 443
+      },
+      "streamSettings": {
+        "network": "hysteria2",
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "hy.example.com",
+          "alpn": [
+            "h3"
+          ]
+        },
+        "hysteria2Settings": {
+          "version": 2,
+          "auth": "auth"
+        },
+        "finalmask": {
+          "udp": [
+            {
+              "type": "salamander",
+              "settings": {
+                "password": "obfs"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "tuic",
+      "protocol": "tuic",
+      "settings": {
+        "address": "tu.example.com",
+        "port": 443,
+        "id": "b831381d-6324-4d53-ad4f-8cda48b30811",
+        "password": "pw",
+        "congestionControl": "bbr",
+        "udpStream": false
+      },
+      "streamSettings": {
+        "network": "tuic",
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "tu.example.com",
+          "alpn": [
+            "h3"
+          ]
+        }
+      }
+    },
+    {
+      "tag": "anytls",
+      "protocol": "anytls",
+      "settings": {
+        "address": "at.example.com",
+        "port": 443,
+        "password": "pw"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "at.example.com"
+        }
+      }
+    },
+    {
+      "tag": "mieru-range",
+      "protocol": "mieru",
+      "settings": {
+        "address": "mi.example.com",
+        "portRange": "2000-2010",
+        "username": "user",
+        "password": "pass",
+        "transport": "UDP",
+        "multiplexing": "MULTIPLEXING_HIGH",
+        "mtu": 1400
+      }
+    },
+    {
+      "tag": "@direct",
+      "protocol": "freedom"
+    },
+    {
+      "tag": "@block",
+      "protocol": "blackhole"
+    },
+    {
+      "tag": "@dns",
+      "protocol": "dns"
+    }
+  ],
+  "routing": {
+    "domainStrategy": "IpIfNonMatch",
+    "rules": [
+      {
+        "inboundTag": [
+          "@node-dns"
+        ],
+        "outboundTag": "@direct"
+      },
+      {
+        "inboundTag": [
+          "tun-in"
+        ],
+        "port": "53",
+        "outboundTag": "@dns"
+      },
+      {
+        "ip": [
+          "geoip:private"
+        ],
+        "outboundTag": "@direct"
+      },
+      {
+        "domain": [
+          "geosite:cn"
+        ],
+        "outboundTag": "@direct"
+      },
+      {
+        "ip": [
+          "geoip:cn"
+        ],
+        "outboundTag": "@direct"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vm-ws"
+      }
+    ]
+  },
+  "dns": {
+    "servers": [
+      {
+        "address": "223.5.5.5",
+        "port": 53,
+        "domains": [
+          "full:vm.example.com",
+          "full:vl.example.com",
+          "full:tj.example.com",
+          "full:hy.example.com",
+          "full:tu.example.com",
+          "full:at.example.com",
+          "full:mi.example.com"
+        ],
+        "skipFallback": true,
+        "tag": "@node-dns"
+      },
+      {
+        "address": "https+local://doh.pub/dns-query",
+        "domains": [
+          "full:vm.example.com",
+          "full:vl.example.com",
+          "full:tj.example.com",
+          "full:hy.example.com",
+          "full:tu.example.com",
+          "full:at.example.com",
+          "full:mi.example.com"
+        ],
+        "skipFallback": true,
+        "tag": "@node-dns"
+      },
+      {
+        "address": "tcp+local://119.29.29.29",
+        "domains": [
+          "full:vm.example.com",
+          "full:vl.example.com",
+          "full:tj.example.com",
+          "full:hy.example.com",
+          "full:tu.example.com",
+          "full:at.example.com",
+          "full:mi.example.com"
+        ],
+        "skipFallback": true,
+        "tag": "@node-dns"
+      },
+      {
+        "address": "quic+local://dns.alidns.com",
+        "domains": [
+          "full:vm.example.com",
+          "full:vl.example.com",
+          "full:tj.example.com",
+          "full:hy.example.com",
+          "full:tu.example.com",
+          "full:at.example.com",
+          "full:mi.example.com"
+        ],
+        "skipFallback": true,
+        "tag": "@node-dns"
+      },
+      {
+        "address": "localhost",
+        "domains": [
+          "full:vm.example.com",
+          "full:vl.example.com",
+          "full:tj.example.com",
+          "full:hy.example.com",
+          "full:tu.example.com",
+          "full:at.example.com",
+          "full:mi.example.com"
+        ],
+        "skipFallback": true,
+        "tag": "@node-dns"
+      },
+      {
+        "address": "223.5.5.5",
+        "port": 53,
+        "domains": [
+          "geosite:cn"
+        ],
+        "skipFallback": true
+      },
+      {
+        "address": "https+local://doh.pub/dns-query",
+        "domains": [
+          "geosite:cn"
+        ],
+        "skipFallback": true
+      },
+      {
+        "address": "tcp+local://119.29.29.29",
+        "domains": [
+          "geosite:cn"
+        ],
+        "skipFallback": true
+      },
+      {
+        "address": "quic+local://dns.alidns.com",
+        "domains": [
+          "geosite:cn"
+        ],
+        "skipFallback": true
+      },
+      {
+        "address": "localhost",
+        "domains": [
+          "geosite:cn"
+        ],
+        "skipFallback": true
+      },
+      "https://dns.google/dns-query",
+      "h2c://dns.example.com/dns-query",
+      "tcp://8.8.8.8:53",
+      "9.9.9.9",
+      {
+        "address": "2606:4700:4700::1111",
+        "port": 53
+      },
+      "localhost"
+    ],
+    "queryStrategy": "UseIPv4"
+  }
+}

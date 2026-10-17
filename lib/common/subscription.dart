@@ -141,6 +141,7 @@ Map<String, dynamic>? parseShareLink(String link) {
       'hysteria2' || 'hy2' => _hysteria(Uri.parse(link)),
       'tuic' => _tuic(Uri.parse(link)),
       'anytls' => _anytls(Uri.parse(link)),
+      'mierus' => _mieru(Uri.parse(link)),
       _ => null,
     };
   } on FormatException {
@@ -255,7 +256,7 @@ Map<String, dynamic>? _transport({
       stream['xhttpSettings'] = {
         'path': ?path,
         'host': ?hostHeader,
-        'mode': ?_param(query, ['mode']),
+        'mode': _param(query, ['mode']) ?? 'auto',
       };
     case 'grpc':
       stream['network'] = 'grpc';
@@ -264,6 +265,8 @@ Map<String, dynamic>? _transport({
             _param(query, ['serviceName', 'service_name', 'path']) ?? '',
         'multiMode': _param(query, ['mode']) == 'multi',
       };
+    case 'kcp' || 'mkcp':
+      stream['network'] = 'kcp';
     default:
       return null;
   }
@@ -348,7 +351,13 @@ Map<String, dynamic>? _vmess(String body) {
       'port': port,
       'id': id,
       'security':
-          const {'auto', 'aes-128-gcm', 'chacha20-poly1305'}.contains(security)
+          const {
+            'auto',
+            'aes-128-gcm',
+            'chacha20-poly1305',
+            'none',
+            'zero',
+          }.contains(security)
           ? security
           : 'auto',
     },
@@ -640,6 +649,60 @@ Map<String, dynamic>? _anytls(Uri uri) {
         if (_truthy(_param(query, ['insecure', 'allowInsecure'])))
           'allowInsecure': true,
       },
+    },
+  };
+}
+
+/// mieru's own simple link. It lists the server's ports beside the transport
+/// each takes, while an outbound reaches one, so the first pair is kept.
+Map<String, dynamic>? _mieru(Uri uri) {
+  final separator = uri.userInfo.indexOf(':');
+  if (separator <= 0 || uri.host.isEmpty) {
+    return null;
+  }
+  final username = Uri.decodeComponent(uri.userInfo.substring(0, separator));
+  final password = Uri.decodeComponent(uri.userInfo.substring(separator + 1));
+  final query = uri.queryParametersAll;
+  final ports = query['port'] ?? const [];
+  final transports = query['protocol'] ?? const [];
+  if (password.isEmpty || ports.isEmpty || ports.length != transports.length) {
+    return null;
+  }
+  final range = RegExp(r'^(\d+)-(\d+)$').firstMatch(ports.first);
+  final port = range == null ? _port(ports.first) : null;
+  final start = range == null ? null : _port(range[1]);
+  final end = range == null ? null : _port(range[2]);
+  if (port == null && (start == null || end == null || start > end)) {
+    return null;
+  }
+  final transport = transports.first.toUpperCase();
+  if (transport != 'TCP' && transport != 'UDP') {
+    return null;
+  }
+  String? level(String key, String prefix) {
+    final value = (query[key]?.firstOrNull ?? '').toUpperCase();
+    return value.startsWith(prefix) && value != '${prefix}DEFAULT'
+        ? value
+        : null;
+  }
+
+  final mtu = int.tryParse(query['mtu']?.firstOrNull ?? '');
+  final profile = query['profile']?.firstOrNull ?? '';
+  final name = _name(uri).isNotEmpty ? _name(uri) : profile.trim();
+  return {
+    'tag': name.isEmpty
+        ? _defaultName('mieru', uri.host, port ?? start!)
+        : name,
+    'protocol': 'mieru',
+    'settings': {
+      'address': uri.host,
+      if (port != null) 'port': port else 'portRange': '$start-$end',
+      'username': username,
+      'password': password,
+      'transport': transport,
+      'multiplexing': ?level('multiplexing', 'MULTIPLEXING_'),
+      'handshakeMode': ?level('handshake-mode', 'HANDSHAKE_'),
+      if (mtu != null && mtu > 0) 'mtu': mtu,
     },
   };
 }

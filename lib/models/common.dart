@@ -523,14 +523,6 @@ extension DelayStateExt on DelayState {
 }
 
 @freezed
-abstract class UpdatingMessage with _$UpdatingMessage {
-  const factory UpdatingMessage({
-    required String label,
-    required String message,
-  }) = _UpdatingMessage;
-}
-
-@freezed
 abstract class IconButtonData with _$IconButtonData {
   const factory IconButtonData({
     required Glyph glyph,

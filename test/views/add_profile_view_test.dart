@@ -1,5 +1,6 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
+import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
@@ -18,6 +19,13 @@ class _RecordingProfilesAction extends ProfilesAction {
   final added = <({String url, String? label})>[];
   final nodes = <Map<String, dynamic>>[];
   var files = 0;
+  var tags = <String>[];
+
+  @override
+  Profile manualNodeProfile() => Profile.normal(label: 'mine');
+
+  @override
+  Future<List<String>> readNodeTags(Profile profile) async => tags;
 
   @override
   Future<void> addManualNode(Map<String, dynamic> outbound) async {
@@ -38,7 +46,11 @@ class _RecordingProfilesAction extends ProfilesAction {
 void main() {
   late ProviderContainer container;
 
-  Future<void> openPage(WidgetTester tester, {bool geoRegion = false}) async {
+  Future<void> openPage(
+    WidgetTester tester, {
+    bool geoRegion = false,
+    List<String> tags = const [],
+  }) async {
     const size = Size(1000, 900);
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -58,6 +70,10 @@ void main() {
     addTearDown(container.dispose);
     globalState.container = container;
     container.read(viewSizeProvider.notifier).update((_) => size);
+    (container.read(profilesActionProvider.notifier)
+                as _RecordingProfilesAction)
+            .tags =
+        tags;
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -221,15 +237,26 @@ void main() {
     testWidgets('each protocol asks for its own fields', (tester) async {
       await openPage(tester);
       final l10n = currentAppLocalizations;
+      Finder group(String name) => find.byKey(ValueKey('group.$name'));
 
       await pickKind(tester, 'VMess');
       expect(find.text(l10n.uuid), findsOneWidget);
-      expect(find.text(l10n.network), findsOneWidget);
+      expect(group('transport'), findsOneWidget);
+      expect(group('tls'), findsOneWidget);
+      expect(find.text(l10n.network), findsNothing);
       expect(find.text(l10n.serverName), findsNothing);
+      expect(find.text(l10n.multiplexing), findsOneWidget);
+      expect(find.text(l10n.tcpFastOpen), findsOneWidget);
+
+      await pickKind(tester, 'VLESS');
+      expect(find.text(l10n.encryption), findsOneWidget);
+      expect(find.text(l10n.flow), findsOneWidget);
 
       await pickKind(tester, 'TUIC');
       expect(find.text(l10n.congestionControl), findsOneWidget);
-      expect(find.text(l10n.network), findsNothing);
+      expect(find.text(l10n.udpRelay), findsOneWidget);
+      expect(group('transport'), findsNothing);
+      expect(group('tls'), findsOneWidget);
 
       await pickKind(tester, 'Hysteria');
       expect(find.text(l10n.uploadSpeed), findsOneWidget);
@@ -237,6 +264,7 @@ void main() {
 
       await pickKind(tester, 'Hysteria2');
       expect(find.text(l10n.obfsPassword), findsOneWidget);
+      expect(find.text(l10n.portHopping), findsOneWidget);
       expect(find.text(l10n.uploadSpeed), findsNothing);
 
       await pickKind(tester, 'Mieru');
@@ -244,11 +272,14 @@ void main() {
       expect(find.text(l10n.transportMode), findsOneWidget);
       expect(find.text(l10n.multiplexing), findsOneWidget);
       expect(find.text(l10n.handshake), findsOneWidget);
+      expect(find.text('MTU'), findsOneWidget);
+      expect(group('tls'), findsNothing);
 
       await pickKind(tester, 'Socks5');
       expect(find.text(l10n.username), findsOneWidget);
-      expect(find.text('TLS'), findsOneWidget);
+      expect(group('tls'), findsOneWidget);
       expect(find.text(l10n.serverName), findsNothing);
+      expect(find.text(l10n.proxyVia), findsNothing);
     });
 
     testWidgets('socks5 saves with only an address and a port', (tester) async {
@@ -266,27 +297,94 @@ void main() {
       expect((outbound['settings'] as Map)['port'], 1080);
     });
 
-    testWidgets('the fields that depend on a choice appear with it', (
+    testWidgets('the transport and TLS pages show what their choice needs', (
       tester,
     ) async {
       await openPage(tester);
       final l10n = currentAppLocalizations;
       await pickKind(tester, 'VLESS');
+
+      await tester.tap(find.byKey(const ValueKey('group.tls')));
+      await tester.pumpAndSettle();
       expect(find.text(l10n.publicKey), findsNothing);
-      expect(find.text(l10n.path), findsNothing);
+      expect(find.text(l10n.allowInsecure), findsOneWidget);
+      expect(find.text('ECH'), findsOneWidget);
 
       await tester.tap(find.text(l10n.security));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('reality'));
+      await tester.tap(find.text('REALITY'));
       await tester.pumpAndSettle();
       expect(find.text(l10n.publicKey), findsOneWidget);
       expect(find.text(l10n.shortId), findsOneWidget);
+      expect(find.text('ECH'), findsNothing);
 
+      await tester.tap(find.byTooltip(l10n.back));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('group.tls')),
+          matching: find.text('REALITY'),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byKey(const ValueKey('group.transport')));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.path), findsNothing);
       await tester.tap(find.text(l10n.network));
       await tester.pumpAndSettle();
       await tester.tap(find.text('ws'));
       await tester.pumpAndSettle();
       expect(find.text(l10n.path), findsOneWidget);
+    });
+
+    testWidgets('what the TLS page sets is saved with the server', (
+      tester,
+    ) async {
+      await openPage(tester);
+      final l10n = currentAppLocalizations;
+      await pickKind(tester, 'VLESS');
+      await tester.enterText(fieldOf('address'), 'node.example.com');
+      await tester.enterText(fieldOf('port'), '443');
+      await tester.enterText(fieldOf('uuid'), 'id');
+
+      await tester.tap(find.byKey(const ValueKey('group.tls')));
+      await tester.pumpAndSettle();
+      await tester.enterText(fieldOf('sni'), 'sni.example.com');
+      await tester.tap(find.text(l10n.fingerprint));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('firefox'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip(l10n.back));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.save));
+      await tester.pumpAndSettle();
+
+      final stream = action().nodes.single['streamSettings'] as Map;
+      expect(stream['tlsSettings'], {
+        'serverName': 'sni.example.com',
+        'fingerprint': 'firefox',
+      });
+    });
+
+    testWidgets('a server can be reached through another node', (tester) async {
+      await openPage(tester, tags: ['relay']);
+      final l10n = currentAppLocalizations;
+      await pickKind(tester, 'Shadowsocks');
+      await tester.enterText(fieldOf('address'), 'node.example.com');
+      await tester.enterText(fieldOf('port'), '8388');
+      await tester.enterText(fieldOf('password'), 'pw');
+
+      await tester.tap(find.text(l10n.proxyVia));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.off), findsOneWidget);
+      await tester.tap(find.text('relay'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.save));
+      await tester.pumpAndSettle();
+
+      final stream = action().nodes.single['streamSettings'] as Map;
+      expect(stream['sockopt'], {'dialerProxy': 'relay'});
     });
 
     testWidgets('saving waits for the required fields and a real port', (

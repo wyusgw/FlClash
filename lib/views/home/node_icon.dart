@@ -46,8 +46,8 @@ class NodeIcon extends ConsumerWidget {
   }
 }
 
-/// Opens the node for editing; a node the form cannot hold exactly is only
-/// shown, so that nothing it carries is lost.
+/// Opens the node for editing; a node the form cannot hold exactly has only
+/// its name and server open to change, so that nothing else it carries is lost.
 Future<void> showNodeDetail(
   BuildContext context,
   WidgetRef ref,
@@ -58,9 +58,16 @@ Future<void> showNodeDetail(
       .read(profilesActionProvider.notifier)
       .readNodeOutbound(profile, node.name);
   if (!context.mounted) return;
-  final form = outbound == null ? null : nodeFormOf(outbound);
-  if (outbound == null || form == null) {
+  if (outbound == null) {
     await BaseNavigator.push(context, _NodeDetailView(node: node));
+    return;
+  }
+  final form = nodeFormOf(outbound);
+  if (form == null) {
+    await BaseNavigator.push(
+      context,
+      EditNodeEndpointView(profile: profile, outbound: outbound),
+    );
     return;
   }
   await BaseNavigator.push(

@@ -18,6 +18,8 @@ import 'package:fl_clash/views/about.dart';
 import 'package:fl_clash/views/backup_and_restore.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/features/ip_quality/ip_quality.dart';
+import 'package:fl_clash/views/config/dns.dart';
+import 'package:fl_clash/views/config/general.dart';
 import 'package:fl_clash/views/config/on_demand.dart';
 import 'package:fl_clash/views/data.dart';
 import 'package:fl_clash/views/home/delay_test.dart';
@@ -64,6 +66,16 @@ const _outboundAnswer = OutboundIpResult(
   picksVersion: 1,
 );
 
+class _FailingUpdateAction extends ProfilesAction {
+  @override
+  Future<void> updateProfile(
+    Profile profile, {
+    bool showLoading = false,
+  }) async {
+    throw const MessageException('subscription unreachable');
+  }
+}
+
 class _NoopSetupAction extends SetupAction {
   @override
   void applyProfileDebounce({bool silence = false, bool force = false}) {}
@@ -102,6 +114,7 @@ void main() {
     Widget page, {
     List<Profile> profiles = const [],
     List<Override> overrides = const [],
+    bool withStatusManager = false,
   }) async {
     tester.view.physicalSize = const Size(900, 900);
     tester.view.devicePixelRatio = 1;
@@ -133,7 +146,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: TestApp(child: page),
+        child: TestApp(withStatusManager: withStatusManager, child: page),
       ),
     );
     await tester.pump();
@@ -207,6 +220,28 @@ void main() {
         findsOneWidget,
       );
     });
+  });
+
+  testWidgets('a subscription that fails to update says so in a notice', (
+    tester,
+  ) async {
+    await pumpPage(
+      tester,
+      const ProfilesView(),
+      profiles: [_profile(1, 'first')],
+      overrides: [
+        profilesActionProvider.overrideWith(_FailingUpdateAction.new),
+      ],
+      withStatusManager: true,
+    );
+
+    await tester.tap(find.text('Update all'));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('first：subscription unreachable'), findsOneWidget);
+    expect(find.byType(Dialog), findsNothing);
+    await tester.pump(const Duration(seconds: 7));
   });
 
   group('data page', () {
@@ -496,7 +531,7 @@ void main() {
       expect(find.text('Language'), findsOneWidget);
       expect(find.text('Default'), findsOneWidget);
       expect(find.text('Appearance'), findsOneWidget);
-      expect(find.text('General'), findsOneWidget);
+      expect(find.widgetWithText(GroupedRow, 'General'), findsOneWidget);
       expect(find.widgetWithText(GroupedRow, 'About'), findsOneWidget);
       expect(find.text('Developer mode'), findsNothing);
     });
@@ -514,7 +549,7 @@ void main() {
       final order = [
         l10n.language,
         l10n.advanced,
-        l10n.tunnel,
+        l10n.general,
         l10n.permissions,
         l10n.reset,
         l10n.about,
@@ -539,8 +574,9 @@ void main() {
 
       expect(holds(l10n.advanced, l10n.delayTestMethod), isTrue);
       expect(holds(l10n.advanced, l10n.appearance), isTrue);
-      expect(holds(l10n.tunnel, l10n.onDemand), isTrue);
-      expect(holds(l10n.tunnel, l10n.general), isTrue);
+      expect(holds(l10n.general, l10n.onDemand), isFalse);
+      expect(holds(l10n.general, 'DNS'), isTrue);
+      expect(holds(l10n.general, l10n.general), isTrue);
       expect(holds(l10n.permissions, l10n.clipboard), isTrue);
       expect(holds(l10n.reset, l10n.reset), isTrue);
       expect(holds(l10n.about, l10n.about), isTrue);
@@ -581,15 +617,31 @@ void main() {
       );
     });
 
-    testWidgets('the on demand row opens its page from the settings', (
+    testWidgets('on demand lives in General, which has no test URL', (
       tester,
     ) async {
-      await pumpPage(tester, const ToolsView());
+      tester.view.physicalSize = const Size(900, 3000);
+      await pumpPage(tester, const GeneralView());
 
       await tester.tap(find.widgetWithText(GroupedRow, 'On demand'));
       await tester.pumpAndSettle();
-
       expect(find.byType(OnDemandView), findsOneWidget);
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.text('Test URL'), findsNothing);
+    });
+
+    testWidgets('the DNS row of the settings opens the DNS page', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(900, 3000);
+      await pumpPage(tester, const ToolsView());
+
+      await tester.tap(find.widgetWithText(GroupedRow, 'DNS'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(DnsView), findsOneWidget);
     });
 
     testWidgets('the developer page shows once developer mode is on', (

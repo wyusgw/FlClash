@@ -5,6 +5,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/add.dart';
 import 'package:fl_clash/views/profiles/edit.dart';
 import 'package:fl_clash/views/home/node_share.dart';
@@ -477,9 +478,11 @@ class _Toolbar extends ConsumerWidget {
             onPressed: profile == null
                 ? null
                 : () => unawaited(
-                    ref
-                        .read(profilesActionProvider.notifier)
-                        .updateProfile(profile, showLoading: true),
+                    globalState.safeRun(
+                      () => ref
+                          .read(profilesActionProvider.notifier)
+                          .updateProfile(profile, showLoading: true),
+                    ),
                   ),
           ),
           _ToolbarButton(
@@ -638,9 +641,11 @@ class _SubscriptionSection extends ConsumerWidget {
                   tooltip: appLocalizations.update,
                   busy: isUpdating,
                   onPressed: () => unawaited(
-                    ref
-                        .read(profilesActionProvider.notifier)
-                        .updateProfile(profile, showLoading: true),
+                    globalState.safeRun(
+                      () => ref
+                          .read(profilesActionProvider.notifier)
+                          .updateProfile(profile, showLoading: true),
+                    ),
                   ),
                 ),
               if (editing && dragIndex != null)

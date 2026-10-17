@@ -72,8 +72,35 @@ String nodeFieldLabel(AppLocalizations l, String key) => switch (key) {
   'transport' => l.transportMode,
   'multiplexing' => l.multiplexing,
   'handshake' => l.handshake,
+  'encryption' => l.encryption,
+  'headerType' => l.headerType,
+  'mode' => l.mode,
+  'multiMode' => l.multiMode,
+  'ech' => 'ECH',
+  'alpn' => 'ALPN',
+  'spiderX' => 'SpiderX',
+  'mldsa65Verify' => 'ML-DSA-65',
+  'pin' => l.certSha256,
+  'fragment' => l.fragment,
+  'mux' => l.multiplexing,
+  'tcpFastOpen' => l.tcpFastOpen,
+  'dialerProxy' => l.proxyVia,
+  'udpRelay' => l.udpRelay,
+  'ports' => l.portHopping,
+  'mtu' => 'MTU',
   _ => key,
 };
+
+/// How an option of the choice [key] reads: the ones that leave a setting to
+/// the Core or turn it off say so, the rest are their own names.
+String nodeChoiceLabel(AppLocalizations l, String key, String value) =>
+    switch ((key, value)) {
+      (_, nodeDefaultChoice) => l.defaultText,
+      ('dialerProxy', '') || ('security', 'none') => l.off,
+      ('security', 'tls') => 'TLS',
+      ('security', 'reality') => 'REALITY',
+      _ => value,
+    };
 
 /// The page that takes a server: a subscription by its address, or one
 /// protocol by the fields it needs; either way a QR code and a file are the
@@ -90,6 +117,20 @@ class _AddProfileViewState extends ConsumerState<AddProfileView> {
   final _label = TextEditingController();
   NodeKind? _kind;
   Map<String, String> _values = {};
+  List<String> _proxies = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    final profilesAction = ref.read(profilesActionProvider.notifier);
+    unawaited(
+      profilesAction.readNodeTags(profilesAction.manualNodeProfile()).then((
+        tags,
+      ) {
+        if (mounted) setState(() => _proxies = tags);
+      }),
+    );
+  }
 
   bool get _valid {
     final kind = _kind;
@@ -209,6 +250,7 @@ class _AddProfileViewState extends ConsumerState<AddProfileView> {
               kind: kind,
               values: _values,
               onChanged: _setValue,
+              proxies: _proxies,
             ),
           const SizedBox(height: groupedSectionGap),
           GroupedSection(
@@ -317,11 +359,13 @@ class ChoiceView extends StatelessWidget {
     required this.title,
     required this.options,
     required this.selected,
+    this.labelOf,
   });
 
   final String title;
   final List<String> options;
   final String selected;
+  final String Function(String option)? labelOf;
 
   @override
   Widget build(BuildContext context) {
@@ -342,7 +386,7 @@ class ChoiceView extends StatelessWidget {
               for (final option in options)
                 GroupedRow(
                   key: ValueKey(option),
-                  title: option,
+                  title: labelOf?.call(option) ?? option,
                   trailing: option == selected
                       ? GlyphIcon(
                           AppGlyphs.check,
@@ -368,11 +412,19 @@ class NodeFormFields extends ConsumerStatefulWidget {
     required this.kind,
     required this.values,
     required this.onChanged,
+    this.group = NodeFieldGroup.main,
+    this.proxies = const [],
   });
 
   final NodeKind kind;
   final Map<String, String> values;
   final void Function(String key, String value) onChanged;
+
+  /// The fields shown; the main group links to the pages of the others.
+  final NodeFieldGroup group;
+
+  /// The other nodes this one can be reached through.
+  final List<String> proxies;
 
   @override
   ConsumerState<NodeFormFields> createState() => _NodeFormFieldsState();
@@ -499,18 +551,25 @@ class _NodeFormFieldsState extends ConsumerState<NodeFormFields> {
           onChanged: (value) => _setValue(field.key, value),
         );
       case NodeFieldType.choice:
+        String labelOf(String option) =>
+            nodeChoiceLabel(appLocalizations, field.key, option);
+        final options = field.key == 'dialerProxy'
+            ? ['', ...widget.proxies]
+            : field.options;
+        final selected = _values[field.key] ?? field.initial;
         return GroupedRow(
           key: ValueKey('field.${field.key}'),
           title: label,
-          value: _values[field.key],
+          value: labelOf(selected),
           chevron: true,
           onTap: () async {
             final picked = await BaseNavigator.push<String>(
               context,
               ChoiceView(
                 title: label,
-                options: field.options,
-                selected: _values[field.key] ?? field.initial,
+                options: options,
+                selected: selected,
+                labelOf: labelOf,
               ),
             );
             if (picked != null) _setValue(field.key, picked);
@@ -528,13 +587,102 @@ class _NodeFormFieldsState extends ConsumerState<NodeFormFields> {
     }
   }
 
+  String _groupTitle(NodeFieldGroup group) => switch (group) {
+    NodeFieldGroup.transport => context.appLocalizations.transportMethod,
+    _ => 'TLS',
+  };
+
+  Widget _groupRow(NodeFieldGroup group) {
+    final value = switch (group) {
+      NodeFieldGroup.transport => _values['network'],
+      _ => nodeChoiceLabel(
+        context.appLocalizations,
+        'security',
+        _values['security'] ?? 'tls',
+      ),
+    };
+    return GroupedRow(
+      key: ValueKey('group.${group.name}'),
+      title: _groupTitle(group),
+      value: value,
+      chevron: true,
+      onTap: () => BaseNavigator.push(
+        context,
+        _NodeFieldGroupView(
+          title: _groupTitle(group),
+          kind: widget.kind,
+          group: group,
+          values: _values,
+          onChanged: widget.onChanged,
+        ),
+      ),
+    );
+  }
+
+  bool _shown(NodeField field) =>
+      field.visible(_values) &&
+      (field.key != 'dialerProxy' || widget.proxies.isNotEmpty);
+
   @override
   Widget build(BuildContext context) {
+    final linked = <NodeFieldGroup>{};
     return GroupedSection(
       children: [
         for (final field in nodeFields(widget.kind))
-          if (field.visible(_values)) _field(field),
+          if (field.group == widget.group) ...[
+            if (_shown(field)) _field(field),
+          ] else if (widget.group == NodeFieldGroup.main &&
+              linked.add(field.group))
+            _groupRow(field.group),
       ],
+    );
+  }
+}
+
+/// The page of a transport's or a TLS's settings, opened from the row of the
+/// server's page; what changes here is handed straight back to that page.
+class _NodeFieldGroupView extends StatefulWidget {
+  const _NodeFieldGroupView({
+    required this.title,
+    required this.kind,
+    required this.group,
+    required this.values,
+    required this.onChanged,
+  });
+
+  final String title;
+  final NodeKind kind;
+  final NodeFieldGroup group;
+  final Map<String, String> values;
+  final void Function(String key, String value) onChanged;
+
+  @override
+  State<_NodeFieldGroupView> createState() => _NodeFieldGroupViewState();
+}
+
+class _NodeFieldGroupViewState extends State<_NodeFieldGroupView> {
+  late Map<String, String> _values = widget.values;
+
+  void _setValue(String key, String value) {
+    setState(() => _values = {..._values, key: value});
+    widget.onChanged(key, value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GroupedPage(
+      title: widget.title,
+      onBack: () => Navigator.of(context).maybePop(),
+      body: GroupedBody(
+        children: [
+          NodeFormFields(
+            kind: widget.kind,
+            group: widget.group,
+            values: _values,
+            onChanged: _setValue,
+          ),
+        ],
+      ),
     );
   }
 }

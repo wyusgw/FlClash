@@ -776,6 +776,7 @@ class _NodeSwipe extends ConsumerWidget {
           SwipeAction(
             label: appLocalizations.test,
             color: swipeActionGo,
+            fullSwipe: true,
             onPressed: () => unawaited(
               ref
                   .read(proxiesActionProvider.notifier)
@@ -798,6 +799,7 @@ class _NodeSwipe extends ConsumerWidget {
         SwipeAction(
           label: appLocalizations.delete,
           color: groupedDanger,
+          fullSwipe: true,
           onPressed: () => unawaited(deleteNode(context, ref, profile, node)),
         ),
       ],

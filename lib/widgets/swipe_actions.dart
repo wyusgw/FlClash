@@ -30,6 +30,8 @@ class SwipeAction {
 const _buttonWidth = 74.0;
 const _gap = 8.0;
 const _fullSwipeFraction = 0.55;
+const _fullSwipeVelocity = 2000.0;
+const _pastExtentResistance = 0.6;
 
 double _extent(List<SwipeAction> actions) =>
     actions.isEmpty ? 0 : actions.length * (_buttonWidth + _gap) + _gap;
@@ -131,7 +133,12 @@ class _SwipeActionsState extends State<SwipeActions>
 
   void _handleDragUpdate(DragUpdateDetails details) {
     final wasArmed = _armed(_offset.value);
-    _offset.value = (_offset.value + details.primaryDelta!).clamp(
+    final delta = details.primaryDelta!;
+    final extent = delta > 0 ? _leadingExtent : _trailingExtent;
+    final pastExtent =
+        _offset.value.abs() >= extent && _offset.value * delta > 0;
+    final step = pastExtent ? delta * _pastExtentResistance : delta;
+    _offset.value = (_offset.value + step).clamp(
       -_reach(widget.trailing, _trailingExtent),
       _reach(widget.leading, _leadingExtent),
     );
@@ -143,8 +150,12 @@ class _SwipeActionsState extends State<SwipeActions>
   void _handleDragEnd(DragEndDetails details) {
     final velocity = details.primaryVelocity ?? 0;
     final value = _offset.value;
-    if (_armed(value)) {
-      final action = _full(value > 0 ? widget.leading : widget.trailing)!;
+    final action = _full(value > 0 ? widget.leading : widget.trailing);
+    final flung =
+        velocity.abs() >= _fullSwipeVelocity &&
+        velocity.sign == value.sign &&
+        value.abs() > (value > 0 ? _leadingExtent : _trailingExtent);
+    if (action != null && (_armed(value) || flung)) {
       _close();
       action.onPressed();
     } else if (value > 0) {
@@ -174,7 +185,12 @@ class _SwipeActionsState extends State<SwipeActions>
             mainAxisSize: MainAxisSize.min,
             children: [
               for (final action in actions)
-                _button(action, stretch: action == stretch),
+                _button(
+                  action,
+                  stretch: action == stretch,
+                  alignRow:
+                      action == stretch && alignment == Alignment.centerRight,
+                ),
             ],
           ),
         ),
@@ -182,7 +198,11 @@ class _SwipeActionsState extends State<SwipeActions>
     );
   }
 
-  Widget _button(SwipeAction action, {required bool stretch}) {
+  Widget _button(
+    SwipeAction action, {
+    required bool stretch,
+    bool alignRow = false,
+  }) {
     final button = Padding(
       padding: const EdgeInsets.symmetric(horizontal: _gap / 2),
       child: SizedBox(
@@ -196,8 +216,11 @@ class _SwipeActionsState extends State<SwipeActions>
               _close();
               action.onPressed();
             },
-            child: Center(
-              child: Text(
+            child: Align(
+              alignment: alignRow ? Alignment.centerLeft : Alignment.center,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: alignRow ? 20 : 0),
+                child: Text(
                 action.label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -205,6 +228,7 @@ class _SwipeActionsState extends State<SwipeActions>
                   color: Colors.white,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
+                ),
                 ),
               ),
             ),

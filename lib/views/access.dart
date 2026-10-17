@@ -401,7 +401,7 @@ class _AccessViewState extends ConsumerState<AccessView> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (isLoading) const LinearProgressIndicator(minHeight: 2),
+            if (isLoading) const IosProgressBar(),
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 groupedPageInset,

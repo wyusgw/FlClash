@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'button.dart';
 import 'chip.dart';
 import 'inherited.dart';
+import 'ios_controls.dart';
 import 'loading.dart';
 import 'navigation_dock.dart';
 import 'popup.dart';
@@ -558,7 +559,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
             valueListenable: _loadingNotifier,
             builder: (_, value, _) {
               return value == true
-                  ? const LinearProgressIndicator()
+                  ? const IosProgressBar()
                   : Container();
             },
           ),

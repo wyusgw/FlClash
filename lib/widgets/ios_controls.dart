@@ -128,3 +128,57 @@ class IosButton extends StatelessWidget {
     );
   }
 }
+
+/// The thin progress line of iOS for work with no known end: a short stretch
+/// of the accent colour running along a grey track.
+class IosProgressBar extends StatefulWidget {
+  const IosProgressBar({super.key, this.height = 3});
+
+  final double height;
+
+  @override
+  State<IosProgressBar> createState() => _IosProgressBarState();
+}
+
+class _IosProgressBarState extends State<IosProgressBar>
+    with SingleTickerProviderStateMixin {
+  static const _segment = 0.3;
+
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    return SizedBox(
+      height: widget.height,
+      child: ColoredBox(
+        color: palette.separator,
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) => FractionallySizedBox(
+            alignment: Alignment(
+              -1 + 2 * Curves.easeInOut.transform(_controller.value),
+              0,
+            ),
+            widthFactor: _segment,
+            child: DecoratedBox(
+              decoration: ShapeDecoration(
+                color: palette.accent,
+                shape: AppShape.full,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -177,7 +177,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pumpAndSettle();
 
-    expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(find.byType(IosProgressBar), findsNothing);
     expect(find.text('The app is already up to date'), findsOneWidget);
     expect(tester.takeException(), null);
   });

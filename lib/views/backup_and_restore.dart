@@ -401,7 +401,17 @@ class _WebDAVFormPageState extends ConsumerState<WebDAVFormPage> {
     Navigator.pop(context);
   }
 
-  void _delete() {
+  Future<void> _delete() async {
+    final confirmed = await dialogs.showMessage(
+      title: 'WebDAV',
+      message: TextSpan(
+        text: context.appLocalizations.deleteTip(
+          context.appLocalizations.webDAVConfiguration,
+        ),
+      ),
+      destructive: true,
+    );
+    if (confirmed != true || !mounted) return;
     ref.read(davSettingProvider.notifier).update((_) => null);
     Navigator.pop(context);
   }

@@ -92,6 +92,14 @@ class _HomeViewState extends ConsumerState<HomeView> {
         if (_edit.isSelected(_profileKey(profile.id))) profile.id,
     ];
     if (ids.isEmpty) return;
+    final appLocalizations = context.appLocalizations;
+    final confirmed = await dialogs.showMessage(
+      message: TextSpan(
+        text: appLocalizations.deleteTip(appLocalizations.profile),
+      ),
+      destructive: true,
+    );
+    if (confirmed != true) return;
     final profilesAction = ref.read(profilesActionProvider.notifier);
     for (final id in ids) {
       await profilesAction.deleteProfile(id);

@@ -860,12 +860,12 @@ class _NodeMenuTarget extends ConsumerWidget {
                 NodeMenuEntry(
                   value: _NodeAction.details,
                   label: appLocalizations.details(node.name),
-                  glyph: AppGlyphs.edit,
+                  glyph: AppGlyphs.document,
                 ),
                 NodeMenuEntry(
                   value: _NodeAction.copy,
                   label: appLocalizations.copy,
-                  glyph: AppGlyphs.copy,
+                  glyph: AppGlyphs.duplicate,
                 ),
               ],
               [
@@ -878,12 +878,12 @@ class _NodeMenuTarget extends ConsumerWidget {
                   NodeMenuEntry(
                     value: _NodeAction.copyAddress,
                     label: appLocalizations.copyAddress,
-                    glyph: AppGlyphs.link,
+                    glyph: AppGlyphs.copy,
                   ),
                 NodeMenuEntry(
                   value: _NodeAction.copyName,
                   label: appLocalizations.copyName,
-                  glyph: AppGlyphs.copy,
+                  glyph: AppGlyphs.textShort,
                 ),
               ],
               [

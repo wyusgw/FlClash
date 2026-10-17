@@ -235,7 +235,7 @@ class _SwipeActionsState extends State<SwipeActions>
           child: InkWell(
             onTap: () {
               _close();
-              action.onPressed();
+              unawaited(Future.sync(action.onPressed));
             },
             child: Align(
               alignment: alignRow ? Alignment.centerLeft : Alignment.center,

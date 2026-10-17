@@ -124,6 +124,7 @@ abstract class _EditViewState<W extends ConsumerStatefulWidget, T>
   Future<void> _handleReset() async {
     final res = await dialogs.showMessage(
       message: TextSpan(text: context.appLocalizations.resetPageChangesTip),
+      destructive: true,
     );
     if (!mounted || res != true) {
       return;

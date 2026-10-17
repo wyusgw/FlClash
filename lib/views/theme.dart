@@ -552,8 +552,12 @@ class _TextScaleFactorItemState extends ConsumerState<_TextScaleFactorItem> {
                     child: SliderTheme(
                       data: SliderDefaultsM3(context).copyWith(
                         activeTrackColor: palette.accent,
-                        thumbColor: palette.accent,
                         inactiveTrackColor: palette.separator,
+                        trackHeight: 4,
+                        thumbShape: const _IosThumbShape(),
+                        overlayShape: SliderComponentShape.noOverlay,
+                        tickMarkShape: SliderTickMarkShape.noTickMark,
+                        showValueIndicator: ShowValueIndicator.never,
                       ),
                       child: Slider(
                         padding: EdgeInsets.zero,
@@ -679,5 +683,42 @@ class _SegmentedToggle extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// The thumb of an iOS slider: a plain white disc with a soft shadow.
+class _IosThumbShape extends SliderComponentShape {
+  const _IosThumbShape();
+
+  static const _radius = 14.0;
+
+  @override
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) =>
+      const Size.fromRadius(_radius);
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    final canvas = context.canvas;
+    canvas.drawCircle(
+      center.translate(0, 2),
+      _radius,
+      Paint()
+        ..color = Colors.black.withValues(alpha: 0.25)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+    );
+    canvas.drawCircle(center, _radius, Paint()..color = Colors.white);
   }
 }

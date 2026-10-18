@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.9.1 (2026-10-18)
+
+**Features**
+
+- **ui** IOS-style swipe rows, menus, dialogs, switches and settings sizing (#10) (ac4e7f4)
+- **home** Drag a node row all the way across to test or delete it, with a tick when armed (7751c98)
+- **nodes,dns** Node forms follow Xray's options with Transport and TLS pages, a Configure DNS page is added, and subscription errors show as notices (6d0a187)
+
+**Bug Fixes**
+
+- **home** Use a heavier haptic for the proxy toggle so Android devices feel it (3b3bde5)
+
 ## v0.9.0 (2026-10-13)
 
 **Breaking Changes**

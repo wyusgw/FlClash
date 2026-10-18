@@ -2,6 +2,44 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "0.9.1",
+      "tag": "v0.9.1",
+      "date": "2026-10-18",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "ac4e7f4",
+              "scope": "ui",
+              "text": "IOS-style swipe rows, menus, dialogs, switches and settings sizing (#10)"
+            },
+            {
+              "id": "7751c98",
+              "scope": "home",
+              "text": "Drag a node row all the way across to test or delete it, with a tick when armed"
+            },
+            {
+              "id": "6d0a187",
+              "scope": "nodes,dns",
+              "text": "Node forms follow Xray's options with Transport and TLS pages, a Configure DNS page is added, and subscription errors show as notices"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "3b3bde5",
+              "scope": "home",
+              "text": "Use a heavier haptic for the proxy toggle so Android devices feel it"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.9.0",
       "tag": "v0.9.0",
       "date": "2026-10-13",

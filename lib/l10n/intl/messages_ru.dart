@@ -139,6 +139,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "actionView": MessageLookupByLibrary.simpleMessage("Показать/Скрыть"),
     "add": MessageLookupByLibrary.simpleMessage("Добавить"),
+    "addNode": MessageLookupByLibrary.simpleMessage("Добавить узел"),
     "addProfile": MessageLookupByLibrary.simpleMessage("Добавить профиль"),
     "addRule": MessageLookupByLibrary.simpleMessage("Добавить правило"),
     "addRuleSet": MessageLookupByLibrary.simpleMessage("Добавить набор правил"),
@@ -1111,6 +1112,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscribe": MessageLookupByLibrary.simpleMessage("Подписка"),
     "subscribeDesc": MessageLookupByLibrary.simpleMessage(
       "URL подписки или Xray JSON",
+    ),
+    "subscriptionFoldTip": MessageLookupByLibrary.simpleMessage(
+      "Нажмите на подписку, чтобы свернуть или развернуть её узлы.",
     ),
     "subscriptionInfo": MessageLookupByLibrary.simpleMessage(
       "Информация о подписке",

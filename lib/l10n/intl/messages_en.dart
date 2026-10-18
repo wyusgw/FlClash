@@ -134,6 +134,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "actionView": MessageLookupByLibrary.simpleMessage("Show/Hide"),
     "add": MessageLookupByLibrary.simpleMessage("Add"),
+    "addNode": MessageLookupByLibrary.simpleMessage("Add node"),
     "addProfile": MessageLookupByLibrary.simpleMessage("Add profile"),
     "addRule": MessageLookupByLibrary.simpleMessage("Add rule"),
     "addRuleSet": MessageLookupByLibrary.simpleMessage("Add rule set"),
@@ -1060,6 +1061,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscribe": MessageLookupByLibrary.simpleMessage("Subscribe"),
     "subscribeDesc": MessageLookupByLibrary.simpleMessage(
       "Subscription URL or Xray JSON",
+    ),
+    "subscriptionFoldTip": MessageLookupByLibrary.simpleMessage(
+      "Tap a subscription to fold or expand its nodes.",
     ),
     "subscriptionInfo": MessageLookupByLibrary.simpleMessage(
       "Subscription info",

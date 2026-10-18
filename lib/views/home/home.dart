@@ -249,7 +249,20 @@ class _HomeBodyState extends ConsumerState<_HomeBody> {
             groupedPageInset,
             20 + BottomInsetScope.of(context),
           ),
-          sliver: editing
+          sliver: profiles.isEmpty
+              ? SliverToBoxAdapter(
+                  child: GroupedSection(
+                    footer: context.appLocalizations.subscriptionFoldTip,
+                    children: [
+                      GroupedRow(
+                        title: context.appLocalizations.addNode,
+                        chevron: true,
+                        onTap: () => showAddProfilePage(context),
+                      ),
+                    ],
+                  ),
+                )
+              : editing
               ? SliverReorderableList(
                   itemCount: profiles.length,
                   onReorderItem: (oldIndex, newIndex) => ref
@@ -293,24 +306,20 @@ class _ControlSection extends ConsumerWidget {
         (state) => state.getGroup(nodeGroupName)?.all.firstOrNull?.name,
       ),
     );
-    if (profile == null) {
-      return GroupedSection(
-        children: [
-          GroupedRow(
-            leading: const GroupedIcon(AppGlyphs.add),
-            title: appLocalizations.addProfile,
-            chevron: true,
-            onTap: () => showAddProfilePage(context),
-          ),
-        ],
-      );
-    }
     return GroupedSection(
       children: [
         GroupedRow(
-          leading: const GroupedIcon(AppGlyphs.rocket),
+          leading: Image.asset(
+            'assets/images/icon.png',
+            width: groupedLeadingSize + 1,
+            height: groupedLeadingSize + 1,
+            filterQuality: FilterQuality.medium,
+          ),
           title: isStart
-              ? selected.takeFirstValid([firstNode ?? '', profile.realLabel])
+              ? selected.takeFirstValid([
+                  firstNode ?? '',
+                  ?profile?.realLabel,
+                ], defaultValue: appLocalizations.connected)
               : appLocalizations.notConnected,
           trailing: Opacity(
             opacity: editing ? 0.5 : 1,
@@ -362,7 +371,7 @@ class _ConnectivityRow extends ConsumerWidget {
       title: context.appLocalizations.connectivityTest,
       trailing: testing
           ? SizedBox.square(
-              dimension: 19,
+              dimension: 17,
               child: IosSpinner(color: palette.icon),
             )
           : Tooltip(
@@ -436,11 +445,31 @@ Future<void> _pasteFromClipboard(BuildContext context, WidgetRef ref) async {
   await ref.read(profilesActionProvider.notifier).importFromClipboard(source);
 }
 
-class _Toolbar extends ConsumerWidget {
+class _Toolbar extends ConsumerStatefulWidget {
   const _Toolbar();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_Toolbar> createState() => _ToolbarState();
+}
+
+class _ToolbarState extends ConsumerState<_Toolbar> {
+  bool _updating = false;
+
+  Future<void> _update(Profile profile) async {
+    setState(() => _updating = true);
+    try {
+      await globalState.safeRun(
+        () => ref
+            .read(profilesActionProvider.notifier)
+            .updateProfile(profile, showLoading: true),
+      );
+    } finally {
+      if (mounted) setState(() => _updating = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     final profile = ref.watch(currentProfileProvider);
     final nodes = ref.watch(
@@ -484,16 +513,10 @@ class _Toolbar extends ConsumerWidget {
           _ToolbarButton(
             glyph: AppGlyphs.sync,
             tooltip: appLocalizations.update,
-            spinning: isUpdating,
+            spinning: _updating,
             onPressed: profile == null || isUpdating
                 ? null
-                : () => unawaited(
-                    globalState.safeRun(
-                      () => ref
-                          .read(profilesActionProvider.notifier)
-                          .updateProfile(profile, showLoading: true),
-                    ),
-                  ),
+                : () => unawaited(_update(profile)),
           ),
           _ToolbarButton(
             glyph: edit.editing ? AppGlyphs.close : AppGlyphs.more,
@@ -665,6 +688,7 @@ class _SubscriptionSection extends ConsumerWidget {
         : ref
               .watch(profileNodesProvider(profile.id, profile.lastUpdateDate))
               .value;
+    final lead = leadNode(nodes);
     final selected = current
         ? ref.watch(selectedProxyNameProvider(nodeGroupName))
         : null;
@@ -739,7 +763,7 @@ class _SubscriptionSection extends ConsumerWidget {
                     index: dragIndex!,
                     child: GlyphIcon(
                       AppGlyphs.dragHandle,
-                      size: 21,
+                      size: 19,
                       color: palette.tertiary,
                     ),
                   )
@@ -785,6 +809,7 @@ class _SubscriptionSection extends ConsumerWidget {
                             name: node.name,
                             region: node.region,
                             address: node.address,
+                            lead: lead,
                           ),
                         ],
                       )
@@ -792,6 +817,7 @@ class _SubscriptionSection extends ConsumerWidget {
                         name: node.name,
                         region: node.region,
                         address: node.address,
+                        lead: lead,
                       ),
                 leadingWidth: editing
                     ? groupedLeadingSize * 2 + _selectGap
@@ -1112,10 +1138,10 @@ class _RoundAction extends StatelessWidget {
         highlightColor: Colors.transparent,
         child: busy
             ? SizedBox.square(
-                dimension: 19,
+                dimension: 17,
                 child: IosSpinner(color: palette.icon),
               )
-            : GlyphIcon(glyph, size: 21, color: palette.icon),
+            : GlyphIcon(glyph, size: 19, color: palette.icon),
       ),
     );
   }

@@ -221,6 +221,23 @@ void main() {
     expect(items[2].containsKey('detailTone'), isFalse);
   });
 
+  test('an icon travels as its path, only when set', () {
+    final encoded = TrayCodec.encode(
+      _spec(
+        menu: const [
+          TrayMenuCheckbox(label: 'a', checked: false, icon: '/flags/jp.png'),
+          TrayMenuSubmenu(label: 'b', icon: '/flags/gb.png', items: []),
+          TrayMenuCheckbox(label: 'c', checked: false),
+        ],
+      ),
+    );
+
+    final items = encoded.menu.cast<Map<String, Object?>>();
+    expect(items[0]['icon'], '/flags/jp.png');
+    expect(items[1]['icon'], '/flags/gb.png');
+    expect(items[2].containsKey('icon'), isFalse);
+  });
+
   test('busy is serialized only when set', () {
     final encoded = TrayCodec.encode(
       _spec(

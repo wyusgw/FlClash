@@ -272,8 +272,8 @@ abstract class ProxiesStyleProps with _$ProxiesStyleProps {
 @freezed
 abstract class TextScale with _$TextScale {
   const factory TextScale({
-    @Default(false) bool enable,
-    @Default(1.0) double scale,
+    @Default(true) bool enable,
+    @Default(defaultTextScale) double scale,
   }) = _TextScale;
 
   factory TextScale.fromJson(Map<String, Object?> json) =>

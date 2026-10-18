@@ -466,11 +466,12 @@ class _TextScaleFactorItemState extends ConsumerState<_TextScaleFactorItem> {
       child: GroupedBlock(
         header: appLocalizations.textScale,
         actions: [
-          if (textScale.enable && textScale.scale != 1)
+          if (textScale.enable && textScale.scale != defaultTextScale)
             GroupedIconAction(
               glyph: AppGlyphs.reset,
               tooltip: appLocalizations.reset,
-              onPressed: () => _update((state) => state.copyWith(scale: 1)),
+              onPressed: () =>
+                  _update((state) => state.copyWith(scale: defaultTextScale)),
             ),
         ],
         child: Column(

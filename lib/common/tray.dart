@@ -8,7 +8,10 @@ import 'app_localizations.dart';
 import 'l10n_labels.dart';
 import 'app_ports.dart';
 import 'constant.dart';
+import 'flag_icon.dart';
 import 'keyboard.dart';
+import 'node_info.dart';
+import 'node_region.dart';
 import 'num.dart';
 import 'provider_reader.dart';
 import 'string.dart';
@@ -21,10 +24,15 @@ class AppTray implements TrayPort {
 
   final bool isMacOS;
   final bool isWindows;
+  final Future<String?> Function(String code) _flagIcon;
 
   bool _isShutDown = false;
   bool _isHidden = false;
-  AppTray._internal({required this.isMacOS, required this.isWindows});
+  AppTray._internal({
+    required this.isMacOS,
+    required this.isWindows,
+    Future<String?> Function(String code)? flagIcon,
+  }) : _flagIcon = flagIcon ?? flagIconPath;
 
   factory AppTray() {
     _instance ??= AppTray._internal(
@@ -38,8 +46,13 @@ class AppTray implements TrayPort {
   factory AppTray.forPlatform({
     required bool isMacOS,
     required bool isWindows,
+    Future<String?> Function(String code)? flagIcon,
   }) {
-    return AppTray._internal(isMacOS: isMacOS, isWindows: isWindows);
+    return AppTray._internal(
+      isMacOS: isMacOS,
+      isWindows: isWindows,
+      flagIcon: flagIcon,
+    );
   }
 
   String get _trayIconSuffix {
@@ -87,6 +100,9 @@ class AppTray implements TrayPort {
       await Tray.instance.hide();
       return;
     }
+    final flagIcons = await _flagIcons(
+      trayState.groups.getGroup(nodeGroupName),
+    );
     await Tray.instance.show(
       TraySpec(
         icon: TrayIcon.asset(
@@ -101,7 +117,12 @@ class AppTray implements TrayPort {
         toolTip: trayState.safeMode
             ? currentAppLocalizations.safeModeAppTitle(appName)
             : appName,
-        menu: _buildMenu(trayState: trayState, traffic: traffic, read: read),
+        menu: _buildMenu(
+          trayState: trayState,
+          traffic: traffic,
+          read: read,
+          flagIcons: flagIcons,
+        ),
       ),
     );
     await updateTitle(showTrayTitle: trayState.showTrayTitle, traffic: traffic);
@@ -121,6 +142,7 @@ class AppTray implements TrayPort {
     required TrayState trayState,
     required Traffic traffic,
     required ProviderReader read,
+    required Map<String, String> flagIcons,
   }) {
     final commonAction = read(commonActionProvider.notifier);
     final systemAction = read(systemActionProvider.notifier);
@@ -181,6 +203,7 @@ class AppTray implements TrayPort {
           selectedName: selectedNode,
           delays: read(trayDelaysProvider)[nodeGroup.name] ?? const {},
           pending: pendingNodes,
+          icons: flagIcons,
           onSelected: (proxyName) {
             proxiesAction.changeProxy(
               groupName: nodeGroup.name,
@@ -308,22 +331,57 @@ class AppTray implements TrayPort {
     return delay > 0 ? '${delay}ms' : currentAppLocalizations.timeout;
   }
 
+  /// The country a node's flag is drawn for: the one the user placed it in,
+  /// else the one its name points at. A line of the subscription's notes is
+  /// flagged like the node list does it: the British flag for the traffic
+  /// line, else the first node's.
+  String? _flagCode(Proxy proxy, Proxy? lead) {
+    return proxy.region ??
+        (nodeInfoGlyph(proxy.name) == null
+            ? nodeRegionCode(proxy.name)
+            : infoLineRegionCode(proxy.name, lead));
+  }
+
+  /// The flag icon of each node of [group] a platform that draws icons in a
+  /// menu can show, by node name.
+  Future<Map<String, String>> _flagIcons(Group? group) async {
+    if (group == null || !isMacOS) {
+      return const {};
+    }
+    final lead = leadNode(group.all);
+    final icons = <String, String>{};
+    await Future.wait([
+      for (final proxy in group.all)
+        () async {
+          final code = _flagCode(proxy, lead);
+          final path = code == null ? null : await _flagIcon(code);
+          if (path != null) icons[proxy.name] = path;
+        }(),
+    ]);
+    return icons;
+  }
+
   TrayMenuSubmenu _buildServerSubmenu(
     Group group, {
     required String selectedName,
     required Map<String, int> delays,
     required Set<String> pending,
+    required Map<String, String> icons,
     required void Function(String proxyName) onSelected,
   }) {
+    String nameOf(String name) =>
+        icons.containsKey(name) ? nodeDisplayName(name) : name;
     return TrayMenuSubmenu(
-      label: _withValue(currentAppLocalizations.server, selectedName),
+      label: _withValue(currentAppLocalizations.server, nameOf(selectedName)),
+      icon: icons[selectedName],
       detail: _delayText(delays[selectedName]),
       detailTone: _delayTone(delays[selectedName]),
       busy: pending.contains(selectedName),
       items: [
         for (final proxy in group.all)
           TrayMenuCheckbox(
-            label: proxy.name,
+            label: nameOf(proxy.name),
+            icon: icons[proxy.name],
             checked: selectedName == proxy.name,
             detail: _delayText(delays[proxy.name]),
             detailTone: _delayTone(delays[proxy.name]),

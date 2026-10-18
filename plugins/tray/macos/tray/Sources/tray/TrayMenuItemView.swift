@@ -6,6 +6,7 @@ import AppKit
 final class TrayMenuItemView: NSView {
     struct Content {
         let label: String
+        let icon: NSImage?
         let detail: String?
         let detailColor: NSColor?
         let busy: Bool
@@ -48,6 +49,8 @@ final class TrayMenuItemView: NSView {
     }
 
     private static let metrics = Metrics.current
+    private static let iconSize: CGFloat = 16
+    private static let iconGap: CGFloat = 6
     private static let detailGap: CGFloat = 20
     private static let arrowGap: CGFloat = 6
     private static let spinnerSize: CGFloat = 12
@@ -69,6 +72,9 @@ final class TrayMenuItemView: NSView {
         self.content = content
         let metrics = TrayMenuItemView.metrics
         var width = metrics.titleX + TrayMenuItemView.width(content.label) + metrics.trailing
+        if content.icon != nil {
+            width += TrayMenuItemView.iconSize + TrayMenuItemView.iconGap
+        }
         if content.busy {
             width += TrayMenuItemView.detailGap + TrayMenuItemView.spinnerSize
         } else if let detail = content.detail {
@@ -139,7 +145,21 @@ final class TrayMenuItemView: NSView {
             trailingX -= detailWidth + TrayMenuItemView.detailGap
         }
 
-        drawText(content.label, x: metrics.titleX, width: trailingX - metrics.titleX, color: primary, font: metrics.font)
+        var titleX = metrics.titleX
+        if let icon = content.icon {
+            let size = TrayMenuItemView.iconSize
+            let rect = NSRect(x: titleX, y: ((bounds.height - size) / 2).rounded(), width: size, height: size)
+            icon.draw(
+                in: rect,
+                from: .zero,
+                operation: .sourceOver,
+                fraction: content.enabled ? 1 : 0.5,
+                respectFlipped: true,
+                hints: [.interpolation: NSImageInterpolation.high]
+            )
+            titleX += size + TrayMenuItemView.iconGap
+        }
+        drawText(content.label, x: titleX, width: trailingX - titleX, color: primary, font: metrics.font)
     }
 
     // The menu tracks in its own run-loop mode, so the timer joins the common modes.

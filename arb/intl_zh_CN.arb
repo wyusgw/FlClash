@@ -328,6 +328,8 @@
   "multiplexing": "多路复用",
   "handshake": "握手",
   "profileInUseTip": "勾选标记代表正在使用的配置。",
+  "addNode": "添加节点",
+  "subscriptionFoldTip": "点击订阅可以折叠和展开子节点。",
   "start": "启动",
   "runTime": "启动时间",
   "stop": "暂停",

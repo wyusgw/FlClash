@@ -11,7 +11,7 @@ import 'popup.dart';
 
 const _barContentHeight = 40.0;
 const _desktopTitleStrip = 22.0;
-const _barButton = 34.0;
+const _barButton = 30.0;
 
 class GroupedBarAction {
   const GroupedBarAction({
@@ -163,7 +163,7 @@ class _BarButton extends StatelessWidget {
     if (label == null) {
       return SizedBox.square(
         dimension: _barButton,
-        child: Center(child: GlyphIcon(glyph!, size: 22, color: palette.label)),
+        child: Center(child: GlyphIcon(glyph!, size: 20, color: palette.label)),
       );
     }
     final color = glyph == null

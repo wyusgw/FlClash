@@ -391,6 +391,71 @@ void main() {
     expect(children.first['checked'], isTrue);
   });
 
+  test('the server submenu draws each node with its round flag', () async {
+    const group = Group(
+      name: nodeGroupName,
+      type: GroupType.Selector,
+      all: [
+        Proxy(name: '\u{1F4C6}套餐到期: 永久', type: 'Direct'),
+        Proxy(name: '\u{1F4C9}剩余流量: 88 GB', type: 'Direct'),
+        Proxy(name: '日本 01', type: 'Direct'),
+        Proxy(name: '\u{1F1FA}\u{1F1F8} Los Angeles', type: 'Direct'),
+        Proxy(name: 'Premium', type: 'Direct'),
+        Proxy(name: 'Seoul', type: 'Direct', region: 'DE'),
+      ],
+    );
+    final asked = <String>[];
+    final flagged = AppTray.forPlatform(
+      isMacOS: true,
+      isWindows: false,
+      flagIcon: (code) async {
+        asked.add(code);
+        return '/flags/${code.toLowerCase()}.png';
+      },
+    );
+    await update(_trayState(groups: [group]), on: flagged);
+
+    final submenu = _item(
+      showCall(),
+      '${currentAppLocalizations.server}: \u{1F4C6}套餐到期: 永久',
+    );
+    expect(submenu['icon'], '/flags/jp.png');
+    final children = (submenu['items'] as List).cast<Map<Object?, Object?>>();
+    expect(children.map((item) => item['icon']), [
+      '/flags/jp.png',
+      '/flags/gb.png',
+      '/flags/jp.png',
+      '/flags/us.png',
+      null,
+      '/flags/de.png',
+    ]);
+    expect(children[3]['label'], 'Los Angeles');
+    expect(children[4]['label'], 'Premium');
+    expect(asked.toSet(), {'JP', 'GB', 'US', 'DE'});
+  });
+
+  test('a platform that cannot draw menu icons sends none', () async {
+    final windows = AppTray.forPlatform(
+      isMacOS: false,
+      isWindows: true,
+      flagIcon: (_) async => fail('no flag is drawn'),
+    );
+    const group = Group(
+      name: nodeGroupName,
+      type: GroupType.Selector,
+      all: [Proxy(name: '日本 01', type: 'Direct')],
+    );
+    await update(_trayState(groups: [group]), on: windows);
+
+    final submenu = _item(
+      showCall(),
+      '${currentAppLocalizations.server}: 日本 01',
+    );
+    final children = (submenu['items'] as List).cast<Map<Object?, Object?>>();
+    expect(children.single['label'], '日本 01');
+    expect(children.single.containsKey('icon'), isFalse);
+  });
+
   test(
     'a bound hotkey also selects its entry while the menu is open',
     () async {

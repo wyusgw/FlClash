@@ -121,6 +121,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "actionUpdateProfiles": MessageLookupByLibrary.simpleMessage("プロファイルを更新"),
     "actionView": MessageLookupByLibrary.simpleMessage("表示/非表示"),
     "add": MessageLookupByLibrary.simpleMessage("追加"),
+    "addNode": MessageLookupByLibrary.simpleMessage("ノードを追加"),
     "addProfile": MessageLookupByLibrary.simpleMessage("プロファイルを追加"),
     "addRule": MessageLookupByLibrary.simpleMessage("ルールを追加"),
     "addRuleSet": MessageLookupByLibrary.simpleMessage("ルールセットを追加"),
@@ -916,6 +917,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscribe": MessageLookupByLibrary.simpleMessage("購読"),
     "subscribeDesc": MessageLookupByLibrary.simpleMessage(
       "購読 URL または Xray JSON",
+    ),
+    "subscriptionFoldTip": MessageLookupByLibrary.simpleMessage(
+      "サブスクリプションをタップすると、ノードを折りたたんだり展開したりできます。",
     ),
     "subscriptionInfo": MessageLookupByLibrary.simpleMessage("サブスクリプション情報"),
     "subscriptionUrlError": MessageLookupByLibrary.simpleMessage(

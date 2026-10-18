@@ -324,7 +324,7 @@ void main() {
       expect(props.primaryColors, defaultPrimaryColors);
       expect(props.themeMode, ThemeMode.dark);
       expect(props.pureBlack, false);
-      expect(props.textScale.scale, 1.0);
+      expect(props.textScale.scale, defaultTextScale);
     });
 
     test('safeFromJson returns default on null', () {

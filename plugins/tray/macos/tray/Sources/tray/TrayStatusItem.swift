@@ -71,7 +71,7 @@ private final class TrayContentView: NSView {
     private let stackView: NSStackView = {
         let stack = NSStackView()
         stack.orientation = .horizontal
-        stack.spacing = 6
+        stack.spacing = 7
         stack.distribution = .equalSpacing
         return stack
     }()
@@ -123,6 +123,7 @@ private final class TrayContentView: NSView {
         let views: [NSView] = position == "trailing"
             ? [titleView, imageView]
             : [imageView, titleView]
+        titleView.alignsLeading = position != "trailing"
 
         if stackView.arrangedSubviews == views {
             return

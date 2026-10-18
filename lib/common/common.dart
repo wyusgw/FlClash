@@ -33,6 +33,7 @@ export 'mixin.dart';
 export 'motion.dart';
 export 'navigator.dart';
 export 'node_form.dart';
+export 'flag_icon.dart';
 export 'node_info.dart';
 export 'node_region.dart';
 export 'network.dart';

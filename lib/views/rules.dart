@@ -285,7 +285,7 @@ class RulesView extends ConsumerWidget {
                             highlightColor: Colors.transparent,
                             child: GlyphIcon(
                               AppGlyphs.info,
-                              size: 21,
+                              size: 19,
                               color: palette.accent,
                             ),
                           ),

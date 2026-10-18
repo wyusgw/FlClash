@@ -1,8 +1,10 @@
+import 'dart:async';
+
+import 'package:country_flags/country_flags.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/action.dart';
-import 'package:fl_clash/providers/app.dart';
+import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/edit_server.dart';
 import 'package:fl_clash/views/profiles/region.dart';
@@ -305,5 +307,92 @@ void main() {
 
       expect(tester.widget<InkResponse>(save()).onTap, isNull);
     });
+  });
+
+  testWidgets('a line of the subscription\'s notes is flagged like the list', (
+    tester,
+  ) async {
+    const size = Size(1000, 1200);
+    tester.view.physicalSize = size;
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final profile = Profile.normal(label: 'mine');
+    container = ProviderContainer(
+      overrides: [
+        profilesActionProvider.overrideWith(_RecordingProfilesAction.new),
+        profileNodesProvider(profile.id, profile.lastUpdateDate).overrideWith(
+          (_) async => const [Proxy(name: '日本大阪 G1', type: 'mieru')],
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    globalState.container = container;
+    container.read(viewSizeProvider.notifier).update((_) => size);
+    final notes = buildNodeOutbound(NodeKind.shadowsocks, {
+      ...nodeDefaults(NodeKind.shadowsocks),
+      'address': '192.168.3.2',
+      'port': '23333',
+      'password': 'secret',
+      'remark': '🌍官方网站: www.goulian.cc',
+    })!;
+    final form = nodeFormOf(notes)!;
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: TestApp(
+          child: EditServerView(
+            profile: profile,
+            outbound: notes,
+            kind: form.kind,
+            values: form.values,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<CountryFlag>(find.byType(CountryFlag)).flagCode, 'jp');
+  });
+
+  testWidgets('the flag is there on the first frame, before nodes load', (
+    tester,
+  ) async {
+    final profile = Profile.normal(label: 'mine');
+    container = ProviderContainer(
+      overrides: [
+        profilesActionProvider.overrideWith(_RecordingProfilesAction.new),
+        profileNodesProvider(
+          profile.id,
+          profile.lastUpdateDate,
+        ).overrideWith((_) => Completer<List<Proxy>>().future),
+      ],
+    );
+    addTearDown(container.dispose);
+    globalState.container = container;
+    final notes = buildNodeOutbound(NodeKind.shadowsocks, {
+      ...nodeDefaults(NodeKind.shadowsocks),
+      'address': '192.168.3.2',
+      'port': '23333',
+      'password': 'secret',
+      'remark': '📆套餐到期: 永久不过期',
+    })!;
+    final form = nodeFormOf(notes)!;
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: TestApp(
+          child: EditServerView(
+            profile: profile,
+            outbound: notes,
+            kind: form.kind,
+            values: form.values,
+            lead: const Proxy(name: '日本大阪 G1', type: 'mieru'),
+          ),
+        ),
+      ),
+    );
+
+    expect(tester.widget<CountryFlag>(find.byType(CountryFlag)).flagCode, 'jp');
   });
 }

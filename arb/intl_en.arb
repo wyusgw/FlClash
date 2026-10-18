@@ -328,6 +328,8 @@
   "multiplexing": "Multiplexing",
   "handshake": "Handshake",
   "profileInUseTip": "A check mark marks the profile in use.",
+  "addNode": "Add node",
+  "subscriptionFoldTip": "Tap a subscription to fold or expand its nodes.",
   "start": "Start",
   "runTime": "Run time",
   "stop": "Stop",

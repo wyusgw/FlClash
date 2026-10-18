@@ -8,13 +8,14 @@ import 'package:material_ui/material_ui.dart';
 import 'grouped_list.dart';
 
 const _gripWidth = 8.0;
-const _itemHeight = 26.5;
+const _itemHeight = 28.0;
 const _itemGap = 1.0;
 const _sideInset = 6.0;
 const _topInset = 1.0;
-const _iconSize = 20.0;
+const _iconSize = 22.0;
 const _iconInset = 5.0;
 const _labelGap = 6.0;
+const _labelSize = 13.0;
 final _itemShape = AppShape.all(6);
 
 class SidebarDestination {
@@ -24,7 +25,7 @@ class SidebarDestination {
   final String label;
 }
 
-/// The window's left pane: every destination as an icon and a label, the
+/// The window's left pane, which keeps its size whatever the text scale is: every destination as an icon and a label, the
 /// selected one on a solid accent. [windowControls] is the area native window
 /// buttons cover at the top start corner, which the list stays clear of. The
 /// edge next to the content drags the pane between [minSidebarWidth] and
@@ -76,60 +77,66 @@ class _NavigationSidebarState extends State<NavigationSidebar> {
     final safePadding = MediaQuery.paddingOf(context);
     final isLtr = Directionality.of(context) == TextDirection.ltr;
     final resizable = widget.onResize != null;
-    return SizedBox(
-      width: _clamp(_dragWidth ?? widget.width),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: ColoredBox(
-              color: palette.sidebar,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  top:
-                      math.max(widget.windowControls.height, safePadding.top) +
-                      _topInset,
-                  left: _sideInset,
-                  right: _sideInset,
-                ),
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  children: [
-                    for (final (index, destination)
-                        in widget.destinations.indexed)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: _itemGap),
-                        child: _SidebarItem(
-                          key: ValueKey(destination.label),
-                          destination: destination,
-                          selected: index == widget.selectedIndex,
-                          onTap: () => widget.onSelected(index),
+    return MediaQuery.withNoTextScaling(
+      child: SizedBox(
+        width: _clamp(_dragWidth ?? widget.width),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: ColoredBox(
+                color: palette.sidebar,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top:
+                        math.max(
+                          widget.windowControls.height,
+                          safePadding.top,
+                        ) +
+                        _topInset,
+                    left: _sideInset,
+                    right: _sideInset,
+                  ),
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      for (final (index, destination)
+                          in widget.destinations.indexed)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: _itemGap),
+                          child: _SidebarItem(
+                            key: ValueKey(destination.label),
+                            destination: destination,
+                            selected: index == widget.selectedIndex,
+                            onTap: () => widget.onSelected(index),
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          if (resizable)
-            PositionedDirectional(
-              top: 0,
-              bottom: 0,
-              end: 0,
-              width: _gripWidth,
-              child: MouseRegion(
-                cursor: SystemMouseCursors.resizeColumn,
-                child: GestureDetector(
-                  key: const ValueKey('sidebar-grip'),
-                  behavior: HitTestBehavior.translucent,
-                  dragStartBehavior: DragStartBehavior.down,
-                  onHorizontalDragUpdate: (details) => _drag(details, isLtr),
-                  onHorizontalDragEnd: (_) => _endDrag(),
-                  onHorizontalDragCancel: _endDrag,
-                  onDoubleTap: () => widget.onResize?.call(defaultSidebarWidth),
+            if (resizable)
+              PositionedDirectional(
+                top: 0,
+                bottom: 0,
+                end: 0,
+                width: _gripWidth,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.resizeColumn,
+                  child: GestureDetector(
+                    key: const ValueKey('sidebar-grip'),
+                    behavior: HitTestBehavior.translucent,
+                    dragStartBehavior: DragStartBehavior.down,
+                    onHorizontalDragUpdate: (details) => _drag(details, isLtr),
+                    onHorizontalDragEnd: (_) => _endDrag(),
+                    onHorizontalDragCancel: _endDrag,
+                    onDoubleTap: () =>
+                        widget.onResize?.call(defaultSidebarWidth),
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -181,7 +188,11 @@ class _SidebarItem extends StatelessWidget {
                     destination.label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: palette.rowSubtitle.copyWith(color: palette.label),
+                    style: palette.rowSubtitle.copyWith(
+                      fontSize: _labelSize,
+                      fontWeight: FontWeight.w600,
+                      color: palette.label,
+                    ),
                   ),
                 ),
               ],

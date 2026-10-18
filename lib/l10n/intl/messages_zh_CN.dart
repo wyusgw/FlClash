@@ -119,6 +119,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "actionUpdateProfiles": MessageLookupByLibrary.simpleMessage("更新全部配置"),
     "actionView": MessageLookupByLibrary.simpleMessage("显示/隐藏"),
     "add": MessageLookupByLibrary.simpleMessage("添加"),
+    "addNode": MessageLookupByLibrary.simpleMessage("添加节点"),
     "addProfile": MessageLookupByLibrary.simpleMessage("添加配置"),
     "addRule": MessageLookupByLibrary.simpleMessage("添加规则"),
     "addRuleSet": MessageLookupByLibrary.simpleMessage("添加规则配置"),
@@ -831,6 +832,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "submit": MessageLookupByLibrary.simpleMessage("提交"),
     "subscribe": MessageLookupByLibrary.simpleMessage("订阅"),
     "subscribeDesc": MessageLookupByLibrary.simpleMessage("订阅 URL 或 Xray JSON"),
+    "subscriptionFoldTip": MessageLookupByLibrary.simpleMessage(
+      "点击订阅可以折叠和展开子节点。",
+    ),
     "subscriptionInfo": MessageLookupByLibrary.simpleMessage("订阅信息"),
     "subscriptionUrlError": MessageLookupByLibrary.simpleMessage(
       "服务器 URL 遇到问题，请稍后再试。如果问题仍然存在，请关闭 VPN 连接并重试，或联系代理服务提供商。",

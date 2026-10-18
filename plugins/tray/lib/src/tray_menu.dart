@@ -45,6 +45,7 @@ final class TrayMenuCheckbox extends TrayMenuItem {
   const TrayMenuCheckbox({
     required this.label,
     required this.checked,
+    this.icon,
     this.detail,
     this.detailTone,
     this.busy = false,
@@ -55,6 +56,9 @@ final class TrayMenuCheckbox extends TrayMenuItem {
 
   final String label;
   final bool checked;
+
+  /// The path of a PNG drawn before the label. Only macOS draws it.
+  final String? icon;
   final String? detail;
   final TrayDetailTone? detailTone;
   final bool busy;
@@ -67,6 +71,7 @@ final class TrayMenuSubmenu extends TrayMenuItem {
   const TrayMenuSubmenu({
     required this.label,
     required this.items,
+    this.icon,
     this.detail,
     this.detailTone,
     this.busy = false,
@@ -75,6 +80,9 @@ final class TrayMenuSubmenu extends TrayMenuItem {
 
   final String label;
   final List<TrayMenuItem> items;
+
+  /// The path of a PNG drawn before the label. Only macOS draws it.
+  final String? icon;
   final String? detail;
   final TrayDetailTone? detailTone;
   final bool busy;

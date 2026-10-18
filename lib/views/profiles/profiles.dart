@@ -193,7 +193,7 @@ class _ProfileRowState extends ConsumerState<_ProfileRow> {
                 GlyphIcon(AppGlyphs.check, size: 18, color: palette.icon),
               if (isUpdating)
                 SizedBox.square(
-                  dimension: 19,
+                  dimension: 17,
                   child: IosSpinner(color: palette.icon),
                 )
               else
@@ -207,7 +207,7 @@ class _ProfileRowState extends ConsumerState<_ProfileRow> {
                       radius: 16,
                       child: GlyphIcon(
                         AppGlyphs.info,
-                        size: 21,
+                        size: 19,
                         color: palette.icon,
                       ),
                     ),
@@ -420,7 +420,7 @@ class _ReorderableProfilesViewState
             title: profile.realLabel,
             trailing: GlyphIcon(
               AppGlyphs.dragHandle,
-              size: 21,
+              size: 19,
               color: GroupedPalette.of(context).tertiary,
             ),
           ),

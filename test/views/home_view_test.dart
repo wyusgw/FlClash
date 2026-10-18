@@ -16,6 +16,7 @@ import 'package:fl_clash/views/home/delay_test.dart';
 import 'package:fl_clash/views/home/home.dart';
 import 'package:fl_clash/views/config/network.dart';
 import 'package:fl_clash/views/home/route_mode.dart';
+import 'package:fl_clash/views/profiles/add.dart';
 import 'package:fl_clash/views/profiles/edit_server.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:flutter/gestures.dart';
@@ -117,11 +118,29 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('without a profile it offers to add one', (tester) async {
+  testWidgets('without a profile it still shows the controls and add node', (
+    tester,
+  ) async {
     await pumpHome(tester);
 
-    expect(find.text('Add profile'), findsOneWidget);
-    expect(find.byType(GroupedSwitch), findsNothing);
+    expect(find.text('Not connected'), findsOneWidget);
+    expect(find.byType(GroupedSwitch), findsOneWidget);
+    expect(find.text('Global routing'), findsOneWidget);
+    expect(find.text('Connectivity test'), findsOneWidget);
+    expect(find.text('Add node'), findsOneWidget);
+    expect(
+      find.text('Tap a subscription to fold or expand its nodes.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('add node opens the add page', (tester) async {
+    await pumpHome(tester);
+
+    await tester.tap(find.text('Add node'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AddProfileView), findsOneWidget);
   });
 
   testWidgets('shows the profile, its routing mode and a connectivity row', (

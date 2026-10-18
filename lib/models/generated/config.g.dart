@@ -328,8 +328,8 @@ const _$ProxiesIconStyleEnumMap = {
 };
 
 _TextScale _$TextScaleFromJson(Map<String, dynamic> json) => _TextScale(
-  enable: json['enable'] as bool? ?? false,
-  scale: (json['scale'] as num?)?.toDouble() ?? 1.0,
+  enable: json['enable'] as bool? ?? true,
+  scale: (json['scale'] as num?)?.toDouble() ?? defaultTextScale,
 );
 
 Map<String, dynamic> _$TextScaleToJson(_TextScale instance) =>

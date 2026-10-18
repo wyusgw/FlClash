@@ -105,13 +105,13 @@ class IosButton extends StatelessWidget {
       child: InkWell(
         onTap: onPressed,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             spacing: 6,
             children: [
               if (glyph != null)
-                GlyphIcon(glyph!, fill: 1, size: 18, color: foreground),
+                GlyphIcon(glyph!, fill: 1, size: 16, color: foreground),
               Flexible(
                 child: Text(
                   label,
@@ -194,7 +194,7 @@ class IosIconButton extends StatelessWidget {
     required this.tooltip,
     required this.onPressed,
     this.filled = false,
-    this.size = 32,
+    this.size = 26,
   });
 
   final Widget icon;

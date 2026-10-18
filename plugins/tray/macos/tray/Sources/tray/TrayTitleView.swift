@@ -1,7 +1,7 @@
 import AppKit
 
 final class TrayTitleView: NSView {
-    static let width: CGFloat = 42
+    static let width: CGFloat = 34
 
     private static let font = NSFont.systemFont(ofSize: 8.75)
     private static let lineHeight: CGFloat = 9
@@ -11,6 +11,14 @@ final class TrayTitleView: NSView {
     }
 
     private var titleWidth: CGFloat = TrayTitleView.width
+
+    /// Whether the lines start at the leading edge, next to an icon before
+    /// them, instead of ending at the trailing edge, next to one after them.
+    var alignsLeading = true {
+        didSet {
+            if alignsLeading != oldValue { needsDisplay = true }
+        }
+    }
 
     private let attributes: [NSAttributedString.Key: Any] = [
         .font: TrayTitleView.font,
@@ -59,7 +67,12 @@ final class TrayTitleView: NSView {
         for line in lines {
             let width = line.size().width
             line.draw(
-                with: NSRect(x: bounds.width - width, y: baseline, width: width, height: 0),
+                with: NSRect(
+                    x: alignsLeading ? 0 : bounds.width - width,
+                    y: baseline,
+                    width: width,
+                    height: 0
+                ),
                 options: []
             )
             baseline += lineHeight

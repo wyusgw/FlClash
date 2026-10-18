@@ -29,6 +29,13 @@ final class TrayMenu: NSMenu, NSMenuDelegate {
         return detail
     }
 
+    private static func icon(_ entry: [String: Any]) -> NSImage? {
+        guard let path = entry["icon"] as? String, !path.isEmpty else {
+            return nil
+        }
+        return NSImage(contentsOfFile: path)
+    }
+
     private static func detailColor(_ entry: [String: Any]) -> NSColor? {
         switch entry["detailTone"] as? String {
         case "success": return .systemGreen
@@ -83,6 +90,7 @@ final class TrayMenu: NSMenu, NSMenuDelegate {
     private static func content(_ entry: [String: Any], _ item: NSMenuItem) -> TrayMenuItemView.Content {
         TrayMenuItemView.Content(
             label: item.title,
+            icon: icon(entry),
             detail: detail(entry),
             detailColor: detailColor(entry),
             busy: entry["busy"] as? Bool == true,

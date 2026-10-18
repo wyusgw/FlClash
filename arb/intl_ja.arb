@@ -328,6 +328,8 @@
   "multiplexing": "多重化",
   "handshake": "ハンドシェイク",
   "profileInUseTip": "チェックマークは使用中のプロファイルを示します。",
+  "addNode": "ノードを追加",
+  "subscriptionFoldTip": "サブスクリプションをタップすると、ノードを折りたたんだり展開したりできます。",
   "start": "開始",
   "runTime": "起動時間",
   "stop": "停止",

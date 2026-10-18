@@ -2540,6 +2540,21 @@ class AppLocalizations {
     );
   }
 
+  /// `Add node`
+  String get addNode {
+    return Intl.message('Add node', name: 'addNode', desc: '', args: []);
+  }
+
+  /// `Tap a subscription to fold or expand its nodes.`
+  String get subscriptionFoldTip {
+    return Intl.message(
+      'Tap a subscription to fold or expand its nodes.',
+      name: 'subscriptionFoldTip',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Start`
   String get start {
     return Intl.message('Start', name: 'start', desc: '', args: []);

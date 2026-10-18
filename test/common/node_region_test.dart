@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/node_region.dart';
+import 'package:fl_clash/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -19,7 +20,28 @@ void main() {
       expect(nodeRegionCode('HK-01'), 'HK');
       expect(nodeRegionCode('UK 5'), 'GB');
       expect(nodeRegionCode('Premium'), isNull);
-      expect(nodeRegionCode('HKG'), isNull);
+      expect(nodeRegionCode('HKGX'), isNull);
+    });
+
+    test('reads a three-letter country code', () {
+      expect(nodeRegionCode('HKG 01'), 'HK');
+      expect(nodeRegionCode('JPN02'), 'JP');
+      expect(nodeRegionCode('USA-IPLC'), 'US');
+      expect(nodeRegionCode('ABC 01'), isNull);
+      expect(nodeRegionCode('剩余流量：8.08 USA'), isNull);
+    });
+
+    test('reads a city for its country', () {
+      expect(nodeRegionCode('东京 01'), 'JP');
+      expect(nodeRegionCode('洛杉矶 IPLC'), 'US');
+      expect(nodeRegionCode('中国台北 G1'), 'TW');
+      expect(nodeRegionCode('Seoul-02'), 'KR');
+      expect(nodeRegionCode('Los Angeles 3'), 'US');
+    });
+
+    test('a longer name wins over a shorter one inside it', () {
+      expect(nodeRegionCode('印度尼西亚 01'), 'ID');
+      expect(nodeRegionCode('印度 01'), 'IN');
     });
 
     test('names no country for a plain label', () {
@@ -30,6 +52,41 @@ void main() {
       expect(nodeRegionCode('剩余流量：8.08\u3000GB'), isNull);
       expect(nodeRegionCode('剩余流量：8.08GB'), isNull);
       expect(nodeRegionCode(''), isNull);
+    });
+  });
+
+  group('infoLineRegionCode', () {
+    const lead = Proxy(name: '日本 01', type: 'vless');
+
+    test('flags the traffic line with the British flag', () {
+      expect(infoLineRegionCode('剩余流量：8.08 GB', lead), 'GB');
+      expect(infoLineRegionCode('剩余流量：8.08 GB', null), 'GB');
+    });
+
+    test('takes the first node\'s country for the other lines', () {
+      expect(infoLineRegionCode('套餐到期：2026年12月05日', lead), 'JP');
+      expect(
+        infoLineRegionCode(
+          '官网：example.com',
+          const Proxy(name: 'Premium', type: 'vless', region: 'DE'),
+        ),
+        'DE',
+      );
+    });
+
+    test('has none without a lead that names one', () {
+      expect(infoLineRegionCode('套餐到期：2026年12月05日', null), isNull);
+      expect(
+        infoLineRegionCode(
+          '套餐到期：2026年12月05日',
+          const Proxy(name: 'Premium', type: 'vless'),
+        ),
+        isNull,
+      );
+    });
+
+    test('leaves a name that is no notes line alone', () {
+      expect(infoLineRegionCode('日本 01', lead), isNull);
     });
   });
 

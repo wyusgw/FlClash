@@ -72,6 +72,7 @@ abstract final class TrayCodec {
           },
         TrayMenuCheckbox(
           :final label,
+          :final icon,
           :final detail,
           :final detailTone,
           :final busy,
@@ -83,6 +84,7 @@ abstract final class TrayCodec {
             'id': id,
             'type': 'checkbox',
             'label': label,
+            if (icon != null) 'icon': icon,
             if (detail != null && detail.isNotEmpty) 'detail': detail,
             if (detail != null && detail.isNotEmpty && detailTone != null)
               'detailTone': detailTone.name,
@@ -93,6 +95,7 @@ abstract final class TrayCodec {
           },
         TrayMenuSubmenu(
           :final label,
+          :final icon,
           :final detail,
           :final detailTone,
           :final busy,
@@ -103,6 +106,7 @@ abstract final class TrayCodec {
             'id': id,
             'type': 'submenu',
             'label': label,
+            if (icon != null) 'icon': icon,
             if (detail != null && detail.isNotEmpty) 'detail': detail,
             if (detail != null && detail.isNotEmpty && detailTone != null)
               'detailTone': detailTone.name,

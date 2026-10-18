@@ -1,3 +1,4 @@
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/app.dart';
@@ -360,8 +361,18 @@ void main() {
   });
 
   group('text scale', () {
-    testWidgets('follows the system until custom is picked', (tester) async {
+    testWidgets('starts custom at 88% and can follow the system', (
+      tester,
+    ) async {
       await pumpThemeView(tester);
+
+      expect(readTheme().textScale.enable, isTrue);
+      expect(readTheme().textScale.scale, defaultTextScale);
+      expect(find.text('88%'), findsOneWidget);
+      expect(tester.widget<Slider>(find.byType(Slider)).onChanged, isNotNull);
+
+      await tester.tap(find.text('Follow system'));
+      await tester.pumpAndSettle();
 
       expect(readTheme().textScale.enable, isFalse);
       expect(tester.widget<Slider>(find.byType(Slider)).onChanged, isNull);
@@ -370,12 +381,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(readTheme().textScale.enable, isTrue);
-      expect(tester.widget<Slider>(find.byType(Slider)).onChanged, isNotNull);
-
-      await tester.tap(find.text('Follow system'));
-      await tester.pumpAndSettle();
-
-      expect(readTheme().textScale.enable, isFalse);
     });
 
     testWidgets('writes the scale only when the drag ends', (tester) async {
@@ -395,7 +400,7 @@ void main() {
       expect(readTheme().textScale.scale, isNot(before));
     });
 
-    testWidgets('resets a custom scale to 100%', (tester) async {
+    testWidgets('resets a custom scale to 88%', (tester) async {
       container
           .read(themeSettingProvider.notifier)
           .update(
@@ -409,8 +414,8 @@ void main() {
       await tester.tap(find.byTooltip('Reset').last);
       await tester.pumpAndSettle();
 
-      expect(readTheme().textScale.scale, 1);
-      expect(find.text('100%'), findsOneWidget);
+      expect(readTheme().textScale.scale, defaultTextScale);
+      expect(find.text('88%'), findsOneWidget);
     });
   });
 }

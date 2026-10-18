@@ -2361,7 +2361,7 @@ return $default(_that.enable,_that.scale);case _:
 @JsonSerializable()
 
 class _TextScale implements TextScale {
-  const _TextScale({this.enable = false, this.scale = 1.0});
+  const _TextScale({this.enable = true, this.scale = defaultTextScale});
   factory _TextScale.fromJson(Map<String, dynamic> json) => _$TextScaleFromJson(json);
 
 @override@JsonKey() final  bool enable;

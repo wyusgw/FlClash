@@ -5,13 +5,13 @@ import 'package:material_ui/material_ui.dart';
 
 import 'text_menu.dart';
 
-const groupedRowHeight = 44.0;
-const groupedRowPadding = 16.0;
-const groupedLeadingSize = 24.0;
-const groupedLeadingGap = 14.0;
-const groupedBarHeight = 62.0;
+const groupedRowHeight = 38.0;
+const groupedRowPadding = 14.0;
+const groupedLeadingSize = 20.0;
+const groupedLeadingGap = 12.0;
+const groupedBarHeight = 54.0;
 const groupedPageInset = 16.0;
-const groupedSectionGap = 35.0;
+const groupedSectionGap = 28.0;
 
 /// What marks a row or an answer that destroys something.
 const groupedDanger = Color(0xFFFF453A);
@@ -461,7 +461,7 @@ class GroupedRow extends GroupedItem {
                       padding: const EdgeInsets.only(left: 4),
                       child: GlyphIcon(
                         AppGlyphs.chevronForward,
-                        size: 15,
+                        size: 12,
                         color: palette.tertiary,
                       ),
                     ),
@@ -623,9 +623,9 @@ class GroupedSwitch extends StatelessWidget {
   final bool value;
   final ValueChanged<bool>? onChanged;
 
-  static const _width = 51.0;
-  static const _height = 31.0;
-  static const _thumb = 27.0;
+  static const _width = 40.0;
+  static const _height = 24.0;
+  static const _thumb = 20.0;
 
   @override
   Widget build(BuildContext context) {
@@ -727,7 +727,7 @@ class GroupedSearchField extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: groupedRowPadding),
           child: Row(
             children: [
-              GlyphIcon(AppGlyphs.search, size: 17, color: palette.secondary),
+              GlyphIcon(AppGlyphs.search, size: 15, color: palette.secondary),
               const SizedBox(width: 8),
               Expanded(
                 child: TextField(

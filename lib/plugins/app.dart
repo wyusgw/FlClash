@@ -131,6 +131,15 @@ class App {
     _packageIconTasks.clear();
   }
 
+  /// A short buzz from the vibrator itself, which the system's touch feedback
+  /// switch does not mute; [heavy] is the firmer click of a toggle.
+  Future<bool> vibrate({bool heavy = false}) async {
+    return await methodChannel.invokeMethod<bool>('vibrate', {
+          'heavy': heavy,
+        }) ??
+        false;
+  }
+
   Future<bool?> tip(String? message) async {
     return methodChannel.invokeMethod<bool>('tip', {'message': '$message'});
   }

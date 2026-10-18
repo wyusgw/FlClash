@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -85,10 +87,16 @@ func TestHandleTestDelayWorksWhileTheProxyIsOff(t *testing.T) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 	dir := t.TempDir()
-	config := `{
-  "inbounds": [{"tag": "mixed-in", "protocol": "mixed", "listen": "127.0.0.1", "port": 1}],
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	port := listener.Addr().(*net.TCPAddr).Port
+	_ = listener.Close()
+	config := fmt.Sprintf(`{
+  "inbounds": [{"tag": "mixed-in", "protocol": "mixed", "listen": "127.0.0.1", "port": %d}],
   "outbounds": [{"tag": "node-a", "protocol": "freedom"}]
-}`
+}`, port)
 	resetEngineState()
 	if err := os.WriteFile(filepath.Join(dir, configFileName), []byte(config), 0o600); err != nil {
 		t.Fatal(err)

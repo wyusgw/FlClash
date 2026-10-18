@@ -169,9 +169,6 @@ func handleTestDelay(params *TestDelayParams) *Delay {
 
 	elapsed, err := timedGet(ctx, running, params.ProxyName, url)
 	if err != nil {
-		// The result is only a timeout; the reason is what tells a node that
-		// cannot be reached from one whose handshake or request went wrong.
-		logInfo("delay test: %q failed (limit %s): %v", params.ProxyName, timeout, err)
 		return delayData
 	}
 	delayData.Value = max(int32(elapsed.Milliseconds()), 1)

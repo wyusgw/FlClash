@@ -74,13 +74,6 @@ func UnmarshalJson(data []byte, v any) error {
 	return decoder.Decode(v)
 }
 
-func logInfo(format string, args ...any) {
-	logx.Infof(format, args...)
-	if debugStderr {
-		fmt.Fprintf(os.Stderr, "[INFO] "+format+"\n", args...)
-	}
-}
-
 func logError(format string, args ...any) {
 	logx.Errorf(format, args...)
 	if debugStderr {

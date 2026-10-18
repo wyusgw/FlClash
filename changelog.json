@@ -2,6 +2,43 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "0.9.2",
+      "tag": "v0.9.2",
+      "date": "2026-10-18",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "97d85f5",
+              "scope": "ui",
+              "text": "Flags for subscription info lines and more node names, round flags in the macOS menu bar, a more compact interface, and a home page that keeps its controls when there is no subscription"
+            },
+            {
+              "id": "f2e5ad3",
+              "scope": "home",
+              "text": "The home toolbar sync button spins while the profile updates"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "5deef50",
+              "scope": "core",
+              "text": "Delay tests work with the proxy off; drop the delay failure log (#12)"
+            },
+            {
+              "id": "08971cb",
+              "text": "Buzz the Android vibrator itself and log why a delay test failed (#11)"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.9.1",
       "tag": "v0.9.1",
       "date": "2026-10-18",

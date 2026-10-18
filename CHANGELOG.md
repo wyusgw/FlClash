@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.9.2 (2026-10-18)
+
+**Features**
+
+- **ui** Flags for subscription info lines and more node names, round flags in the macOS menu bar, a more compact interface, and a home page that keeps its controls when there is no subscription (97d85f5)
+- **home** The home toolbar sync button spins while the profile updates (f2e5ad3)
+
+**Bug Fixes**
+
+- **core** Delay tests work with the proxy off; drop the delay failure log (#12) (5deef50)
+- Buzz the Android vibrator itself and log why a delay test failed (#11) (08971cb)
+
 ## v0.9.1 (2026-10-18)
 
 **Features**

@@ -71,6 +71,11 @@ type engine struct {
 var (
 	currentEngine atomic.Pointer[engine]
 
+	// An engine with no inbounds, built from lastConfig for delay tests while
+	// the proxy is off: a CONNECT test goes through a node's outbound, and with
+	// no engine there is nothing to go through.
+	testEngine atomic.Pointer[engine]
+
 	// Guarded by configMu: the normalised config of the last successful setup,
 	// kept so a stopped engine can be rebuilt without asking the host again.
 	lastConfig []byte
@@ -131,6 +136,7 @@ func startEngineLocked() error {
 	if lastConfig == nil {
 		return errConfigNotApplied
 	}
+	stopTestEngineLocked()
 	instance, err := buildInstance(lastConfig)
 	if err != nil {
 		return err
@@ -150,7 +156,68 @@ func startEngineLocked() error {
 	return nil
 }
 
+func stopTestEngineLocked() {
+	if probing := testEngine.Swap(nil); probing != nil {
+		if err := probing.instance.Close(); err != nil {
+			logx.Warnf("[APP] close test instance: %v", err)
+		}
+	}
+}
+
+// stripInbounds leaves the outbounds, routing and DNS of a config: enough to
+// dial through a node, without taking the proxy's ports or its TUN device.
+func stripInbounds(data []byte) ([]byte, error) {
+	var document map[string]any
+	if err := json.Unmarshal(data, &document); err != nil {
+		return nil, err
+	}
+	delete(document, "inbounds")
+	return json.Marshal(document)
+}
+
+// engineForDelayTest is the engine a delay test dials through: the running
+// one, or else a test engine built on first use and dropped with the next
+// setup or start.
+func engineForDelayTest() *engine {
+	if running := currentEngine.Load(); running != nil {
+		return running
+	}
+	if probing := testEngine.Load(); probing != nil {
+		return probing
+	}
+	configMu.Lock()
+	defer configMu.Unlock()
+	if running := currentEngine.Load(); running != nil {
+		return running
+	}
+	if probing := testEngine.Load(); probing != nil {
+		return probing
+	}
+	if lastConfig == nil {
+		return nil
+	}
+	data, err := stripInbounds(lastConfig)
+	if err != nil {
+		logError("delay test engine: %v", err)
+		return nil
+	}
+	instance, err := buildInstance(data)
+	if err != nil {
+		logError("delay test engine: %v", err)
+		return nil
+	}
+	if err := instance.Start(); err != nil {
+		_ = instance.Close()
+		logError("delay test engine: %v", err)
+		return nil
+	}
+	probing := &engine{instance: instance, meta: lastMeta}
+	testEngine.Store(probing)
+	return probing
+}
+
 func stopEngineLocked() {
+	stopTestEngineLocked()
 	if running := currentEngine.Swap(nil); running != nil {
 		if err := running.instance.Close(); err != nil {
 			logx.Warnf("[APP] close instance: %v", err)

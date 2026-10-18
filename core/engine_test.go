@@ -80,6 +80,48 @@ func withProbeProxies(t *testing.T, names ...string) {
 	startEngine(t, string(config))
 }
 
+func TestHandleTestDelayWorksWhileTheProxyIsOff(t *testing.T) {
+	server := probeServer(t, func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
+	dir := t.TempDir()
+	config := `{
+  "inbounds": [{"tag": "mixed-in", "protocol": "mixed", "listen": "127.0.0.1", "port": 1}],
+  "outbounds": [{"tag": "node-a", "protocol": "freedom"}]
+}`
+	resetEngineState()
+	if err := os.WriteFile(filepath.Join(dir, configFileName), []byte(config), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if !handleInitCore(&InitParams{HomeDir: dir}) {
+		t.Fatal("handleInitCore failed")
+	}
+	t.Cleanup(resetEngineState)
+	isRunning.Store(false)
+	if message := handleSetupConfig(defaultSetupParams()); message != "" {
+		t.Fatalf("setup failed: %s", message)
+	}
+	if currentEngine.Load() != nil {
+		t.Fatal("the proxy is off, so no engine should run")
+	}
+
+	delay := handleTestDelay(&TestDelayParams{ProxyName: "node-a", TestUrl: server.URL, Timeout: 3000})
+
+	if delay == nil || delay.Value < 1 {
+		t.Fatalf("delay = %+v, want a measured delay", delay)
+	}
+	if currentEngine.Load() != nil || testEngine.Load() == nil {
+		t.Error("the test should have used its own engine and left the proxy off")
+	}
+
+	if !handleStartListener() {
+		t.Fatal("start listener failed")
+	}
+	if testEngine.Load() != nil {
+		t.Error("starting the proxy should drop the test engine")
+	}
+}
+
 func TestNormalizeConfigAddsTheTrafficCounters(t *testing.T) {
 	normalized, _, err := normalizeConfig([]byte(`{"outbounds":[]}`))
 	if err != nil {

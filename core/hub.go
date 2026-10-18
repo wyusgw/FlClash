@@ -141,7 +141,7 @@ func handleTestDelay(params *TestDelayParams) *Delay {
 		Value: -1,
 	}
 
-	running := currentEngine.Load()
+	running := engineForDelayTest()
 	if running == nil {
 		return delayData
 	}

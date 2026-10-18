@@ -14,6 +14,9 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -174,6 +177,10 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
                 result.success(true)
             }
 
+            "vibrate" -> {
+                result.success(vibrate(call.argument<Boolean>("heavy") ?: false))
+            }
+
             "isBatteryOptimizationDisabled" -> {
                 result.success(isBatteryOptimizationDisabled())
             }
@@ -251,6 +258,36 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
                 data = "package:${GlobalState.application.packageName}".toUri()
             }
             activity.startActivity(intent)
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    // The system's "touch feedback" switch silences performHapticFeedback, which
+    // is all Flutter's HapticFeedback calls, so the app's own switch has to reach
+    // the vibrator itself.
+    private fun vibrate(heavy: Boolean): Boolean {
+        return try {
+            val context = GlobalState.application
+            val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                context.getSystemService(VibratorManager::class.java)?.defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            }
+            if (vibrator == null || !vibrator.hasVibrator()) return false
+            val effect = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                VibrationEffect.createPredefined(
+                    if (heavy) VibrationEffect.EFFECT_HEAVY_CLICK else VibrationEffect.EFFECT_TICK
+                )
+            } else {
+                VibrationEffect.createOneShot(
+                    if (heavy) 30L else 10L,
+                    VibrationEffect.DEFAULT_AMPLITUDE
+                )
+            }
+            vibrator.vibrate(effect)
             true
         } catch (_: Exception) {
             false

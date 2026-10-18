@@ -450,6 +450,9 @@ class _Toolbar extends ConsumerWidget {
     final detectsClipboard = ref.watch(
       appSettingProvider.select((state) => state.clipboardDetection),
     );
+    final isUpdating = ref.watch(
+      isUpdatingProvider(profile?.updatingKey ?? ''),
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
       child: Row(
@@ -481,7 +484,8 @@ class _Toolbar extends ConsumerWidget {
           _ToolbarButton(
             glyph: AppGlyphs.sync,
             tooltip: appLocalizations.update,
-            onPressed: profile == null
+            spinning: isUpdating,
+            onPressed: profile == null || isUpdating
                 ? null
                 : () => unawaited(
                     globalState.safeRun(
@@ -511,11 +515,13 @@ class _ToolbarButton extends StatelessWidget {
     required this.glyph,
     required this.tooltip,
     required this.onPressed,
+    this.spinning = false,
   });
 
   final Glyph glyph;
   final String tooltip;
   final VoidCallback? onPressed;
+  final bool spinning;
 
   @override
   Widget build(BuildContext context) {
@@ -528,13 +534,65 @@ class _ToolbarButton extends StatelessWidget {
         splashFactory: NoSplash.splashFactory,
         hoverColor: Colors.transparent,
         highlightColor: Colors.transparent,
-        child: GlyphIcon(
-          glyph,
-          size: 18,
-          color: onPressed == null ? palette.tertiary : palette.secondary,
+        child: _Spin(
+          spinning: spinning,
+          child: GlyphIcon(
+            glyph,
+            size: 18,
+            color: onPressed == null && !spinning
+                ? palette.tertiary
+                : palette.secondary,
+          ),
         ),
       ),
     );
+  }
+}
+
+/// Turns its child while [spinning], and lets it finish the turn and settle
+/// upright when it stops.
+class _Spin extends StatefulWidget {
+  const _Spin({required this.spinning, required this.child});
+
+  final bool spinning;
+  final Widget child;
+
+  @override
+  State<_Spin> createState() => _SpinState();
+}
+
+class _SpinState extends State<_Spin> with SingleTickerProviderStateMixin {
+  late final _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.spinning) unawaited(_controller.repeat());
+  }
+
+  @override
+  void didUpdateWidget(covariant _Spin oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.spinning == oldWidget.spinning) return;
+    if (widget.spinning) {
+      unawaited(_controller.repeat());
+    } else {
+      unawaited(_controller.animateTo(1, curve: Curves.easeOut));
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RotationTransition(turns: _controller, child: widget.child);
   }
 }
 

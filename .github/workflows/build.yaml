@@ -235,11 +235,14 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      # Gradle looks for the NDK its build file names inside the SDK and downloads
+      # it when it is not there, so the one set up here is linked in as that.
       - name: Setup NDK
         uses: nttld/setup-ndk@v1
         id: ndk
         with:
           ndk-version: ${{ env.NDK_VERSION }}
+          link-to-sdk: true
 
       - name: Setup Java
         uses: actions/setup-java@v4

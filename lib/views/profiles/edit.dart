@@ -87,6 +87,10 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
     final profilesAction = ref.read(profilesActionProvider.notifier);
     if (widget.profile.url == profile.url) {
       profilesAction.putProfile(profile);
+      dialogs.showNotifier(
+        context.appLocalizations.saveSuccess,
+        level: MessageLevel.success,
+      );
     } else {
       unawaited(
         globalState.safeRun(() async {

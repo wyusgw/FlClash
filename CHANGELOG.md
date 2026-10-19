@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.9.3 (2026-10-19)
+
+**Bug Fixes**
+
+- **dns** The DNS page keeps Manual once saved, even with the default servers (b3146e4)
+- **core** Servers addressed by domain name now connect, for every protocol (87aea81)
+
 ## v0.9.2 (2026-10-18)
 
 **Features**

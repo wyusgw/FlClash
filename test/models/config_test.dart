@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -424,12 +423,34 @@ void main() {
       expect(result.appSettingProps.onlyStatisticsProxy, false);
     });
 
+    test('Windows adds Shift so a default never reads as AltGr', () {
+      final windows = hotKeyDefaultsFor(isWindows: true);
+      final others = hotKeyDefaultsFor(isWindows: false);
+
+      expect(
+        windows.map((item) => item.action),
+        others.map((item) => item.action),
+      );
+      expect(
+        windows.map((item) => item.modifiers),
+        everyElement({
+          KeyboardModifier.control,
+          KeyboardModifier.alt,
+          KeyboardModifier.shift,
+        }),
+      );
+      expect(
+        others.map((item) => item.modifiers),
+        everyElement({KeyboardModifier.control, KeyboardModifier.alt}),
+      );
+    });
+
     test('a fresh config ships valid, distinct default hotkeys', () {
       final defaults = Config.realFromJson(null).hotKeyActions;
 
       expect(
         defaults.map((action) => action.action),
-        Platform.isWindows ? isEmpty : unorderedEquals(HotAction.values),
+        unorderedEquals(HotAction.values),
       );
       for (final action in defaults) {
         expect(

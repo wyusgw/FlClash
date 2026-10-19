@@ -40,37 +40,38 @@ const defaultWindowProps = WindowProps();
 const defaultAccessControlProps = AccessControlProps();
 const defaultThemeProps = ThemeProps(primaryColor: defaultPrimaryColor);
 
-HotKeyAction _defaultHotKeyAction(HotAction action, PhysicalKeyboardKey key) {
-  return HotKeyAction(
-    action: action,
-    key: key.usbHidUsage,
-    modifiers: const {KeyboardModifier.control, KeyboardModifier.alt},
-  );
+// Windows reports AltGr as Ctrl+Alt, and every letter is an AltGr character
+// on some layout (@ on German Q, ś on Polish S), so Ctrl+Alt alone would fire
+// while the user types; Shift is added there.
+@visibleForTesting
+List<HotKeyAction> hotKeyDefaultsFor({required bool isWindows}) {
+  final modifiers = {
+    KeyboardModifier.control,
+    KeyboardModifier.alt,
+    if (isWindows) KeyboardModifier.shift,
+  };
+  HotKeyAction bind(HotAction action, PhysicalKeyboardKey key) =>
+      HotKeyAction(action: action, key: key.usbHidUsage, modifiers: modifiers);
+  return [
+    bind(HotAction.view, PhysicalKeyboardKey.keyV),
+    bind(HotAction.start, PhysicalKeyboardKey.keyS),
+    bind(HotAction.mode, PhysicalKeyboardKey.keyM),
+    bind(HotAction.proxy, PhysicalKeyboardKey.keyP),
+    bind(HotAction.delayTest, PhysicalKeyboardKey.keyD),
+    bind(HotAction.tun, PhysicalKeyboardKey.keyT),
+    bind(HotAction.ruleMode, PhysicalKeyboardKey.keyR),
+    bind(HotAction.globalMode, PhysicalKeyboardKey.keyG),
+    bind(HotAction.directMode, PhysicalKeyboardKey.keyI),
+    bind(HotAction.updateProfiles, PhysicalKeyboardKey.keyU),
+    bind(HotAction.copyEnv, PhysicalKeyboardKey.keyC),
+    bind(HotAction.speedView, PhysicalKeyboardKey.keyF),
+    bind(HotAction.exit, PhysicalKeyboardKey.keyE),
+  ];
 }
 
-// Windows reports AltGr as Ctrl+Alt, and every letter is an AltGr character
-// on some layout (@ on German Q, ś on Polish S), so a default there would fire
-// while the user types.
-final List<HotKeyAction> defaultHotKeyActions = system.isWindows
-    ? const []
-    : [
-        _defaultHotKeyAction(HotAction.view, PhysicalKeyboardKey.keyV),
-        _defaultHotKeyAction(HotAction.start, PhysicalKeyboardKey.keyS),
-        _defaultHotKeyAction(HotAction.mode, PhysicalKeyboardKey.keyM),
-        _defaultHotKeyAction(HotAction.proxy, PhysicalKeyboardKey.keyP),
-        _defaultHotKeyAction(HotAction.delayTest, PhysicalKeyboardKey.keyD),
-        _defaultHotKeyAction(HotAction.tun, PhysicalKeyboardKey.keyT),
-        _defaultHotKeyAction(HotAction.ruleMode, PhysicalKeyboardKey.keyR),
-        _defaultHotKeyAction(HotAction.globalMode, PhysicalKeyboardKey.keyG),
-        _defaultHotKeyAction(HotAction.directMode, PhysicalKeyboardKey.keyI),
-        _defaultHotKeyAction(
-          HotAction.updateProfiles,
-          PhysicalKeyboardKey.keyU,
-        ),
-        _defaultHotKeyAction(HotAction.copyEnv, PhysicalKeyboardKey.keyC),
-        _defaultHotKeyAction(HotAction.speedView, PhysicalKeyboardKey.keyF),
-        _defaultHotKeyAction(HotAction.exit, PhysicalKeyboardKey.keyE),
-      ];
+final List<HotKeyAction> defaultHotKeyActions = hotKeyDefaultsFor(
+  isWindows: system.isWindows,
+);
 
 Object? _readTabAnimation(Map<dynamic, dynamic> json, String key) {
   if (json.containsKey(key)) {

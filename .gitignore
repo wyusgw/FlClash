@@ -41,9 +41,16 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
-# Claude Code - ignore user-specific settings only
-.claude/settings.local.json
-.claude/worktrees/
+# Local files of AI coding tools
+.agents/
+.claude/
+.codegraph/
+.codex/
+.gemini/
+.mcp.json
+AGENTS.md
+CLAUDE.md
+opencode.jsonc
 
 # Documentation (generated/planning artifacts)
 docs/
@@ -69,7 +76,6 @@ docs/
 /macos/build/
 /env.json
 /core_sha256.json
-/plugins/rust_api/.claude/
 /issue-triage/
 devtools_options.yaml
 

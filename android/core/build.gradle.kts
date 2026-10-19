@@ -57,7 +57,6 @@ dependencies {
     implementation(libs.annotation.jvm)
 }
 
-// Why prefix matching and mustRunAfter: .agents/architecture.md, "Android Native Task Ordering".
 val nativeTaskPattern =
     Regex("^(configureCMake|buildCMake|externalNativeBuild|merge.*(NativeLibs|JniLibFolders)|copy.*JniLibs)")
 val flutterCompileTasks =

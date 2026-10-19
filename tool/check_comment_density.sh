@@ -125,8 +125,8 @@ $findings
 Comments are welcome when they carry something the code cannot say. Trim the ones that
 restate what the code already does, narrate the change you just made, or annotate step by
 step - a block needing a comment per line needs better names or a smaller decomposition
-instead. Keep the few that record a non-obvious constraint, and prefer a test or an
-.agents/ entry when the fact belongs there. See the Comments section of .agents/rules.md.
+instead. Keep the few that record a non-obvious constraint, and prefer a test when the
+fact can be checked in code.
 Set COMMENT_DENSITY_MAX to adjust this gate when a change genuinely warrants it.
 REPORT
 

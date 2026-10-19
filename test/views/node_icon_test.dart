@@ -69,30 +69,12 @@ void main() {
     expect(find.byType(GlyphIcon), findsOneWidget);
   });
 
-  testWidgets('a line of the subscription\'s notes gets its own icon', (
-    tester,
-  ) async {
-    await _pump(tester, '剩余流量：8.08 GB');
-
-    expect(find.byType(CountryFlag), findsNothing);
-    final glyph = tester.widget<GlyphIcon>(find.byType(GlyphIcon));
-    expect(glyph.glyph, AppGlyphs.dataUsage);
-  });
-
-  testWidgets('a country in the name still wins over the notes', (
-    tester,
-  ) async {
-    await _pump(tester, '日本 流量 x2');
-
-    expect(find.byType(CountryFlag), findsOneWidget);
-  });
-
   testWidgets('a name with no country is placed by where its server is', (
     tester,
   ) async {
     await _pump(
       tester,
-      '剩余流量：8.08 GB',
+      'Premium',
       address: '203.0.113.9:8388',
       geo: {'203.0.113.9': 'JP'},
     );
@@ -102,12 +84,12 @@ void main() {
     expect(flag.flagCode, 'jp');
   });
 
-  testWidgets('until the lookup answers the notes icon stands in', (
+  testWidgets('until the lookup answers the house badge stands in', (
     tester,
   ) async {
     await _pump(
       tester,
-      '剩余流量：8.08 GB',
+      'Premium',
       address: '203.0.113.9:8388',
       geo: {'203.0.113.9': null},
     );
@@ -116,7 +98,7 @@ void main() {
     expect(find.byType(CountryFlag), findsNothing);
     expect(
       tester.widget<GlyphIcon>(find.byType(GlyphIcon)).glyph,
-      AppGlyphs.dataUsage,
+      AppGlyphs.home,
     );
   });
 

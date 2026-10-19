@@ -10,8 +10,7 @@ import 'package:material_ui/material_ui.dart';
 
 /// A round flag for the country a node is in: the one the user placed it in,
 /// else the one its name points at. Without one, or with one the flag set
-/// lacks, a line of the subscription's own notes gets the icon of what it
-/// tells, and any other name the plain house badge.
+/// lacks, the plain house badge.
 class NodeIcon extends ConsumerWidget {
   const NodeIcon({
     super.key,
@@ -38,11 +37,7 @@ class NodeIcon extends ConsumerWidget {
     if (code == null && host != null) {
       code = ref.watch(nodeGeoRegionProvider(host)).value;
     }
-    return RegionFlag(
-      code: code,
-      size: size,
-      fallback: nodeInfoGlyph(name) ?? AppGlyphs.home,
-    );
+    return RegionFlag(code: code, size: size, fallback: AppGlyphs.home);
   }
 }
 

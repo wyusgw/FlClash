@@ -57,7 +57,7 @@ final class TrayMenuItemView: NSView {
     private static let spinnerStep: CGFloat = 14
 
     private static let detailFont = NSFont.monospacedDigitSystemFont(
-        ofSize: metrics.font.pointSize,
+        ofSize: metrics.font.pointSize - 2,
         weight: .regular
     )
 

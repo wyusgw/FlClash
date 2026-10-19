@@ -620,48 +620,7 @@ class _CodeEditorState extends ConsumerState<_CodeEditor> {
   CodeSelectionStyle? _selectionStyle;
   TextStyle? _textStyle;
   TextStyle? _lineNumberStyle;
-  EdgeInsets _innerPadding = const EdgeInsets.only(right: 16);
-  late bool _findActive = widget.findController.isActive;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.findController.addListener(_handleFindChanged);
-  }
-
-  @override
-  void didUpdateWidget(covariant _CodeEditor oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.findController != widget.findController) {
-      oldWidget.findController.removeListener(_handleFindChanged);
-      widget.findController.addListener(_handleFindChanged);
-      _handleFindChanged();
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.findController.removeListener(_handleFindChanged);
-    super.dispose();
-  }
-
-  void _handleFindChanged() {
-    final isActive = widget.findController.isActive;
-    if (isActive != _findActive) {
-      setState(() {
-        _findActive = isActive;
-      });
-    }
-  }
-
-  // The bar floats over the text, which scrolls under it from a first line
-  // held clear of it; an open find panel takes that clearance instead.
-  void _updateInnerPadding(BuildContext context) {
-    final top = _findActive ? 0.0 : context.appBarInset;
-    if (top != _innerPadding.top) {
-      _innerPadding = EdgeInsets.only(top: top, right: 16);
-    }
-  }
+  static const _innerPadding = EdgeInsets.only(right: 16);
 
   void _updateStyles(BuildContext context, EditorFontSize fontSize) {
     final colorScheme = context.colorScheme;
@@ -782,7 +741,6 @@ class _CodeEditorState extends ConsumerState<_CodeEditor> {
       context,
       ref.watch(appSettingProvider.select((state) => state.editorFontSize)),
     );
-    _updateInnerPadding(context);
     final isMobileView = ref.watch(isMobileViewProvider);
     final lineWrap = ref.watch(
       appSettingProvider.select((state) => state.editorLineWrap),
@@ -805,10 +763,7 @@ class _CodeEditorState extends ConsumerState<_CodeEditor> {
       useSpaceAsTab: true,
       selectionStyle: _selectionStyle,
       suggestionPopupBuilder: (_, details) => CustomSingleChildLayout(
-        delegate: CaretPopupLayout(
-          caretRect: details.caretRect,
-          padding: EdgeInsets.only(top: _innerPadding.top),
-        ),
+        delegate: CaretPopupLayout(caretRect: details.caretRect),
         child: EditorCompletionPopup(details: details, textStyle: _textStyle!),
       ),
       magnifierBuilder: (context, controller, magnifierInfo) => TextLoupe(
@@ -830,7 +785,6 @@ class _CodeEditorState extends ConsumerState<_CodeEditor> {
       ),
       finderBuilder: (context, findController) => FindPanel(
         controller: findController,
-        topInset: context.appBarInset,
         readOnly: widget.readOnly,
         isMobileView: isMobileView,
       ),
@@ -889,14 +843,12 @@ class FindPanel extends StatelessWidget implements PreferredSizeWidget {
   final FindController controller;
   final bool readOnly;
   final bool isMobileView;
-  final double topInset;
 
   const FindPanel({
     super.key,
     required this.controller,
     required this.readOnly,
     required this.isMobileView,
-    this.topInset = 0,
   });
 
   bool get _showReplace => controller.isReplaceMode && !readOnly;
@@ -907,7 +859,7 @@ class FindPanel extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size(double.infinity, height + topInset);
+  Size get preferredSize => Size(double.infinity, height);
 
   @override
   Widget build(BuildContext context) {
@@ -927,7 +879,7 @@ class FindPanel extends StatelessWidget implements PreferredSizeWidget {
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          margin: EdgeInsets.only(top: topInset, bottom: 8),
+          margin: const EdgeInsets.only(bottom: 8),
           color: context.colorScheme.surface,
           alignment: Alignment.centerLeft,
           height: height,

@@ -49,6 +49,27 @@ void main() {
     );
   });
 
+  testWidgets('the first line starts right under the bar', (tester) async {
+    await tester.pumpWidget(
+      TestApp(
+        overrides: [
+          viewSizeProvider.overrideWithBuild((_, _) => const Size(1200, 1000)),
+        ],
+        child: EditorPage(
+          title: 'Editor',
+          load: () async => 'mode: rule',
+          onSave: (_, _, _) {},
+        ),
+      ),
+    );
+    await settle(tester);
+
+    expect(
+      tester.widget<CodeForge>(find.byType(CodeForge)).innerPadding?.top,
+      0,
+    );
+  });
+
   testWidgets('loads only once the push transition has finished', (
     tester,
   ) async {

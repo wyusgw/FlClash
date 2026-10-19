@@ -63,7 +63,7 @@ function render(page) {
   html = replaceOnce(html, /<html lang="[^"]*">/, `<html lang="${page.locale}" data-page-lang="${page.lang}">`);
   html = replaceOnce(html, /<title>[^<]*<\/title>/, `<title>${text('pageTitle')}</title>`);
   html = replaceOnce(html, /(<meta name="description" content=")[^"]*/, `$1${text('pageDescription')}`);
-  html = replaceOnce(html, /(<meta property="og:description" content=")[^"]*/, `$1${text('heroLede')}`);
+  html = replaceOnce(html, /(<meta property="og:description" content=")[^"]*/, `$1${text('pageDescription')}`);
   html = replaceOnce(html, /(<meta property="og:image" content=")[^"]*/, `$1${siteUrl}preview.png`);
   const alternates = PAGES.map(
     (p) => `  <link rel="alternate" hreflang="${p.locale}" href="${siteUrl}${p.path}">`,

@@ -889,7 +889,7 @@
     field = globalThis.FlClashField?.mount($('#field'), {
       avoid: () => [
         taglineBox(),
-        ...[...document.querySelectorAll('#hero-release, #wordmark, .lede, .cta, #cta-note, #facts')]
+        ...[...document.querySelectorAll('#hero-release, #wordmark, .cta, #cta-note, #facts')]
           .filter((node) => node.offsetWidth)
           .map(layoutBox),
       ],

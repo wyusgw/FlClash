@@ -1,0 +1,35 @@
+name: release-aliases
+
+# Adds the version-less copies of the packages (FlClash-android-arm64-v8a.apk and so on) to a
+# release that was published without them, so the download buttons in the readmes work for it.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to add the copies to. The latest release when empty.
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  aliases:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Add the copies
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          tag="${TAG:-$(gh release view --json tagName --jq .tagName)}"
+          version="${tag#v}"
+          mkdir dist
+          gh release download "$tag" --dir dist --pattern "FlClash-${version}-*"
+          bash tool/release_aliases.sh dist "$version"
+          (cd dist && sha256sum ./FlClash-* > SHA256SUMS)
+          copies=()
+          while IFS= read -r file; do copies+=("$file"); done < <(find dist -name 'FlClash-*' ! -name "FlClash-${version}-*")
+          gh release upload "$tag" "${copies[@]}" dist/SHA256SUMS --clobber

@@ -168,7 +168,12 @@ The changelog is derived from the history. `tool/changelog.dart` reads Conventio
 trailers and writes `CHANGELOG.md` for readers and `changelog.json` for the renderers. The release notes carry the
 current version's notes as JSON in an HTML comment, which is where the in-app update dialog reads them from.
 
+Each release also carries a version-less copy of every package, added by `tool/release_aliases.sh`, so the readmes can link
+to `releases/latest/download/FlClash-<name>`.
+
 `site/` is the download page. `tool/build_site.sh` assembles it from the latest release's asset list and
 `tool/render_site.mjs` renders the English and Chinese pages; `.github/workflows/pages.yaml` publishes it to GitHub Pages.
 The page detects the visitor's system and offers the matching installer first. File names come from the release matrix
-in `build.yaml`, so renaming an artifact there means changing `buildsFor` in `site/assets/app.js` too.
+in `build.yaml`, so renaming an artifact there means changing `buildsFor` in `site/assets/app.js` too. `site/download/` is a
+second page that detects the visitor's system and starts the matching installer straight away; it reads the same
+`release.json` and picks the file name with `primaryFor` in `site/assets/download.js`.

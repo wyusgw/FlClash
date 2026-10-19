@@ -4,8 +4,9 @@
 
 </div>
 
-**Download for your system automatically:** [open the download page](https://wyusgw.github.io/FlClash/#download),
-which detects your operating system and CPU and offers the matching installer.
+**Download for your system automatically:** [open this link](https://wyusgw.github.io/FlClash/download/), which detects
+your operating system and CPU and starts the matching installer. The
+[download page](https://wyusgw.github.io/FlClash/#download) lists every file.
 
 **Download based on your OS:**
 

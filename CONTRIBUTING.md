@@ -158,7 +158,10 @@ The release commit comes before the tag, so the generated wording can be reviewe
 release workflow in `.github/workflows/build.yaml`, which builds every package and publishes them with the notes. Push
 the tag by name; `--follow-tags` skips lightweight tags.
 
-After a release, the download buttons in the two READMEs name the previous version and need updating.
+Each package is also uploaded without its version in the name (`FlClash-android-arm64-v8a.apk` beside
+`FlClash-0.9.3-android-arm64-v8a.apk`), by `tool/release_aliases.sh`. The download buttons in the READMEs link to
+`releases/latest/download/FlClash-<name>`, so they follow every release without being edited. To add the copies to a release
+that was published without them, run the `release-aliases` workflow from the Actions tab.
 
 ## Reporting a problem
 

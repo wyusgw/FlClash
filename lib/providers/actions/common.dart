@@ -179,57 +179,14 @@ class CommonAction extends _$CommonAction {
     return res != null;
   }
 
-  TextSpan _releaseSpan(BuildContext context, String tagName, String? body) {
-    final textTheme = context.textTheme;
-    final version = parseReleaseChangelog(body);
-    return TextSpan(
-      text: '$tagName \n',
-      style: textTheme.headlineSmall,
-      children: version == null
-          ? [
-              TextSpan(text: '\n', style: textTheme.bodyMedium),
-              for (final submit in parseReleaseBody(body))
-                TextSpan(text: '- $submit \n', style: textTheme.bodyMedium),
-            ]
-          : _changelogSpans(context, version),
-    );
-  }
-
-  List<TextSpan> _changelogSpans(
-    BuildContext context,
-    ChangelogVersion version,
-  ) {
-    final textTheme = context.textTheme;
-    return [
-      for (final group in version.visibleGroups) ...[
-        TextSpan(
-          text:
-              '\n${changelogGroupTitle(currentAppLocalizations, group.type)}\n',
-          style: textTheme.labelLarge?.copyWith(
-            color: group.type == ChangelogType.breaking
-                ? context.colorScheme.error
-                : context.colorScheme.primary,
-          ),
-        ),
-        for (final entry in group.entries)
-          TextSpan(text: '• ${entry.text}\n', style: textTheme.bodyMedium),
-      ],
-    ];
-  }
-
   Future<void> checkUpdateResultHandle({
     Map<String, dynamic>? data,
     bool isUser = false,
   }) async {
     if (data != null) {
-      final context = globalState.navigatorKey.currentContext!;
-      final res = await dialogs.showMessage(
-        title: currentAppLocalizations.discoverNewVersion,
-        message: _releaseSpan(
-          context,
-          data['tag_name'] as String,
-          data['body'] as String?,
-        ),
+      final res = await dialogs.showReleaseNotes(
+        tagName: data['tag_name'] as String,
+        body: data['body'] as String?,
         confirmText: currentAppLocalizations.goDownload,
         cancelText: isUser ? null : currentAppLocalizations.noLongerRemind,
       );

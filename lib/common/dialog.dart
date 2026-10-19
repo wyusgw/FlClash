@@ -39,6 +39,7 @@ class Dialogs {
     bool cancelable = true,
     bool? dismissible,
     bool destructive = false,
+    TextAlign messageAlign = TextAlign.center,
   }) async {
     return showCommonDialog<bool>(
       context: context,
@@ -54,9 +55,55 @@ class Dialogs {
                 ? (cancelText ?? appLocalizations.cancel)
                 : null,
             destructive: destructive,
+            messageAlign: messageAlign,
           );
         },
       ),
+    );
+  }
+
+  /// The notes of a release, set out like iOS's What's New: the version, then
+  /// each group of changes under its name, lines starting at the leading edge.
+  Future<bool?> showReleaseNotes({
+    required String tagName,
+    required String? body,
+    required String confirmText,
+    String? cancelText,
+  }) {
+    final palette = GroupedPalette.of(_context);
+    final version = parseReleaseChangelog(body);
+    final appLocalizations = currentAppLocalizations;
+    return showMessage(
+      title: appLocalizations.discoverNewVersion,
+      message: TextSpan(
+        text: '$tagName\n',
+        style: palette.rowTitle.copyWith(fontWeight: FontWeight.w600),
+        children: version == null
+            ? [
+                const TextSpan(text: '\n'),
+                for (final line in parseReleaseBody(body))
+                  TextSpan(text: '• $line\n'),
+              ]
+            : [
+                for (final group in version.visibleGroups) ...[
+                  TextSpan(
+                    text:
+                        '\n${changelogGroupTitle(appLocalizations, group.type)}\n',
+                    style: palette.rowSubtitle.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: group.type == ChangelogType.breaking
+                          ? groupedDanger
+                          : palette.accent,
+                    ),
+                  ),
+                  for (final entry in group.entries)
+                    TextSpan(text: '• ${entry.text}\n'),
+                ],
+              ],
+      ),
+      confirmText: confirmText,
+      cancelText: cancelText,
+      messageAlign: TextAlign.start,
     );
   }
 

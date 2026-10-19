@@ -100,6 +100,28 @@ void main() {
     await shown;
   });
 
+  testWidgets('sets the notes from the leading edge, like What is New', (
+    tester,
+  ) async {
+    final container = await pumpApp(tester);
+
+    final shown = container
+        .read(commonActionProvider.notifier)
+        .checkUpdateResultHandle(data: release(_bodyWith(_payload)));
+    await tester.pumpAndSettle();
+
+    final notes = tester.widget<SelectableText>(
+      find.descendant(
+        of: find.byType(ConfirmDialog),
+        matching: find.byType(SelectableText),
+      ),
+    );
+    expect(notes.textAlign, TextAlign.start);
+
+    await tapCancel(tester);
+    await shown;
+  });
+
   testWidgets('localizes the group titles but not the entries', (tester) async {
     final container = await pumpApp(tester, locale: const Locale('zh', 'CN'));
 
@@ -127,7 +149,7 @@ void main() {
         .checkUpdateResultHandle(data: release(_bulletsOnly));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('- Override scripts'), findsOneWidget);
+    expect(find.textContaining('• Override scripts'), findsOneWidget);
 
     await tapCancel(tester);
     await shown;

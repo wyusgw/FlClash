@@ -36,6 +36,7 @@ class ConfirmDialog extends StatelessWidget {
     required this.confirmText,
     this.cancelText,
     this.destructive = false,
+    this.messageAlign = TextAlign.center,
   });
 
   static const _width = 280.0;
@@ -51,6 +52,9 @@ class ConfirmDialog extends StatelessWidget {
   /// For an answer that deletes or resets: it reads in red on the same grey as
   /// the other button instead of standing out in the accent colour.
   final bool destructive;
+
+  /// Where the message's lines sit; a list of notes reads from the start.
+  final TextAlign messageAlign;
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +91,7 @@ class ConfirmDialog extends StatelessWidget {
                       style: palette.rowSubtitle.copyWith(color: palette.label),
                       children: [message],
                     ),
-                    textAlign: TextAlign.center,
+                    textAlign: messageAlign,
                     contextMenuBuilder: systemTextContextMenu,
                   ),
                 ),

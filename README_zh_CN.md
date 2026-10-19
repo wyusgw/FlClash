@@ -38,6 +38,11 @@
 
 从 [GitHub Releases](https://github.com/wyusgw/FlClash/releases/latest) 获取最新版本。
 
+### 自动识别系统并下载
+
+[下载页](https://wyusgw.github.io/FlClash/zh#download)会自动识别你的操作系统和 CPU，并优先给出对应的安装包。
+不确定该选哪个文件时可以直接用它。
+
 ### 按系统下载
 
 点击与你系统对应的按钮。绝大多数 Android 手机选 ARMv8，骁龙等 ARM 架构的 Windows 笔记本选 ARM64，M 系列芯片的 Mac 选

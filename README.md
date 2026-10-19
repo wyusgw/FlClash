@@ -40,6 +40,11 @@ A multi-platform proxy client based on Xray-core. Simple to use, open source and
 
 Get the latest build from [GitHub Releases](https://github.com/wyusgw/FlClash/releases/latest).
 
+### Download for your system automatically
+
+The [download page](https://wyusgw.github.io/FlClash/#download) detects your operating system and CPU and offers the
+matching installer first. Use it if you are not sure which file you need.
+
 ### Download based on your OS
 
 Pick the button for your system. Most Android phones need ARMv8, Windows on Snapdragon laptops needs ARM64, and

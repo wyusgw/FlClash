@@ -40,23 +40,52 @@
 
 ### 按系统下载
 
-打开最新版本，选择与你系统对应的文件。下表中的 `<version>` 是版本号，例如 `0.9.3`。
+点击与你系统对应的按钮。绝大多数 Android 手机选 ARMv8，骁龙等 ARM 架构的 Windows 笔记本选 ARM64，M 系列芯片的 Mac 选
+Apple Silicon。按钮下载的是 0.9.3 版；更新的版本请到[发布页](https://github.com/wyusgw/FlClash/releases/latest)获取，
+页面上的 `SHA256SUMS` 列出了每个文件的校验值。
 
-| 你的系统 | 下载的文件 | 说明 |
-| --- | --- | --- |
-| Android 手机或平板（绝大多数设备） | `FlClash-<version>-android-arm64-v8a.apk` | 老旧的 32 位设备选 `armeabi-v7a`，模拟器或 x86 设备选 `x86_64`。 |
-| Windows 10 及以上，Intel 或 AMD | `FlClash-<version>-windows-amd64-setup.exe` | 也可下载便携版 `FlClash-<version>-windows-amd64.zip`。 |
-| Windows on ARM（骁龙等笔记本） | `FlClash-<version>-windows-arm64-setup.exe` | 也可下载便携版 `FlClash-<version>-windows-arm64.zip`。 |
-| macOS 12 及以上，Apple Silicon | `FlClash-<version>-macos-arm64.dmg` | M1 及更新的芯片。 |
-| macOS 12 及以上，Intel | `FlClash-<version>-macos-amd64.dmg` | |
-| Linux，x64 | `FlClash-<version>-linux-amd64.deb`、`.rpm` 或 `.AppImage` | Debian、Ubuntu 选 `.deb`，Fedora 选 `.rpm`。托盘依赖见下方说明。 |
-| Linux，ARM64 | `FlClash-<version>-linux-arm64.deb`、`.rpm` 或 `.AppImage` | |
-
-发布页上的 `SHA256SUMS` 列出了每个文件的校验值。
-
-<p>
-  <a href="https://github.com/wyusgw/FlClash/releases/latest"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" height="56"></a>
-</p>
+<table>
+  <thead align="left">
+    <tr><th>系统</th><th>下载</th></tr>
+  </thead>
+  <tbody align="left">
+    <tr>
+      <td>Android</td>
+      <td>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-android-arm64-v8a.apk"><img alt="APK-ARMv8" src="https://img.shields.io/badge/APK-ARMv8-168039.svg?logo=android"></a>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-android-armeabi-v7a.apk"><img alt="APK-ARMv7" src="https://img.shields.io/badge/APK-ARMv7-45bf55.svg?logo=android"></a>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-android-x86_64.apk"><img alt="APK-x64" src="https://img.shields.io/badge/APK-x64-96ed89.svg?logo=android"></a>
+      </td>
+    </tr>
+    <tr>
+      <td>Windows</td>
+      <td>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-windows-amd64-setup.exe"><img alt="Setup-x64" src="https://img.shields.io/badge/Setup-x64-2d7d9a.svg?logo=windows"></a>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-windows-amd64.zip"><img alt="Portable-x64" src="https://img.shields.io/badge/Portable-x64-67b7d1.svg?logo=windows"></a>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-windows-arm64-setup.exe"><img alt="Setup-ARM64" src="https://img.shields.io/badge/Setup-ARM64-2d7d9a.svg?logo=windows"></a>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-windows-arm64.zip"><img alt="Portable-ARM64" src="https://img.shields.io/badge/Portable-ARM64-67b7d1.svg?logo=windows"></a>
+      </td>
+    </tr>
+    <tr>
+      <td>macOS</td>
+      <td>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-macos-arm64.dmg"><img alt="DMG-Apple Silicon" src="https://img.shields.io/badge/DMG-Apple%20Silicon-000000.svg?logo=apple"></a>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-macos-amd64.dmg"><img alt="DMG-Intel x64" src="https://img.shields.io/badge/DMG-Intel%20x64-00A9E0.svg?logo=apple"></a>
+      </td>
+    </tr>
+    <tr>
+      <td>Linux</td>
+      <td>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-linux-amd64.AppImage"><img alt="AppImage-x64" src="https://img.shields.io/badge/AppImage-x64-f84e29.svg?logo=linux"></a>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-linux-amd64.deb"><img alt="Deb-x64" src="https://img.shields.io/badge/Deb-x64-FF9966.svg?logo=debian"></a>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-linux-amd64.rpm"><img alt="Rpm-x64" src="https://img.shields.io/badge/Rpm-x64-F1B42F.svg?logo=redhat"></a>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-linux-arm64.AppImage"><img alt="AppImage-ARM64" src="https://img.shields.io/badge/AppImage-ARM64-f84e29.svg?logo=linux"></a>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-linux-arm64.deb"><img alt="Deb-ARM64" src="https://img.shields.io/badge/Deb-ARM64-FF9966.svg?logo=debian"></a>
+        <a href="https://github.com/wyusgw/FlClash/releases/download/v0.9.3/FlClash-0.9.3-linux-arm64.rpm"><img alt="Rpm-ARM64" src="https://img.shields.io/badge/Rpm-ARM64-F1B42F.svg?logo=redhat"></a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 **Linux 托盘图标**
 

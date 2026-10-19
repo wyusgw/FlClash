@@ -1,0 +1,258 @@
+:root {
+  --bg: #f3efea;
+  --surface: #fbf9f6;
+  --raise: #e9e3dc;
+  --ink: #262122;
+  --ink-2: #5c5354;
+  --line: rgb(38 33 34 / 0.12);
+  --accent: #6b5059;
+  --code-bg: #ebe5de;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "HarmonyOS Sans SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #181617;
+    --surface: #232021;
+    --raise: #2d292a;
+    --ink: #f1ebe6;
+    --ink-2: #b5aaa6;
+    --line: rgb(241 235 230 / 0.14);
+    --accent: #d4b3bb;
+    --code-bg: #2a2627;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #181617;
+  --surface: #232021;
+  --raise: #2d292a;
+  --ink: #f1ebe6;
+  --ink-2: #b5aaa6;
+  --line: rgb(241 235 230 / 0.14);
+  --accent: #d4b3bb;
+  --code-bg: #2a2627;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.7 var(--font-sans);
+}
+
+a {
+  color: var(--accent);
+}
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px max(16px, calc((100vw - 1120px) / 2));
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  border-bottom: 1px solid var(--line);
+}
+
+.bar .brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.bar nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 18px;
+}
+
+.bar nav a {
+  color: var(--ink-2);
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.bar nav a:hover {
+  color: var(--ink);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+}
+
+@media (min-width: 960px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 220px;
+  }
+}
+
+.doc {
+  max-width: 760px;
+}
+
+.doc h1 {
+  margin: 0 0 16px;
+  font-size: 2rem;
+  line-height: 1.25;
+}
+
+.doc h2 {
+  margin: 2.2em 0 0.6em;
+  padding-top: 0.4em;
+  border-top: 1px solid var(--line);
+  font-size: 1.4rem;
+}
+
+.doc h3 {
+  margin: 1.8em 0 0.4em;
+  font-size: 1.1rem;
+}
+
+.doc p,
+.doc ul,
+.doc ol,
+.doc .table,
+.doc pre {
+  margin: 0 0 1em;
+}
+
+.doc ul,
+.doc ol {
+  padding-left: 1.4em;
+}
+
+.doc li + li {
+  margin-top: 0.3em;
+}
+
+.doc code {
+  padding: 0.12em 0.4em;
+  border-radius: 6px;
+  background: var(--code-bg);
+  font: 0.88em var(--font-mono);
+}
+
+.doc pre {
+  overflow-x: auto;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--code-bg);
+  line-height: 1.5;
+}
+
+.doc pre code {
+  padding: 0;
+  background: none;
+  font-size: 0.86rem;
+}
+
+.doc .table {
+  overflow-x: auto;
+}
+
+.doc table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.doc th,
+.doc td {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.doc th {
+  background: var(--raise);
+}
+
+.cards {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.cards a {
+  display: block;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.cards a:hover {
+  border-color: var(--accent);
+}
+
+.cards span {
+  display: block;
+  color: var(--ink-2);
+  font-size: 0.92rem;
+}
+
+.toc {
+  display: none;
+  align-self: start;
+  position: sticky;
+  top: 72px;
+  font-size: 0.9rem;
+}
+
+@media (min-width: 960px) {
+  .toc {
+    display: block;
+  }
+}
+
+.toc p {
+  margin: 0 0 8px;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.toc ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-left: 1px solid var(--line);
+}
+
+.toc li a {
+  display: block;
+  padding: 3px 12px;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+
+.toc li a:hover {
+  color: var(--ink);
+}
+
+.edit {
+  margin-top: 40px;
+  font-size: 0.9rem;
+}

@@ -42,6 +42,8 @@ else
   cp "$root/CHANGELOG.md" "$out/CHANGELOG.md"
 fi
 
-node "$root/tool/render_site.mjs" "$out" "${SITE_URL:-https://wyusgw.github.io/FlClash}"
+site_url="${SITE_URL:-https://wyusgw.github.io/FlClash}"
+node "$root/tool/render_site.mjs" "$out" "$site_url"
+node "$root/tool/render_docs.mjs" "$out" "$site_url" "$root"
 
 echo "site assembled in $out"

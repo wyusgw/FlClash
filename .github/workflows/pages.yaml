@@ -6,8 +6,11 @@ on:
       - main
     paths:
       - 'site/**'
+      - 'docs/**'
+      - 'CONTRIBUTING.md'
       - 'tool/build_site.sh'
       - 'tool/render_site.mjs'
+      - 'tool/render_docs.mjs'
       - '.github/workflows/pages.yaml'
   workflow_run:
     workflows:

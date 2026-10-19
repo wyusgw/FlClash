@@ -387,18 +387,6 @@
       case 'android':
         return [
           tip(
-            'tipFdroidTitle',
-            'tipFdroid',
-            el(
-              'p',
-              {},
-              el('a', {
-                href: 'https://chen08209.github.io/FlClash-fdroid-repo/repo?fingerprint=789D6D32668712EF7672F9E58DEEB15FBD6DCEEC5AE7A4371EA72F2AAE8A12FD',
-                text: t('tipFdroidLink'),
-              }),
-            ),
-          ),
-          tip(
             'tipIntentTitle',
             'tipIntent',
             commandBlock(
@@ -408,8 +396,6 @@
             ),
           ),
         ];
-      case 'macos':
-        return [tip('tipBrewTitle', 'tipBrew', commandBlock('brew tap chen08209/tap\nbrew install --cask flclash'))];
       case 'linux':
         return [
           tip(

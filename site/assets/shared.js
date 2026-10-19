@@ -1,7 +1,7 @@
 globalThis.FlClashSite = (() => {
   'use strict';
 
-  const REPO = 'https://github.com/chen08209/FlClash';
+  const REPO = 'https://github.com/wyusgw/FlClash';
   const FIRST_PAGE = 6;
   const MAX_STAGGER = 16;
   const TYPE_BY_TITLE = {
@@ -71,13 +71,8 @@ globalThis.FlClashSite = (() => {
       noteDeb: '.deb package for Debian, Ubuntu and their derivatives',
       noteRpm: '.rpm package for Fedora, openSUSE and their derivatives',
       noteAppImage: 'Runs on most distributions without installing',
-      tipFdroidTitle: 'F-Droid',
-      tipFdroid: 'Add the FlClash repository to your F-Droid client to get updates there.',
-      tipFdroidLink: 'Open the F-Droid repository',
       tipIntentTitle: 'Automation',
       tipIntent: 'Other apps can start, stop or toggle the proxy with these intent actions.',
-      tipBrewTitle: 'Homebrew',
-      tipBrew: 'Install from the terminal, and upgrade with brew later.',
       tipTrayTitle: 'Tray icon',
       tipTray:
         'The .deb package installs its own dependencies. With the AppImage or the .rpm, install the AyatanaAppIndicator library so the tray icon can show.',
@@ -160,13 +155,8 @@ globalThis.FlClashSite = (() => {
       noteDeb: '.deb 安装包，也适用于其衍生版',
       noteRpm: '.rpm 安装包，也适用于其衍生版',
       noteAppImage: '适用于多数发行版，无需安装',
-      tipFdroidTitle: 'F-Droid',
-      tipFdroid: '在 F-Droid 客户端中添加 FlClash 仓库，即可在那里接收更新。',
-      tipFdroidLink: '打开 F-Droid 仓库',
       tipIntentTitle: '自动化',
       tipIntent: '其他应用可以通过以下 Intent Action 启动、停止或切换代理。',
-      tipBrewTitle: 'Homebrew',
-      tipBrew: '在终端中安装，之后用 brew 升级。',
       tipTrayTitle: '托盘图标',
       tipTray: '.deb 安装包会自动安装所需依赖。使用 AppImage 或 .rpm 时，需要先安装 AyatanaAppIndicator 库，托盘图标才能显示。',
       clTitle: '更新日志',

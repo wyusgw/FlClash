@@ -461,6 +461,35 @@ void main() {
     expect((servers.first as Map)['domains'], ['geosite:cn']);
   });
 
+  test('nodes are resolved by the Core unless another node dials them', () {
+    final direct = parseSubscription(
+      'ss://YWVzLTI1Ni1nY206cGFzc3dvcmQ@proxy.example.com:8388#ss',
+    ).first;
+    final chained = buildNodeOutbound(NodeKind.vless, {
+      ...nodeDefaults(NodeKind.vless),
+      'address': 'vl.example.com',
+      'port': '443',
+      'uuid': _uuid,
+      'dialerProxy': 'ss',
+    })!;
+    Map sockopt(Map node) => (node['streamSettings'] as Map)['sockopt'] as Map;
+    List nodes(CoreConfig config) =>
+        buildXrayConfig(
+              _state(config: config, outbounds: [direct, chained]),
+            )['outbounds']
+            as List;
+
+    expect(
+      sockopt(nodes(const CoreConfig()).first)['domainStrategy'],
+      'UseIPv4',
+    );
+    expect(
+      sockopt(nodes(const CoreConfig(ipv6: true)).first)['domainStrategy'],
+      'UseIP',
+    );
+    expect(sockopt(nodes(const CoreConfig())[1]), {'dialerProxy': 'ss'});
+  });
+
   test('encodeXrayConfig hashes what it encodes', () {
     final first = encodeXrayConfig(_state());
     final second = encodeXrayConfig(_state());

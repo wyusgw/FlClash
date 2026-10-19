@@ -73,6 +73,9 @@
         "security": "tls",
         "tlsSettings": {
           "serverName": "vm.example.com"
+        },
+        "sockopt": {
+          "domainStrategy": "UseIP"
         }
       }
     },
@@ -94,6 +97,9 @@
           "publicKey": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA",
           "shortId": "6ba85179e30d4fc2",
           "spiderX": "/"
+        },
+        "sockopt": {
+          "domainStrategy": "UseIP"
         }
       }
     },
@@ -113,6 +119,9 @@
         "security": "tls",
         "tlsSettings": {
           "serverName": "tj.example.com"
+        },
+        "sockopt": {
+          "domainStrategy": "UseIP"
         }
       }
     },
@@ -124,6 +133,11 @@
         "port": 8388,
         "method": "aes-256-gcm",
         "password": "password"
+      },
+      "streamSettings": {
+        "sockopt": {
+          "domainStrategy": "UseIP"
+        }
       }
     },
     {
@@ -156,6 +170,9 @@
               }
             }
           ]
+        },
+        "sockopt": {
+          "domainStrategy": "UseIP"
         }
       }
     },
@@ -178,6 +195,9 @@
           "alpn": [
             "h3"
           ]
+        },
+        "sockopt": {
+          "domainStrategy": "UseIP"
         }
       }
     },
@@ -194,6 +214,9 @@
         "security": "tls",
         "tlsSettings": {
           "serverName": "at.example.com"
+        },
+        "sockopt": {
+          "domainStrategy": "UseIP"
         }
       }
     },
@@ -208,6 +231,11 @@
         "transport": "UDP",
         "multiplexing": "MULTIPLEXING_HIGH",
         "mtu": 1400
+      },
+      "streamSettings": {
+        "sockopt": {
+          "domainStrategy": "UseIP"
+        }
       }
     },
     {

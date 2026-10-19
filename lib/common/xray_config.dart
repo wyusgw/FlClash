@@ -189,15 +189,37 @@ Map<String, dynamic> _dns(MakeRealProfileState state) {
   };
 }
 
+/// Xray resolves a node's domain itself only when the outbound sets a
+/// `sockopt.domainStrategy`; without one the system resolver does, bypassing
+/// `@node-dns`. A node dialed through another node is left alone: that node
+/// resolves the domain remotely.
+Map<String, dynamic> _withNodeResolution(
+  Map<String, dynamic> node,
+  String strategy,
+) {
+  final stream = (node['streamSettings'] as Map?)?.cast<String, dynamic>();
+  final sockopt = (stream?['sockopt'] as Map?)?.cast<String, dynamic>();
+  if (sockopt?['dialerProxy'] != null) return node;
+  return {
+    ...node,
+    'streamSettings': {
+      ...?stream,
+      'sockopt': {'domainStrategy': strategy, ...?sockopt},
+    },
+  };
+}
+
 /// The Xray config the Core is asked to run: the user's nodes, the app's own
 /// outbounds, and inbounds, routing and DNS derived from [state].
 Map<String, dynamic> buildXrayConfig(MakeRealProfileState state) {
   final config = state.coreConfig;
+  final nodeStrategy = config.ipv6 ? 'UseIP' : 'UseIPv4';
   return {
     'log': {'loglevel': _logLevelName(config.logLevel), 'access': 'none'},
     'inbounds': _inbounds(state),
     'outbounds': [
-      for (final node in state.outbounds) {...node}..remove('region'),
+      for (final node in state.outbounds)
+        _withNodeResolution({...node}..remove('region'), nodeStrategy),
       {'tag': directOutboundTag, 'protocol': 'freedom'},
       {'tag': blockOutboundTag, 'protocol': 'blackhole'},
       {'tag': dnsOutboundTag, 'protocol': 'dns'},

@@ -103,7 +103,7 @@ function render(page) {
   }
 
   if (up) html = html.replace(/\b(href|src|srcset)="(?![a-z]+:|#|\/)/g, `$1="${up}`);
-  if (page.lang === 'zh') html = html.replace(/href="\.\.\/docs\/"/g, 'href="docs/"');
+  if (page.lang === 'zh') html = html.replace(/href="\.\.\/docs\/(user-guide\/)?"/g, (_, guide) => `href="docs/${guide ?? ''}"`);
   return replaceOnce(
     html,
     /<button class="tool" id="lang-toggle" type="button">[^<]*<\/button>/,

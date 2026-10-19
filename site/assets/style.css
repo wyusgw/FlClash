@@ -2039,3 +2039,38 @@ mark {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.docs-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.docs-list a {
+  display: block;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md, 14px);
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+
+.docs-list a:hover {
+  border-color: var(--accent);
+}
+
+.docs-list strong {
+  display: block;
+  font-size: 17px;
+}
+
+.docs-list span {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink-2);
+  font-size: 14px;
+}

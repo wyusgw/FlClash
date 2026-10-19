@@ -175,10 +175,10 @@ func stripInbounds(data []byte) ([]byte, error) {
 	return json.Marshal(document)
 }
 
-// engineForDelayTest is the engine a delay test dials through: the running
-// one, or else a test engine built on first use and dropped with the next
-// setup or start.
-func engineForDelayTest() *engine {
+// engineForProbes is the engine a delay test or a probe dials through: the
+// running one, or else a test engine built on first use and dropped with the
+// next setup or start.
+func engineForProbes() *engine {
 	if running := currentEngine.Load(); running != nil {
 		return running
 	}

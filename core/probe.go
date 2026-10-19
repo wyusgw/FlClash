@@ -115,7 +115,7 @@ func runProbe(parent context.Context, req probeRequest) *ProbeResult {
 		return result
 	}
 
-	running := currentEngine.Load()
+	running := engineForProbes()
 	if running == nil {
 		return fail(errConfigNotApplied)
 	}

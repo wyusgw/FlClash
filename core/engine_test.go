@@ -380,6 +380,35 @@ func TestHandleGetTrafficReturnsARateFromTwoSamples(t *testing.T) {
 	}
 }
 
+func TestHandleProbeWorksWhileTheProxyIsOff(t *testing.T) {
+	server := probeServer(t, func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte("ip=203.0.113.7\n"))
+	})
+	dir := t.TempDir()
+	config := `{"outbounds": [{"tag": "@direct", "protocol": "freedom"}]}`
+	resetEngineState()
+	if err := os.WriteFile(filepath.Join(dir, configFileName), []byte(config), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if !handleInitCore(&InitParams{HomeDir: dir}) {
+		t.Fatal("handleInitCore failed")
+	}
+	t.Cleanup(resetEngineState)
+	isRunning.Store(false)
+	if message := handleSetupConfig(defaultSetupParams()); message != "" {
+		t.Fatalf("setup failed: %s", message)
+	}
+
+	result := handleProbe(&ProbeParams{Url: server.URL, ProxyName: "@direct", Timeout: 3000, MaxBody: 1024})
+
+	if result == nil || result.Error != "" || result.Body != "ip=203.0.113.7\n" {
+		t.Fatalf("result = %+v, want the body through the direct outbound", result)
+	}
+	if currentEngine.Load() != nil {
+		t.Error("the probe should leave the proxy off")
+	}
+}
+
 func TestHandleProbePinsTheNamedProxy(t *testing.T) {
 	var userAgent string
 	server := probeServer(t, func(w http.ResponseWriter, r *http.Request) {

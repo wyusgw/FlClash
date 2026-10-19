@@ -172,7 +172,9 @@ Each release also carries a version-less copy of every package, added by `tool/r
 to `releases/latest/download/FlClash-<name>`.
 
 `site/` is the download page. `tool/build_site.sh` assembles it from the latest release's asset list and
-`tool/render_site.mjs` renders the English and Chinese pages; `.github/workflows/pages.yaml` publishes it to GitHub Pages.
+`tool/render_site.mjs` renders the English and Chinese pages, and `tool/render_docs.mjs` turns the guides in `docs/` and
+`CONTRIBUTING.md` into pages under `docs/` and `zh/docs/` (a small Markdown renderer with no dependencies; it covers headings,
+paragraphs, lists, tables, code blocks, links and emphasis, so keep the guides to those); `.github/workflows/pages.yaml` publishes it to GitHub Pages.
 The page detects the visitor's system and offers the matching installer first. File names come from the release matrix
 in `build.yaml`, so renaming an artifact there means changing `buildsFor` in `site/assets/app.js` too. `site/download/` is a
 second page that detects the visitor's system and starts the matching installer straight away; it reads the same

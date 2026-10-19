@@ -4,8 +4,13 @@
 
 </div>
 
-**Download for your system automatically:** [open this link](https://wyusgw.github.io/FlClash/download/), which detects
-your operating system and CPU and starts the matching installer. The
+<div align=center>
+
+<a href="https://wyusgw.github.io/FlClash/download/"><img alt="Download for my system" src="https://img.shields.io/badge/Download-for%20my%20system-6B5059?style=for-the-badge&logo=github&logoColor=white" height="48"></a>
+
+</div>
+
+The button above detects your operating system and CPU and starts the matching installer. The
 [download page](https://wyusgw.github.io/FlClash/#download) lists every file.
 
 **Download based on your OS:**

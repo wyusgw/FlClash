@@ -42,9 +42,13 @@ Get the latest build from [GitHub Releases](https://github.com/wyusgw/FlClash/re
 
 ### Download for your system automatically
 
-[Download for my system](https://wyusgw.github.io/FlClash/download/) detects your operating system and CPU and starts
-the matching installer. The [download page](https://wyusgw.github.io/FlClash/#download) lists every file and picks the
-right one first. Use either if you are not sure which file you need.
+<p align="center">
+  <a href="https://wyusgw.github.io/FlClash/download/"><img alt="Download for my system" src="https://img.shields.io/badge/Download-for%20my%20system-6B5059?style=for-the-badge&logo=github&logoColor=white" height="48"></a>
+</p>
+
+The button detects your operating system and CPU and starts the matching installer. The
+[download page](https://wyusgw.github.io/FlClash/#download) lists every file and picks the right one first. Use either
+if you are not sure which file you need.
 
 ### Download based on your OS
 
@@ -154,6 +158,8 @@ Packages land in `dist/`. The Go core and the Rust libraries are compiled as par
 Run `dart setup.dart --help` for the remaining options, such as `--targets` to build only some package formats.
 
 ## Documentation
+
+Read it online at <https://wyusgw.github.io/FlClash/docs/>, or in the repository:
 
 - [User guide](docs/user-guide.md): adding servers, routing rules, DNS, TUN, hotkeys, backup and troubleshooting.
 - [Contributing](CONTRIBUTING.md): building, testing, commit messages and releasing.

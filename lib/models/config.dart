@@ -59,6 +59,17 @@ final List<HotKeyAction> defaultHotKeyActions = system.isWindows
         _defaultHotKeyAction(HotAction.mode, PhysicalKeyboardKey.keyM),
         _defaultHotKeyAction(HotAction.proxy, PhysicalKeyboardKey.keyP),
         _defaultHotKeyAction(HotAction.delayTest, PhysicalKeyboardKey.keyD),
+        _defaultHotKeyAction(HotAction.tun, PhysicalKeyboardKey.keyT),
+        _defaultHotKeyAction(HotAction.ruleMode, PhysicalKeyboardKey.keyR),
+        _defaultHotKeyAction(HotAction.globalMode, PhysicalKeyboardKey.keyG),
+        _defaultHotKeyAction(HotAction.directMode, PhysicalKeyboardKey.keyI),
+        _defaultHotKeyAction(
+          HotAction.updateProfiles,
+          PhysicalKeyboardKey.keyU,
+        ),
+        _defaultHotKeyAction(HotAction.copyEnv, PhysicalKeyboardKey.keyC),
+        _defaultHotKeyAction(HotAction.speedView, PhysicalKeyboardKey.keyF),
+        _defaultHotKeyAction(HotAction.exit, PhysicalKeyboardKey.keyE),
       ];
 
 Object? _readTabAnimation(Map<dynamic, dynamic> json, String key) {

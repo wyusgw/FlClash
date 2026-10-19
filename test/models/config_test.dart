@@ -429,15 +429,7 @@ void main() {
 
       expect(
         defaults.map((action) => action.action),
-        Platform.isWindows
-            ? isEmpty
-            : [
-                HotAction.view,
-                HotAction.start,
-                HotAction.mode,
-                HotAction.proxy,
-                HotAction.delayTest,
-              ],
+        Platform.isWindows ? isEmpty : unorderedEquals(HotAction.values),
       );
       for (final action in defaults) {
         expect(

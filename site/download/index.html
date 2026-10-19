@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Download FlClash</title>
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <style>
+    :root {
+      --bg: #f3efea;
+      --surface: #fbf9f6;
+      --ink: #262122;
+      --ink-2: #5c5354;
+      --line: rgb(38 33 34 / 0.12);
+      --accent: #6b5059;
+      --on-accent: #fbf7f4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #181617;
+        --surface: #232021;
+        --ink: #f1ebe6;
+        --ink-2: #b5aaa6;
+        --line: rgb(241 235 230 / 0.14);
+        --accent: #d4b3bb;
+        --on-accent: #231d1f;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px 16px;
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    main { width: min(100%, 480px); text-align: center; }
+    img { width: 72px; height: 72px; }
+    h1 { margin: 12px 0 4px; font-size: 26px; }
+    p { margin: 0; color: var(--ink-2); }
+    .primary {
+      display: inline-block;
+      margin: 20px 0 6px;
+      padding: 12px 26px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: var(--on-accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .primary[hidden], #others[hidden], #status[hidden] { display: none; }
+    #others { margin-top: 28px; text-align: left; }
+    #others h2 { margin: 0 0 8px; font-size: 14px; color: var(--ink-2); font-weight: 600; }
+    #others ul { margin: 0; padding: 0; list-style: none; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+    #others li + li { border-top: 1px solid var(--line); }
+    #others a { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; color: var(--ink); text-decoration: none; }
+    #others a span { color: var(--ink-2); font-size: 13px; }
+    .more { display: block; margin-top: 20px; color: var(--ink-2); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="../icon.png" alt="">
+    <h1>FlClash</h1>
+    <p id="status" aria-live="polite">Looking for the right installer…</p>
+    <a class="primary" id="primary" href="https://github.com/wyusgw/FlClash/releases/latest" hidden></a>
+    <section id="others" hidden>
+      <h2 id="others-title">All downloads</h2>
+      <ul id="others-list"></ul>
+    </section>
+    <a class="more" id="more" href="../">All platforms and the changelog</a>
+  </main>
+  <script src="../assets/download.js"></script>
+</body>
+</html>

@@ -123,8 +123,8 @@ class AuthenticationAccountItem extends ConsumerWidget {
       selector: networkSettingProvider.select(
         (state) => state.authentication.username,
       ),
-      // mihomo and the Dart proxy string both split user:pass on the first
-      // colon, so a colon in the username breaks authentication.
+      // The config builder and the Dart proxy string both split user:pass on
+      // the first colon, so a colon in the username breaks authentication.
       normalize: (value) => value.trim().replaceAll(':', ''),
       onChanged: (ref, value) => ref
           .read(networkSettingProvider.notifier)

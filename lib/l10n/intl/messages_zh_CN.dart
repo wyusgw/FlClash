@@ -710,6 +710,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "resetCoreSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "此功能会将内核、网络与 VPN 设置恢复为默认值，通常可以修复连接失败或 VPN 问题等故障。",
     ),
+    "resetHotkeys": MessageLookupByLibrary.simpleMessage("重置快捷键"),
     "resetPageChangesTip": MessageLookupByLibrary.simpleMessage(
       "当前页面存在更改，确定重置吗？",
     ),

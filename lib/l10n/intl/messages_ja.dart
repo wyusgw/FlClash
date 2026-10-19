@@ -782,6 +782,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "resetCoreSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "コア、ネットワーク、VPN の設定を既定値に戻します。接続の失敗や VPN の問題が解消することがあります。",
     ),
+    "resetHotkeys": MessageLookupByLibrary.simpleMessage("ショートカットをリセット"),
     "resetPageChangesTip": MessageLookupByLibrary.simpleMessage(
       "このページには変更があります。リセットしてもよろしいですか？",
     ),

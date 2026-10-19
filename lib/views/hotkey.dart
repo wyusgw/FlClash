@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
@@ -164,6 +166,23 @@ class _HotKeyViewState extends ConsumerState<HotKeyView> {
     }
   }
 
+  Future<void> _reset() async {
+    final appLocalizations = context.appLocalizations;
+    final res = await dialogs.showMessage(
+      title: appLocalizations.confirm,
+      message: TextSpan(text: appLocalizations.resetTip),
+      confirmText: appLocalizations.reset,
+      destructive: true,
+    );
+    if (res != true || !mounted) return;
+    if (_recordingAction != null) _stop();
+    ref.read(hotKeyActionsProvider.notifier).value = defaultHotKeyActions;
+    dialogs.showNotifier(
+      appLocalizations.resetSuccess,
+      level: MessageLevel.success,
+    );
+  }
+
   Set<KeyboardModifier> _heldModifiers({PhysicalKeyboardKey? except}) {
     final pressed = HardwareKeyboard.instance.physicalKeysPressed;
     return {
@@ -253,6 +272,15 @@ class _HotKeyViewState extends ConsumerState<HotKeyView> {
                 ],
               ),
             ),
+          GroupedSection(
+            children: [
+              GroupedButtonRow(
+                label: appLocalizations.resetHotkeys,
+                color: groupedDanger,
+                onTap: () => unawaited(_reset()),
+              ),
+            ],
+          ),
         ],
       ),
     );

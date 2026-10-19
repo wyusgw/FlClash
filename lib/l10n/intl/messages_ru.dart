@@ -923,6 +923,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "resetCoreSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "Возвращает настройки ядра, сети и VPN к значениям по умолчанию. Часто помогает при сбоях подключения и проблемах VPN.",
     ),
+    "resetHotkeys": MessageLookupByLibrary.simpleMessage(
+      "Сбросить горячие клавиши",
+    ),
     "resetPageChangesTip": MessageLookupByLibrary.simpleMessage(
       "На этой странице есть изменения. Вы уверены, что хотите выполнить сброс?",
     ),

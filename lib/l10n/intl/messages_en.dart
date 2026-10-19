@@ -896,6 +896,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "resetCoreSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "This restores the core, network and VPN settings to their defaults. It usually fixes connection failures and VPN problems.",
     ),
+    "resetHotkeys": MessageLookupByLibrary.simpleMessage("Reset hotkeys"),
     "resetPageChangesTip": MessageLookupByLibrary.simpleMessage(
       "This page has changes. Are you sure you want to reset?",
     ),

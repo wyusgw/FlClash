@@ -349,6 +349,33 @@ void main() {
       expect(container.read(hotKeyActionsProvider), isEmpty);
     });
 
+    testWidgets('reset puts every default back once confirmed', (tester) async {
+      final container = _containerFor(
+        tester,
+        hotKeyActions: [
+          HotKeyAction(
+            action: HotAction.exit,
+            key: _keyA,
+            modifiers: const {KeyboardModifier.shift},
+          ),
+        ],
+      );
+      await _pumpView(tester, container);
+
+      await tester.scrollUntilVisible(
+        find.text(currentAppLocalizations.resetHotkeys),
+        100,
+      );
+      await tester.tap(find.text(currentAppLocalizations.resetHotkeys));
+      await tester.pumpAndSettle();
+      expect(container.read(hotKeyActionsProvider), hasLength(1));
+
+      await tester.tap(find.text(currentAppLocalizations.reset));
+      await tester.pumpAndSettle();
+
+      expect(container.read(hotKeyActionsProvider), defaultHotKeyActions);
+    });
+
     testWidgets('leaving the page releases the paused hotkeys', (tester) async {
       final container = _containerFor(tester);
       await _pumpView(tester, container);

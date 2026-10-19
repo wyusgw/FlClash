@@ -364,6 +364,7 @@
   "hotkeyManagement": "ホットキー管理",
   "hotkeyDesc": "グローバルホットキーはウィンドウが非表示でも有効です。アクションをタップしてキーの組み合わせを記録します。",
   "hotkeyNotSet": "未設定",
+  "resetHotkeys": "ショートカットをリセット",
   "pressKeyboard": "キーの組み合わせを押してください",
   "hotkeyNeedsModifier": "{modifiers} のいずれかを含めてください",
   "hotkeyMovedFrom": "「{action}」から移動しました",

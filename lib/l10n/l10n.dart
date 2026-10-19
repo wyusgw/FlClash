@@ -2800,6 +2800,16 @@ class AppLocalizations {
     return Intl.message('Not set', name: 'hotkeyNotSet', desc: '', args: []);
   }
 
+  /// `Reset hotkeys`
+  String get resetHotkeys {
+    return Intl.message(
+      'Reset hotkeys',
+      name: 'resetHotkeys',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Press a key combination`
   String get pressKeyboard {
     return Intl.message(

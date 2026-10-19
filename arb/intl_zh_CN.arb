@@ -364,6 +364,7 @@
   "hotkeyManagement": "快捷键管理",
   "hotkeyDesc": "全局快捷键在窗口隐藏时依然生效，点击操作即可录制组合键。",
   "hotkeyNotSet": "未设置",
+  "resetHotkeys": "重置快捷键",
   "pressKeyboard": "请按下组合键",
   "hotkeyNeedsModifier": "至少包含 {modifiers} 中的一个",
   "hotkeyMovedFrom": "已从“{action}”移到这里",

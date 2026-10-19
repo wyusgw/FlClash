@@ -5,7 +5,6 @@ import 'package:fl_clash/common/app_localizations.dart';
 import 'package:fl_clash/common/app_ports.dart';
 import 'package:fl_clash/common/constant.dart';
 import 'package:fl_clash/common/l10n_labels.dart';
-import 'package:fl_clash/common/num.dart';
 import 'package:fl_clash/common/tray.dart';
 import 'package:fl_clash/common/xray_config.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -259,32 +258,16 @@ void main() {
     expect(_item(showCall(), l10n.tun)['checked'], isTrue);
   });
 
-  test(
-    'the rates show below the speed toggle while the menu bar does not',
-    () async {
-      final l10n = currentAppLocalizations;
-      await update(_trayState(), traffic: const Traffic(up: 800, down: 3300));
-
-      final items = _items(showCall());
-      final toggle = items.indexWhere(
-        (item) => item['label'] == l10n.toggleSpeedView,
+  test('the rates are never listed in the menu', () async {
+    for (final showTrayTitle in [false, true]) {
+      await update(
+        _trayState(showTrayTitle: showTrayTitle),
+        traffic: const Traffic(up: 800, down: 3300),
       );
-      expect(items[toggle + 1]['label'], '▲  ${800.shortTraffic.show}/s');
-      expect(items[toggle + 1]['enabled'], isFalse);
-      expect(items[toggle + 2]['label'], '▼  ${3300.shortTraffic.show}/s');
-      expect(items[toggle + 2]['enabled'], isFalse);
-      expect(items[toggle + 3]['type'], 'separator');
-    },
-  );
 
-  test('the rates are left out once the speed shows in the menu bar', () async {
-    await update(
-      _trayState(showTrayTitle: true),
-      traffic: const Traffic(up: 800, down: 3300),
-    );
-
-    expect(_labels(showCall()).where((l) => l.startsWith('▲')), isEmpty);
-    expect(_labels(showCall()).where((l) => l.startsWith('▼')), isEmpty);
+      expect(_labels(showCall()).where((l) => l.startsWith('▲')), isEmpty);
+      expect(_labels(showCall()).where((l) => l.startsWith('▼')), isEmpty);
+    }
   });
 
   test('without a node group the server entries are left out', () async {
@@ -391,55 +374,34 @@ void main() {
     expect(children.first['checked'], isTrue);
   });
 
-  test('the server submenu draws each node with its round flag', () async {
+  test('the server submenu lists the nodes by name, with no icons', () async {
     const group = Group(
       name: nodeGroupName,
       type: GroupType.Selector,
       all: [
-        Proxy(name: '\u{1F4C6}套餐到期: 永久', type: 'Direct'),
-        Proxy(name: '\u{1F4C9}剩余流量: 88 GB', type: 'Direct'),
         Proxy(name: '日本 01', type: 'Direct'),
         Proxy(name: '\u{1F1FA}\u{1F1F8} Los Angeles', type: 'Direct'),
-        Proxy(name: 'Premium', type: 'Direct'),
         Proxy(name: 'Seoul', type: 'Direct', region: 'DE'),
       ],
     );
-    final asked = <String>[];
-    final flagged = AppTray.forPlatform(
-      isMacOS: true,
-      isWindows: false,
-      flagIcon: (code) async {
-        asked.add(code);
-        return '/flags/${code.toLowerCase()}.png';
-      },
-    );
-    await update(_trayState(groups: [group]), on: flagged);
+    await update(_trayState(groups: [group]));
 
     final submenu = _item(
       showCall(),
-      '${currentAppLocalizations.server}: \u{1F4C6}套餐到期: 永久',
+      '${currentAppLocalizations.server}: 日本 01',
     );
-    expect(submenu['icon'], '/flags/jp.png');
+    expect(submenu, isNot(contains('icon')));
     final children = (submenu['items'] as List).cast<Map<Object?, Object?>>();
-    expect(children.map((item) => item['icon']), [
-      '/flags/jp.png',
-      '/flags/gb.png',
-      '/flags/jp.png',
-      '/flags/us.png',
-      null,
-      '/flags/de.png',
+    expect(children.map((item) => item['label']), [
+      '日本 01',
+      '\u{1F1FA}\u{1F1F8} Los Angeles',
+      'Seoul',
     ]);
-    expect(children[3]['label'], 'Los Angeles');
-    expect(children[4]['label'], 'Premium');
-    expect(asked.toSet(), {'JP', 'GB', 'US', 'DE'});
+    expect(children, everyElement(isNot(contains('icon'))));
   });
 
   test('a platform that cannot draw menu icons sends none', () async {
-    final windows = AppTray.forPlatform(
-      isMacOS: false,
-      isWindows: true,
-      flagIcon: (_) async => fail('no flag is drawn'),
-    );
+    final windows = AppTray.forPlatform(isMacOS: false, isWindows: true);
     const group = Group(
       name: nodeGroupName,
       type: GroupType.Selector,
@@ -554,7 +516,10 @@ void main() {
           }),
         ],
       );
-      await update(_trayState(groups: [_proxyGroup]));
+      await update(
+        _trayState(groups: [_proxyGroup]),
+        on: AppTray.forPlatform(isMacOS: false, isWindows: true),
+      );
 
       final submenu = _item(showCall(), '${currentAppLocalizations.server}: A');
       expect(submenu['detail'], '120ms');
@@ -586,7 +551,10 @@ void main() {
         }),
       ],
     );
-    await update(_trayState(groups: [_proxyGroup]));
+    await update(
+      _trayState(groups: [_proxyGroup]),
+      on: AppTray.forPlatform(isMacOS: false, isWindows: true),
+    );
 
     final l10n = currentAppLocalizations;
     final submenu = _item(showCall(), '${l10n.server}: A');
@@ -594,6 +562,35 @@ void main() {
     expect(submenu['busy'], isTrue);
     expect(children.map((item) => item['busy']), [true, null, true]);
     expect(_item(showCall(), l10n.connectivityTest)['busy'], isTrue);
+  });
+
+  test('the macOS menu shows no delay and no spinner', () async {
+    container.dispose();
+    container = ProviderContainer(
+      overrides: [
+        selectedProxyNameProvider(nodeGroupName).overrideWithValue('A'),
+        trayDelaysProvider.overrideWithValue({
+          nodeGroupName: {'A': 120, 'B': -1},
+        }),
+        trayPendingDelaysProvider.overrideWithValue({
+          nodeGroupName: {'A', 'C'},
+        }),
+      ],
+    );
+    await update(_trayState(groups: [_proxyGroup]));
+
+    final l10n = currentAppLocalizations;
+    final submenu = _item(showCall(), '${l10n.server}: A');
+    final children = (submenu['items'] as List).cast<Map<Object?, Object?>>();
+    for (final item in [
+      submenu,
+      ...children,
+      _item(showCall(), l10n.connectivityTest),
+    ]) {
+      expect(item, isNot(contains('detail')));
+      expect(item, isNot(contains('detailTone')));
+      expect(item, isNot(contains('busy')));
+    }
   });
 
   test('nothing spins while no delay test is pending', () async {
@@ -617,7 +614,10 @@ void main() {
         }),
       ],
     );
-    await update(_trayState(groups: [_proxyGroup]));
+    await update(
+      _trayState(groups: [_proxyGroup]),
+      on: AppTray.forPlatform(isMacOS: false, isWindows: true),
+    );
 
     final submenu = _item(showCall(), '${currentAppLocalizations.server}: A');
     final children = (submenu['items'] as List).cast<Map<Object?, Object?>>();

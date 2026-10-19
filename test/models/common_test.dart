@@ -119,8 +119,16 @@ void main() {
       const traffic = Traffic(up: 1024, down: 2048);
 
       expect(traffic.speedText, '↑ 1KB/s   ↓ 2KB/s');
-      expect(traffic.trayTitle, '1 KB/s\n2 KB/s');
+      expect(traffic.trayTitle, '1.0K/s↑\n2.0K/s↓');
       expect(traffic.speed, 3072);
+    });
+
+    test('writes the tray title as one decimal and a one-letter unit', () {
+      String title(num up, num down) => Traffic(up: up, down: down).trayTitle;
+
+      expect(title(0, 300), '0.0K/s↑\n0.3K/s↓');
+      expect(title(1536 * 1024, 1048575), '1.5M/s↑\n1.0M/s↓');
+      expect(title(3 * 1024 * 1024 * 1024, 500), '3.0G/s↑\n0.5K/s↓');
     });
   });
 

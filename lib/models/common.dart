@@ -266,13 +266,27 @@ abstract class Traffic with _$Traffic {
       _$TrafficFromJson(json);
 }
 
+/// A rate in the menu bar's compact form: one decimal and a one-letter unit
+/// from K up, as in `0.3K/s`.
+String _trayRate(num bytesPerSecond) {
+  const units = ['K', 'M', 'G', 'T'];
+  var value = bytesPerSecond / 1024;
+  var unit = 0;
+  while (unit < units.length - 1 &&
+      double.parse(value.toStringAsFixed(1)) >= 1024) {
+    value /= 1024;
+    unit++;
+  }
+  return '${value.toStringAsFixed(1)}${units[unit]}/s';
+}
+
 extension TrafficExt on Traffic {
   String get speedText {
     return '↑ ${up.traffic.show}/s   ↓ ${down.traffic.show}/s';
   }
 
   String get trayTitle {
-    return '${up.shortTraffic.show}/s\n${down.shortTraffic.show}/s';
+    return '${_trayRate(up)}↑\n${_trayRate(down)}↓';
   }
 
   num get speed => up + down;

@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.9.4 (2026-10-19)
+
+**Features**
+
+- **update** The update dialog shows the release notes in an iOS style (eef679f)
+- **hotkeys** Windows now has default hotkeys, on Ctrl+Alt+Shift plus a letter (9791c29)
+- **tray** The macOS menu bar menu is plainer and its speed reads 0.3K/s↑ (b7e7649)
+- **hotkeys** The hotkey page can reset all hotkeys to their defaults (b155a93)
+- **hotkeys** Every hotkey action has a default combination on macOS and Linux (8ce3cc3)
+- **ip-quality** Network detection shows an IP purity score, refreshes by pulling down on mobile and no longer lists the source (8c6125a)
+
+**Bug Fixes**
+
+- **update** Update checks and the links in About now point to this repository's releases (a11122e)
+- **editor** The code editor starts right under the title bar on every platform (2e0b060)
+- **logs** The log page no longer leaves a blank band in its card on phones (ae5ea6f)
+- **profiles** Saving a profile's settings now shows a confirmation (00e3959)
+- **core** Network detection and service checks also work while the proxy is off (177426a)
+
 ## v0.9.3 (2026-10-19)
 
 **Bug Fixes**

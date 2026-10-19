@@ -192,17 +192,17 @@ class GroupedPalette {
   Color get hoverShade => hover.withValues(alpha: 0.55);
 
   TextStyle get rowTitle =>
-      TextStyle(fontSize: 17, fontWeight: FontWeight.w400, color: label);
+      TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: label);
 
   TextStyle get rowSubtitle => TextStyle(
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: FontWeight.w400,
     color: secondary,
     height: 1.2,
   );
 
   TextStyle get rowValue =>
-      TextStyle(fontSize: 17, fontWeight: FontWeight.w400, color: secondary);
+      TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: secondary);
 
   TextStyle get sectionLabel =>
       TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: secondary);
@@ -394,7 +394,7 @@ class GroupedRow extends GroupedItem {
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: groupedRowPadding,
-              vertical: 6,
+              vertical: 4,
             ),
             child: LayoutBuilder(
               builder: (context, box) => Row(

@@ -146,6 +146,12 @@ dart setup.dart android   # 或 windows、macos、linux
 
 其余选项可以运行 `dart setup.dart --help` 查看，例如用 `--targets` 只构建部分安装包格式。
 
+## 文档
+
+- [使用指南](docs/user-guide.zh-CN.md)：添加服务器、路由规则、DNS、虚拟网卡、快捷键、备份与常见问题。
+- [贡献指南](CONTRIBUTING.md)：构建、测试、提交信息与发布流程（英文）。
+- [架构说明](docs/architecture.md)：应用、Go 内核与原生服务如何配合（英文）。
+
 ## 支持
 
 给仓库点一个 Star 是支持项目最简单的方式。Bug 与功能建议请提交到 [GitHub Issues](https://github.com/wyusgw/FlClash/issues)。

@@ -52,10 +52,6 @@ AGENTS.md
 CLAUDE.md
 opencode.jsonc
 
-# Documentation (generated/planning artifacts)
-docs/
-
-
 # Android Studio will place build artifacts here
 /android/app/debug
 /android/app/profile

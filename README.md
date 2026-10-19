@@ -152,6 +152,12 @@ Packages land in `dist/`. The Go core and the Rust libraries are compiled as par
 
 Run `dart setup.dart --help` for the remaining options, such as `--targets` to build only some package formats.
 
+## Documentation
+
+- [User guide](docs/user-guide.md): adding servers, routing rules, DNS, TUN, hotkeys, backup and troubleshooting.
+- [Contributing](CONTRIBUTING.md): building, testing, commit messages and releasing.
+- [Architecture](docs/architecture.md): how the app, the Go core and the native services fit together.
+
 ## Support
 
 Starring the repository is the easiest way to support the project. Bugs and feature requests go to

@@ -100,6 +100,7 @@ void main() {
       'localhost',
       '::1',
       'fd00::1',
+      '198.18.0.5',
     ]) {
       expect(await resolver.resolve(host), isNull, reason: host);
     }

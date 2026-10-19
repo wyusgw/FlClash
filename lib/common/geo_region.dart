@@ -13,6 +13,7 @@ import 'print.dart';
 import 'subscription.dart';
 
 const _service = 'https://api.country.is/';
+const _resolver = 'https://cloudflare-dns.com/dns-query';
 const _concurrency = 3;
 const _retryAfter = Duration(minutes: 10);
 
@@ -38,7 +39,11 @@ class GeoRegionResolver {
         final data = json.decode(await file.readAsString());
         if (data is Map) {
           for (final entry in data.entries) {
-            _cache['${entry.key}'] = '${entry.value}';
+            final host = '${entry.key}';
+            // An empty answer kept for a public name came from a lookup that
+            // failed, so it is asked again.
+            if ('${entry.value}'.isEmpty && !isPrivateHost(host)) continue;
+            _cache[host] = '${entry.value}';
           }
         }
       } on Object {
@@ -71,10 +76,16 @@ class GeoRegionResolver {
   }
 
   Future<String?> _fetch(String host) async {
-    final address = await _publicAddress(host);
-    if (address == null) {
+    if (isPrivateHost(host) && !host.contains(':')) {
       _cache[host] = '';
       await _save();
+      return null;
+    }
+    final address = await _publicAddress(host);
+    if (address == null) {
+      // A name that did not resolve now may resolve later, so it is asked
+      // again after a while instead of being kept as having no country.
+      _failed[host] = DateTime.now();
       return null;
     }
     await _acquire();
@@ -106,20 +117,44 @@ class GeoRegionResolver {
   }
 
   /// The address worth asking about: [host] itself when it is one, else what
-  /// its name resolves to; null for a private or unresolvable one.
+  /// its name resolves to; null for a private or unresolvable one. A name the
+  /// system answers with a fake or private address, as it does behind a TUN or
+  /// a fake-IP resolver, is asked of a DNS-over-HTTPS service instead.
   Future<InternetAddress?> _publicAddress(String host) async {
-    if (isPrivateHost(host) && !host.contains(':')) return null;
     final literal = InternetAddress.tryParse(host);
-    List<InternetAddress> addresses;
+    if (literal != null) return _isPublic(literal) ? literal : null;
     try {
-      addresses = literal == null
-          ? await InternetAddress.lookup(host)
-          : [literal];
+      for (final address in await InternetAddress.lookup(host)) {
+        if (_isPublic(address)) return address;
+      }
     } on SocketException {
-      return null;
+      // Falls through to the DNS-over-HTTPS answer.
     }
-    for (final address in addresses) {
-      if (_isPublic(address)) return address;
+    return _lookupOverHttps(host);
+  }
+
+  Future<InternetAddress?> _lookupOverHttps(String host) async {
+    try {
+      final response = await request.dio.get<Object?>(
+        _resolver,
+        queryParameters: {'name': host, 'type': 'A'},
+        options: Options(
+          responseType: ResponseType.json,
+          headers: {'accept': 'application/dns-json'},
+          sendTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 5),
+        ),
+      );
+      final data = response.data;
+      final answers = data is Map ? data['Answer'] : null;
+      if (answers is! List) return null;
+      for (final answer in answers) {
+        if (answer is! Map || answer['type'] != 1) continue;
+        final address = InternetAddress.tryParse('${answer['data']}');
+        if (address != null && _isPublic(address)) return address;
+      }
+    } on Object catch (error) {
+      commonPrint.log('dns of $host failed: ${compactError(error)}');
     }
     return null;
   }
@@ -134,7 +169,8 @@ class GeoRegionResolver {
     }
     return !isPrivateHost(address.address) &&
         bytes.first != 0 &&
-        !(bytes[0] == 100 && bytes[1] >= 64 && bytes[1] < 128);
+        !(bytes[0] == 100 && bytes[1] >= 64 && bytes[1] < 128) &&
+        !(bytes[0] == 198 && (bytes[1] & 0xFE) == 18);
   }
 
   Future<void> _acquire() {

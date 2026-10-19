@@ -64,7 +64,7 @@ class _DataViewState extends ConsumerState<DataView> {
     return GroupedSection(
       children: [
         GroupedRow(
-          leading: const GroupedIcon(AppGlyphs.networkCheck),
+          leading: const GroupedIcon(AppGlyphs.wifi),
           title: appLocalizations.networkDetection,
           trailing: trailing,
           chevron: info != null,

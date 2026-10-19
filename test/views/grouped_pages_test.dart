@@ -279,7 +279,7 @@ void main() {
 
       expect(find.text('Network detection'), findsOneWidget);
       expect(find.text('2.2.2.2'), findsOneWidget);
-      expect(find.byGlyph(AppGlyphs.networkCheck), findsOneWidget);
+      expect(find.byGlyph(AppGlyphs.wifi), findsOneWidget);
 
       await tester.tap(find.text('Network detection'));
       await tester.pumpAndSettle();

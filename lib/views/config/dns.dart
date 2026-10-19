@@ -61,9 +61,11 @@ class DnsView extends ConsumerStatefulWidget {
 
 class _DnsViewState extends ConsumerState<DnsView> {
   late final CoreConfig _saved = ref.read(coreSettingProvider);
-  late bool _manual =
-      !listEquals(_saved.proxyDns, defaultProxyDnsServers) ||
-      !listEquals(_saved.directDns, defaultDirectDnsServers);
+  late final bool _savedManual =
+      _saved.dnsManual ??
+      (!listEquals(_saved.proxyDns, defaultProxyDnsServers) ||
+          !listEquals(_saved.directDns, defaultDirectDnsServers));
+  late bool _manual = _savedManual;
   late List<String> _proxy = _saved.proxyDns;
   late List<String> _direct = _saved.directDns;
 
@@ -73,15 +75,19 @@ class _DnsViewState extends ConsumerState<DnsView> {
   bool get _canSave =>
       _stagedProxy.isNotEmpty &&
       _stagedDirect.isNotEmpty &&
-      (!listEquals(_stagedProxy, _saved.proxyDns) ||
+      (_manual != _savedManual ||
+          !listEquals(_stagedProxy, _saved.proxyDns) ||
           !listEquals(_stagedDirect, _saved.directDns));
 
   void _save() {
     ref
         .read(coreSettingProvider.notifier)
         .update(
-          (state) =>
-              state.copyWith(proxyDns: _stagedProxy, directDns: _stagedDirect),
+          (state) => state.copyWith(
+            proxyDns: _stagedProxy,
+            directDns: _stagedDirect,
+            dnsManual: _manual,
+          ),
         );
     Navigator.of(context).pop();
   }

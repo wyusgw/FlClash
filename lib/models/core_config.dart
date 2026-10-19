@@ -197,6 +197,7 @@ abstract class CoreConfig with _$CoreConfig {
     @Default(defaultDirectDnsServers)
     @JsonKey(name: 'direct-dns', fromJson: _directDnsFromJson)
     List<String> directDns,
+    @JsonKey(name: 'dns-manual') bool? dnsManual,
   }) = _CoreConfig;
 
   factory CoreConfig.fromJson(Map<String, Object?> json) =>

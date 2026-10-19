@@ -105,7 +105,7 @@ void main() {
     expect(canSave(tester), isFalse);
   });
 
-  testWidgets('Manual shows both lists, and Save waits for a change', (
+  testWidgets('Manual shows both lists, and Save keeps Manual as chosen', (
     tester,
   ) async {
     await openPage(tester);
@@ -125,7 +125,33 @@ void main() {
         findsOneWidget,
       );
     }
+    expect(canSave(tester), isTrue);
+
+    await tester.tap(save());
+    await tester.pumpAndSettle();
+    expect(settings().dnsManual, isTrue);
+
+    final saved = settings();
+    await tester.pumpWidget(const SizedBox());
+    await openPage(tester, config: saved);
+    expect(listOf('proxy'), findsOneWidget);
     expect(canSave(tester), isFalse);
+  });
+
+  testWidgets('Automatic is kept over custom servers once saved', (
+    tester,
+  ) async {
+    await openPage(
+      tester,
+      config: const CoreConfig(proxyDns: ['9.9.9.9'], dnsManual: true),
+    );
+    await tester.tap(find.text('Auto'));
+    await tester.pumpAndSettle();
+    await tester.tap(save());
+    await tester.pumpAndSettle();
+
+    expect(settings().dnsManual, isFalse);
+    expect(settings().proxyDns, defaultProxyDnsServers);
   });
 
   testWidgets('an added server is kept only once Save is tapped', (
@@ -180,7 +206,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(AppLocalizations.current.dnsServerTip), findsOneWidget);
-    expect(canSave(tester), isFalse);
+
+    await tester.tap(save());
+    await tester.pumpAndSettle();
+    expect(settings().directDns, defaultDirectDnsServers);
   });
 
   testWidgets('the red minus brings up Delete, which removes the server', (

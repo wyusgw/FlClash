@@ -4980,6 +4980,11 @@ class AppLocalizations {
     return Intl.message('Level', name: 'ipQualityLevel', desc: '', args: []);
   }
 
+  /// `Purity`
+  String get ipPurity {
+    return Intl.message('Purity', name: 'ipPurity', desc: '', args: []);
+  }
+
   /// `Good`
   String get ipQualityGood {
     return Intl.message('Good', name: 'ipQualityGood', desc: '', args: []);
@@ -4988,11 +4993,6 @@ class AppLocalizations {
   /// `Normal`
   String get ipQualityNormal {
     return Intl.message('Normal', name: 'ipQualityNormal', desc: '', args: []);
-  }
-
-  /// `Purity`
-  String get ipPurity {
-    return Intl.message('Purity', name: 'ipPurity', desc: '', args: []);
   }
 
   /// `Risky`

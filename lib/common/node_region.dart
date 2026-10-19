@@ -1,8 +1,3 @@
-import 'package:fl_clash/icons/icons.dart';
-import 'package:fl_clash/models/models.dart';
-
-import 'node_info.dart';
-
 /// Tried in order, so a name goes before any shorter one inside it, as
 /// 印度尼西亚 before 印度, and a city before 中国.
 const _names = {
@@ -184,28 +179,3 @@ bool _followsNumber(String name, int index) {
 }
 
 bool _isRegionalIndicator(int rune) => rune >= 0x1F1E6 && rune <= 0x1F1FF;
-
-/// The node a line of the subscription's notes takes its flag from: the first
-/// real one that a country can be read off, else the first with a server.
-Proxy? leadNode(Iterable<Proxy>? nodes) {
-  final real = nodes?.where((node) => nodeInfoGlyph(node.name) == null);
-  return real
-          ?.where(
-            (node) => node.region != null || nodeRegionCode(node.name) != null,
-          )
-          .firstOrNull ??
-      real?.where((node) => node.address != null).firstOrNull;
-}
-
-/// The country a line of the subscription's notes is flagged with, found
-/// without asking where a server is: the British flag for the traffic line,
-/// else the one the name names, else the one [lead], the first real node,
-/// carries or names. Null for a name that is no such line, or when none is
-/// found.
-String? infoLineRegionCode(String name, Proxy? lead) {
-  final info = nodeInfoGlyph(name);
-  if (info == null) return null;
-  if (info == AppGlyphs.dataUsage) return 'GB';
-  return nodeRegionCode(name) ??
-      (lead == null ? null : lead.region ?? nodeRegionCode(lead.name));
-}

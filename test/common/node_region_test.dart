@@ -1,5 +1,4 @@
 import 'package:fl_clash/common/node_region.dart';
-import 'package:fl_clash/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -52,41 +51,6 @@ void main() {
       expect(nodeRegionCode('剩余流量：8.08\u3000GB'), isNull);
       expect(nodeRegionCode('剩余流量：8.08GB'), isNull);
       expect(nodeRegionCode(''), isNull);
-    });
-  });
-
-  group('infoLineRegionCode', () {
-    const lead = Proxy(name: '日本 01', type: 'vless');
-
-    test('flags the traffic line with the British flag', () {
-      expect(infoLineRegionCode('剩余流量：8.08 GB', lead), 'GB');
-      expect(infoLineRegionCode('剩余流量：8.08 GB', null), 'GB');
-    });
-
-    test('takes the first node\'s country for the other lines', () {
-      expect(infoLineRegionCode('套餐到期：2026年12月05日', lead), 'JP');
-      expect(
-        infoLineRegionCode(
-          '官网：example.com',
-          const Proxy(name: 'Premium', type: 'vless', region: 'DE'),
-        ),
-        'DE',
-      );
-    });
-
-    test('has none without a lead that names one', () {
-      expect(infoLineRegionCode('套餐到期：2026年12月05日', null), isNull);
-      expect(
-        infoLineRegionCode(
-          '套餐到期：2026年12月05日',
-          const Proxy(name: 'Premium', type: 'vless'),
-        ),
-        isNull,
-      );
-    });
-
-    test('leaves a name that is no notes line alone', () {
-      expect(infoLineRegionCode('日本 01', lead), isNull);
     });
   });
 

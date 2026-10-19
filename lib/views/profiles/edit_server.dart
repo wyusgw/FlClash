@@ -6,7 +6,7 @@ import 'package:fl_clash/common/share_link.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/views/profiles/add.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/services.dart';
@@ -22,7 +22,6 @@ class EditServerView extends ConsumerStatefulWidget {
     required this.outbound,
     required this.kind,
     required this.values,
-    this.lead,
   });
 
   final Profile profile;
@@ -31,10 +30,6 @@ class EditServerView extends ConsumerStatefulWidget {
   final Map<String, dynamic> outbound;
   final NodeKind kind;
   final Map<String, String> values;
-
-  /// The node a line of the subscription's notes takes its flag from, as the
-  /// list found it, so that the flag is there as the page opens.
-  final Proxy? lead;
 
   @override
   ConsumerState<EditServerView> createState() => _EditServerViewState();
@@ -115,18 +110,6 @@ class _EditServerViewState extends ConsumerState<EditServerView> {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    final lead =
-        widget.lead ??
-        leadNode(
-          ref
-              .watch(
-                profileNodesProvider(
-                  widget.profile.id,
-                  widget.profile.lastUpdateDate,
-                ),
-              )
-              .value,
-        );
     final built = _built;
     final link = built == null ? null : buildNodeLink(_kind, _values);
     return GroupedPage(
@@ -156,7 +139,6 @@ class _EditServerViewState extends ConsumerState<EditServerView> {
             values: _values,
             onChanged: _setValue,
             proxies: _proxies,
-            lead: lead,
           ),
           const SizedBox(height: groupedSectionGap),
           GroupedSection(

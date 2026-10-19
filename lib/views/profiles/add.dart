@@ -4,11 +4,9 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/pages/scan.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/views/home/node_icon.dart';
 import 'package:fl_clash/views/profiles/region.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/services.dart';
@@ -416,7 +414,6 @@ class NodeFormFields extends ConsumerStatefulWidget {
     required this.onChanged,
     this.group = NodeFieldGroup.main,
     this.proxies = const [],
-    this.lead,
   });
 
   final NodeKind kind;
@@ -428,9 +425,6 @@ class NodeFormFields extends ConsumerStatefulWidget {
 
   /// The other nodes this one can be reached through.
   final List<String> proxies;
-
-  /// The node a line of the subscription's notes takes its flag from.
-  final Proxy? lead;
 
   @override
   ConsumerState<NodeFormFields> createState() => _NodeFormFieldsState();
@@ -477,14 +471,9 @@ class _NodeFormFieldsState extends ConsumerState<NodeFormFields> {
   Map<String, String> get _values => widget.values;
 
   /// What the server's name, then where its address is, then the address
-  /// itself point at; a line of the subscription's notes is flagged as in the
-  /// node list.
+  /// itself point at.
   String? get _detected {
-    final remark = _values['remark'] ?? '';
-    if (nodeInfoGlyph(remark) != null) {
-      return infoFlagCode(ref, remark, widget.lead);
-    }
-    final named = nodeRegionCode(remark);
+    final named = nodeRegionCode(_values['remark'] ?? '');
     if (named != null) return named;
     final host = _askedHost;
     if (host.isNotEmpty) {

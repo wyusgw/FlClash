@@ -688,7 +688,6 @@ class _SubscriptionSection extends ConsumerWidget {
         : ref
               .watch(profileNodesProvider(profile.id, profile.lastUpdateDate))
               .value;
-    final lead = leadNode(nodes);
     final selected = current
         ? ref.watch(selectedProxyNameProvider(nodeGroupName))
         : null;
@@ -809,7 +808,6 @@ class _SubscriptionSection extends ConsumerWidget {
                             name: node.name,
                             region: node.region,
                             address: node.address,
-                            lead: lead,
                           ),
                         ],
                       )
@@ -817,7 +815,6 @@ class _SubscriptionSection extends ConsumerWidget {
                         name: node.name,
                         region: node.region,
                         address: node.address,
-                        lead: lead,
                       ),
                 leadingWidth: editing
                     ? groupedLeadingSize * 2 + _selectGap

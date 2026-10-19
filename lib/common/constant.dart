@@ -117,7 +117,7 @@ const systemDnsRecordKey = 'system_dns_record';
 const bootRecordKey = 'boot_record';
 const defaultSystemDnsFallback = '223.5.5.5';
 const double dialogCommonWidth = 300;
-const repository = 'chen08209/FlClash';
+const repository = 'wyusgw/FlClash';
 const maxMobileWidth = 600;
 const maxLaptopWidth = 840;
 

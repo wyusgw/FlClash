@@ -200,6 +200,7 @@ class _LogsViewState extends ConsumerState<LogsView>
                             dataSource: logs,
                             child: SuperListView.separated(
                               physics: const NextClampingScrollPhysics(),
+                              padding: EdgeInsets.zero,
                               reverse: true,
                               shrinkWrap: true,
                               controller: _scrollController,

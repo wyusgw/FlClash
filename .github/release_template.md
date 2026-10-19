@@ -1,11 +1,5 @@
 <div align=center>
 
-[![Release Downloads](https://img.shields.io/github/downloads/wyusgw/FlClash/vVERSION/total?style=flat-square&logo=github)](https://img.shields.io/github/downloads/wyusgw/FlClash/vVERSION/)
-
-</div>
-
-<div align=center>
-
 <a href="https://wyusgw.github.io/FlClash/download/"><img alt="Download for my system" src="https://img.shields.io/badge/Download-for%20my%20system-6B5059?style=flat-square&logo=github"></a>
 
 </div>

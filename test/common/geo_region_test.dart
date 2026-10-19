@@ -25,6 +25,7 @@ class _GeoAdapter implements HttpClientAdapter {
   final requested = <String>[];
   Map<String, Object?> answers = const {};
   bool fail = false;
+  Map<String, List<String>> dns = const {};
 
   @override
   Future<ResponseBody> fetch(
@@ -37,6 +38,22 @@ class _GeoAdapter implements HttpClientAdapter {
       throw DioException(
         requestOptions: options,
         type: DioExceptionType.connectionError,
+      );
+    }
+    if (options.uri.host == 'cloudflare-dns.com') {
+      final name = options.uri.queryParameters['name'];
+      return ResponseBody.fromString(
+        jsonEncode({
+          'Answer': [
+            {'name': name, 'type': 5, 'data': 'alias.example.'},
+            for (final ip in dns[name] ?? const <String>[])
+              {'name': name, 'type': 1, 'data': ip},
+          ],
+        }),
+        200,
+        headers: {
+          Headers.contentTypeHeader: ['application/json'],
+        },
       );
     }
     final ip = options.uri.pathSegments.last;
@@ -153,6 +170,45 @@ void main() {
     };
 
     expect(await GeoRegionResolver().resolve('5.5.5.5'), isNull);
+  });
+
+  group('a domain', () {
+    // `.invalid` never resolves, so the system lookup gives nothing and the
+    // name goes to the DNS-over-HTTPS service.
+    const host = 'node.flclash.invalid';
+
+    test('is resolved over HTTPS when the system cannot', () async {
+      adapter.dns = {
+        host: ['8.8.8.8'],
+      };
+
+      expect(await GeoRegionResolver().resolve(host), 'JP');
+      expect(adapter.requested, [
+        'https://cloudflare-dns.com/dns-query?name=$host&type=A',
+        'https://api.country.is/8.8.8.8',
+      ]);
+    });
+
+    test('is not flagged by a fake or private answer', () async {
+      adapter.dns = {
+        host: ['198.18.0.9', '10.0.0.7'],
+      };
+
+      expect(await GeoRegionResolver().resolve(host), isNull);
+      expect(
+        adapter.requested.where((url) => url.contains('country.is')),
+        isEmpty,
+      );
+    });
+
+    test('that did not resolve is not kept as having no country', () async {
+      expect(await GeoRegionResolver().resolve(host), isNull);
+
+      adapter.dns = {
+        host: ['8.8.8.8'],
+      };
+      expect(await GeoRegionResolver().resolve(host), 'JP');
+    });
   });
 
   group('hostOfAddress', () {

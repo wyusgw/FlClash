@@ -464,6 +464,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipFlagVpn": MessageLookupByLibrary.simpleMessage("VPN"),
     "ipFlags": MessageLookupByLibrary.simpleMessage("命中标记"),
     "ipOrganization": MessageLookupByLibrary.simpleMessage("组织"),
+    "ipPurity": MessageLookupByLibrary.simpleMessage("纯净度"),
     "ipQualityFailed": MessageLookupByLibrary.simpleMessage("类型查询失败"),
     "ipQualityGood": MessageLookupByLibrary.simpleMessage("优"),
     "ipQualityLevel": MessageLookupByLibrary.simpleMessage("等级"),

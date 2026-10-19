@@ -47,4 +47,23 @@ void main() {
       );
     });
   });
+
+  group('IpQuality.purity', () {
+    test('starts from the kind of network', () {
+      expect(_quality(IpType.residential).purity, 100);
+      expect(_quality(IpType.mobile).purity, 95);
+      expect(_quality(IpType.business).purity, 90);
+      expect(_quality(IpType.hosting).purity, 60);
+    });
+
+    test('loses points for every flag raised against the address', () {
+      expect(_quality(IpType.residential, isProxy: true).purity, 80);
+      expect(_quality(IpType.hosting, isProxy: true, isVpn: true).purity, 15);
+      expect(_quality(IpType.residential, isTor: true).purity, 50);
+    });
+
+    test('never drops below zero', () {
+      expect(_quality(IpType.hosting, isTor: true, isAbuser: true).purity, 0);
+    });
+  });
 }

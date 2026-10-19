@@ -591,6 +591,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipFlagVpn": MessageLookupByLibrary.simpleMessage("VPN"),
     "ipFlags": MessageLookupByLibrary.simpleMessage("Метки"),
     "ipOrganization": MessageLookupByLibrary.simpleMessage("Организация"),
+    "ipPurity": MessageLookupByLibrary.simpleMessage("Чистота"),
     "ipQualityFailed": MessageLookupByLibrary.simpleMessage(
       "Не удалось определить тип IP",
     ),

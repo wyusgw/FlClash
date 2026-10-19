@@ -30,4 +30,21 @@ extension IpQualityExt on IpQuality {
       IpType.hosting => IpQualityLevel.normal,
     };
   }
+
+  /// 0 to 100, from what the sources agree on: the kind of network the
+  /// address sits in, less a penalty for each flag raised against it.
+  int get purity {
+    final base = switch (type) {
+      IpType.residential => 100,
+      IpType.mobile => 95,
+      IpType.business => 90,
+      IpType.hosting => 60,
+    };
+    final penalty =
+        (isProxy ? 20 : 0) +
+        (isVpn ? 25 : 0) +
+        (isTor ? 50 : 0) +
+        (isAbuser ? 40 : 0);
+    return (base - penalty).clamp(0, 100);
+  }
 }

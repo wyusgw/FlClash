@@ -216,15 +216,22 @@ class _BarButton extends StatelessWidget {
 /// The scrolling body of a grouped page: [children] on the canvas, clear of
 /// the bar above and of whatever covers the bottom.
 class GroupedBody extends StatelessWidget {
-  const GroupedBody({super.key, required this.children, this.controller});
+  const GroupedBody({
+    super.key,
+    required this.children,
+    this.controller,
+    this.physics,
+  });
 
   final List<Widget> children;
   final ScrollController? controller;
+  final ScrollPhysics? physics;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
       controller: controller,
+      physics: physics,
       padding: EdgeInsets.fromLTRB(
         groupedPageInset,
         13,

@@ -634,6 +634,7 @@
   "ipAddress": "IP 地址",
   "ipQualityLevel": "等级",
   "ipQualityGood": "优",
+  "ipPurity": "纯净度",
   "ipQualityNormal": "普通",
   "ipQualityRisky": "风险",
   "ipType": "类型",

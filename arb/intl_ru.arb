@@ -634,6 +634,7 @@
   "ipAddress": "IP-адрес",
   "ipQualityLevel": "Уровень",
   "ipQualityGood": "Хороший",
+  "ipPurity": "Чистота",
   "ipQualityNormal": "Обычный",
   "ipQualityRisky": "Рискованный",
   "ipType": "Тип",

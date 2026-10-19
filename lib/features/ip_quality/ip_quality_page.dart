@@ -16,9 +16,16 @@ const ipMask = '*****';
 /// What the third-party lookups say about [ip]: its type and quality, the
 /// network it belongs to and which source answered.
 class IpQualityPage extends ConsumerWidget {
-  const IpQualityPage({super.key, required this.ip});
+  const IpQualityPage({super.key, required this.ip, this.desktop});
 
   final String ip;
+
+  /// Whether to lay out for a pointer, which refreshes from the bar; a touch
+  /// screen pulls down instead. The platform's own answer when null.
+  @visibleForTesting
+  final bool? desktop;
+
+  bool get _desktop => desktop ?? system.isDesktop;
 
   Future<void> _copy(BuildContext context, String text) async {
     await Clipboard.setData(ClipboardData(text: text));
@@ -41,6 +48,20 @@ class IpQualityPage extends ConsumerWidget {
     );
   }
 
+  Widget _pullToRefresh(
+    GroupedPalette palette,
+    Future<void> Function() onRefresh,
+    Widget child,
+  ) {
+    if (_desktop) return child;
+    return RefreshIndicator(
+      color: palette.accent,
+      backgroundColor: palette.fill,
+      onRefresh: onRefresh,
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final localizations = context.appLocalizations;
@@ -49,94 +70,96 @@ class IpQualityPage extends ConsumerWidget {
     final hideIp = ref.watch(
       appSettingProvider.select((state) => state.hideIp),
     );
-    final quality = result.value;
+    final quality = result.isLoading ? null : result.value;
     final error = result.error;
     final failed = quality == null && !result.isLoading;
+    Future<void> refresh() async {
+      ref.invalidate(ipQualityProvider(ip));
+      try {
+        await ref.read(ipQualityProvider(ip).future);
+      } catch (_) {
+        // The page shows the failure itself.
+      }
+    }
+
     return GroupedPage(
       title: localizations.networkDetection,
       onBack: () => Navigator.of(context).maybePop(),
-      trailing: GroupedBarAction(
-        glyph: AppGlyphs.refresh,
-        tooltip: localizations.ipQualityRetry,
-        onPressed: result.isLoading
-            ? null
-            : () => ref.invalidate(ipQualityProvider(ip)),
-      ),
-      body: GroupedBody(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              groupedRowPadding + 1,
-              0,
-              groupedRowPadding,
-              10,
-            ),
-            child: Text(
-              localizations.detectionTip,
-              style: palette.sectionLabel,
-            ),
-          ),
-          GroupedSection(
-            header: localizations.basicInfo,
-            children: [
-              _row(
-                context,
-                localizations.ipAddress,
-                value: hideIp ? ipMask : ip,
-                copyText: ip,
-              ),
-              if (failed)
+      trailing: _desktop
+          ? GroupedBarAction(
+              glyph: AppGlyphs.refresh,
+              tooltip: localizations.ipQualityRetry,
+              onPressed: result.isLoading ? null : refresh,
+            )
+          : null,
+      body: _pullToRefresh(
+        palette,
+        refresh,
+        GroupedBody(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            GroupedSection(
+              header: localizations.basicInfo,
+              children: [
                 _row(
                   context,
-                  localizations.ipType,
-                  trailing: Text(
-                    localizations.ipQualityFailed,
-                    style: palette.rowValue.copyWith(
-                      color: context.colorScheme.error,
-                    ),
-                  ),
-                )
-              else
-                ..._qualityRows(context, quality),
-            ],
-          ),
-          if (!failed) ...[
-            const SizedBox(height: groupedSectionGap),
-            GroupedSection(
-              header: localizations.network,
-              children: _networkRows(context, quality),
-            ),
-          ],
-          if (failed && error is IpQualityLookupException) ...[
-            const SizedBox(height: groupedSectionGap),
-            GroupedSection(
-              header: localizations.ipQualitySources,
-              children: [
-                for (final failure in error.failures)
+                  localizations.ipAddress,
+                  value: hideIp ? ipMask : ip,
+                  copyText: ip,
+                ),
+                if (failed)
                   _row(
                     context,
-                    failure.source.label,
-                    value: failure.status.label(context),
+                    localizations.ipType,
+                    trailing: Text(
+                      localizations.ipQualityFailed,
+                      style: palette.rowValue.copyWith(
+                        color: context.colorScheme.error,
+                      ),
+                    ),
+                  )
+                else
+                  ..._qualityRows(context, quality),
+              ],
+            ),
+            if (!failed) ...[
+              const SizedBox(height: groupedSectionGap),
+              GroupedSection(
+                header: localizations.network,
+                children: _networkRows(context, quality),
+              ),
+            ],
+            if (failed && error is IpQualityLookupException) ...[
+              const SizedBox(height: groupedSectionGap),
+              GroupedSection(
+                header: localizations.ipQualitySources,
+                children: [
+                  for (final failure in error.failures)
+                    _row(
+                      context,
+                      failure.source.label,
+                      value: failure.status.label(context),
+                    ),
+                ],
+              ),
+            ],
+            const SizedBox(height: groupedSectionGap),
+            GroupedSection(
+              header: localizations.other,
+              children: [
+                GroupedRow(
+                  title: localizations.hideIp,
+                  trailing: GroupedSwitch(
+                    value: hideIp,
+                    onChanged: (value) => ref
+                        .read(appSettingProvider.notifier)
+                        .update((state) => state.copyWith(hideIp: value)),
                   ),
+                ),
               ],
             ),
           ],
-          const SizedBox(height: groupedSectionGap),
-          GroupedSection(
-            header: localizations.other,
-            children: [
-              GroupedRow(
-                title: localizations.hideIp,
-                trailing: GroupedSwitch(
-                  value: hideIp,
-                  onChanged: (value) => ref
-                      .read(appSettingProvider.notifier)
-                      .update((state) => state.copyWith(hideIp: value)),
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -151,6 +174,11 @@ class IpQualityPage extends ConsumerWidget {
         _row(
           context,
           localizations.ipQualityLevel,
+          trailing: const SkeletonText(width: 40),
+        ),
+        _row(
+          context,
+          localizations.ipPurity,
           trailing: const SkeletonText(width: 40),
         ),
         _row(
@@ -177,6 +205,14 @@ class IpQualityPage extends ConsumerWidget {
         localizations.ipQualityLevel,
         trailing: Text(
           quality.level.label(context),
+          style: palette.rowValue.copyWith(color: quality.level.color(context)),
+        ),
+      ),
+      _row(
+        context,
+        localizations.ipPurity,
+        trailing: Text(
+          '${quality.purity}%',
           style: palette.rowValue.copyWith(color: quality.level.color(context)),
         ),
       ),
@@ -213,12 +249,6 @@ class IpQualityPage extends ConsumerWidget {
         value: textOf(asn),
         trailing: skeleton(56),
         copyText: asn,
-      ),
-      _row(
-        context,
-        localizations.ipQualitySource,
-        value: textOf(quality?.source.label),
-        trailing: skeleton(72),
       ),
     ];
   }

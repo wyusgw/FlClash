@@ -54,26 +54,6 @@ void main() {
     });
   });
 
-  group('isNodeInfoLine', () {
-    test('knows the lines of a subscription\'s notes', () {
-      for (final name in [
-        '🔄最后更新时间: 2026年10月20日',
-        '📉剩余流量: 888297.52 GB',
-        '📆套餐到期: 永久不过期',
-        '🚀温馨提示: 感到卡顿使用其他节点',
-        '🌍官方网站: www.example.com',
-        'Traffic remaining: 8 GB',
-      ]) {
-        expect(isNodeInfoLine(name), isTrue, reason: name);
-      }
-    });
-
-    test('leaves a real node alone', () {
-      expect(isNodeInfoLine('日本 01'), isFalse);
-      expect(isNodeInfoLine('HK-IPLC 03'), isFalse);
-    });
-  });
-
   group('hostRegionCode', () {
     test('reads a country or city off the labels ahead of the domain', () {
       expect(hostRegionCode('hk01.example.com'), 'HK');

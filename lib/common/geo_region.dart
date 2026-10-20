@@ -12,7 +12,14 @@ import 'path.dart';
 import 'print.dart';
 import 'subscription.dart';
 
-const _service = 'https://api.country.is/';
+typedef _Service = ({String url, String field});
+
+/// Asked in turn, so that one that is down or blocked does not leave a node
+/// without a flag.
+const _services = <_Service>[
+  (url: 'https://api.country.is/', field: 'country'),
+  (url: 'https://ipwho.is/', field: 'country_code'),
+];
 const _resolver = 'https://cloudflare-dns.com/dns-query';
 const _concurrency = 3;
 const _retryAfter = Duration(minutes: 10);
@@ -90,8 +97,29 @@ class GeoRegionResolver {
     }
     await _acquire();
     try {
+      String? country;
+      for (final service in _services) {
+        country = await _ask(service, address);
+        if (country != null) break;
+      }
+      if (country == null) {
+        _failed[host] = DateTime.now();
+        return null;
+      }
+      _cache[host] = country;
+      await _save();
+      return country;
+    } finally {
+      _release();
+    }
+  }
+
+  /// What one service says of [address]; null when it is down or has no
+  /// country, so that the next one is asked.
+  Future<String?> _ask(_Service service, InternetAddress address) async {
+    try {
       final response = await request.dio.get<Object?>(
-        '$_service${address.address}',
+        '${service.url}${address.address}',
         options: Options(
           responseType: ResponseType.json,
           sendTimeout: const Duration(seconds: 5),
@@ -99,20 +127,15 @@ class GeoRegionResolver {
         ),
       );
       final data = response.data;
-      final country = data is Map ? '${data['country'] ?? ''}' : '';
-      if (!RegExp(r'^[A-Za-z]{2}$').hasMatch(country)) {
-        _failed[host] = DateTime.now();
-        return null;
-      }
-      _cache[host] = country.toUpperCase();
-      await _save();
-      return _cache[host];
+      final country = data is Map ? '${data[service.field] ?? ''}' : '';
+      return RegExp(r'^[A-Za-z]{2}$').hasMatch(country)
+          ? country.toUpperCase()
+          : null;
     } on Object catch (error) {
-      commonPrint.log('geo region of $host failed: ${compactError(error)}');
-      _failed[host] = DateTime.now();
+      commonPrint.log(
+        'geo region of ${address.address} failed: ${compactError(error)}',
+      );
       return null;
-    } finally {
-      _release();
     }
   }
 

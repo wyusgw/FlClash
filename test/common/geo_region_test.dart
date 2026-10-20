@@ -25,6 +25,7 @@ class _GeoAdapter implements HttpClientAdapter {
   final requested = <String>[];
   Map<String, Object?> answers = const {};
   bool fail = false;
+  Set<String> down = const {};
   Map<String, List<String>> dns = const {};
 
   @override
@@ -34,7 +35,7 @@ class _GeoAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     requested.add(options.uri.toString());
-    if (fail) {
+    if (fail || down.contains(options.uri.host)) {
       throw DioException(
         requestOptions: options,
         type: DioExceptionType.connectionError,
@@ -57,6 +58,15 @@ class _GeoAdapter implements HttpClientAdapter {
       );
     }
     final ip = options.uri.pathSegments.last;
+    if (options.uri.host == 'ipwho.is') {
+      return ResponseBody.fromString(
+        jsonEncode({'ip': ip, 'success': true, 'country_code': 'KR'}),
+        200,
+        headers: {
+          Headers.contentTypeHeader: ['application/json'],
+        },
+      );
+    }
     final body = answers[ip] ?? {'ip': ip, 'country': 'JP'};
     return ResponseBody.fromString(
       jsonEncode(body),
@@ -161,10 +171,24 @@ void main() {
     expect(await resolver.resolve('4.4.4.4'), isNull);
     expect(await resolver.resolve('4.4.4.4'), isNull);
 
-    expect(adapter.requested, hasLength(1));
+    expect(adapter.requested, [
+      'https://api.country.is/4.4.4.4',
+      'https://ipwho.is/4.4.4.4',
+    ]);
+  });
+
+  test('asks the next service when the first is down', () async {
+    adapter.down = {'api.country.is'};
+
+    expect(await GeoRegionResolver().resolve('6.6.6.6'), 'KR');
+    expect(adapter.requested, [
+      'https://api.country.is/6.6.6.6',
+      'https://ipwho.is/6.6.6.6',
+    ]);
   });
 
   test('an answer that is no country code is no answer', () async {
+    adapter.down = {'ipwho.is'};
     adapter.answers = {
       '5.5.5.5': {'ip': '5.5.5.5', 'country': 'Narnia'},
     };

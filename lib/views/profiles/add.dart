@@ -476,6 +476,8 @@ class _NodeFormFieldsState extends ConsumerState<NodeFormFields> {
     final named = nodeRegionCode(_values['remark'] ?? '');
     if (named != null) return named;
     final host = _askedHost;
+    final byDomain = hostRegionCode(_values['address'] ?? '');
+    if (byDomain != null) return byDomain;
     if (host.isNotEmpty) {
       final located = ref.watch(nodeGeoRegionProvider(host)).value;
       if (located != null) return located;

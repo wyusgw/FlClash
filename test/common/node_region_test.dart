@@ -54,6 +54,28 @@ void main() {
     });
   });
 
+  group('hostRegionCode', () {
+    test('reads a country or city off the labels ahead of the domain', () {
+      expect(hostRegionCode('hk01.example.com'), 'HK');
+      expect(hostRegionCode('us-2.node.example.net'), 'US');
+      expect(hostRegionCode('node.sg.example.com'), 'SG');
+      expect(hostRegionCode('jp-tokyo.example.com'), 'JP');
+      expect(hostRegionCode('uk1.example.com'), 'GB');
+      expect(hostRegionCode('JPN3.example.com'), 'JP');
+      expect(hostRegionCode('tokyo.example.com'), 'JP');
+    });
+
+    test('leaves the registered domain, plain words and numbers alone', () {
+      expect(hostRegionCode('node.hk.com'), isNull);
+      expect(hostRegionCode('in.example.com'), isNull);
+      expect(hostRegionCode('id1.example.com'), isNull);
+      expect(hostRegionCode('203.0.113.9'), isNull);
+      expect(hostRegionCode('example.com'), isNull);
+      expect(hostRegionCode('::1'), isNull);
+      expect(hostRegionCode(''), isNull);
+    });
+  });
+
   group('nodeDisplayName', () {
     test('drops the flag emoji and the space after it', () {
       expect(nodeDisplayName('\u{1F1EF}\u{1F1F5} Tokyo 01'), 'Tokyo 01');

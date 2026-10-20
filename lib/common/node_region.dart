@@ -159,6 +159,40 @@ String? nodeRegionCode(String name) {
   return null;
 }
 
+// Words that are also two-letter country codes.
+const _plainWords = {'IN', 'ID', 'IT'};
+final _hostSplit = RegExp(r'[^a-z]+');
+
+/// The country a server's domain names, as an alpha-2 code, or null: `hk01.`,
+/// `us-2.`, `jp-tokyo.` or `node.sg.` ahead of the registered domain. An
+/// address that is a number says nothing.
+String? hostRegionCode(String host) {
+  final lower = host.toLowerCase().trim();
+  if (lower.isEmpty || lower.contains(':') || !lower.contains('.')) return null;
+  final labels = lower.split('.');
+  if (labels.every((label) => int.tryParse(label) != null)) return null;
+  final named = labels.length > 2
+      ? labels.sublist(0, labels.length - 2)
+      : [labels.first];
+  for (final label in named) {
+    for (final token in label.split(_hostSplit)) {
+      final upper = token.toUpperCase();
+      if (token.length == 2 &&
+          _knownCodes.contains(upper) &&
+          !_plainWords.contains(upper)) {
+        return upper == 'UK' ? 'GB' : upper;
+      }
+      final alpha3 = _alpha3[upper];
+      if (alpha3 != null) return alpha3;
+      if (token.length > 3) {
+        final city = _names[token];
+        if (city != null) return city;
+      }
+    }
+  }
+  return null;
+}
+
 /// The name without its flag emoji, which the round flag beside it already
 /// shows. A name that is nothing but flags stays as it is.
 String nodeDisplayName(String name) {

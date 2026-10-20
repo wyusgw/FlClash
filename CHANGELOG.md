@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.9.5 (2026-10-20)
+
+**Bug Fixes**
+
+- **region** Resolve the flag of a domain node behind a fake-IP resolver (6ae8d74)
+
+**Reverts**
+
+- **ui** Drop the icons that subscription info lines were given (1cb75dc)
+- **ui** Take back the flags and icons given to subscription info lines (a9c5345)
+
 ## v0.9.4 (2026-10-19)
 
 **Features**

@@ -2,6 +2,39 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "0.9.5",
+      "tag": "v0.9.5",
+      "date": "2026-10-20",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "6ae8d74",
+              "scope": "region",
+              "text": "Resolve the flag of a domain node behind a fake-IP resolver"
+            }
+          ]
+        },
+        {
+          "type": "revert",
+          "entries": [
+            {
+              "id": "1cb75dc",
+              "scope": "ui",
+              "text": "Drop the icons that subscription info lines were given"
+            },
+            {
+              "id": "a9c5345",
+              "scope": "ui",
+              "text": "Take back the flags and icons given to subscription info lines"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.9.4",
       "tag": "v0.9.4",
       "date": "2026-10-19",

@@ -473,8 +473,10 @@ class _NodeFormFieldsState extends ConsumerState<NodeFormFields> {
   /// What the server's name, then where its address is, then the address
   /// itself point at.
   String? get _detected {
-    final named = nodeRegionCode(_values['remark'] ?? '');
+    final remark = _values['remark'] ?? '';
+    final named = nodeRegionCode(remark);
     if (named != null) return named;
+    if (isNodeInfoLine(remark)) return null;
     final host = _askedHost;
     final byDomain = hostRegionCode(_values['address'] ?? '');
     if (byDomain != null) return byDomain;

@@ -159,6 +159,21 @@ String? nodeRegionCode(String name) {
   return null;
 }
 
+const _infoWords = [
+  '重置', '最后更新', '最後更新', '更新时间', '更新時間', '到期', '过期', '過期', //
+  '有效期', '流量', '官网', '官網', '网站', '網站', '提示', '公告', '通知', '套餐',
+  '客服', 'reset', 'last update', 'expire', 'traffic', 'remaining',
+  'bandwidth', 'website', 'notice', 'http://', 'https://',
+];
+
+/// Whether a "node" is really a line of the subscription's own notes, such as
+/// what is left of the traffic or when the plan ends. Such a line points at no
+/// server worth asking about, so its address says nothing of a country.
+bool isNodeInfoLine(String name) {
+  final lower = name.toLowerCase();
+  return _infoWords.any(lower.contains);
+}
+
 // Words that are also two-letter country codes.
 const _plainWords = {'IN', 'ID', 'IT'};
 final _hostSplit = RegExp(r'[^a-z]+');

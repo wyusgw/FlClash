@@ -32,7 +32,7 @@ class NodeIcon extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final host = hostOfAddress(address);
+    final host = isNodeInfoLine(name) ? null : hostOfAddress(address);
     var code =
         region ??
         nodeRegionCode(name) ??

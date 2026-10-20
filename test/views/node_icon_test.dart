@@ -84,6 +84,25 @@ void main() {
     expect(flag.flagCode, 'jp');
   });
 
+  testWidgets(
+    'a line of the subscription\'s notes is not placed by its address',
+    (tester) async {
+      await _pump(
+        tester,
+        '📆套餐到期: 永久不过期',
+        address: 'notes.example.com:443',
+        geo: {'notes.example.com': 'CN'},
+      );
+      await tester.pump();
+
+      expect(find.byType(CountryFlag), findsNothing);
+      expect(
+        tester.widget<GlyphIcon>(find.byType(GlyphIcon)).glyph,
+        AppGlyphs.home,
+      );
+    },
+  );
+
   testWidgets('until the lookup answers the house badge stands in', (
     tester,
   ) async {

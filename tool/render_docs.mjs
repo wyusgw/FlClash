@@ -95,6 +95,17 @@ function inline(text, source, page) {
   return s;
 }
 
+// A centred <picture> of the app, as the READMEs and guides open with. Its
+// images are the snapshots the site build copies to the site's root; the
+// light and dark ones are both written so the page's theme switch picks one.
+function renderPicture(block, page) {
+  const attr = (name) => block.match(new RegExp(`${name}="([^"]*)"`))?.[1] ?? '';
+  const img = (path, theme) =>
+    `<img class="${theme}" src="${escapeHtml(`${upFrom(page)}${posix.basename(path)}`)}" alt="${escapeHtml(attr('alt'))}" width="2400" height="1500" loading="lazy" decoding="async">`;
+  const dark = attr('srcset');
+  return `<figure class="shot">${img(attr('src'), 'light')}${dark ? img(dark, 'dark') : ''}</figure>`;
+}
+
 function renderTable(lines, source, page) {
   const cells = (line) => line.trim().replace(/^\||\|$/g, '').split('|').map((cell) => cell.trim());
   const head = cells(lines[0]);
@@ -113,6 +124,11 @@ function renderMarkdown(markdown, source, page) {
     const line = lines[i];
     if (!line.trim()) {
       i++;
+    } else if (line.startsWith('<p align="center">')) {
+      const block = [];
+      while (i < lines.length && !lines[i].includes('</p>')) block.push(lines[i++]);
+      block.push(lines[i++] ?? '');
+      html.push(renderPicture(block.join('\n'), page));
     } else if (line.startsWith('```')) {
       const lang = line.slice(3).trim();
       const code = [];

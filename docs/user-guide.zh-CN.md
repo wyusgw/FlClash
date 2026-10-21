@@ -2,6 +2,13 @@
 
 [English](user-guide.md) · **简体中文**
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="../snapshots/preview-zh-dark.png">
+    <img alt="FlClash 首页在 MacBook 与手机上的界面" src="../snapshots/preview-zh.png" width="92%">
+  </picture>
+</p>
+
 本指南从第一次启动讲到最常用的设置。界面名称按应用内的简体中文显示。安装方法见
 [下载](../README_zh_CN.md#下载)。
 

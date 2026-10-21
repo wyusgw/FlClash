@@ -256,3 +256,32 @@ a {
   margin-top: 40px;
   font-size: 0.9rem;
 }
+
+.shot {
+  margin: 24px 0 8px;
+}
+
+.shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.shot:has(.dark) .dark,
+:root[data-theme="dark"] .shot:has(.dark) .light {
+  display: none;
+}
+
+:root[data-theme="dark"] .shot .dark {
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .shot:has(.dark) .light {
+    display: none;
+  }
+
+  :root:not([data-theme="light"]) .shot .dark {
+    display: block;
+  }
+}

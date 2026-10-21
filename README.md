@@ -19,7 +19,7 @@ A multi-platform proxy client based on Xray-core. Simple to use, open source and
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="snapshots/preview-dark.png">
-    <img alt="FlClash dashboard on a MacBook and a phone" src="snapshots/preview.png" width="92%">
+    <img alt="FlClash home on a MacBook and a phone" src="snapshots/preview.png" width="92%">
   </picture>
 </p>
 

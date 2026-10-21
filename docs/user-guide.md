@@ -2,6 +2,13 @@
 
 **English** · [简体中文](user-guide.zh-CN.md)
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="../snapshots/preview-dark.png">
+    <img alt="FlClash home on a MacBook and a phone" src="../snapshots/preview.png" width="92%">
+  </picture>
+</p>
+
 This guide walks through FlClash from the first launch to the settings you will touch most. Screens are named by the
 labels the app shows in English; the other languages follow the same layout. To install the app, see
 [Download](../README.md#download).

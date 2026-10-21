@@ -228,6 +228,86 @@ void main() {
       );
     });
 
+    group('the swatch', () {
+      Finder swatch(String token) => find.byKey(ValueKey('swatch.$token'));
+
+      testWidgets('opens a palette to pick from, or a value to type', (
+        tester,
+      ) async {
+        await pumpThemeView(tester);
+        await openColors(tester);
+
+        await tester.tap(swatch('AccentColor'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ColorPickerDialog), findsOneWidget);
+        expect(find.byKey(const ValueKey('color.panel')), findsOneWidget);
+        expect(find.byKey(const ValueKey('color.hue')), findsOneWidget);
+        expect(find.byKey(const ValueKey('color.alpha')), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(ColorPickerDialog),
+            matching: find.byType(EditableText),
+          ),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('a typed value is kept on Confirm', (tester) async {
+        await pumpThemeView(tester);
+        await openColors(tester);
+
+        await tester.tap(swatch('AccentColor'));
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(EditableText), 'ff0000');
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Confirm'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ColorPickerDialog), findsNothing);
+        expect(find.text('#FF0000'), findsOneWidget);
+        expect(save(tester).onTap, isNotNull);
+      });
+
+      testWidgets('a drag on the panel moves the color and the value', (
+        tester,
+      ) async {
+        await pumpThemeView(tester);
+        await openColors(tester);
+
+        await tester.tap(swatch('AccentColor'));
+        await tester.pumpAndSettle();
+        final panel = find.byKey(const ValueKey('color.panel'));
+        await tester.tapAt(tester.getTopLeft(panel));
+        await tester.pumpAndSettle();
+
+        expect(
+          tester
+              .widget<EditableText>(find.byType(EditableText))
+              .controller
+              .text,
+          'FFFFFF',
+          reason: 'the top left of the panel is white',
+        );
+      });
+
+      testWidgets('Cancel leaves the color as it was', (tester) async {
+        await pumpThemeView(tester);
+        await openColors(tester);
+
+        await tester.tap(swatch('AccentColor'));
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(EditableText), 'ff0000');
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ColorPickerDialog), findsNothing);
+        expect(find.text('#007AFF'), findsOneWidget);
+        expect(save(tester).onTap, isNull);
+      });
+    });
+
     testWidgets('moving to another row applies the one being edited', (
       tester,
     ) async {

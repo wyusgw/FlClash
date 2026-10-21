@@ -3,6 +3,7 @@ export 'active_polling.dart';
 export 'animated_visibility.dart';
 export 'builder.dart';
 export 'caret_popup.dart';
+export 'color_picker.dart';
 export 'color_scheme_box.dart';
 export 'config_item.dart';
 export 'dialog.dart';

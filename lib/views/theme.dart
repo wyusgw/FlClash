@@ -177,7 +177,8 @@ class _ColorsItem extends ConsumerWidget {
 }
 
 /// Every color of the grouped pages for the look in use, as its hex value and
-/// name beside a swatch; a tap changes one and Save keeps the lot.
+/// name beside a swatch; a tap on the value types a new one, a tap on the
+/// swatch picks one from a palette, and Save keeps the lot.
 class AppearanceColorsView extends ConsumerStatefulWidget {
   const AppearanceColorsView({super.key});
 
@@ -311,6 +312,21 @@ class _AppearanceColorsViewState extends ConsumerState<AppearanceColorsView> {
     setState(() => _editing = token);
   }
 
+  /// Opens the picker on the color of the row, and keeps the pick if there is
+  /// one.
+  Future<void> _pick(GroupedColorToken token) async {
+    _commitEdit();
+    final color = await showColorPicker(
+      context,
+      color: _draft[token]!,
+      title: token.id,
+    );
+    if (!mounted || color == null) {
+      return;
+    }
+    setState(() => _draft = {..._draft, token: color});
+  }
+
   void _save() {
     _commitEdit();
     ref.read(themeSettingProvider.notifier).update((state) {
@@ -383,12 +399,20 @@ class _AppearanceColorsViewState extends ConsumerState<AppearanceColorsView> {
             : Text('#${colorHex(color)}', style: style, strutStyle: strut),
         title: token.id,
         subtitle: token.id,
-        trailing: DecoratedBox(
-          decoration: ShapeDecoration(
-            color: Color(color),
-            shape: CircleBorder(side: BorderSide(color: palette.tertiary)),
+        trailing: GestureDetector(
+          key: ValueKey('swatch.${token.id}'),
+          behavior: HitTestBehavior.opaque,
+          onTap: () => unawaited(_pick(token)),
+          child: Padding(
+            padding: const EdgeInsets.all(6),
+            child: DecoratedBox(
+              decoration: ShapeDecoration(
+                color: Color(color),
+                shape: CircleBorder(side: BorderSide(color: palette.tertiary)),
+              ),
+              child: const SizedBox.square(dimension: 20),
+            ),
           ),
-          child: const SizedBox.square(dimension: 20),
         ),
         onTap: () => _startEdit(token),
       ),

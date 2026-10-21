@@ -248,17 +248,18 @@ class _SaturationPanel extends StatelessWidget {
               children: [
                 Positioned.fill(
                   child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: outline),
+                    decoration: ShapeDecoration(
+                      shape: AppShape.all(
+                        8,
+                      ).copyWith(side: BorderSide(color: outline)),
                       gradient: LinearGradient(
                         colors: [const Color(0xFFFFFFFF), hue],
                       ),
                     ),
-                    child: const DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                        gradient: LinearGradient(
+                    child: DecoratedBox(
+                      decoration: ShapeDecoration(
+                        shape: AppShape.all(8),
+                        gradient: const LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [Color(0x00000000), Color(0xFF000000)],
@@ -318,12 +319,13 @@ class _BarSlider extends StatelessWidget {
               clipBehavior: Clip.none,
               children: [
                 Positioned.fill(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(9),
+                  child: ClipRSuperellipse(
+                    borderRadius: AppRadius.all(9),
                     child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: outline),
-                        borderRadius: BorderRadius.circular(9),
+                      decoration: ShapeDecoration(
+                        shape: AppShape.all(
+                          9,
+                        ).copyWith(side: BorderSide(color: outline)),
                       ),
                       child: Stack(
                         fit: StackFit.expand,

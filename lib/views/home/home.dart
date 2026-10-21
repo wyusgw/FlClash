@@ -941,6 +941,10 @@ class _NodeMenuTarget extends ConsumerWidget {
     final appLocalizations = context.appLocalizations;
     final overlay =
         Overlay.of(context).context.findRenderObject()! as RenderBox;
+    final box = context.findRenderObject() as RenderBox?;
+    final rect = box != null && box.hasSize
+        ? box.localToGlobal(Offset.zero) & box.size
+        : null;
     final testUrl = ref.read(appSettingProvider).testUrl;
     final chosen = system.isDesktop
         ? await _showDesktopMenu(context, overlay, position)
@@ -948,6 +952,8 @@ class _NodeMenuTarget extends ConsumerWidget {
             context: context,
             title: node.name,
             anchor: position,
+            preview: rect == null ? null : child,
+            previewRect: rect,
             groups: [
               if (current)
                 [

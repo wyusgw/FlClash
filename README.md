@@ -122,15 +122,15 @@ clash://install-config?url=<URL-encoded subscription link>
 activity with one of these actions:
 
 ```text
-com.follow.clash.action.START
-com.follow.clash.action.STOP
-com.follow.clash.action.TOGGLE
+com.flclash.action.START
+com.flclash.action.STOP
+com.flclash.action.TOGGLE
 ```
 
 From a computer, the same works over adb:
 
 ```bash
-adb shell am start -a com.follow.clash.action.TOGGLE
+adb shell am start -a com.flclash.action.TOGGLE
 ```
 
 ## Build from source

@@ -59,6 +59,66 @@ void main() {
     expect(find.text('one test'), findsNothing);
   });
 
+  testWidgets('the buttons come into view one by one as the row is drawn', (
+    tester,
+  ) async {
+    await pump(tester);
+    double opacityOf(String label) {
+      final fade = find.ancestor(
+        of: find.text(label),
+        matching: find.byType(Opacity),
+      );
+      return fade.evaluate().isEmpty
+          ? 1
+          : tester.widget<Opacity>(fade.first).opacity;
+    }
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('one')),
+    );
+    await gesture.moveBy(const Offset(-30, 0));
+    await tester.pump();
+    await gesture.moveBy(const Offset(-30, 0));
+    await tester.pump();
+
+    expect(opacityOf('one delete'), greaterThan(0));
+    expect(opacityOf('one delete'), lessThan(1));
+    expect(
+      opacityOf('one qr'),
+      lessThan(opacityOf('one delete')),
+      reason: 'the one further in follows the one at the edge',
+    );
+
+    await gesture.moveBy(const Offset(-200, 0));
+    await tester.pump();
+    expect(opacityOf('one delete'), 1);
+    expect(opacityOf('one qr'), 1);
+    await gesture.up();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('closing a row lets its buttons fade out before it is shut', (
+    tester,
+  ) async {
+    await pump(tester);
+    await tester.drag(find.text('one'), const Offset(-200, 0));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('one'), warnIfMissed: false);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 280));
+
+    final fade = find.ancestor(
+      of: find.text('one qr'),
+      matching: find.byType(Opacity),
+    );
+    expect(fade, findsOneWidget, reason: 'still on its way out, not yet gone');
+    expect(tester.widget<Opacity>(fade).opacity, lessThan(1));
+
+    await tester.pumpAndSettle();
+    expect(find.text('one qr'), findsNothing);
+  });
+
   testWidgets('a short drag springs back shut', (tester) async {
     await pump(tester);
 

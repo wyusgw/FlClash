@@ -39,6 +39,13 @@ const _gap = 8.0;
 const _fullSwipeFraction = 0.55;
 const _fullSwipeVelocity = 2000.0;
 const _pastExtentResistance = 0.6;
+const _closeDuration = Duration(milliseconds: 340);
+
+/// How much of a button's width has to come into view for it to be whole;
+/// until then it fades and grows in, and on the way shut it does the same
+/// backwards, one button after another from the one nearest the row.
+const _buttonRevealShare = 0.9;
+const _buttonRestScale = 0.82;
 
 double _extent(List<SwipeAction> actions) =>
     actions.isEmpty ? 0 : actions.length * (_buttonWidth + _gap) + _gap;
@@ -118,8 +125,10 @@ class _SwipeActionsState extends State<SwipeActions>
   void _animateTo(double target) {
     _offset.animateTo(
       target,
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
+      duration: target == 0
+          ? _closeDuration
+          : const Duration(milliseconds: 220),
+      curve: target == 0 ? Curves.easeInOutCubic : Curves.easeOutCubic,
     );
     if (target == 0) {
       if (_open == this) _open = null;
@@ -205,16 +214,50 @@ class _SwipeActionsState extends State<SwipeActions>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              for (final action in actions)
-                _button(
-                  action,
-                  stretch: action == stretch,
-                  alignRow:
-                      action == stretch && alignment == Alignment.centerRight,
+              for (final (index, action) in actions.indexed)
+                _faded(
+                  // A button stretched across a full swipe is whole already.
+                  progress: stretch != null
+                      ? 1
+                      : _progressOf(
+                          // Counted from the edge the buttons sit against.
+                          alignment == Alignment.centerRight
+                              ? actions.length - 1 - index
+                              : index,
+                          reveal,
+                        ),
+                  child: _button(
+                    action,
+                    stretch: action == stretch,
+                    alignRow:
+                        action == stretch && alignment == Alignment.centerRight,
+                  ),
                 ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// How far the button [slot] places from the screen's edge has come into
+  /// view, from 0 to 1, once [reveal] of the row has been drawn aside.
+  double _progressOf(int slot, double reveal) {
+    final start = _gap + slot * (_buttonWidth + _gap);
+    return Curves.easeOut.transform(
+      ((reveal - start) / (_buttonWidth * _buttonRevealShare)).clamp(0.0, 1.0),
+    );
+  }
+
+  Widget _faded({required double progress, required Widget child}) {
+    if (progress >= 1) {
+      return child;
+    }
+    return Opacity(
+      opacity: progress,
+      child: Transform.scale(
+        scale: _buttonRestScale + (1 - _buttonRestScale) * progress,
+        child: child,
       ),
     );
   }

@@ -333,6 +333,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "copy": MessageLookupByLibrary.simpleMessage("Copy"),
     "copyAddress": MessageLookupByLibrary.simpleMessage("Copy address"),
     "copyColorLink": MessageLookupByLibrary.simpleMessage("Copy link"),
+    "copyDiagnostics": MessageLookupByLibrary.simpleMessage("Copy diagnostics"),
     "copyEnvVar": MessageLookupByLibrary.simpleMessage(
       "Copy environment variables",
     ),
@@ -402,6 +403,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "developerModeEnableTip": MessageLookupByLibrary.simpleMessage(
       "Developer mode is enabled.",
     ),
+    "dialogTest": MessageLookupByLibrary.simpleMessage("Dialog test"),
+    "dialogTestTip": MessageLookupByLibrary.simpleMessage("This is a dialog."),
     "direct": MessageLookupByLibrary.simpleMessage("Direct"),
     "directDns": MessageLookupByLibrary.simpleMessage("Direct DNS"),
     "directDnsDesc": MessageLookupByLibrary.simpleMessage(
@@ -437,6 +440,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "editorUnavailable": MessageLookupByLibrary.simpleMessage(
       "Editor unavailable",
     ),
+    "emptyStatesTest": MessageLookupByLibrary.simpleMessage("Empty states"),
     "emptyTip": m8,
     "en": MessageLookupByLibrary.simpleMessage("English"),
     "enabled": MessageLookupByLibrary.simpleMessage("Enabled"),
@@ -505,6 +509,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "hapticFeedbackDesc": MessageLookupByLibrary.simpleMessage(
       "Vibrates when you turn the proxy on or off, switch pages from the bottom bar or drag the scrollbar",
     ),
+    "hapticTest": MessageLookupByLibrary.simpleMessage("Haptic test"),
     "headerType": MessageLookupByLibrary.simpleMessage("Header type"),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
       "Helper service unavailable; TUN mode cannot be enabled. Reinstall FlClash to restore it.",

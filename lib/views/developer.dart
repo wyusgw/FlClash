@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -7,9 +8,23 @@ import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/widgets/haptics.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+/// What a bug report needs to know about the build and where it runs.
+String _diagnostics() {
+  final info = globalState.packageInfo;
+  return [
+    'FlClash ${info.version} (${info.buildNumber})',
+    'env: ${kDebugMode ? 'debug' : globalState.appEnv}',
+    'platform: ${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
+    'locale: ${Platform.localeName}',
+  ].join('\n');
+}
 
 class DeveloperView extends ConsumerWidget {
   const DeveloperView({super.key});
@@ -41,6 +56,42 @@ class DeveloperView extends ConsumerWidget {
                       '[$i]${generateRandomString(maxLength: 200, minLength: 20)}',
                     ),
                   );
+            }
+          },
+        ),
+        GroupedRow(
+          title: appLocalizations.dialogTest,
+          onTap: () => unawaited(
+            dialogs.showMessage(
+              message: TextSpan(text: appLocalizations.dialogTestTip),
+            ),
+          ),
+        ),
+        GroupedRow(
+          title: appLocalizations.hapticTest,
+          onTap: () {
+            selectionHaptic(context);
+            Timer(const Duration(milliseconds: 400), () {
+              if (context.mounted) {
+                toggleHaptic(context);
+              }
+            });
+          },
+        ),
+        GroupedRow(
+          title: appLocalizations.emptyStatesTest,
+          chevron: true,
+          onTap: () => BaseNavigator.push(context, const EmptyStatesView()),
+        ),
+        GroupedRow(
+          title: appLocalizations.copyDiagnostics,
+          onTap: () async {
+            await Clipboard.setData(ClipboardData(text: _diagnostics()));
+            if (context.mounted) {
+              context.showNotifier(
+                appLocalizations.copySuccess,
+                level: MessageLevel.success,
+              );
             }
           },
         ),
@@ -109,6 +160,51 @@ class DeveloperView extends ConsumerWidget {
           ),
           const SizedBox(height: groupedSectionGap),
           _getDeveloperList(context, ref),
+        ],
+      ),
+    );
+  }
+}
+
+/// Every empty-state illustration with its name, to look them over at once.
+class EmptyStatesView extends StatelessWidget {
+  const EmptyStatesView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    return GroupedPage(
+      title: context.appLocalizations.emptyStatesTest,
+      onBack: () => Navigator.of(context).maybePop(),
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(
+          groupedPageInset,
+          13,
+          groupedPageInset,
+          20 + BottomInsetScope.of(context),
+        ),
+        children: [
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 16,
+            children: [
+              for (final type in NullStatusIllustration.values)
+                SizedBox(
+                  width: 96,
+                  child: Column(
+                    children: [
+                      EmptyIllustration(type: type, dimension: 72),
+                      Text(
+                        type.name,
+                        style: palette.caption,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ],
       ),
     );

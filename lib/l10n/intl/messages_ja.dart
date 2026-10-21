@@ -284,6 +284,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "copy": MessageLookupByLibrary.simpleMessage("コピー"),
     "copyAddress": MessageLookupByLibrary.simpleMessage("アドレスをコピー"),
     "copyColorLink": MessageLookupByLibrary.simpleMessage("リンクをコピー"),
+    "copyDiagnostics": MessageLookupByLibrary.simpleMessage("診断情報をコピー"),
     "copyEnvVar": MessageLookupByLibrary.simpleMessage("環境変数をコピー"),
     "copyJson": MessageLookupByLibrary.simpleMessage("JSON をコピー"),
     "copyLink": MessageLookupByLibrary.simpleMessage("リンクをコピー"),
@@ -341,6 +342,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "developerModeEnableTip": MessageLookupByLibrary.simpleMessage(
       "開発者モードが有効になりました。",
     ),
+    "dialogTest": MessageLookupByLibrary.simpleMessage("ダイアログテスト"),
+    "dialogTestTip": MessageLookupByLibrary.simpleMessage("これはダイアログです。"),
     "direct": MessageLookupByLibrary.simpleMessage("ダイレクト"),
     "directDns": MessageLookupByLibrary.simpleMessage("直接接続 DNS"),
     "directDnsDesc": MessageLookupByLibrary.simpleMessage(
@@ -372,6 +375,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "editServer": MessageLookupByLibrary.simpleMessage("サーバーを編集"),
     "editSsid": MessageLookupByLibrary.simpleMessage("SSIDを編集"),
     "editorUnavailable": MessageLookupByLibrary.simpleMessage("エディターを利用できません"),
+    "emptyStatesTest": MessageLookupByLibrary.simpleMessage("空の状態"),
     "emptyTip": m8,
     "en": MessageLookupByLibrary.simpleMessage("英語"),
     "enabled": MessageLookupByLibrary.simpleMessage("有効"),
@@ -436,6 +440,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "hapticFeedbackDesc": MessageLookupByLibrary.simpleMessage(
       "プロキシをオン・オフしたとき、下部バーでページを切り替えたとき、スクロールバーをドラッグしたときに振動します",
     ),
+    "hapticTest": MessageLookupByLibrary.simpleMessage("触覚テスト"),
     "headerType": MessageLookupByLibrary.simpleMessage("ヘッダータイプ"),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
       "Helper サービスが利用できないため、TUN モードを有効にできません。FlClash を再インストールしてください。",

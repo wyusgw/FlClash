@@ -260,6 +260,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "copy": MessageLookupByLibrary.simpleMessage("复制"),
     "copyAddress": MessageLookupByLibrary.simpleMessage("复制地址"),
     "copyColorLink": MessageLookupByLibrary.simpleMessage("复制网址"),
+    "copyDiagnostics": MessageLookupByLibrary.simpleMessage("复制诊断信息"),
     "copyEnvVar": MessageLookupByLibrary.simpleMessage("复制环境变量"),
     "copyJson": MessageLookupByLibrary.simpleMessage("复制 JSON"),
     "copyLink": MessageLookupByLibrary.simpleMessage("复制链接"),
@@ -313,6 +314,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "detectionTip": MessageLookupByLibrary.simpleMessage("依赖第三方api，仅供参考"),
     "developerMode": MessageLookupByLibrary.simpleMessage("开发者模式"),
     "developerModeEnableTip": MessageLookupByLibrary.simpleMessage("开发者模式已启用。"),
+    "dialogTest": MessageLookupByLibrary.simpleMessage("对话框测试"),
+    "dialogTestTip": MessageLookupByLibrary.simpleMessage("这是一个对话框。"),
     "direct": MessageLookupByLibrary.simpleMessage("直连"),
     "directDns": MessageLookupByLibrary.simpleMessage("直连 DNS"),
     "directDnsDesc": MessageLookupByLibrary.simpleMessage(
@@ -340,6 +343,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "editServer": MessageLookupByLibrary.simpleMessage("编辑服务器"),
     "editSsid": MessageLookupByLibrary.simpleMessage("编辑SSID"),
     "editorUnavailable": MessageLookupByLibrary.simpleMessage("编辑器不可用"),
+    "emptyStatesTest": MessageLookupByLibrary.simpleMessage("空状态预览"),
     "emptyTip": m8,
     "en": MessageLookupByLibrary.simpleMessage("英语"),
     "enabled": MessageLookupByLibrary.simpleMessage("已开启"),
@@ -398,6 +402,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "hapticFeedbackDesc": MessageLookupByLibrary.simpleMessage(
       "开启或关闭代理、从底部栏切换页面或拖动滚动条时振动",
     ),
+    "hapticTest": MessageLookupByLibrary.simpleMessage("触觉测试"),
     "headerType": MessageLookupByLibrary.simpleMessage("伪装类型"),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
       "Helper 服务不可用，无法启用 TUN 模式，请重新安装 FlClash。",

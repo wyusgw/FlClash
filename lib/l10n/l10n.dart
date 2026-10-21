@@ -3790,6 +3790,46 @@ class AppLocalizations {
     return Intl.message('Logs test', name: 'logsTest', desc: '', args: []);
   }
 
+  /// `Dialog test`
+  String get dialogTest {
+    return Intl.message('Dialog test', name: 'dialogTest', desc: '', args: []);
+  }
+
+  /// `This is a dialog.`
+  String get dialogTestTip {
+    return Intl.message(
+      'This is a dialog.',
+      name: 'dialogTestTip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Haptic test`
+  String get hapticTest {
+    return Intl.message('Haptic test', name: 'hapticTest', desc: '', args: []);
+  }
+
+  /// `Empty states`
+  String get emptyStatesTest {
+    return Intl.message(
+      'Empty states',
+      name: 'emptyStatesTest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy diagnostics`
+  String get copyDiagnostics {
+    return Intl.message(
+      'Copy diagnostics',
+      name: 'copyDiagnostics',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `{label} cannot be empty`
   String emptyTip(Object label) {
     return Intl.message(

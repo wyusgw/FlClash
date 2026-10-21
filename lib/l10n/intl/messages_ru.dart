@@ -344,6 +344,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "copy": MessageLookupByLibrary.simpleMessage("Копировать"),
     "copyAddress": MessageLookupByLibrary.simpleMessage("Копировать адрес"),
     "copyColorLink": MessageLookupByLibrary.simpleMessage("Копировать ссылку"),
+    "copyDiagnostics": MessageLookupByLibrary.simpleMessage(
+      "Копировать диагностику",
+    ),
     "copyEnvVar": MessageLookupByLibrary.simpleMessage(
       "Копировать переменные окружения",
     ),
@@ -411,6 +414,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "developerModeEnableTip": MessageLookupByLibrary.simpleMessage(
       "Режим разработчика включён.",
     ),
+    "dialogTest": MessageLookupByLibrary.simpleMessage("Тест диалога"),
+    "dialogTestTip": MessageLookupByLibrary.simpleMessage("Это диалог."),
     "direct": MessageLookupByLibrary.simpleMessage("Прямой"),
     "directDns": MessageLookupByLibrary.simpleMessage("Прямой DNS"),
     "directDnsDesc": MessageLookupByLibrary.simpleMessage(
@@ -448,6 +453,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "editorUnavailable": MessageLookupByLibrary.simpleMessage(
       "Редактор недоступен",
     ),
+    "emptyStatesTest": MessageLookupByLibrary.simpleMessage("Пустые состояния"),
     "emptyTip": m8,
     "en": MessageLookupByLibrary.simpleMessage("Английский"),
     "enabled": MessageLookupByLibrary.simpleMessage("Включено"),
@@ -520,6 +526,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "hapticFeedbackDesc": MessageLookupByLibrary.simpleMessage(
       "Вибрация при включении и выключении прокси, переключении страниц на нижней панели и перетаскивании полосы прокрутки",
     ),
+    "hapticTest": MessageLookupByLibrary.simpleMessage("Тест вибрации"),
     "headerType": MessageLookupByLibrary.simpleMessage("Тип заголовка"),
     "helperCorruptTip": MessageLookupByLibrary.simpleMessage(
       "Служба Helper недоступна, поэтому TUN-режим включить нельзя. Переустановите FlClash.",

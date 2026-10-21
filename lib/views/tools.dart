@@ -253,9 +253,12 @@ class LanguageView extends ConsumerWidget {
         trailing: locale == current
             ? GlyphIcon(AppGlyphs.check, size: 18, color: palette.icon)
             : null,
-        onTap: () => ref
-            .read(appSettingProvider.notifier)
-            .update((state) => state.copyWith(locale: locale?.toString())),
+        onTap: () {
+          ref
+              .read(appSettingProvider.notifier)
+              .update((state) => state.copyWith(locale: locale?.toString()));
+          Navigator.of(context).maybePop();
+        },
       );
     }
 
@@ -366,16 +369,11 @@ class SidebarView extends ConsumerWidget {
       selected: ref.watch(
         appSettingProvider.select((state) => state.showSidebar),
       ),
-      onSelected: (show) {
-        ref
-            .read(appSettingProvider.notifier)
-            .update((state) => state.copyWith(showSidebar: show));
-        // Opened without a sidebar, this page covers the whole window; the
-        // sidebar can only appear once it is out of the way.
-        if (show) {
-          Navigator.of(context).maybePop();
-        }
-      },
+      // Opened without a sidebar, this page covers the whole window; the
+      // sidebar can only appear once the pick has closed it.
+      onSelected: (show) => ref
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(showSidebar: show)),
     );
   }
 }

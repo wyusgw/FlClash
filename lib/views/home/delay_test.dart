@@ -57,9 +57,14 @@ class DelayMethodView extends ConsumerWidget {
                           color: palette.icon,
                         )
                       : null,
-                  onTap: () => ref
-                      .read(appSettingProvider.notifier)
-                      .update((state) => state.copyWith(delayTestMethod: item)),
+                  onTap: () {
+                    ref
+                        .read(appSettingProvider.notifier)
+                        .update(
+                          (state) => state.copyWith(delayTestMethod: item),
+                        );
+                    Navigator.of(context).maybePop();
+                  },
                 ),
             ],
           ),

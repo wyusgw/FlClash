@@ -243,7 +243,7 @@ class GroupedBody extends StatelessWidget {
   }
 }
 
-/// A page of choices with the one in use checked.
+/// A page of choices with the one in use checked; a pick closes the page.
 class GroupedChoicePage<T> extends StatelessWidget {
   const GroupedChoicePage({
     super.key,
@@ -279,7 +279,10 @@ class GroupedChoicePage<T> extends StatelessWidget {
                           color: palette.icon,
                         )
                       : null,
-                  onTap: () => onSelected(entry.key),
+                  onTap: () {
+                    onSelected(entry.key);
+                    Navigator.of(context).maybePop();
+                  },
                 ),
             ],
           ),
@@ -290,7 +293,8 @@ class GroupedChoicePage<T> extends StatelessWidget {
 }
 
 /// A page of On and Off with the one in use checked and an explanation under
-/// them, for an option whose row on the page before shows only its state.
+/// them, for an option whose row on the page before shows only its state; a
+/// pick closes the page.
 class GroupedTogglePage extends ConsumerWidget {
   const GroupedTogglePage({
     super.key,
@@ -318,7 +322,10 @@ class GroupedTogglePage extends ConsumerWidget {
         trailing: value == choice
             ? GlyphIcon(AppGlyphs.check, size: 18, color: palette.icon)
             : null,
-        onTap: () => write(ref, choice),
+        onTap: () {
+          write(ref, choice);
+          Navigator.of(context).maybePop();
+        },
       );
     }
 

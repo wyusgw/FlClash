@@ -56,8 +56,10 @@ class RouteModeView extends ConsumerWidget {
                           color: palette.icon,
                         )
                       : null,
-                  onTap: () =>
-                      ref.read(setupActionProvider.notifier).changeMode(item),
+                  onTap: () {
+                    ref.read(setupActionProvider.notifier).changeMode(item);
+                    Navigator.of(context).maybePop();
+                  },
                 ),
             ],
           ),

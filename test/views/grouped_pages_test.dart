@@ -374,11 +374,7 @@ void main() {
 
         await tester.tap(find.widgetWithText(GroupedRow, l10n.on).last);
         await tester.pumpAndSettle();
-        expect(checkIn(l10n.on), findsOneWidget);
-        expect(checkIn(l10n.off), findsNothing);
-
-        await tester.tap(find.byTooltip(l10n.back));
-        await tester.pumpAndSettle();
+        expect(find.byType(GroupedTogglePage), findsNothing);
       }
 
       final setting = container.read(appSettingProvider);
@@ -699,28 +695,27 @@ void main() {
       expect(find.byType(ToolsView), findsOneWidget);
     });
 
-    testWidgets('the delay test method opens its page and a pick sticks', (
-      tester,
-    ) async {
-      await pumpPage(tester, const ToolsView());
-      expect(find.text('Delay test method'), findsOneWidget);
-      expect(find.text('TCP'), findsOneWidget);
+    testWidgets(
+      'the delay test method opens its page and a pick sticks and goes back',
+      (tester) async {
+        await pumpPage(tester, const ToolsView());
+        expect(find.text('Delay test method'), findsOneWidget);
+        expect(find.text('TCP'), findsOneWidget);
 
-      await tester.tap(find.text('Delay test method'));
-      await tester.pumpAndSettle();
-      expect(find.byType(DelayMethodView), findsOneWidget);
+        await tester.tap(find.text('Delay test method'));
+        await tester.pumpAndSettle();
+        expect(find.byType(DelayMethodView), findsOneWidget);
 
-      await tester.tap(find.text('CONNECT'));
-      await tester.pumpAndSettle();
-      expect(
-        container.read(appSettingProvider).delayTestMethod,
-        DelayTestMethod.url,
-      );
-
-      await tester.tap(find.byTooltip('Back'));
-      await tester.pumpAndSettle();
-      expect(find.text('CONNECT'), findsOneWidget);
-    });
+        await tester.tap(find.text('CONNECT'));
+        await tester.pumpAndSettle();
+        expect(
+          container.read(appSettingProvider).delayTestMethod,
+          DelayTestMethod.url,
+        );
+        expect(find.byType(DelayMethodView), findsNothing);
+        expect(find.text('CONNECT'), findsOneWidget);
+      },
+    );
 
     testWidgets('the language page goes back', (tester) async {
       await pumpPage(tester, const ToolsView());
@@ -826,8 +821,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(container.read(appSettingProvider).clipboardDetection, isTrue);
-      await tester.tap(find.byTooltip(l10n.back));
-      await tester.pumpAndSettle();
+      expect(find.byType(ClipboardView), findsNothing);
       expect(
         find.descendant(
           of: find.widgetWithText(GroupedRow, l10n.clipboard),

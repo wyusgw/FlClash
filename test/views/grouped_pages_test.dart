@@ -653,6 +653,26 @@ void main() {
       expect(find.text('Developer mode'), findsOneWidget);
     });
 
+    testWidgets('the languages list English with the Chinese ones under it', (
+      tester,
+    ) async {
+      await pumpPage(tester, const ToolsView());
+
+      await tester.tap(find.text('Language'));
+      await tester.pumpAndSettle();
+
+      final keys = [
+        for (final row in tester.widgetList<GroupedRow>(
+          find.descendant(
+            of: find.byType(LanguageView),
+            matching: find.byType(GroupedRow),
+          ),
+        ))
+          (row.key as ValueKey).value?.toString(),
+      ];
+      expect(keys, [null, 'en', 'zh_CN', 'zh_TW', 'ja', 'ru']);
+    });
+
     testWidgets('picking a language checks it and stores it', (tester) async {
       await pumpPage(tester, const ToolsView());
 

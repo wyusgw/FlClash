@@ -1186,5 +1186,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "whitelistMode": MessageLookupByLibrary.simpleMessage("Whitelist mode"),
     "yearsAgo": m32,
     "zhCN": MessageLookupByLibrary.simpleMessage("Simplified Chinese"),
+    "zhTW": MessageLookupByLibrary.simpleMessage("Traditional Chinese"),
   };
 }

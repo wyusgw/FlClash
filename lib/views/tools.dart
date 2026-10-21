@@ -234,6 +234,18 @@ String get _platformName => system.isMacOS
     ? 'WINDOWS'
     : 'LINUX';
 
+/// The languages with English first and the two Chinese ones under it, the
+/// others after them in the order given.
+List<Locale> _languageOrder(List<Locale> locales) {
+  const first = ['en', 'zh_CN', 'zh_TW'];
+  int rank(Locale locale) {
+    final index = first.indexOf(locale.toString());
+    return index == -1 ? first.length + locales.indexOf(locale) : index;
+  }
+
+  return [...locales]..sort((a, b) => rank(a).compareTo(rank(b)));
+}
+
 /// Every language the app has, with the one in use checked; the first entry
 /// follows the system.
 class LanguageView extends ConsumerWidget {
@@ -276,7 +288,9 @@ class LanguageView extends ConsumerWidget {
           GroupedSection(
             children: [
               row(null),
-              for (final locale in AppLocalizations.delegate.supportedLocales)
+              for (final locale in _languageOrder(
+                AppLocalizations.delegate.supportedLocales,
+              ))
                 row(locale),
             ],
           ),

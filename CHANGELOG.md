@@ -1,5 +1,35 @@
 # Changelog
 
+## v0.9.6 (2026-10-21)
+
+**Breaking Changes**
+
+- **android** Android sees com.flclash as another app, so it does not update an installed com.follow.clash and does not carry its data over. Intents sent to com.follow.clash.action.* need the new prefix. (34f8bdc)
+
+**Features**
+
+- **rules** A new config page sets up routing rules from presets, or starts an empty config (cc411a7)
+- **l10n** Traditional Chinese (10eef50)
+- **settings** The language setting shows a globe icon (1df4f17)
+- **home** Long-pressing a node lifts it and opens its menu beside it, as on iOS (832c850)
+- **ui** Access control and other pages load with the iOS spinner (2050d8a)
+- **ui** Empty pages show a plain iOS-style glyph (09d0b42)
+- **ui** Swipe actions fade out one by one as a row slides shut (058ffc4)
+- **android** The Android app is now installed as com.flclash, beside rather than over the old com.follow.clash (34f8bdc)
+- **ui** Appearance colors can be picked from a palette as well as typed (a8eebf2)
+- **ui** Choice pages close as soon as an option is picked (d50465c)
+- **region** Read a node's country off its domain (64f69c2)
+
+**Bug Fixes**
+
+- **data** The network check row shows a long IPv6 address shortened instead of filling the row (8f1ceeb)
+- **region** Do not place a line of the subscription's notes by its address (c7b243d)
+- **region** Ask a second GeoIP service when the first has no answer (8dffd5f)
+
+**Reverts**
+
+- **region** Place a line of the subscription's notes by its own address again (4e25d75)
+
 ## v0.9.5 (2026-10-20)
 
 **Bug Fixes**

@@ -2,6 +2,114 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "0.9.6",
+      "tag": "v0.9.6",
+      "date": "2026-10-21",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "breaking",
+          "entries": [
+            {
+              "id": "34f8bdc",
+              "scope": "android",
+              "text": "Android sees com.flclash as another app, so it does not update an installed com.follow.clash and does not carry its data over. Intents sent to com.follow.clash.action.* need the new prefix."
+            }
+          ]
+        },
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "cc411a7",
+              "scope": "rules",
+              "text": "A new config page sets up routing rules from presets, or starts an empty config"
+            },
+            {
+              "id": "10eef50",
+              "scope": "l10n",
+              "text": "Traditional Chinese"
+            },
+            {
+              "id": "1df4f17",
+              "scope": "settings",
+              "text": "The language setting shows a globe icon"
+            },
+            {
+              "id": "832c850",
+              "scope": "home",
+              "text": "Long-pressing a node lifts it and opens its menu beside it, as on iOS"
+            },
+            {
+              "id": "2050d8a",
+              "scope": "ui",
+              "text": "Access control and other pages load with the iOS spinner"
+            },
+            {
+              "id": "09d0b42",
+              "scope": "ui",
+              "text": "Empty pages show a plain iOS-style glyph"
+            },
+            {
+              "id": "058ffc4",
+              "scope": "ui",
+              "text": "Swipe actions fade out one by one as a row slides shut"
+            },
+            {
+              "id": "34f8bdc",
+              "scope": "android",
+              "text": "The Android app is now installed as com.flclash, beside rather than over the old com.follow.clash"
+            },
+            {
+              "id": "a8eebf2",
+              "scope": "ui",
+              "text": "Appearance colors can be picked from a palette as well as typed"
+            },
+            {
+              "id": "d50465c",
+              "scope": "ui",
+              "text": "Choice pages close as soon as an option is picked"
+            },
+            {
+              "id": "64f69c2",
+              "scope": "region",
+              "text": "Read a node's country off its domain"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "8f1ceeb",
+              "scope": "data",
+              "text": "The network check row shows a long IPv6 address shortened instead of filling the row"
+            },
+            {
+              "id": "c7b243d",
+              "scope": "region",
+              "text": "Do not place a line of the subscription's notes by its address"
+            },
+            {
+              "id": "8dffd5f",
+              "scope": "region",
+              "text": "Ask a second GeoIP service when the first has no answer"
+            }
+          ]
+        },
+        {
+          "type": "revert",
+          "entries": [
+            {
+              "id": "4e25d75",
+              "scope": "region",
+              "text": "Place a line of the subscription's notes by its own address again"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.9.5",
       "tag": "v0.9.5",
       "date": "2026-10-20",

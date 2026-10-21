@@ -110,6 +110,7 @@ final _glyphs = {
   'blur': AppGlyphs.blur,
   'textSize': AppGlyphs.textSize,
   'language': AppGlyphs.language,
+  'globe': AppGlyphs.globe,
   'keyboard': AppGlyphs.keyboard,
   'photos': AppGlyphs.photos,
   'camera': AppGlyphs.camera,

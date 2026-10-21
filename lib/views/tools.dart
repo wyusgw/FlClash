@@ -65,7 +65,7 @@ class ToolsView extends ConsumerWidget {
           GroupedSection(
             children: [
               GroupedRow(
-                leading: const GroupedIcon(AppGlyphs.language),
+                leading: const GroupedIcon(AppGlyphs.globe),
                 title: appLocalizations.language,
                 value: locale == null
                     ? appLocalizations.defaultText

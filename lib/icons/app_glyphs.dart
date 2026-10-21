@@ -1539,6 +1539,23 @@ abstract final class AppGlyphs {
     ], role: GlyphRole.detail),
   ]);
 
+  static const globe = Glyph([
+    GlyphCircle(12, 12, 8.8),
+    GlyphOval(8.2, 3.2, 15.8, 20.8, role: GlyphRole.detail),
+    GlyphPolyline([
+      GlyphVertex(3.2, 12),
+      GlyphVertex(20.8, 12),
+    ], role: GlyphRole.detail),
+    GlyphPolyline([
+      GlyphVertex(4.4, 7.6),
+      GlyphVertex(19.6, 7.6),
+    ], role: GlyphRole.detail),
+    GlyphPolyline([
+      GlyphVertex(4.4, 16.4),
+      GlyphVertex(19.6, 16.4),
+    ], role: GlyphRole.detail),
+  ]);
+
   static const keyboard = Glyph([
     GlyphBox(3, 4.6, 21, 19.4, 2.8),
     GlyphCircle(6.75, 8.3, 1.1, role: GlyphRole.detail, solid: true),

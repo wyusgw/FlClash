@@ -43,7 +43,7 @@ function structuredData(t, page) {
     inLanguage: page.locale,
     applicationCategory: 'UtilitiesApplication',
     operatingSystem: 'Android, Windows, macOS, Linux',
-    image: `${siteUrl}preview.png`,
+    image: `${siteUrl}preview-en.png`,
     downloadUrl: `${REPO}/releases/latest`,
     ...(latest ? { softwareVersion: latest.version, dateModified: latest.date || undefined } : {}),
     license: 'https://www.gnu.org/licenses/gpl-3.0.html',
@@ -64,7 +64,7 @@ function render(page) {
   html = replaceOnce(html, /<title>[^<]*<\/title>/, `<title>${text('pageTitle')}</title>`);
   html = replaceOnce(html, /(<meta name="description" content=")[^"]*/, `$1${text('pageDescription')}`);
   html = replaceOnce(html, /(<meta property="og:description" content=")[^"]*/, `$1${text('pageDescription')}`);
-  html = replaceOnce(html, /(<meta property="og:image" content=")[^"]*/, `$1${siteUrl}preview.png`);
+  html = replaceOnce(html, /(<meta property="og:image" content=")[^"]*/, `$1${siteUrl}preview-en.png`);
   const alternates = PAGES.map(
     (p) => `  <link rel="alternate" hreflang="${p.locale}" href="${siteUrl}${p.path}">`,
   ).join('\n');
@@ -103,7 +103,7 @@ function render(page) {
   }
 
   // The preview shows the app in the page's language.
-  if (page.lang === 'zh') html = html.replace(/\b(src|srcset)="preview(-dark)?\.png"/g, '$1="preview-zh$2.png"');
+  if (page.lang === 'zh') html = html.replace(/\b(src|srcset)="preview-en(-dark)?\.png"/g, '$1="preview-zh$2.png"');
   if (up) html = html.replace(/\b(href|src|srcset)="(?![a-z]+:|#|\/)/g, `$1="${up}`);
   if (page.lang === 'zh') html = html.replace(/href="\.\.\/docs\/(user-guide\/)?"/g, (_, guide) => `href="docs/${guide ?? ''}"`);
   return replaceOnce(

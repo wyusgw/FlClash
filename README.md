@@ -6,7 +6,7 @@
 
 A multi-platform proxy client based on Xray-core. Simple to use, open source and ad-free.
 
-**English** · [简体中文](README_zh_CN.md)
+**English** · [简体中文](README_zh_CN.md) · [繁體中文](README_zh_TW.md)
 
 [![Release](https://img.shields.io/github/v/release/wyusgw/FlClash?style=flat-square&label=release)](https://github.com/wyusgw/FlClash/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/wyusgw/FlClash/total?style=flat-square&logo=github)](https://github.com/wyusgw/FlClash/releases)

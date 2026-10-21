@@ -9,10 +9,12 @@ if (!out || !siteArg || !root) {
 const siteUrl = new URL(siteArg.replace(/\/*$/, '/')).href;
 const REPO = 'https://github.com/wyusgw/FlClash';
 
-// Each document, the page it becomes, and the page that is its translation.
+// Each document, the page it becomes, and the documents that are its translations.
+const USER_GUIDES = ['docs/user-guide.md', 'docs/user-guide.zh-CN.md', 'docs/user-guide.zh-TW.md'];
 const DOCS = [
-  { source: 'docs/user-guide.md', page: 'docs/user-guide/', lang: 'en', pair: 'docs/user-guide.zh-CN.md' },
-  { source: 'docs/user-guide.zh-CN.md', page: 'zh/docs/user-guide/', lang: 'zh', pair: 'docs/user-guide.md' },
+  { source: 'docs/user-guide.md', page: 'docs/user-guide/', lang: 'en', pairs: USER_GUIDES.filter((s) => s !== 'docs/user-guide.md') },
+  { source: 'docs/user-guide.zh-CN.md', page: 'zh/docs/user-guide/', lang: 'zh', pairs: USER_GUIDES.filter((s) => s !== 'docs/user-guide.zh-CN.md') },
+  { source: 'docs/user-guide.zh-TW.md', page: 'zh-tw/docs/user-guide/', lang: 'zh-tw', pairs: USER_GUIDES.filter((s) => s !== 'docs/user-guide.zh-TW.md') },
   { source: 'CONTRIBUTING.md', page: 'docs/contributing/', lang: 'en' },
   { source: 'docs/architecture.md', page: 'docs/architecture/', lang: 'en' },
 ];
@@ -27,6 +29,7 @@ const INDEXES = [
     entries: [
       ['docs/user-guide.md', 'User guide', 'Adding servers, routing rules, DNS, TUN, hotkeys, backup and troubleshooting.'],
       ['docs/user-guide.zh-CN.md', '用户指南(简体中文)', 'The user guide in Simplified Chinese.'],
+      ['docs/user-guide.zh-TW.md', '使用指南(繁體中文)', 'The user guide in Traditional Chinese.'],
       ['CONTRIBUTING.md', 'Contributing', 'Building, testing, commit messages and releasing.'],
       ['docs/architecture.md', 'Architecture', 'How the app, the Go core and the native services fit together.'],
     ],
@@ -38,15 +41,31 @@ const INDEXES = [
     intro: 'FlClash 的使用、构建与开发文档。',
     entries: [
       ['docs/user-guide.zh-CN.md', '使用指南', '添加服务器、路由规则、DNS、虚拟网卡、快捷键、备份与常见问题。'],
+      ['docs/user-guide.zh-TW.md', '使用指南(繁體中文)', '使用指南的繁體中文版。'],
       ['CONTRIBUTING.md', '贡献指南(英文)', '构建、测试、提交信息与发布流程。'],
       ['docs/architecture.md', '架构说明(英文)', '应用、Go 内核与原生服务如何配合。'],
     ],
   },
+  {
+    lang: 'zh-tw',
+    page: 'zh-tw/docs/',
+    title: '文件',
+    intro: 'FlClash 的使用、建置與開發文件。',
+    entries: [
+      ['docs/user-guide.zh-TW.md', '使用指南', '新增伺服器、路由規則、DNS、虛擬網路卡、快捷鍵、備份與常見問題。'],
+      ['docs/user-guide.zh-CN.md', '使用指南(简体中文)', '使用指南的簡體中文版。'],
+      ['CONTRIBUTING.md', '貢獻指南(英文)', '建置、測試、提交資訊與發佈流程。'],
+      ['docs/architecture.md', '架構說明(英文)', '應用、Go 核心與原生服務如何配合。'],
+    ],
+  },
 ];
 
+// The site's home page has an English and a Simplified Chinese version; the
+// Traditional Chinese pages send the reader to the Simplified one.
 const LABELS = {
-  en: { home: 'Home', docs: 'Documentation', github: 'GitHub', edit: 'Edit this page on GitHub', toc: 'On this page', other: '简体中文', otherLang: 'zh-CN' },
-  zh: { home: '首页', docs: '文档', github: 'GitHub', edit: '在 GitHub 上编辑此页', toc: '本页内容', other: 'English', otherLang: 'en' },
+  en: { html: 'en', name: 'English', home: 'Home', docs: 'Documentation', github: 'GitHub', edit: 'Edit this page on GitHub', toc: 'On this page', root: '', docsRoot: 'docs/' },
+  zh: { html: 'zh-CN', name: '简体中文', home: '首页', docs: '文档', github: 'GitHub', edit: '在 GitHub 上编辑此页', toc: '本页内容', root: 'zh/', docsRoot: 'zh/docs/' },
+  'zh-tw': { html: 'zh-TW', name: '繁體中文', home: '首頁', docs: '文件', github: 'GitHub', edit: '在 GitHub 上編輯此頁', toc: '本頁內容', root: 'zh/', docsRoot: 'zh-tw/docs/' },
 };
 
 const escapeHtml = (text) =>
@@ -71,8 +90,8 @@ function resolveLink(url, source, fromPage) {
   const target = posix.normalize(posix.join(posix.dirname(source), path));
   const up = upFrom(fromPage);
   if (PAGE_OF.has(target)) return `${up}${PAGE_OF.get(target)}${anchor}`;
-  if (target === 'README.md' || target === 'README_zh_CN.md') {
-    if (anchor === '#download' || anchor === '#下载') {
+  if (target === 'README.md' || target === 'README_zh_CN.md' || target === 'README_zh_TW.md') {
+    if (anchor === '#download' || anchor === '#下载' || anchor === '#下載') {
       return `${up}${target === 'README.md' ? '' : 'zh/'}#download`;
     }
     return `${REPO}/blob/main/${target}${anchor}`;
@@ -170,20 +189,22 @@ function renderMarkdown(markdown, source, page) {
 
 const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('flclash.theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}})();`;
 
-function layout({ page, lang, title, description, body, headings = [], source, alternate }) {
+function layout({ page, lang, title, description, body, headings = [], source, alternates = [] }) {
   const up = upFrom(page);
   const L = LABELS[lang];
-  const docsHome = `${up}${lang === 'zh' ? 'zh/' : ''}docs/`;
+  const docsHome = `${up}${L.docsRoot}`;
   const toc = headings.length
     ? `<nav class="toc" aria-label="${escapeHtml(L.toc)}"><p>${escapeHtml(L.toc)}</p><ul>${headings.map((h) => `<li><a href="#${h.id}">${escapeHtml(h.text)}</a></li>`).join('')}</ul></nav>`
     : '';
-  const hreflang = alternate
-    ? `\n  <link rel="alternate" hreflang="${lang === 'zh' ? 'zh-CN' : 'en'}" href="${siteUrl}${page}">\n  <link rel="alternate" hreflang="${L.otherLang}" href="${siteUrl}${alternate}">`
+  const hreflang = alternates.length
+    ? [`\n  <link rel="alternate" hreflang="${L.html}" href="${siteUrl}${page}">`, ...alternates.map(({ page: alt, lang: other }) => `  <link rel="alternate" hreflang="${LABELS[other].html}" href="${siteUrl}${alt}">`)].join('\n')
     : '';
-  const switcher = alternate ? `<a class="lang" href="${up}${alternate}" hreflang="${L.otherLang}" lang="${L.otherLang}">${escapeHtml(L.other)}</a>` : '';
+  const switcher = alternates
+    .map(({ page: alt, lang: other }) => `<a class="lang" href="${up}${alt}" hreflang="${LABELS[other].html}" lang="${LABELS[other].html}">${escapeHtml(LABELS[other].name)}</a>`)
+    .join('\n      ');
   const edit = source ? `<p class="edit"><a href="${REPO}/blob/main/${source}">${escapeHtml(L.edit)}</a></p>` : '';
   return `<!doctype html>
-<html lang="${lang === 'zh' ? 'zh-CN' : 'en'}">
+<html lang="${L.html}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -197,9 +218,9 @@ function layout({ page, lang, title, description, body, headings = [], source, a
 </head>
 <body>
   <header class="bar">
-    <a class="brand" href="${up}${lang === 'zh' ? 'zh/' : ''}"><img src="${up}icon.png" alt="" width="28" height="28"><span>FlClash</span></a>
+    <a class="brand" href="${up}${L.root}"><img src="${up}icon.png" alt="" width="28" height="28"><span>FlClash</span></a>
     <nav>
-      <a href="${up}${lang === 'zh' ? 'zh/' : ''}">${escapeHtml(L.home)}</a>
+      <a href="${up}${L.root}">${escapeHtml(L.home)}</a>
       <a href="${docsHome}">${escapeHtml(L.docs)}</a>
       <a href="${REPO}">${escapeHtml(L.github)}</a>
       ${switcher}
@@ -242,7 +263,7 @@ for (const doc of DOCS) {
       body: html,
       headings,
       source: doc.source,
-      alternate: doc.pair ? PAGE_OF.get(doc.pair) : undefined,
+      alternates: (doc.pairs ?? []).map((pair) => ({ page: PAGE_OF.get(pair), lang: DOCS.find((d) => d.source === pair).lang })),
     }),
   );
   pages.push(doc.page);

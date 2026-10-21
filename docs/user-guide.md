@@ -1,6 +1,6 @@
 # User guide
 
-**English** · [简体中文](user-guide.zh-CN.md)
+**English** · [简体中文](user-guide.zh-CN.md) · [繁體中文](user-guide.zh-TW.md)
 
 <p align="center">
   <picture>

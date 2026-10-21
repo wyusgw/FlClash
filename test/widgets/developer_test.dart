@@ -28,4 +28,28 @@ void main() {
       );
     });
   });
+
+  group('developer page entry', () {
+    test('is listed for debug and dev builds without the logo tap', () {
+      expect(
+        GlobalState.alwaysShowDeveloperFor(isDebug: true, appEnv: 'stable'),
+        isTrue,
+      );
+      expect(
+        GlobalState.alwaysShowDeveloperFor(isDebug: false, appEnv: 'dev'),
+        isTrue,
+      );
+    });
+
+    test('stays behind the logo tap for pre and stable release builds', () {
+      expect(
+        GlobalState.alwaysShowDeveloperFor(isDebug: false, appEnv: 'pre'),
+        isFalse,
+      );
+      expect(
+        GlobalState.alwaysShowDeveloperFor(isDebug: false, appEnv: 'stable'),
+        isFalse,
+      );
+    });
+  });
 }

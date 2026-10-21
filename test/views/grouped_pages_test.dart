@@ -529,7 +529,14 @@ void main() {
       expect(find.text('Appearance'), findsOneWidget);
       expect(find.widgetWithText(GroupedRow, 'General'), findsOneWidget);
       expect(find.widgetWithText(GroupedRow, 'About'), findsOneWidget);
-      expect(find.text('Developer mode'), findsNothing);
+    });
+
+    testWidgets('lists the developer page at once in a debug build', (
+      tester,
+    ) async {
+      await pumpPage(tester, const ToolsView());
+
+      expect(find.text('Developer mode'), findsOneWidget);
     });
 
     testWidgets('groups the rows under their own headings, in order', (
@@ -638,19 +645,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(DnsView), findsOneWidget);
-    });
-
-    testWidgets('the developer page shows once developer mode is on', (
-      tester,
-    ) async {
-      await pumpPage(tester, const ToolsView());
-
-      container
-          .read(appSettingProvider.notifier)
-          .update((state) => state.copyWith(developerMode: true));
-      await tester.pump();
-
-      expect(find.text('Developer mode'), findsOneWidget);
     });
 
     testWidgets('the languages list English with the Chinese ones under it', (

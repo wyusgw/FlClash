@@ -32,6 +32,19 @@ class GlobalState {
     return isDebug || appEnv == 'dev';
   }
 
+  /// Whether the settings list the developer page without the logo being
+  /// tapped open first: a debug or dev build is one a developer runs.
+  bool get alwaysShowDeveloper =>
+      kDebugMode || alwaysShowDeveloperFor(isDebug: false, appEnv: appEnv);
+
+  @visibleForTesting
+  static bool alwaysShowDeveloperFor({
+    required bool isDebug,
+    required String appEnv,
+  }) {
+    return isDebug || appEnv == 'dev';
+  }
+
   String? lastConfigMd5;
   VpnState? lastVpnState;
   bool isAttach = false;

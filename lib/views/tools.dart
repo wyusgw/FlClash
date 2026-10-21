@@ -3,6 +3,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/about.dart';
 import 'package:fl_clash/views/access.dart';
 import 'package:fl_clash/views/config/dns.dart';
@@ -100,7 +101,7 @@ class ToolsView extends ConsumerWidget {
                   title: appLocalizations.hotkeyManagement,
                   page: const HotKeyView(),
                 ),
-              if (appSetting.developerMode)
+              if (appSetting.developerMode || globalState.alwaysShowDeveloper)
                 _open(
                   context,
                   glyph: AppGlyphs.cpu,

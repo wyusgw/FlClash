@@ -248,7 +248,7 @@ class _AccessViewState extends ConsumerState<AccessView> {
       builder: (context, snapshot) {
         final appLocalizations = context.appLocalizations;
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(child: CommonCircleLoading());
+          return const Center(child: IosSpinner());
         }
         final allSelected =
             packages.isNotEmpty &&

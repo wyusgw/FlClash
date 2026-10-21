@@ -217,10 +217,7 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
                   message: appLocalizations.batteryOptimizationStatusTip,
                 ),
               if (!isStart && isLoading)
-                const SizedBox.square(
-                  dimension: 16,
-                  child: CommonCircleLoading(),
-                )
+                const IosSpinner(size: 16)
               else
                 _buildStatus(authorized: disabled, muted: isStart),
             ],

@@ -581,10 +581,7 @@ class _EditorBody extends StatelessWidget {
               ? Container(
                   color: context.colorScheme.surface,
                   alignment: Alignment.center,
-                  child: const SizedBox.square(
-                    dimension: 200,
-                    child: CommonCircleLoading(),
-                  ),
+                  child: const IosSpinner(size: 28),
                 )
               : const SizedBox.shrink(),
         ),

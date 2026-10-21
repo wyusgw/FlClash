@@ -13,7 +13,6 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/widgets/fade_box.dart';
 import 'package:fl_clash/widgets/grouped_input.dart';
-import 'package:fl_clash/widgets/loading.dart';
 import 'package:fl_clash/widgets/grouped_list.dart';
 import 'package:fl_clash/widgets/grouped_page.dart';
 import 'package:fl_clash/widgets/ios_controls.dart';
@@ -244,11 +243,7 @@ class _DavConnectionIndicator extends StatelessWidget {
         return Center(
           child: FadeThroughBox(
             child: isConnected == null
-                ? const SizedBox(
-                    width: 12,
-                    height: 12,
-                    child: CommonCircleLoading(),
-                  )
+                ? const IosSpinner(size: 12)
                 : Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,

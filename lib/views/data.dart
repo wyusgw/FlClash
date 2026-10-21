@@ -52,7 +52,10 @@ class _DataViewState extends ConsumerState<DataView> {
     final info = entry.value;
     final Widget trailing;
     if (info != null) {
-      trailing = Text(hideIp ? ipMask : info.ip, style: palette.rowValue);
+      trailing = Text(
+        hideIp ? ipMask : shortIp(info.ip),
+        style: palette.rowValue,
+      );
     } else if (entry.phase == ProbePhase.failed) {
       trailing = Text('—', style: palette.rowValue);
     } else {

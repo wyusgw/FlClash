@@ -13,6 +13,19 @@ import 'labels.dart';
 
 const ipMask = '*****';
 
+/// [ip] as one row can hold it: an IPv6 address keeps only its leading
+/// groups, an IPv4 address is returned whole.
+String shortIp(String ip) {
+  if (!ip.contains(':')) {
+    return ip;
+  }
+  final groups = ip.split(':').takeWhile((group) => group.isNotEmpty).toList();
+  if (groups.length <= 3) {
+    return ip;
+  }
+  return '${groups.take(3).join(':')}:…';
+}
+
 /// What the third-party lookups say about [ip]: its type and quality, the
 /// network it belongs to and which source answered.
 class IpQualityPage extends ConsumerWidget {

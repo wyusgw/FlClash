@@ -698,5 +698,14 @@
   "directDnsDesc": "中国本土のドメインとノード自身のアドレスを直接問い合わせます。上にあるものから優先して使います。",
   "configureDns": "DNS を構成",
   "manual": "手動",
-  "addServer": "サーバを追加"
+  "addServer": "サーバを追加",
+  "quickConfig": "新しい設定",
+  "quickConfigDesc": "追加するルールを選び、既存の設定か新しい設定に入れます。設定にあるルールより前に置かれるため、両方に一致する場合はこちらが優先されます。何も選ばなければ空の設定を作り、ルールを手で追加できます。",
+  "applyTo": "適用先",
+  "newConfig": "新しい設定",
+  "presetLan": "ローカルネットワーク",
+  "presetMainlandChina": "中国本土",
+  "presetAds": "広告",
+  "presetForeign": "海外サイト",
+  "presetWinSpy": "Windows テレメトリ"
 }

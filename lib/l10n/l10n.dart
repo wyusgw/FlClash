@@ -5449,6 +5449,71 @@ class AppLocalizations {
   String get addServer {
     return Intl.message('Add Server', name: 'addServer', desc: '', args: []);
   }
+
+  /// `New config`
+  String get quickConfig {
+    return Intl.message('New config', name: 'quickConfig', desc: '', args: []);
+  }
+
+  /// `Tick the rules to add, then put them into a config you already have or into a new one. They go in front of the config's own rules, so they win where both match. Tick none to start an empty config and write its rules by hand.`
+  String get quickConfigDesc {
+    return Intl.message(
+      'Tick the rules to add, then put them into a config you already have or into a new one. They go in front of the config\'s own rules, so they win where both match. Tick none to start an empty config and write its rules by hand.',
+      name: 'quickConfigDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Apply to`
+  String get applyTo {
+    return Intl.message('Apply to', name: 'applyTo', desc: '', args: []);
+  }
+
+  /// `New config`
+  String get newConfig {
+    return Intl.message('New config', name: 'newConfig', desc: '', args: []);
+  }
+
+  /// `Local network`
+  String get presetLan {
+    return Intl.message('Local network', name: 'presetLan', desc: '', args: []);
+  }
+
+  /// `Mainland China`
+  String get presetMainlandChina {
+    return Intl.message(
+      'Mainland China',
+      name: 'presetMainlandChina',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ads`
+  String get presetAds {
+    return Intl.message('Ads', name: 'presetAds', desc: '', args: []);
+  }
+
+  /// `Sites abroad`
+  String get presetForeign {
+    return Intl.message(
+      'Sites abroad',
+      name: 'presetForeign',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Windows telemetry`
+  String get presetWinSpy {
+    return Intl.message(
+      'Windows telemetry',
+      name: 'presetWinSpy',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -173,6 +173,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Дизайн значка приложения",
     ),
     "appearance": MessageLookupByLibrary.simpleMessage("Оформление"),
+    "applyTo": MessageLookupByLibrary.simpleMessage("Применить к"),
     "archive": MessageLookupByLibrary.simpleMessage("Архив"),
     "archiveDesc": MessageLookupByLibrary.simpleMessage(
       "Каждый запуск ядра сохраняется здесь после его завершения.",
@@ -770,6 +771,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "networkType": MessageLookupByLibrary.simpleMessage("Тип сети"),
     "neutralScheme": MessageLookupByLibrary.simpleMessage("Нейтральная"),
+    "newConfig": MessageLookupByLibrary.simpleMessage("Новая конфигурация"),
     "nextMatch": MessageLookupByLibrary.simpleMessage("Следующее совпадение"),
     "no": MessageLookupByLibrary.simpleMessage("Нет"),
     "noData": MessageLookupByLibrary.simpleMessage("Нет данных"),
@@ -847,6 +849,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "prerequisites": MessageLookupByLibrary.simpleMessage(
       "Предварительные условия",
     ),
+    "presetAds": MessageLookupByLibrary.simpleMessage("Реклама"),
+    "presetForeign": MessageLookupByLibrary.simpleMessage("Зарубежные сайты"),
+    "presetLan": MessageLookupByLibrary.simpleMessage("Локальная сеть"),
+    "presetMainlandChina": MessageLookupByLibrary.simpleMessage(
+      "Материковый Китай",
+    ),
+    "presetWinSpy": MessageLookupByLibrary.simpleMessage("Телеметрия Windows"),
     "pressKeyboard": MessageLookupByLibrary.simpleMessage(
       "Нажмите сочетание клавиш",
     ),
@@ -893,6 +902,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "qrcode": MessageLookupByLibrary.simpleMessage("QR-код"),
     "qrcodeDesc": MessageLookupByLibrary.simpleMessage(
       "Сканируйте QR-код, чтобы получить профиль",
+    ),
+    "quickConfig": MessageLookupByLibrary.simpleMessage("Новая конфигурация"),
+    "quickConfigDesc": MessageLookupByLibrary.simpleMessage(
+      "Отметьте правила и добавьте их в существующую конфигурацию или в новую. Они ставятся перед собственными правилами конфигурации и имеют приоритет при совпадении. Если ничего не отмечать, создаётся пустая конфигурация, правила в которую вы добавляете вручную.",
     ),
     "quitFromMenuBar": MessageLookupByLibrary.simpleMessage(
       "Выйти из строки меню",

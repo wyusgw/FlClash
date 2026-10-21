@@ -698,5 +698,14 @@
   "directDnsDesc": "用于中国大陆域名和节点自身的地址，直接查询。排在前面的优先使用。",
   "configureDns": "配置 DNS",
   "manual": "手动",
-  "addServer": "添加服务器"
+  "addServer": "添加服务器",
+  "quickConfig": "新建配置",
+  "quickConfigDesc": "勾选要添加的规则，再放进已有的配置或新建一个。它们会排在配置原有规则之前，两边都命中时以它们为准。不勾选则新建空白配置，再手动添加规则。",
+  "applyTo": "应用到",
+  "newConfig": "新建配置",
+  "presetLan": "局域网",
+  "presetMainlandChina": "中国大陆",
+  "presetAds": "广告",
+  "presetForeign": "海外网站",
+  "presetWinSpy": "Windows 遥测"
 }

@@ -698,5 +698,14 @@
   "directDnsDesc": "Looks up mainland China domains and the nodes' own addresses, asked directly. The first one is tried first.",
   "configureDns": "Configure DNS",
   "manual": "Manual",
-  "addServer": "Add Server"
+  "addServer": "Add Server",
+  "quickConfig": "New config",
+  "quickConfigDesc": "Tick the rules to add, then put them into a config you already have or into a new one. They go in front of the config's own rules, so they win where both match. Tick none to start an empty config and write its rules by hand.",
+  "applyTo": "Apply to",
+  "newConfig": "New config",
+  "presetLan": "Local network",
+  "presetMainlandChina": "Mainland China",
+  "presetAds": "Ads",
+  "presetForeign": "Sites abroad",
+  "presetWinSpy": "Windows telemetry"
 }

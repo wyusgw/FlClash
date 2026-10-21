@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/common/xray_rules.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:flutter/gestures.dart' show kSecondaryButton;
 import 'package:fl_clash/models/models.dart';
@@ -92,6 +93,112 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('the quick config opens from the rule configs', (tester) async {
+    await pumpView(tester);
+
+    await tester.tap(find.text('New config'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(QuickRulesView), findsOneWidget);
+    InkResponse save() =>
+        tester.widget<InkResponse>(find.widgetWithText(InkResponse, 'Save'));
+    expect(save().onTap, isNotNull, reason: 'a new config may start empty');
+
+    await tester.tap(rowOf('Work'));
+    await tester.pump();
+    expect(save().onTap, isNull, reason: 'nothing to add to a config');
+  });
+
+  testWidgets('a new config can be made empty and filled by hand', (
+    tester,
+  ) async {
+    await pumpView(tester, page: const QuickRulesView());
+
+    await tester.enterText(find.byType(EditableText), 'Mine');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(sets(), hasLength(2));
+    expect(sets().last.label, 'Mine');
+    expect(sets().last.rules, isEmpty);
+    expect(find.byType(RuleSetView), findsOneWidget);
+    expect(find.text('No rules yet'), findsOneWidget);
+  });
+
+  testWidgets('the quick config sorts the rules by where they go', (
+    tester,
+  ) async {
+    await pumpView(tester, page: const QuickRulesView());
+
+    for (final header in ['Direct', 'Reject', 'Proxy', 'Apply to']) {
+      expect(find.text(header), findsOneWidget, reason: header);
+    }
+    expect(
+      tester.getTopLeft(find.text('Direct')).dy,
+      lessThan(tester.getTopLeft(find.text('Reject')).dy),
+    );
+    expect(
+      tester.getTopLeft(find.text('Reject')).dy,
+      lessThan(tester.getTopLeft(find.text('Proxy')).dy),
+    );
+    for (final name in [
+      'Ads',
+      'HTTPDNS',
+      'QUIC',
+      'Windows telemetry',
+      'Local network',
+      'Mainland China',
+      'Google',
+    ]) {
+      expect(find.text(name), findsOneWidget, reason: name);
+    }
+  });
+
+  testWidgets('ticked rules go in front of an existing config', (tester) async {
+    await pumpView(tester, page: const QuickRulesView());
+
+    await tester.tap(find.text('Ads'));
+    await tester.tap(find.text('Telegram'));
+    await tester.tap(rowOf('Work'));
+    await tester.pump();
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(sets().single.rules, [
+      ...RulePreset.ads.rules,
+      ...RulePreset.telegram.rules,
+      ..._set.rules,
+    ]);
+    expect(find.byType(RuleSetView), findsOneWidget);
+  });
+
+  testWidgets('ticked rules can make a new config instead', (tester) async {
+    await pumpView(tester, page: const QuickRulesView());
+
+    await tester.tap(find.text('Local network'));
+    await tester.pump();
+    expect(find.byType(EditableText), findsOneWidget);
+    await tester.enterText(find.byType(EditableText), 'Home');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(sets(), hasLength(2));
+    expect(sets().first, _set, reason: 'the config there is left alone');
+    expect(sets().last.label, 'Home');
+    expect(sets().last.rules, RulePreset.lan.rules);
+  });
+
+  testWidgets('a new config with no name is called New config', (tester) async {
+    await pumpView(tester, page: const QuickRulesView());
+
+    await tester.tap(find.text('Ads'));
+    await tester.pump();
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(sets().last.label, 'New config');
   });
 
   testWidgets('a rule set lists its rules with where each goes', (

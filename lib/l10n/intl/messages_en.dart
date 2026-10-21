@@ -166,6 +166,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "appIconDesign": MessageLookupByLibrary.simpleMessage("App icon design"),
     "appearance": MessageLookupByLibrary.simpleMessage("Appearance"),
+    "applyTo": MessageLookupByLibrary.simpleMessage("Apply to"),
     "archive": MessageLookupByLibrary.simpleMessage("Archive"),
     "archiveDesc": MessageLookupByLibrary.simpleMessage(
       "Each run of the core is kept here when it ends.",
@@ -745,6 +746,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "networkType": MessageLookupByLibrary.simpleMessage("Network type"),
     "neutralScheme": MessageLookupByLibrary.simpleMessage("Neutral"),
+    "newConfig": MessageLookupByLibrary.simpleMessage("New config"),
     "nextMatch": MessageLookupByLibrary.simpleMessage("Next match"),
     "no": MessageLookupByLibrary.simpleMessage("No"),
     "noData": MessageLookupByLibrary.simpleMessage("No data"),
@@ -818,6 +820,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "portHopping": MessageLookupByLibrary.simpleMessage("Port hopping"),
     "portTip": m25,
     "prerequisites": MessageLookupByLibrary.simpleMessage("Prerequisites"),
+    "presetAds": MessageLookupByLibrary.simpleMessage("Ads"),
+    "presetForeign": MessageLookupByLibrary.simpleMessage("Sites abroad"),
+    "presetLan": MessageLookupByLibrary.simpleMessage("Local network"),
+    "presetMainlandChina": MessageLookupByLibrary.simpleMessage(
+      "Mainland China",
+    ),
+    "presetWinSpy": MessageLookupByLibrary.simpleMessage("Windows telemetry"),
     "pressKeyboard": MessageLookupByLibrary.simpleMessage(
       "Press a key combination",
     ),
@@ -864,6 +873,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "qrcode": MessageLookupByLibrary.simpleMessage("QR code"),
     "qrcodeDesc": MessageLookupByLibrary.simpleMessage(
       "Scan a QR code to obtain a profile",
+    ),
+    "quickConfig": MessageLookupByLibrary.simpleMessage("New config"),
+    "quickConfigDesc": MessageLookupByLibrary.simpleMessage(
+      "Tick the rules to add, then put them into a config you already have or into a new one. They go in front of the config\'s own rules, so they win where both match. Tick none to start an empty config and write its rules by hand.",
     ),
     "quitFromMenuBar": MessageLookupByLibrary.simpleMessage(
       "Quit from menu bar",

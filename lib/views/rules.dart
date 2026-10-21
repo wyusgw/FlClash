@@ -29,6 +29,34 @@ String rulePolicyLabel(AppLocalizations l, RulePolicy policy) =>
       RulePolicy.block => l.policyBlock,
     };
 
+String rulePresetLabel(AppLocalizations l, RulePreset preset) =>
+    switch (preset) {
+      RulePreset.ads => l.presetAds,
+      RulePreset.httpdns => 'HTTPDNS',
+      RulePreset.winSpy => l.presetWinSpy,
+      RulePreset.quic => 'QUIC',
+      RulePreset.bittorrent => 'BitTorrent',
+      RulePreset.lan => l.presetLan,
+      RulePreset.appleCn => 'Apple · ${l.presetMainlandChina}',
+      RulePreset.googleCn => 'Google · ${l.presetMainlandChina}',
+      RulePreset.google => 'Google',
+      RulePreset.youtube => 'YouTube',
+      RulePreset.telegram => 'Telegram',
+      RulePreset.openai => 'OpenAI',
+      RulePreset.anthropic => 'Anthropic',
+      RulePreset.netflix => 'Netflix',
+      RulePreset.disney => 'Disney+',
+      RulePreset.spotify => 'Spotify',
+      RulePreset.twitter => 'X (Twitter)',
+      RulePreset.facebook => 'Facebook',
+      RulePreset.whatsapp => 'WhatsApp',
+      RulePreset.github => 'GitHub',
+      RulePreset.discord => 'Discord',
+      RulePreset.tiktok => 'TikTok',
+      RulePreset.mainlandChina => l.presetMainlandChina,
+      RulePreset.foreign => l.presetForeign,
+    };
+
 String ruleMatchLabel(AppLocalizations l, RuleMatch match) => switch (match) {
   RuleMatch.domainSuffix => l.matchDomainSuffix,
   RuleMatch.domain => l.matchDomain,
@@ -225,6 +253,13 @@ class RulesView extends ConsumerWidget {
                   );
                   select(null);
                 },
+              ),
+              GroupedRow(
+                leading: const GroupedIcon(AppGlyphs.bolt),
+                title: appLocalizations.quickConfig,
+                chevron: true,
+                onTap: () =>
+                    BaseNavigator.push(context, const QuickRulesView()),
               ),
               GroupedRow(
                 leading: const GroupedIcon(AppGlyphs.cloudDownload),
@@ -736,6 +771,140 @@ class _RuleSetViewState extends ConsumerState<RuleSetView> {
                   label: appLocalizations.deleteRuleSet,
                   color: groupedDanger,
                   onTap: _delete,
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// The order the quick config lays the presets out in, by where they send
+/// traffic.
+const _presetPolicies = [RulePolicy.direct, RulePolicy.block, RulePolicy.proxy];
+
+/// Ready-made rules to tick, and where to put them: into a config that is
+/// there already, ahead of its own rules, or into a new one.
+class QuickRulesView extends ConsumerStatefulWidget {
+  const QuickRulesView({super.key});
+
+  @override
+  ConsumerState<QuickRulesView> createState() => _QuickRulesViewState();
+}
+
+class _QuickRulesViewState extends ConsumerState<QuickRulesView> {
+  final _label = TextEditingController();
+  final _picked = <RulePreset>{};
+
+  /// The config the rules go into; null for a new one.
+  int? _target;
+
+  @override
+  void dispose() {
+    _label.dispose();
+    super.dispose();
+  }
+
+  void _toggle(RulePreset preset) {
+    setState(() {
+      if (!_picked.remove(preset)) {
+        _picked.add(preset);
+      }
+    });
+  }
+
+  void _save() {
+    final target = _target;
+    final id = target ?? snowflake.id;
+    if (target == null) {
+      final label = _label.text.trim();
+      _keep(
+        ref,
+        RuleSet(
+          id: id,
+          label: label.isEmpty ? context.appLocalizations.quickConfig : label,
+          rules: withPresets(const [], _picked),
+        ),
+      );
+    } else {
+      _updateSet(
+        ref,
+        target,
+        (set) => set.copyWith(rules: withPresets(set.rules, _picked)),
+      );
+    }
+    Navigator.of(context).pop();
+    unawaited(BaseNavigator.push(context, RuleSetView(id: id)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
+    final palette = GroupedPalette.of(context);
+    final check = GlyphIcon(AppGlyphs.check, size: 18, color: palette.icon);
+    final sets = ref.watch(ruleSetsProvider);
+    return GroupedPage(
+      title: appLocalizations.quickConfig,
+      onBack: () => Navigator.of(context).maybePop(),
+      trailing: GroupedBarAction(
+        label: appLocalizations.save,
+        tooltip: appLocalizations.save,
+        // A new config can start empty, to be written by hand.
+        onPressed: _picked.isEmpty && _target != null ? null : _save,
+      ),
+      body: ListView(
+        padding: _pagePadding.copyWith(
+          bottom: _pagePadding.bottom + BottomInsetScope.of(context),
+        ),
+        children: [
+          for (final policy in _presetPolicies) ...[
+            GroupedSection(
+              header: rulePolicyLabel(appLocalizations, policy),
+              children: [
+                for (final preset in RulePreset.values)
+                  if (preset.policy == policy)
+                    GroupedRow(
+                      key: ValueKey(preset),
+                      title: rulePresetLabel(appLocalizations, preset),
+                      trailing: _picked.contains(preset) ? check : null,
+                      onTap: () => _toggle(preset),
+                    ),
+              ],
+            ),
+            const SizedBox(height: groupedSectionGap),
+          ],
+          GroupedSection(
+            header: appLocalizations.applyTo,
+            footer: appLocalizations.quickConfigDesc,
+            children: [
+              GroupedRow(
+                key: const ValueKey('quick.new'),
+                title: appLocalizations.newConfig,
+                trailing: _target == null ? check : null,
+                onTap: () => setState(() => _target = null),
+              ),
+              for (final set in [
+                _defaultOf(sets),
+                ...sets.where((set) => set.id != defaultRuleSetId),
+              ])
+                GroupedRow(
+                  key: ValueKey('quick.${set.id}'),
+                  title: _labelOf(appLocalizations, set),
+                  trailing: _target == set.id ? check : null,
+                  onTap: () => setState(() => _target = set.id),
+                ),
+            ],
+          ),
+          if (_target == null) ...[
+            const SizedBox(height: groupedSectionGap),
+            GroupedSection(
+              children: [
+                GroupedFieldRow(
+                  label: appLocalizations.name,
+                  hint: appLocalizations.optional,
+                  controller: _label,
                 ),
               ],
             ),

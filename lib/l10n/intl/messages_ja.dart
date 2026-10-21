@@ -147,6 +147,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "appAccessControl": MessageLookupByLibrary.simpleMessage("アプリアクセス制御"),
     "appIconDesign": MessageLookupByLibrary.simpleMessage("アプリアイコンのデザイン"),
     "appearance": MessageLookupByLibrary.simpleMessage("外観"),
+    "applyTo": MessageLookupByLibrary.simpleMessage("適用先"),
     "archive": MessageLookupByLibrary.simpleMessage("アーカイブ"),
     "archiveDesc": MessageLookupByLibrary.simpleMessage(
       "コアの実行が終わるたびに、統計がここに保存されます。",
@@ -653,6 +654,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "networkType": MessageLookupByLibrary.simpleMessage("ネットワーク種別"),
     "neutralScheme": MessageLookupByLibrary.simpleMessage("ニュートラル"),
+    "newConfig": MessageLookupByLibrary.simpleMessage("新しい設定"),
     "nextMatch": MessageLookupByLibrary.simpleMessage("次の一致"),
     "no": MessageLookupByLibrary.simpleMessage("いいえ"),
     "noData": MessageLookupByLibrary.simpleMessage("データがありません"),
@@ -716,6 +718,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "portHopping": MessageLookupByLibrary.simpleMessage("ポートホッピング"),
     "portTip": m25,
     "prerequisites": MessageLookupByLibrary.simpleMessage("前提条件"),
+    "presetAds": MessageLookupByLibrary.simpleMessage("広告"),
+    "presetForeign": MessageLookupByLibrary.simpleMessage("海外サイト"),
+    "presetLan": MessageLookupByLibrary.simpleMessage("ローカルネットワーク"),
+    "presetMainlandChina": MessageLookupByLibrary.simpleMessage("中国本土"),
+    "presetWinSpy": MessageLookupByLibrary.simpleMessage("Windows テレメトリ"),
     "pressKeyboard": MessageLookupByLibrary.simpleMessage("キーの組み合わせを押してください"),
     "preview": MessageLookupByLibrary.simpleMessage("プレビュー"),
     "previousMatch": MessageLookupByLibrary.simpleMessage("前の一致"),
@@ -758,6 +765,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "qrcode": MessageLookupByLibrary.simpleMessage("QRコード"),
     "qrcodeDesc": MessageLookupByLibrary.simpleMessage(
       "QRコードをスキャンしてプロファイルを取得します",
+    ),
+    "quickConfig": MessageLookupByLibrary.simpleMessage("新しい設定"),
+    "quickConfigDesc": MessageLookupByLibrary.simpleMessage(
+      "追加するルールを選び、既存の設定か新しい設定に入れます。設定にあるルールより前に置かれるため、両方に一致する場合はこちらが優先されます。何も選ばなければ空の設定を作り、ルールを手で追加できます。",
     ),
     "quitFromMenuBar": MessageLookupByLibrary.simpleMessage("メニューバーから終了"),
     "rainbowScheme": MessageLookupByLibrary.simpleMessage("レインボー"),

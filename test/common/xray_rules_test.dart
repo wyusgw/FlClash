@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fl_clash/common/xray_rules.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -62,6 +64,79 @@ void main() {
     expect(buildRule(RuleMatch.port, ['80', '443'], RulePolicy.proxy), {
       'port': '80,443',
       'outboundTag': 'proxy',
+    });
+  });
+
+  group('withPresets', () {
+    test('puts the presets ahead of the rules, narrow ones first', () {
+      const own = {
+        'domain': ['domain:example.com'],
+        'outboundTag': 'direct',
+      };
+
+      final rules = withPresets(
+        const [own],
+        const [RulePreset.mainlandChina, RulePreset.ads],
+      );
+
+      expect(rules, [
+        ...RulePreset.ads.rules,
+        ...RulePreset.mainlandChina.rules,
+        own,
+      ]);
+    });
+
+    test('adds a rule that is there already only once', () {
+      final rules = withPresets(builtInRules, const [
+        RulePreset.mainlandChina,
+        RulePreset.lan,
+      ]);
+
+      expect(rules, [...RulePreset.lan.rules, ...builtInRules]);
+    });
+
+    test('every preset says where it sends traffic', () {
+      expect(RulePreset.ads.policy, RulePolicy.block);
+      expect(RulePreset.httpdns.policy, RulePolicy.block);
+      expect(RulePreset.winSpy.policy, RulePolicy.block);
+      expect(RulePreset.quic.policy, RulePolicy.block);
+      expect(RulePreset.lan.policy, RulePolicy.direct);
+      expect(RulePreset.google.policy, RulePolicy.proxy);
+      expect(RulePreset.mainlandChina.policy, RulePolicy.direct);
+      expect(RulePreset.foreign.policy, RulePolicy.proxy);
+    });
+
+    test('every preset is a rule Xray reads, sent one way, none twice', () {
+      final seen = <String>{};
+      for (final preset in RulePreset.values) {
+        expect(preset.rules, isNotEmpty, reason: preset.name);
+        for (final rule in preset.rules) {
+          expect(rulePolicyOf(rule), preset.policy, reason: preset.name);
+          expect(
+            rule.entries.any(
+              (entry) =>
+                  entry.key != 'outboundTag' &&
+                  switch (entry.value) {
+                    final List list => list.isNotEmpty,
+                    final String text => text.isNotEmpty,
+                    _ => false,
+                  },
+            ),
+            isTrue,
+            reason: '${preset.name} matches something',
+          );
+          if (preset != RulePreset.mainlandChina) {
+            expect(seen.add(jsonEncode(rule)), isTrue, reason: preset.name);
+          }
+        }
+      }
+    });
+
+    test('the two sweeping presets come last, so the narrow ones win', () {
+      expect(RulePreset.values.reversed.take(2), [
+        RulePreset.foreign,
+        RulePreset.mainlandChina,
+      ]);
     });
   });
 

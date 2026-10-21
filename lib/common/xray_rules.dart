@@ -34,6 +34,109 @@ const builtInRules = [
   },
 ];
 
+/// A ready-made rule for the quick config. They are listed in the order they
+/// should be read: the narrow ones first, then the services, then the two that
+/// sweep up everything left, mainland China direct and the rest abroad by proxy.
+enum RulePreset {
+  ads,
+  httpdns,
+  winSpy,
+  quic,
+  bittorrent,
+  lan,
+  appleCn,
+  googleCn,
+  google,
+  youtube,
+  telegram,
+  openai,
+  anthropic,
+  netflix,
+  disney,
+  spotify,
+  twitter,
+  facebook,
+  whatsapp,
+  github,
+  discord,
+  tiktok,
+  mainlandChina,
+  foreign;
+
+  /// The rules this adds, each kept as Xray reads it.
+  List<Map<String, dynamic>> get rules => switch (this) {
+    ads => [_rule('domain', 'geosite:category-ads-all', 'block')],
+    httpdns => [_rule('domain', 'geosite:category-httpdns-cn', 'block')],
+    winSpy => [_rule('domain', 'geosite:win-spy', 'block')],
+    quic => const [
+      {'network': 'udp', 'port': '443', 'outboundTag': 'block'},
+    ],
+    bittorrent => [_rule('protocol', 'bittorrent', 'direct')],
+    lan => [
+      _rule('ip', 'geoip:private', 'direct'),
+      _rule('domain', 'geosite:private', 'direct'),
+    ],
+    appleCn => [_rule('domain', 'geosite:apple-cn', 'direct')],
+    googleCn => [_rule('domain', 'geosite:google-cn', 'direct')],
+    google => [
+      _rule('domain', 'geosite:google', 'proxy'),
+      _rule('ip', 'geoip:google', 'proxy'),
+    ],
+    youtube => [_rule('domain', 'geosite:youtube', 'proxy')],
+    telegram => [
+      _rule('domain', 'geosite:telegram', 'proxy'),
+      _rule('ip', 'geoip:telegram', 'proxy'),
+    ],
+    openai => [_rule('domain', 'geosite:openai', 'proxy')],
+    anthropic => [_rule('domain', 'geosite:anthropic', 'proxy')],
+    netflix => [
+      _rule('domain', 'geosite:netflix', 'proxy'),
+      _rule('ip', 'geoip:netflix', 'proxy'),
+    ],
+    disney => [_rule('domain', 'geosite:disney', 'proxy')],
+    spotify => [_rule('domain', 'geosite:spotify', 'proxy')],
+    twitter => [
+      _rule('domain', 'geosite:twitter', 'proxy'),
+      _rule('ip', 'geoip:twitter', 'proxy'),
+    ],
+    facebook => [
+      _rule('domain', 'geosite:facebook', 'proxy'),
+      _rule('ip', 'geoip:facebook', 'proxy'),
+    ],
+    whatsapp => [_rule('domain', 'geosite:whatsapp', 'proxy')],
+    github => [_rule('domain', 'geosite:github', 'proxy')],
+    discord => [_rule('domain', 'geosite:discord', 'proxy')],
+    tiktok => [_rule('domain', 'geosite:tiktok', 'proxy')],
+    mainlandChina => builtInRules,
+    foreign => [_rule('domain', 'geosite:geolocation-!cn', 'proxy')],
+  };
+
+  RulePolicy get policy => rulePolicyOf(rules.first);
+}
+
+Map<String, dynamic> _rule(String field, String value, String outboundTag) => {
+  field: [value],
+  'outboundTag': outboundTag,
+};
+
+/// [rules] with those of [presets] put in front, so they decide where both
+/// match; a rule already there is not added twice.
+List<Map<String, dynamic>> withPresets(
+  List<Map<String, dynamic>> rules,
+  Iterable<RulePreset> presets,
+) {
+  final existing = {for (final rule in rules) jsonEncode(rule)};
+  final added = <Map<String, dynamic>>[];
+  for (final preset in RulePreset.values.where(presets.contains)) {
+    for (final rule in preset.rules) {
+      if (existing.add(jsonEncode(rule))) {
+        added.add(rule);
+      }
+    }
+  }
+  return [...added, ...rules];
+}
+
 /// What a hand-written rule matches, with the prefix Xray reads it by.
 enum RuleMatch {
   domainSuffix('domain', 'domain:'),

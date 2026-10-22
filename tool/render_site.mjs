@@ -103,7 +103,7 @@ function render(page) {
   }
 
   // The preview shows the app in the page's language.
-  if (page.lang === 'zh') html = html.replace(/\b(src|srcset)="preview-en(-dark)?\.png"/g, '$1="preview-zh$2.png"');
+  if (page.lang === 'zh') html = html.replace(/\b(src|srcset)="(preview|demo)-en(-dark)?\.(png|webp)"/g, '$1="$2-zh$3.$4"');
   if (up) html = html.replace(/\b(href|src|srcset)="(?![a-z]+:|#|\/)/g, `$1="${up}`);
   if (page.lang === 'zh') html = html.replace(/href="\.\.\/docs\/(user-guide\/)?"/g, (_, guide) => `href="docs/${guide ?? ''}"`);
   return replaceOnce(

@@ -4,8 +4,8 @@
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="../snapshots/preview-en-dark.png">
-    <img alt="FlClash home on a MacBook and a phone" src="../snapshots/preview-en.png" width="92%">
+    <source media="(prefers-color-scheme: dark)" srcset="../snapshots/demo-en-dark.webp">
+    <img alt="FlClash connecting, testing latency and going through its pages on a MacBook and a phone" src="../snapshots/demo-en.webp" width="92%">
   </picture>
 </p>
 

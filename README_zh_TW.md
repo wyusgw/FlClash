@@ -18,8 +18,8 @@
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="snapshots/preview-zh-tw-dark.png">
-    <img alt="FlClash 首頁在 MacBook 與手機上的介面" src="snapshots/preview-zh-tw.png" width="92%">
+    <source media="(prefers-color-scheme: dark)" srcset="snapshots/demo-zh-tw-dark.webp">
+    <img alt="FlClash 在 MacBook 與手機上連線、測試延遲並瀏覽各個頁面" src="snapshots/demo-zh-tw.webp" width="92%">
   </picture>
 </p>
 

@@ -4,8 +4,8 @@
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="../snapshots/preview-zh-dark.png">
-    <img alt="FlClash 首页在 MacBook 与手机上的界面" src="../snapshots/preview-zh.png" width="92%">
+    <source media="(prefers-color-scheme: dark)" srcset="../snapshots/demo-zh-dark.webp">
+    <img alt="FlClash 在 MacBook 与手机上连接、测试延迟并浏览各个页面" src="../snapshots/demo-zh.webp" width="92%">
   </picture>
 </p>
 

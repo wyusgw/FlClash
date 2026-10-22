@@ -90,6 +90,39 @@ a {
   color: var(--ink);
 }
 
+.bar .theme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-inline-start: -6px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.bar .theme:hover {
+  color: var(--ink);
+}
+
+.theme-icon {
+  transition: transform 0.5s ease;
+}
+
+:root[data-theme="dark"] .theme-icon {
+  transform: rotate(180deg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-icon {
+    transform: rotate(180deg);
+  }
+}
+
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

@@ -63,9 +63,9 @@ const INDEXES = [
 // The site's home page has an English and a Simplified Chinese version; the
 // Traditional Chinese pages send the reader to the Simplified one.
 const LABELS = {
-  en: { html: 'en', name: 'English', home: 'Home', docs: 'Documentation', github: 'GitHub', edit: 'Edit this page on GitHub', toc: 'On this page', root: '', docsRoot: 'docs/' },
-  zh: { html: 'zh-CN', name: '简体中文', home: '首页', docs: '文档', github: 'GitHub', edit: '在 GitHub 上编辑此页', toc: '本页内容', root: 'zh/', docsRoot: 'zh/docs/' },
-  'zh-tw': { html: 'zh-TW', name: '繁體中文', home: '首頁', docs: '文件', github: 'GitHub', edit: '在 GitHub 上編輯此頁', toc: '本頁內容', root: 'zh/', docsRoot: 'zh-tw/docs/' },
+  en: { html: 'en', name: 'English', home: 'Home', docs: 'Documentation', github: 'GitHub', edit: 'Edit this page on GitHub', toc: 'On this page', theme: 'Toggle dark mode', root: '', docsRoot: 'docs/' },
+  zh: { html: 'zh-CN', name: '简体中文', home: '首页', docs: '文档', github: 'GitHub', edit: '在 GitHub 上编辑此页', toc: '本页内容', theme: '切换深色模式', root: 'zh/', docsRoot: 'zh/docs/' },
+  'zh-tw': { html: 'zh-TW', name: '繁體中文', home: '首頁', docs: '文件', github: 'GitHub', edit: '在 GitHub 上編輯此頁', toc: '本頁內容', theme: '切換深色模式', root: 'zh/', docsRoot: 'zh-tw/docs/' },
 };
 
 const escapeHtml = (text) =>
@@ -189,6 +189,12 @@ function renderMarkdown(markdown, source, page) {
 
 const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('flclash.theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}})();`;
 
+// The switch flips the page away from the theme it shows, as the home page's does,
+// and keeps the choice under the same key.
+const TOGGLE_SCRIPT = `document.getElementById('theme-toggle').addEventListener('click',function(){var r=document.documentElement,c=r.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),n=c==='dark'?'light':'dark';r.dataset.theme=n;try{localStorage.setItem('flclash.theme',n);}catch(e){}});`;
+
+const THEME_ICON = `<svg class="theme-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="8.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 3.75a8.25 8.25 0 0 1 0 16.5Z" fill="currentColor"/></svg>`;
+
 function layout({ page, lang, title, description, body, headings = [], source, alternates = [] }) {
   const up = upFrom(page);
   const L = LABELS[lang];
@@ -224,6 +230,7 @@ function layout({ page, lang, title, description, body, headings = [], source, a
       <a href="${docsHome}">${escapeHtml(L.docs)}</a>
       <a href="${REPO}">${escapeHtml(L.github)}</a>
       ${switcher}
+      <button class="theme" id="theme-toggle" type="button" aria-label="${escapeHtml(L.theme)}" title="${escapeHtml(L.theme)}">${THEME_ICON}</button>
     </nav>
   </header>
   <div class="layout">
@@ -235,6 +242,7 @@ ${body}
     </main>
     ${toc}
   </div>
+  <script>${TOGGLE_SCRIPT}</script>
 </body>
 </html>
 `;

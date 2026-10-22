@@ -65,6 +65,13 @@ class _StoredNodeAction extends ProfilesAction {
   ) async => outbound;
 }
 
+class _CountingCommonAction extends CommonAction {
+  static var toggles = 0;
+
+  @override
+  void toggleRunning() => toggles++;
+}
+
 class _FailingUpdateAction extends ProfilesAction {
   @override
   Future<void> updateProfile(
@@ -251,6 +258,92 @@ void main() {
       tester.widget<GroupedSwitch>(find.byType(GroupedSwitch)).value,
       true,
     );
+  });
+
+  group('bar logo', () {
+    final many = [
+      for (var i = 0; i < 30; i++)
+        Proxy(name: 'Node $i', type: 'vless', network: 'tcp'),
+    ];
+    double titleOpacity(WidgetTester tester) => tester
+        .widget<Opacity>(
+          find.ancestor(of: find.text(appName), matching: find.byType(Opacity)),
+        )
+        .opacity;
+    final logo = find.byWidgetPredicate((w) => w is Image && w.width == 26);
+    double logoOpacity(WidgetTester tester) => tester
+        .widget<Opacity>(
+          find.ancestor(of: logo, matching: find.byType(Opacity)).first,
+        )
+        .opacity;
+
+    testWidgets('the name gives way to the logo as the switch rows go', (
+      tester,
+    ) async {
+      await pumpHome(tester, profile: _profile(), nodes: many);
+      expect(titleOpacity(tester), 1);
+      expect(logoOpacity(tester), 0);
+
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -90));
+      await tester.pump();
+      final title = titleOpacity(tester);
+      expect(title, inExclusiveRange(0, 1));
+      expect(logoOpacity(tester), closeTo(1 - title, 1e-9));
+
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -200));
+      await tester.pump();
+      expect(titleOpacity(tester), 0);
+      expect(logoOpacity(tester), 1);
+
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, 600));
+      await tester.pumpAndSettle();
+      expect(titleOpacity(tester), 1);
+    });
+
+    testWidgets('the logo turns the proxy on and off once it shows', (
+      tester,
+    ) async {
+      _CountingCommonAction.toggles = 0;
+      await pumpHome(
+        tester,
+        profile: _profile(),
+        nodes: many,
+        overrides: [
+          commonActionProvider.overrideWith(_CountingCommonAction.new),
+        ],
+      );
+      await tester.tap(logo, warnIfMissed: false);
+      expect(_CountingCommonAction.toggles, 0);
+
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -300));
+      await tester.pump();
+      await tester.tap(logo);
+      expect(_CountingCommonAction.toggles, 1);
+    });
+
+    testWidgets('the logo is grey until the proxy runs', (tester) async {
+      await pumpHome(tester, profile: _profile(), nodes: many);
+      ColorFilter filter() => tester
+          .widget<ColorFiltered>(
+            find.ancestor(of: logo, matching: find.byType(ColorFiltered)),
+          )
+          .colorFilter;
+      final off = filter();
+
+      container.read(runTimeProvider.notifier).value = 1;
+      await tester.pumpAndSettle();
+
+      expect(filter(), isNot(off));
+      expect(
+        filter(),
+        const ColorFilter.matrix([
+          1, 0, 0, 0, 0, //
+          0, 1, 0, 0, 0, //
+          0, 0, 1, 0, 0, //
+          0, 0, 0, 1, 0,
+        ]),
+      );
+    });
   });
 
   testWidgets('lists every node with its protocol and transport', (

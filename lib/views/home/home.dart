@@ -82,10 +82,22 @@ class HomeView extends ConsumerStatefulWidget {
 class _HomeViewState extends ConsumerState<HomeView> {
   final _edit = _EditState();
 
+  /// How far the logo has taken the bar's title over, from 0 to 1.
+  final _logo = ValueNotifier<double>(0);
+
   @override
   void dispose() {
     _edit.dispose();
+    _logo.dispose();
     super.dispose();
+  }
+
+  bool _onScroll(ScrollMetrics metrics, int depth) {
+    if (depth == 0 && metrics.axis == Axis.vertical) {
+      _logo.value = ((metrics.pixels - _logoStart) / (_logoEnd - _logoStart))
+          .clamp(0.0, 1.0);
+    }
+    return false;
   }
 
   Future<void> _deleteSelected() async {
@@ -150,6 +162,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
               .any((profile) => _edit.isSelected(_profileKey(profile.id)));
           return GroupedPage(
             title: editing ? '' : appName,
+            titleWidget: editing ? null : _BarTitle(progress: _logo),
             leading: GroupedBarAction(
               glyph: AppGlyphs.scanFrame,
               tooltip: appLocalizations.qrcode,
@@ -186,9 +199,118 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     tooltip: appLocalizations.addProfile,
                     onPressed: () => showAddProfilePage(context),
                   ),
-            body: const _HomeBody(),
+            body: NotificationListener<ScrollMetricsNotification>(
+              onNotification: (n) => _onScroll(n.metrics, n.depth),
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (n) => _onScroll(n.metrics, n.depth),
+                child: const _HomeBody(),
+              ),
+            ),
           );
         },
+      ),
+    );
+  }
+}
+
+// The logo starts to show once the global routing row reaches the bar, and has
+// taken the title's place once the connectivity row has gone under it.
+const _logoStart = 13 + groupedRowHeight;
+const _logoEnd = 13 + groupedRowHeight * 3;
+
+/// The bar's title: the app's name, giving way to its logo as the switch rows
+/// scroll away under the bar. The logo then stands in for the switch.
+class _BarTitle extends StatelessWidget {
+  const _BarTitle({required this.progress});
+
+  final ValueNotifier<double> progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = GroupedPalette.of(context);
+    return ValueListenableBuilder(
+      valueListenable: progress,
+      builder: (context, value, _) => Stack(
+        alignment: Alignment.center,
+        children: [
+          Opacity(
+            opacity: 1 - value,
+            child: Text(
+              appName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: palette.rowTitle,
+            ),
+          ),
+          Opacity(
+            opacity: value,
+            child: IgnorePointer(
+              ignoring: value < 0.5,
+              child: const _LogoSwitch(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The logo in the bar, in colour while the proxy runs and grey while it does
+/// not; tapping it turns the proxy on or off, as the switch does.
+class _LogoSwitch extends ConsumerWidget {
+  const _LogoSwitch();
+
+  static const _grey = <double>[
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0, 0, 0, 0.55, 0,
+  ];
+
+  static const _identity = <double>[
+    1, 0, 0, 0, 0, //
+    0, 1, 0, 0, 0, //
+    0, 0, 1, 0, 0, //
+    0, 0, 0, 1, 0,
+  ];
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    final isStart = ref.watch(isStartProvider);
+    return Semantics(
+      button: true,
+      toggled: isStart,
+      label: isStart
+          ? appLocalizations.connected
+          : appLocalizations.notConnected,
+      child: InkResponse(
+        onTap: () {
+          toggleHaptic(context);
+          ref.read(commonActionProvider.notifier).toggleRunning();
+        },
+        radius: 20,
+        splashFactory: NoSplash.splashFactory,
+        hoverColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(end: isStart ? 1 : 0),
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+          builder: (_, colour, child) => ColorFiltered(
+            colorFilter: ColorFilter.matrix([
+              for (var i = 0; i < 20; i++)
+                _grey[i] + (_identity[i] - _grey[i]) * colour,
+            ]),
+            child: child,
+          ),
+          child: Image.asset(
+            'assets/images/icon.png',
+            width: 26,
+            height: 26,
+            filterQuality: FilterQuality.medium,
+          ),
+        ),
       ),
     );
   }

@@ -42,11 +42,15 @@ Future<void> showNodeQrCode(
 ) async {
   final text = await _shareText(ref, profile, node);
   if (text == null || !context.mounted) return;
-  await BaseNavigator.push(
-    context,
-    _NodeQrCodeView(name: node.name, text: text),
-  );
+  await showShareQrCode(context, title: node.name, text: text);
 }
+
+/// Opens [text], a share link, as a QR code another device can scan.
+Future<void> showShareQrCode(
+  BuildContext context, {
+  required String title,
+  required String text,
+}) => BaseNavigator.push(context, _ShareQrCodeView(title: title, text: text));
 
 /// Asks first, then removes the node from its profile.
 Future<void> deleteNode(
@@ -69,19 +73,18 @@ Future<void> deleteNode(
       .deleteNode(profile, node.name);
 }
 
-/// A node's share link as a QR code another device can scan, with the text
-/// under it.
-class _NodeQrCodeView extends StatelessWidget {
-  const _NodeQrCodeView({required this.name, required this.text});
+/// A share link as a QR code another device can scan, with the text under it.
+class _ShareQrCodeView extends StatelessWidget {
+  const _ShareQrCodeView({required this.title, required this.text});
 
-  final String name;
+  final String title;
   final String text;
 
   @override
   Widget build(BuildContext context) {
     final palette = GroupedPalette.of(context);
     return GroupedPage(
-      title: name,
+      title: title,
       onBack: () => Navigator.of(context).maybePop(),
       body: GroupedBody(
         children: [

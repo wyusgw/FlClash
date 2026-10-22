@@ -19,7 +19,7 @@ import 'package:fl_clash/views/config/network.dart';
 import 'package:fl_clash/views/home/route_mode.dart';
 import 'package:fl_clash/views/profiles/add.dart';
 import 'package:fl_clash/views/profiles/edit_server.dart';
-import 'package:fl_clash/widgets/grouped_list.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -529,6 +529,59 @@ void main() {
       final grown = tester.getSize(drawer).height;
       expect(growing, inExclusiveRange(0, grown));
       expect(find.text('TROJAN / GRPC'), findsOneWidget);
+    });
+
+    SwipeActions swipeOf(WidgetTester tester, String label) =>
+        tester.widget<SwipeActions>(
+          find.ancestor(
+            of: find.text(label),
+            matching: find.byType(SwipeActions),
+          ),
+        );
+    List<String> labels(List<SwipeAction> actions) => [
+      for (final action in actions) action.label,
+    ];
+
+    testWidgets('a subscription swipes to test and update, or QR and delete', (
+      tester,
+    ) async {
+      await pumpTwo(tester);
+      final l10n = AppLocalizations.current;
+
+      final inUse = swipeOf(tester, 'My subscription');
+      expect(labels(inUse.leading), [l10n.test, l10n.update]);
+      expect(labels(inUse.trailing), [l10n.qrcode, l10n.delete]);
+      expect(inUse.leading.first.color, swipeActionGo);
+      expect(inUse.trailing.last.color, groupedDanger);
+
+      // The core runs only the one in use, so another cannot be tested.
+      final another = swipeOf(tester, 'Second subscription');
+      expect(labels(another.leading), [l10n.update]);
+      expect(labels(another.trailing), [l10n.qrcode, l10n.delete]);
+    });
+
+    testWidgets('the QR action shows the subscription link as a code', (
+      tester,
+    ) async {
+      await pumpTwo(tester);
+
+      swipeOf(tester, 'My subscription').trailing.first.onPressed();
+      await tester.pumpAndSettle();
+
+      expect(find.byType(QrCodeView), findsOneWidget);
+      expect(find.text('https://example.com/sub'), findsOneWidget);
+    });
+
+    testWidgets('a subscription with no link has only delete', (tester) async {
+      await pumpHome(
+        tester,
+        profile: _profile().copyWith(url: ''),
+        nodes: _nodes,
+      );
+
+      final swipe = swipeOf(tester, 'My subscription');
+      expect(labels(swipe.leading), [AppLocalizations.current.test]);
+      expect(labels(swipe.trailing), [AppLocalizations.current.delete]);
     });
 
     testWidgets('a node of another one switches to it with that node', (

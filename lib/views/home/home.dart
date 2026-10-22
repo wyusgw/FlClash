@@ -816,6 +816,11 @@ class _SubscriptionSection extends ConsumerWidget {
         : null;
     final edit = _EditScope.of(context);
     final editing = edit.editing;
+    Future<void> update() => globalState.safeRun(
+      () => ref
+          .read(profilesActionProvider.notifier)
+          .updateProfile(profile, showLoading: true),
+    );
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final chevron = AnimatedRotation(
       turns: expanded ? (rtl ? -0.25 : 0.25) : 0,
@@ -830,10 +835,32 @@ class _SubscriptionSection extends ConsumerWidget {
           SwipeAction(
             label: appLocalizations.test,
             color: swipeActionGo,
+            fullSwipe: true,
             onPressed: () => unawaited(
               ref
                   .read(proxiesActionProvider.notifier)
                   .delayTestPageGroup(nodeGroupName),
+            ),
+          ),
+        if (profile.type == ProfileType.url)
+          SwipeAction(
+            label: appLocalizations.update,
+            color: swipeActionNeutral,
+            fullSwipe: !current,
+            onPressed: () => unawaited(update()),
+          ),
+      ],
+      trailing: [
+        if (profile.type == ProfileType.url)
+          SwipeAction(
+            label: appLocalizations.qrcode,
+            color: swipeActionNeutral,
+            onPressed: () => unawaited(
+              showShareQrCode(
+                context,
+                title: profile.realLabel,
+                text: profile.url,
+              ),
             ),
           ),
         SwipeAction(
@@ -871,13 +898,7 @@ class _SubscriptionSection extends ConsumerWidget {
                 glyph: AppGlyphs.refresh,
                 tooltip: appLocalizations.update,
                 busy: isUpdating,
-                onPressed: () => unawaited(
-                  globalState.safeRun(
-                    () => ref
-                        .read(profilesActionProvider.notifier)
-                        .updateProfile(profile, showLoading: true),
-                  ),
-                ),
+                onPressed: () => unawaited(update()),
               ),
             if (editing && dragIndex != null)
               ReorderableDragStartListener(

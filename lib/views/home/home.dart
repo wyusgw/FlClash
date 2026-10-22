@@ -335,7 +335,7 @@ class _ControlSection extends ConsumerWidget {
           ),
         ),
         GroupedRow(
-          leading: const GroupedIcon(AppGlyphs.starburst),
+          leading: const GroupedIcon(AppGlyphs.settings),
           title: appLocalizations.globalRouting,
           value: mode.label,
           chevron: true,
@@ -367,7 +367,7 @@ class _ConnectivityRow extends ConsumerWidget {
     );
     final palette = GroupedPalette.of(context);
     return GroupedRow(
-      leading: const GroupedIcon(AppGlyphs.speed),
+      leading: const GroupedIcon(AppGlyphs.gauge),
       title: context.appLocalizations.connectivityTest,
       trailing: testing
           ? SizedBox.square(

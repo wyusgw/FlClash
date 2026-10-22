@@ -122,6 +122,7 @@ final _glyphs = {
   'shuffle': AppGlyphs.shuffle,
   'split': AppGlyphs.split,
   'speed': AppGlyphs.speed,
+  'gauge': AppGlyphs.gauge,
   'dataUsage': AppGlyphs.dataUsage,
   'memory': AppGlyphs.memory,
   'cpu': AppGlyphs.cpu,

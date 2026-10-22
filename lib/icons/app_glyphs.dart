@@ -1794,6 +1794,27 @@ abstract final class AppGlyphs {
     ], role: GlyphRole.detail),
   ]);
 
+  static const gauge = Glyph([
+    GlyphCircle(12, 12, 8.8),
+    GlyphCircle(12, 13, 1.3, role: GlyphRole.detail, solid: true),
+    GlyphPolyline([
+      GlyphVertex(12, 13),
+      GlyphVertex(15.2, 9.4),
+    ], role: GlyphRole.detail),
+    GlyphPolyline([
+      GlyphVertex(12, 5.9),
+      GlyphVertex(12, 7.3),
+    ], role: GlyphRole.detail),
+    GlyphPolyline([
+      GlyphVertex(5.9, 12),
+      GlyphVertex(7.3, 12),
+    ], role: GlyphRole.detail),
+    GlyphPolyline([
+      GlyphVertex(16.7, 12),
+      GlyphVertex(18.1, 12),
+    ], role: GlyphRole.detail),
+  ]);
+
   static const dataUsage = Glyph([
     GlyphPath(
       'M10 14 H15.8 Q17 14 16.897 15.194 '
@@ -2180,27 +2201,6 @@ abstract final class AppGlyphs {
       GlyphVertex(3.6, 12),
       GlyphVertex(20.4, 12),
     ], role: GlyphRole.line),
-  ]);
-
-  static const starburst = Glyph([
-    GlyphPolyline([
-      GlyphVertex(12.00, 2.40, 0.5),
-      GlyphVertex(14.37, 6.27, 0.5),
-      GlyphVertex(18.79, 5.21, 0.5),
-      GlyphVertex(17.73, 9.63, 0.5),
-      GlyphVertex(21.60, 12.00, 0.5),
-      GlyphVertex(17.73, 14.37, 0.5),
-      GlyphVertex(18.79, 18.79, 0.5),
-      GlyphVertex(14.37, 17.73, 0.5),
-      GlyphVertex(12.00, 21.60, 0.5),
-      GlyphVertex(9.63, 17.73, 0.5),
-      GlyphVertex(5.21, 18.79, 0.5),
-      GlyphVertex(6.27, 14.37, 0.5),
-      GlyphVertex(2.40, 12.00, 0.5),
-      GlyphVertex(6.27, 9.63, 0.5),
-      GlyphVertex(5.21, 5.21, 0.5),
-      GlyphVertex(9.63, 6.27, 0.5),
-    ], closed: true),
   ]);
 
   static const circleT = Glyph([

@@ -271,39 +271,48 @@ class _AccessViewState extends ConsumerState<AccessView> {
                 20 + BottomInsetScope.of(context),
               ),
               child: GroupedCard(
-                child: CommonScrollBar(
-                  controller: _controller,
-                  child: ListView.separated(
+                // The list sits inside a card, away from the screen's edges, so
+                // neither it nor its scrollbar makes room for the system bars.
+                child: MediaQuery.removePadding(
+                  context: context,
+                  removeTop: true,
+                  removeBottom: true,
+                  removeLeft: true,
+                  removeRight: true,
+                  child: CommonScrollBar(
                     controller: _controller,
-                    shrinkWrap: true,
-                    itemCount: packages.length + headerCount,
-                    separatorBuilder: (_, index) => GroupedHairline(
-                      inset: index < headerCount
-                          ? groupedRowPadding + 1
-                          : _packageSeparatorInset,
-                    ),
-                    itemBuilder: (_, index) {
-                      if (index < headerCount) {
-                        return GroupedRow(
-                          title: allSelected
-                              ? appLocalizations.cancelSelectAll
-                              : appLocalizations.selectAll,
-                          trailing: GroupedSelectMark(selected: allSelected),
-                          onTap: () => _toggleSelectAll(
-                            packages.map((item) => item.packageName).toList(),
-                          ),
+                    child: ListView.separated(
+                      controller: _controller,
+                      shrinkWrap: true,
+                      itemCount: packages.length + headerCount,
+                      separatorBuilder: (_, index) => GroupedHairline(
+                        inset: index < headerCount
+                            ? groupedRowPadding + 1
+                            : _packageSeparatorInset,
+                      ),
+                      itemBuilder: (_, index) {
+                        if (index < headerCount) {
+                          return GroupedRow(
+                            title: allSelected
+                                ? appLocalizations.cancelSelectAll
+                                : appLocalizations.selectAll,
+                            trailing: GroupedSelectMark(selected: allSelected),
+                            onTap: () => _toggleSelectAll(
+                              packages.map((item) => item.packageName).toList(),
+                            ),
+                          );
+                        }
+                        final package = packages[index - headerCount];
+                        return PackageListItem(
+                          key: Key(package.packageName),
+                          package: package,
+                          value: selected.contains(package.packageName),
+                          onChanged: (value) {
+                            _handleSelected(package.packageName);
+                          },
                         );
-                      }
-                      final package = packages[index - headerCount];
-                      return PackageListItem(
-                        key: Key(package.packageName),
-                        package: package,
-                        value: selected.contains(package.packageName),
-                        onChanged: (value) {
-                          _handleSelected(package.packageName);
-                        },
-                      );
-                    },
+                      },
+                    ),
                   ),
                 ),
               ),

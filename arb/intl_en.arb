@@ -712,5 +712,7 @@
   "presetMainlandChina": "Mainland China",
   "presetAds": "Ads",
   "presetForeign": "Sites abroad",
-  "presetWinSpy": "Windows telemetry"
+  "presetWinSpy": "Windows telemetry",
+  "hide": "Hide",
+  "hiddenSubscriptions": "Hidden subscriptions: {count}"
 }

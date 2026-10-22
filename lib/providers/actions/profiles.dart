@@ -126,8 +126,12 @@ class ProfilesAction extends _$ProfilesAction {
     return [for (final node in parseSubscription(text)) '${node['tag']}'];
   }
 
-  Future<void> addManualNode(Map<String, dynamic> outbound) async {
-    final target = manualNodeProfile();
+  /// Adds [outbound] to [into], or to the profile servers added by hand go to.
+  Future<void> addManualNode(
+    Map<String, dynamic> outbound, {
+    Profile? into,
+  }) async {
+    final target = into ?? manualNodeProfile();
     final saved = await globalState.loadingRun(
       tag: LoadingTag.profiles,
       () async {
@@ -353,6 +357,36 @@ class ProfilesAction extends _$ProfilesAction {
           await addManualNode(outbound);
         }
     }
+  }
+
+  /// Points [profile] at [url] and reads it from there.
+  Future<void> changeProfileUrl(Profile profile, String url) async {
+    final changed = profile.copyWith(url: url);
+    putProfile(changed);
+    await updateProfile(changed, showLoading: true);
+  }
+
+  /// Keeps [profile] off the home page, or brings it back, without deleting it.
+  void setProfileHidden(Profile profile, bool hidden) {
+    ref
+        .read(appSettingProvider.notifier)
+        .update(
+          (state) => state.copyWith(
+            hiddenProfiles: hidden
+                ? {...state.hiddenProfiles, profile.id}.toList()
+                : [
+                    for (final id in state.hiddenProfiles)
+                      if (id != profile.id) id,
+                  ],
+          ),
+        );
+  }
+
+  /// Brings every hidden profile back to the home page.
+  void showHiddenProfiles() {
+    ref
+        .read(appSettingProvider.notifier)
+        .update((state) => state.copyWith(hiddenProfiles: const []));
   }
 
   void setProfileAndAutoApply(Profile profile) {

@@ -76,6 +76,11 @@ _AppSettingProps _$AppSettingPropsFromJson(
           .toList() ??
       const [],
   currentService: json['currentService'] as String?,
+  hiddenProfiles:
+      (json['hiddenProfiles'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
@@ -118,6 +123,7 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'serviceOrder': instance.serviceOrder,
       'disabledServices': instance.disabledServices,
       'currentService': instance.currentService,
+      'hiddenProfiles': instance.hiddenProfiles,
     };
 
 const _$DelayTestMethodEnumMap = {

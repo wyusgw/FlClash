@@ -151,6 +151,39 @@ void main() {
     );
   });
 
+  test('a server pasted into a subscription goes into that one', () async {
+    const local = Profile(
+      id: 1,
+      label: 'Local',
+      autoUpdateDuration: Duration.zero,
+      url: '',
+    );
+    const subscription = Profile(
+      id: 2,
+      label: 'Subscription',
+      autoUpdateDuration: Duration.zero,
+      url: 'https://example.com/sub',
+    );
+    build(profiles: [local, subscription], current: local.id);
+
+    await container
+        .read(profilesActionProvider.notifier)
+        .addManualNode(_node('pasted'), into: subscription);
+
+    expect((await outboundsOf(subscription)).map((node) => node['tag']), [
+      'pasted',
+    ]);
+    expect(
+      File(await appPath.getProfilePath(local.id.toString())).existsSync(),
+      isFalse,
+    );
+    expect(
+      (container.read(setupActionProvider.notifier) as _NoopSetupAction)
+          .applied,
+      0,
+    );
+  });
+
   group('a name already taken', () {
     Future<(Profile, List<Object?>)> addDuplicate({
       bool overwrite = false,

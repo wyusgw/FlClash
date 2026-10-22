@@ -712,5 +712,7 @@
   "presetMainlandChina": "Материковый Китай",
   "presetAds": "Реклама",
   "presetForeign": "Зарубежные сайты",
-  "presetWinSpy": "Телеметрия Windows"
+  "presetWinSpy": "Телеметрия Windows",
+  "hide": "Скрыть",
+  "hiddenSubscriptions": "Скрытые подписки: {count}"
 }

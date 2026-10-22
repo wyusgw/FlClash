@@ -5554,6 +5554,21 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Hide`
+  String get hide {
+    return Intl.message('Hide', name: 'hide', desc: '', args: []);
+  }
+
+  /// `Hidden subscriptions: {count}`
+  String hiddenSubscriptions(Object count) {
+    return Intl.message(
+      'Hidden subscriptions: $count',
+      name: 'hiddenSubscriptions',
+      desc: '',
+      args: [count],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

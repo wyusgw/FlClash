@@ -73,6 +73,18 @@ class _CountingCommonAction extends CommonAction {
   void toggleRunning() => toggles++;
 }
 
+class _RecordingUpdateAction extends ProfilesAction {
+  static final updated = <Profile>[];
+
+  @override
+  Future<void> updateProfile(
+    Profile profile, {
+    bool showLoading = false,
+  }) async {
+    updated.add(profile);
+  }
+}
+
 class _FailingUpdateAction extends ProfilesAction {
   @override
   Future<void> updateProfile(
@@ -344,6 +356,138 @@ void main() {
           0, 0, 0, 1, 0,
         ]),
       );
+    });
+  });
+
+  group('subscription menu', () {
+    Future<void> openMenu(WidgetTester tester) async {
+      await tester.tap(
+        find.text('My subscription').last,
+        buttons: kSecondaryButton,
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('a right click on a subscription opens its menu', (
+      tester,
+    ) async {
+      await pumpHome(tester, profile: _profile(), nodes: _nodes);
+      await openMenu(tester);
+
+      final items = tester
+          .widgetList<PopupMenuItem<Object?>>(
+            find.byWidgetPredicate((w) => w is PopupMenuItem && w.enabled),
+          )
+          .map((item) => (item.child! as Text).data)
+          .toList();
+      expect(items, [
+        'Test',
+        'Update',
+        'URL',
+        'Edit',
+        'Hide',
+        'QR code',
+        'Copy link',
+        'Paste',
+        'Delete',
+      ]);
+    });
+
+    testWidgets('a subscription from a file has no link to update or share', (
+      tester,
+    ) async {
+      await pumpHome(
+        tester,
+        profile: _profile().copyWith(url: ''),
+        nodes: _nodes,
+      );
+      await openMenu(tester);
+
+      expect(find.text('Test'), findsOneWidget);
+      expect(find.text('Update'), findsNothing);
+      expect(find.text('URL'), findsNothing);
+      expect(find.text('QR code'), findsNothing);
+      expect(find.text('Copy link'), findsNothing);
+      expect(find.text('Paste'), findsOneWidget);
+    });
+
+    testWidgets('hide keeps it off the page until it is shown again', (
+      tester,
+    ) async {
+      await pumpHome(tester, profile: _profile(), nodes: _nodes);
+      await openMenu(tester);
+      await tester.tap(find.text('Hide'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('My subscription'), findsNothing);
+      expect(container.read(profilesProvider), hasLength(1));
+      expect(find.text('Hidden subscriptions: 1'), findsOneWidget);
+
+      await tester.tap(find.text('Hidden subscriptions: 1'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('My subscription'), findsOneWidget);
+      expect(find.textContaining('Hidden subscriptions'), findsNothing);
+    });
+
+    testWidgets('URL changes the link and reads the subscription from it', (
+      tester,
+    ) async {
+      _RecordingUpdateAction.updated.clear();
+      await pumpHome(
+        tester,
+        profile: _profile(),
+        nodes: _nodes,
+        overrides: [
+          profilesActionProvider.overrideWith(_RecordingUpdateAction.new),
+        ],
+      );
+      await openMenu(tester);
+      await tester.tap(find.text('URL'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byType(TextField),
+        'https://example.com/moved',
+      );
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      expect(
+        container.read(profilesProvider).single.url,
+        'https://example.com/moved',
+      );
+      expect(
+        _RecordingUpdateAction.updated.single.url,
+        'https://example.com/moved',
+      );
+    });
+
+    testWidgets('copy link puts the subscription link on the clipboard', (
+      tester,
+    ) async {
+      String? copied;
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copied = (call.arguments as Map)['text'] as String?;
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      await pumpHome(tester, profile: _profile(), nodes: _nodes);
+      await openMenu(tester);
+      await tester.tap(find.text('Copy link'));
+      await tester.pumpAndSettle();
+
+      expect(copied, 'https://example.com/sub');
     });
   });
 

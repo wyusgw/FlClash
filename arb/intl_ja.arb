@@ -712,5 +712,7 @@
   "presetMainlandChina": "中国本土",
   "presetAds": "広告",
   "presetForeign": "海外サイト",
-  "presetWinSpy": "Windows テレメトリ"
+  "presetWinSpy": "Windows テレメトリ",
+  "hide": "非表示",
+  "hiddenSubscriptions": "非表示のサブスクリプション：{count}"
 }

@@ -28,7 +28,10 @@ class _RecordingProfilesAction extends ProfilesAction {
   Future<List<String>> readNodeTags(Profile profile) async => tags;
 
   @override
-  Future<void> addManualNode(Map<String, dynamic> outbound) async {
+  Future<void> addManualNode(
+    Map<String, dynamic> outbound, {
+    Profile? into,
+  }) async {
     nodes.add(outbound);
   }
 

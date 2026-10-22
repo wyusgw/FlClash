@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
@@ -214,6 +215,33 @@ class _HomeViewState extends ConsumerState<HomeView> {
   }
 }
 
+/// How many subscriptions are kept off the page, and the way to bring them back.
+class _HiddenProfilesRow extends ConsumerWidget {
+  const _HiddenProfilesRow({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    final palette = GroupedPalette.of(context);
+    return GroupedSection(
+      children: [
+        GroupedRow(
+          leading: const GroupedIcon(AppGlyphs.eyeOff),
+          title: appLocalizations.hiddenSubscriptions('$count'),
+          trailing: Text(
+            appLocalizations.show,
+            style: palette.rowValue.copyWith(color: palette.accent),
+          ),
+          onTap: () =>
+              ref.read(profilesActionProvider.notifier).showHiddenProfiles(),
+        ),
+      ],
+    );
+  }
+}
+
 // The logo starts to show once the global routing row reaches the bar, and has
 // taken the title's place once the connectivity row has gone under it.
 const _logoStart = 13 + groupedRowHeight;
@@ -346,8 +374,19 @@ class _HomeBodyState extends ConsumerState<_HomeBody> {
 
   @override
   Widget build(BuildContext context) {
-    final profiles = ref.watch(profilesProvider);
+    final all = ref.watch(profilesProvider);
+    final hidden = ref.watch(
+      appSettingProvider.select((state) => state.hiddenProfiles),
+    );
     final editing = _EditScope.of(context).editing;
+    // Editing reorders the whole list, so it shows the hidden ones too.
+    final profiles = editing
+        ? all
+        : [
+            for (final profile in all)
+              if (!hidden.contains(profile.id)) profile,
+          ];
+    final hiddenCount = all.length - profiles.length;
     return CustomScrollView(
       key: homeStoreKey,
       slivers: [
@@ -372,7 +411,7 @@ class _HomeBodyState extends ConsumerState<_HomeBody> {
             groupedPageInset,
             20 + BottomInsetScope.of(context),
           ),
-          sliver: profiles.isEmpty
+          sliver: all.isEmpty
               ? SliverToBoxAdapter(
                   child: GroupedSection(
                     footer: context.appLocalizations.subscriptionFoldTip,
@@ -405,6 +444,7 @@ class _HomeBodyState extends ConsumerState<_HomeBody> {
                       _section(profile),
                       const SizedBox(height: groupedSectionGap),
                     ],
+                    if (hiddenCount > 0) _HiddenProfilesRow(count: hiddenCount),
                   ]),
                 ),
         ),
@@ -828,99 +868,107 @@ class _SubscriptionSection extends ConsumerWidget {
       curve: Curves.easeOutCubic,
       child: GlyphIcon(AppGlyphs.chevronForward, size: 19, color: palette.icon),
     );
-    final header = SwipeActions(
-      enabled: !editing && !system.isDesktop,
-      leading: [
-        if (current)
-          SwipeAction(
-            label: appLocalizations.test,
-            color: swipeActionGo,
-            fullSwipe: true,
-            onPressed: () => unawaited(
-              ref
-                  .read(proxiesActionProvider.notifier)
-                  .delayTestPageGroup(nodeGroupName),
-            ),
-          ),
-        if (profile.type == ProfileType.url)
-          SwipeAction(
-            label: appLocalizations.update,
-            color: swipeActionNeutral,
-            fullSwipe: !current,
-            onPressed: () => unawaited(update()),
-          ),
-      ],
-      trailing: [
-        if (profile.type == ProfileType.url)
-          SwipeAction(
-            label: appLocalizations.qrcode,
-            color: swipeActionNeutral,
-            onPressed: () => unawaited(
-              showShareQrCode(
-                context,
-                title: profile.realLabel,
-                text: profile.url,
+    final header = _ProfileMenuTarget(
+      profile: profile,
+      current: current,
+      enabled: !editing,
+      child: SwipeActions(
+        enabled: !editing && !system.isDesktop,
+        leading: [
+          if (current)
+            SwipeAction(
+              label: appLocalizations.test,
+              color: swipeActionGo,
+              fullSwipe: true,
+              onPressed: () => unawaited(
+                ref
+                    .read(proxiesActionProvider.notifier)
+                    .delayTestPageGroup(nodeGroupName),
               ),
             ),
-          ),
-        SwipeAction(
-          label: appLocalizations.delete,
-          color: groupedDanger,
-          fullSwipe: true,
-          slideOut: true,
-          onPressed: () => ProfileActions(profile).deleteProfile(context, ref),
-        ),
-      ],
-      child: GroupedRow(
-        leading: editing
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                spacing: _selectGap,
-                children: [
-                  GroupedSelectMark(
-                    selected: edit.isSelected(_profileKey(profile.id)),
-                  ),
-                  chevron,
-                ],
-              )
-            : chevron,
-        leadingWidth: editing
-            ? groupedLeadingSize * 2 + _selectGap
-            : groupedLeadingSize,
-        title: profile.realLabel,
-        subtitle: _usage(profile.subscriptionInfo),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 12,
-          children: [
-            if (profile.type == ProfileType.url)
-              _RoundAction(
-                glyph: AppGlyphs.refresh,
-                tooltip: appLocalizations.update,
-                busy: isUpdating,
-                onPressed: () => unawaited(update()),
-              ),
-            if (editing && dragIndex != null)
-              ReorderableDragStartListener(
-                index: dragIndex!,
-                child: GlyphIcon(
-                  AppGlyphs.dragHandle,
-                  size: 19,
-                  color: palette.tertiary,
-                ),
-              )
-            else
-              _RoundAction(
-                glyph: AppGlyphs.info,
-                tooltip: appLocalizations.edit,
-                onPressed: () => BaseNavigator.push(
+          if (profile.type == ProfileType.url)
+            SwipeAction(
+              label: appLocalizations.update,
+              color: swipeActionNeutral,
+              fullSwipe: !current,
+              onPressed: () => unawaited(update()),
+            ),
+        ],
+        trailing: [
+          if (profile.type == ProfileType.url)
+            SwipeAction(
+              label: appLocalizations.qrcode,
+              color: swipeActionNeutral,
+              onPressed: () => unawaited(
+                showShareQrCode(
                   context,
-                  EditProfileView(profile: profile),
+                  title: profile.realLabel,
+                  text: profile.url,
                 ),
               ),
-          ],
+            ),
+          SwipeAction(
+            label: appLocalizations.delete,
+            color: groupedDanger,
+            fullSwipe: true,
+            slideOut: true,
+            onPressed: () =>
+                ProfileActions(profile).deleteProfile(context, ref),
+          ),
+        ],
+        child: GroupedRow(
+          leading: editing
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: _selectGap,
+                  children: [
+                    GroupedSelectMark(
+                      selected: edit.isSelected(_profileKey(profile.id)),
+                    ),
+                    chevron,
+                  ],
+                )
+              : chevron,
+          leadingWidth: editing
+              ? groupedLeadingSize * 2 + _selectGap
+              : groupedLeadingSize,
+          title: profile.realLabel,
+          subtitle: _usage(profile.subscriptionInfo),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 12,
+            children: [
+              if (profile.type == ProfileType.url)
+                _RoundAction(
+                  glyph: AppGlyphs.refresh,
+                  tooltip: appLocalizations.update,
+                  busy: isUpdating,
+                  onPressed: () => unawaited(update()),
+                ),
+              if (editing && dragIndex != null)
+                ReorderableDragStartListener(
+                  index: dragIndex!,
+                  child: GlyphIcon(
+                    AppGlyphs.dragHandle,
+                    size: 19,
+                    color: palette.tertiary,
+                  ),
+                )
+              else
+                _RoundAction(
+                  glyph: AppGlyphs.info,
+                  tooltip: appLocalizations.edit,
+                  onPressed: () => BaseNavigator.push(
+                    context,
+                    EditProfileView(profile: profile),
+                  ),
+                ),
+            ],
+          ),
+          onTap: editing
+              ? () => edit.toggle(_profileKey(profile.id))
+              : onToggle,
         ),
-        onTap: editing ? () => edit.toggle(_profileKey(profile.id)) : onToggle,
       ),
     );
     return GroupedSection(
@@ -1442,6 +1490,214 @@ class _NodeMenuTarget extends ConsumerWidget {
 }
 
 enum _NodeAction { test, details, copyName, copyAddress, copy, qrcode, delete }
+
+enum _ProfileAction {
+  test,
+  update,
+  url,
+  edit,
+  hide,
+  qrcode,
+  copyLink,
+  paste,
+  delete,
+}
+
+/// Opens a subscription's menu where it was asked for: a right click on its
+/// header, or a long press.
+class _ProfileMenuTarget extends ConsumerWidget {
+  const _ProfileMenuTarget({
+    required this.profile,
+    required this.current,
+    required this.enabled,
+    required this.child,
+  });
+
+  final Profile profile;
+
+  /// Only the subscription in use can be tested: the core runs no other.
+  final bool current;
+  final bool enabled;
+  final Widget child;
+
+  /// The menu's lines, in groups, as (action, label, glyph).
+  List<List<(_ProfileAction, String, Glyph)>> _groups(
+    AppLocalizations appLocalizations,
+  ) {
+    final linked = profile.type == ProfileType.url;
+    return [
+      [
+        if (current)
+          (_ProfileAction.test, appLocalizations.test, AppGlyphs.signpost),
+        if (linked)
+          (_ProfileAction.update, appLocalizations.update, AppGlyphs.sync),
+        if (linked) (_ProfileAction.url, appLocalizations.url, AppGlyphs.link),
+      ],
+      [
+        (_ProfileAction.edit, appLocalizations.edit, AppGlyphs.edit),
+        (_ProfileAction.hide, appLocalizations.hide, AppGlyphs.eyeOff),
+      ],
+      [
+        if (linked)
+          (_ProfileAction.qrcode, appLocalizations.qrcode, AppGlyphs.qrCode),
+        if (linked)
+          (_ProfileAction.copyLink, appLocalizations.copyLink, AppGlyphs.copy),
+        (_ProfileAction.paste, appLocalizations.paste, AppGlyphs.paste),
+      ],
+      [(_ProfileAction.delete, appLocalizations.delete, AppGlyphs.delete)],
+    ].where((group) => group.isNotEmpty).toList();
+  }
+
+  Future<void> _open(
+    BuildContext context,
+    WidgetRef ref,
+    Offset position,
+  ) async {
+    final groups = _groups(context.appLocalizations);
+    final _ProfileAction? chosen;
+    if (system.isDesktop) {
+      final overlay =
+          Overlay.of(context).context.findRenderObject()! as RenderBox;
+      chosen = await showMenu<_ProfileAction>(
+        context: context,
+        position: RelativeRect.fromRect(
+          position & const Size(1, 1),
+          Offset.zero & overlay.size,
+        ),
+        items: [
+          PopupMenuItem<_ProfileAction>(
+            enabled: false,
+            height: 30,
+            child: Text(
+              profile.realLabel,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          for (final group in groups) ...[
+            const PopupMenuDivider(height: 1),
+            for (final (action, label, _) in group)
+              PopupMenuItem(value: action, height: 30, child: Text(label)),
+          ],
+        ],
+      );
+    } else {
+      final box = context.findRenderObject() as RenderBox?;
+      final rect = box != null && box.hasSize
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null;
+      chosen = await showNodeContextMenu<_ProfileAction>(
+        context: context,
+        title: profile.realLabel,
+        anchor: position,
+        preview: rect == null ? null : child,
+        previewRect: rect,
+        groups: [
+          for (final group in groups)
+            [
+              for (final (action, label, glyph) in group)
+                NodeMenuEntry(
+                  value: action,
+                  label: label,
+                  glyph: glyph,
+                  danger: action == _ProfileAction.delete,
+                ),
+            ],
+        ],
+      );
+    }
+    if (chosen == null || !context.mounted) return;
+    await _run(context, ref, chosen);
+  }
+
+  Future<void> _run(
+    BuildContext context,
+    WidgetRef ref,
+    _ProfileAction chosen,
+  ) async {
+    final appLocalizations = context.appLocalizations;
+    final profilesAction = ref.read(profilesActionProvider.notifier);
+    switch (chosen) {
+      case _ProfileAction.test:
+        unawaited(
+          ref
+              .read(proxiesActionProvider.notifier)
+              .delayTestPageGroup(nodeGroupName),
+        );
+      case _ProfileAction.update:
+        await globalState.safeRun(
+          () => profilesAction.updateProfile(profile, showLoading: true),
+        );
+      case _ProfileAction.url:
+        final url = await dialogs.showCommonDialog<String>(
+          child: InputDialog(
+            title: appLocalizations.url,
+            value: profile.url,
+            keyboardType: TextInputType.url,
+            validator: (value) => value != null && value.trim().isUrl
+                ? null
+                : appLocalizations.urlTip(appLocalizations.url),
+          ),
+        );
+        final changed = url?.trim();
+        if (changed == null || changed.isEmpty || changed == profile.url) {
+          return;
+        }
+        await globalState.safeRun(
+          () => profilesAction.changeProfileUrl(profile, changed),
+        );
+      case _ProfileAction.edit:
+        unawaited(
+          BaseNavigator.push(context, EditProfileView(profile: profile)),
+        );
+      case _ProfileAction.hide:
+        profilesAction.setProfileHidden(profile, true);
+      case _ProfileAction.qrcode:
+        await showShareQrCode(
+          context,
+          title: profile.realLabel,
+          text: profile.url,
+        );
+      case _ProfileAction.copyLink:
+        await Clipboard.setData(ClipboardData(text: profile.url));
+        if (context.mounted) {
+          context.showNotifier(
+            appLocalizations.copySuccess,
+            level: MessageLevel.success,
+          );
+        }
+      case _ProfileAction.paste:
+        final source = await readClipboardImport();
+        if (!context.mounted) return;
+        if (source is! ClipboardNodes) {
+          context.showNotifier(
+            appLocalizations.clipboardNothingToImport,
+            level: MessageLevel.error,
+          );
+          return;
+        }
+        for (final outbound in source.outbounds) {
+          await profilesAction.addManualNode(outbound, into: profile);
+        }
+      case _ProfileAction.delete:
+        await ProfileActions(profile).deleteProfile(context, ref);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!enabled) return child;
+    return GestureDetector(
+      onSecondaryTapDown: (details) =>
+          unawaited(_open(context, ref, details.globalPosition)),
+      onLongPressStart: (details) {
+        selectionHaptic(context);
+        unawaited(_open(context, ref, details.globalPosition));
+      },
+      child: child,
+    );
+  }
+}
 
 class _RoundAction extends StatelessWidget {
   const _RoundAction({

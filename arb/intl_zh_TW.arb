@@ -712,5 +712,7 @@
   "presetMainlandChina": "中國大陸",
   "presetAds": "廣告",
   "presetForeign": "海外網站",
-  "presetWinSpy": "Windows 遙測"
+  "presetWinSpy": "Windows 遙測",
+  "hide": "隱藏",
+  "hiddenSubscriptions": "已隱藏的訂閱：{count}"
 }

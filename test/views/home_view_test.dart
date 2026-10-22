@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
@@ -487,6 +488,47 @@ void main() {
 
       expect(find.text('TROJAN / GRPC'), findsNothing);
       expect(find.text('VLESS / WS'), findsOneWidget);
+    });
+
+    testWidgets('nodes read after it opens push it on smoothly', (
+      tester,
+    ) async {
+      final read = Completer<List<Proxy>>();
+      await pumpHome(
+        tester,
+        profile: _profile(),
+        nodes: _nodes,
+        others: [other],
+        overrides: [
+          profileNodesProvider(
+            other.id,
+            other.lastUpdateDate,
+          ).overrideWith((_) => read.future),
+        ],
+      );
+      final drawer = find.descendant(
+        of: find.ancestor(
+          of: find.text('Second subscription'),
+          matching: find.byType(GroupedSection),
+        ),
+        matching: find.byType(SizeTransition),
+      );
+
+      await tester.tap(find.text('Second subscription'));
+      await tester.pumpAndSettle();
+      expect(tester.getSize(drawer).height, 0);
+
+      read.complete(otherNodes);
+      // One frame for the read to land, one for the section to build them.
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      final growing = tester.getSize(drawer).height;
+
+      await tester.pumpAndSettle();
+      final grown = tester.getSize(drawer).height;
+      expect(growing, inExclusiveRange(0, grown));
+      expect(find.text('TROJAN / GRPC'), findsOneWidget);
     });
 
     testWidgets('a node of another one switches to it with that node', (

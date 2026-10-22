@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -912,85 +913,97 @@ class _SubscriptionSection extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  for (final node in nodes ?? const <Proxy>[]) ...[
-                    const GroupedHairline(inset: 0),
-                    _NodeMenuTarget(
-                      profile: profile,
-                      node: node,
-                      current: current,
-                      child: _NodeSwipe(
-                        profile: profile,
-                        node: node,
-                        current: current,
-                        enabled: !editing,
-                        child: GroupedRow(
-                          key: ValueKey('${profile.id}.${node.name}'),
-                          leading: editing
-                              ? Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  spacing: _selectGap,
-                                  children: [
-                                    GroupedSelectMark(
-                                      selected: edit.isSelected(
-                                        _nodeKey(profile.id, node.name),
+                  for (final (index, node)
+                      in (nodes ?? const <Proxy>[]).indexed)
+                    _RevealRow(
+                      index: index,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const GroupedHairline(inset: 0),
+                          _NodeMenuTarget(
+                            profile: profile,
+                            node: node,
+                            current: current,
+                            child: _NodeSwipe(
+                              profile: profile,
+                              node: node,
+                              current: current,
+                              enabled: !editing,
+                              child: GroupedRow(
+                                key: ValueKey('${profile.id}.${node.name}'),
+                                leading: editing
+                                    ? Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        spacing: _selectGap,
+                                        children: [
+                                          GroupedSelectMark(
+                                            selected: edit.isSelected(
+                                              _nodeKey(profile.id, node.name),
+                                            ),
+                                          ),
+                                          NodeIcon(
+                                            name: node.name,
+                                            region: node.region,
+                                            address: node.address,
+                                          ),
+                                        ],
+                                      )
+                                    : NodeIcon(
+                                        name: node.name,
+                                        region: node.region,
+                                        address: node.address,
                                       ),
-                                    ),
-                                    NodeIcon(
-                                      name: node.name,
-                                      region: node.region,
-                                      address: node.address,
-                                    ),
-                                  ],
-                                )
-                              : NodeIcon(
-                                  name: node.name,
-                                  region: node.region,
-                                  address: node.address,
-                                ),
-                          leadingWidth: editing
-                              ? groupedLeadingSize * 2 + _selectGap
-                              : groupedLeadingSize,
-                          title: node.name,
-                          subtitle: [
-                            node.type,
-                            if (node.network != null) node.network!,
-                          ].map((part) => part.toUpperCase()).join(' / '),
-                          titleWidget: EmojiText(
-                            nodeDisplayName(node.name),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: palette.rowTitle.copyWith(
-                              color: node.name == selected
-                                  ? palette.accent
-                                  : null,
-                            ),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            spacing: 10,
-                            children: [
-                              if (current) _NodeDelay(name: node.name),
-                              if (!editing)
-                                _RoundAction(
-                                  glyph: AppGlyphs.info,
-                                  tooltip: appLocalizations.details(node.name),
-                                  onPressed: () => showNodeDetail(
-                                    context,
-                                    ref,
-                                    profile,
-                                    node,
+                                leadingWidth: editing
+                                    ? groupedLeadingSize * 2 + _selectGap
+                                    : groupedLeadingSize,
+                                title: node.name,
+                                subtitle: [
+                                  node.type,
+                                  if (node.network != null) node.network!,
+                                ].map((part) => part.toUpperCase()).join(' / '),
+                                titleWidget: EmojiText(
+                                  nodeDisplayName(node.name),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: palette.rowTitle.copyWith(
+                                    color: node.name == selected
+                                        ? palette.accent
+                                        : null,
                                   ),
                                 ),
-                            ],
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  spacing: 10,
+                                  children: [
+                                    if (current) _NodeDelay(name: node.name),
+                                    if (!editing)
+                                      _RoundAction(
+                                        glyph: AppGlyphs.info,
+                                        tooltip: appLocalizations.details(
+                                          node.name,
+                                        ),
+                                        onPressed: () => showNodeDetail(
+                                          context,
+                                          ref,
+                                          profile,
+                                          node,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                onTap: editing
+                                    ? () => edit.toggle(
+                                        _nodeKey(profile.id, node.name),
+                                      )
+                                    : () =>
+                                          _choose(ref, node, current: current),
+                              ),
+                            ),
                           ),
-                          onTap: editing
-                              ? () =>
-                                    edit.toggle(_nodeKey(profile.id, node.name))
-                              : () => _choose(ref, node, current: current),
-                        ),
+                        ],
                       ),
                     ),
-                  ],
                 ],
               ),
             ),
@@ -1004,7 +1017,10 @@ class _SubscriptionSection extends ConsumerWidget {
 Duration _drawerDuration(BuildContext context) =>
     MediaQuery.disableAnimationsOf(context)
     ? Duration.zero
-    : const Duration(milliseconds: 360);
+    : const Duration(milliseconds: 420);
+
+// Fast out of the header, then settling slowly into place.
+const _drawerOpen = Cubic(0.05, 0.7, 0.1, 1);
 
 /// A subscription's nodes, sliding open under its header and closed back into
 /// it, fading as they go. While it closes it keeps showing the nodes it had.
@@ -1026,17 +1042,21 @@ class _NodeDrawerState extends State<_NodeDrawer>
   );
   late final _size = CurvedAnimation(
     parent: _controller,
-    curve: Curves.easeOutCubic,
+    curve: _drawerOpen,
     reverseCurve: Curves.easeInOutCubic,
   );
+  // The rows fade in one by one as it opens; closing fades them all at once.
   late final _fade = CurvedAnimation(
     parent: _controller,
-    curve: const Interval(0.15, 1, curve: Curves.easeOut),
+    curve: const Interval(0, 0.2, curve: Curves.easeOut),
     reverseCurve: const Interval(0.3, 1, curve: Curves.easeIn),
   );
 
   /// What shows while the drawer closes, after the section stops building it.
   Widget? _closing;
+
+  /// How long nodes that come after the drawer has opened take to push it on.
+  Duration _grow = Duration.zero;
 
   @override
   void didChangeDependencies() {
@@ -1044,6 +1064,7 @@ class _NodeDrawerState extends State<_NodeDrawer>
     final duration = _drawerDuration(context);
     _controller.duration = duration;
     _controller.reverseDuration = duration * 0.8;
+    _grow = duration;
   }
 
   @override
@@ -1075,12 +1096,70 @@ class _NodeDrawerState extends State<_NodeDrawer>
   Widget build(BuildContext context) {
     final child = widget.open ? widget.child : _closing;
     if (child == null) return const SizedBox.shrink();
+    final revealed = _DrawerReveal(animation: _controller, child: child);
     return ClipRect(
       child: SizeTransition(
         sizeFactor: _size,
         alignment: AlignmentDirectional.topStart,
-        child: FadeTransition(opacity: _fade, child: child),
+        child: FadeTransition(
+          opacity: _fade,
+          // A subscription not in use reads its nodes from its file, so they
+          // can come in after the drawer has opened; they push it on smoothly.
+          child: _grow == Duration.zero
+              ? revealed
+              : AnimatedSize(
+                  duration: _grow,
+                  curve: _drawerOpen,
+                  alignment: AlignmentDirectional.topStart,
+                  child: revealed,
+                ),
+        ),
       ),
+    );
+  }
+}
+
+class _DrawerReveal extends InheritedWidget {
+  const _DrawerReveal({required this.animation, required super.child});
+
+  final Animation<double> animation;
+
+  static Animation<double>? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_DrawerReveal>()?.animation;
+
+  @override
+  bool updateShouldNotify(_DrawerReveal old) => animation != old.animation;
+}
+
+/// A node row of an opening drawer: it fades in and settles down a little
+/// after the one above it.
+class _RevealRow extends StatelessWidget {
+  const _RevealRow({required this.index, required this.child});
+
+  final int index;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final animation = _DrawerReveal.of(context);
+    if (animation == null) return child;
+    final start = min(index * 0.05, 0.4);
+    final curve = Interval(start, start + 0.6, curve: Curves.easeOutCubic);
+    return AnimatedBuilder(
+      animation: animation,
+      child: child,
+      builder: (_, child) {
+        final t = animation.status == AnimationStatus.forward
+            ? curve.transform(animation.value)
+            : 1.0;
+        return Opacity(
+          opacity: t,
+          child: Transform.translate(
+            offset: Offset(0, -8 * (1 - t)),
+            child: child,
+          ),
+        );
+      },
     );
   }
 }

@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.9.7 (2026-10-22)
+
+**Features**
+
+- **home** A subscription's menu, on a right click or a long press, can change its link, hide it or paste servers into it (461c8c5)
+- **home** Swiping a subscription offers test and update, or its QR code and delete (5a84ac3)
+- **home** A subscription's nodes open more softly, one row after another (01b65b5)
+- **home** A subscription's nodes slide open and closed (8042827)
+- **home** Scrolling the home page brings up the logo in the bar, which turns the proxy on and off (3a4d0cd)
+- **home** Global routing and connectivity test have new icons on the home page (349e796)
+
+**Bug Fixes**
+
+- **access** The access control app list no longer leaves a gap at its top on phones (ab82766)
+
 ## v0.9.6 (2026-10-21)
 
 **Breaking Changes**

@@ -2,6 +2,59 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "0.9.7",
+      "tag": "v0.9.7",
+      "date": "2026-10-22",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "461c8c5",
+              "scope": "home",
+              "text": "A subscription's menu, on a right click or a long press, can change its link, hide it or paste servers into it"
+            },
+            {
+              "id": "5a84ac3",
+              "scope": "home",
+              "text": "Swiping a subscription offers test and update, or its QR code and delete"
+            },
+            {
+              "id": "01b65b5",
+              "scope": "home",
+              "text": "A subscription's nodes open more softly, one row after another"
+            },
+            {
+              "id": "8042827",
+              "scope": "home",
+              "text": "A subscription's nodes slide open and closed"
+            },
+            {
+              "id": "3a4d0cd",
+              "scope": "home",
+              "text": "Scrolling the home page brings up the logo in the bar, which turns the proxy on and off"
+            },
+            {
+              "id": "349e796",
+              "scope": "home",
+              "text": "Global routing and connectivity test have new icons on the home page"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "ab82766",
+              "scope": "access",
+              "text": "The access control app list no longer leaves a gap at its top on phones"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.9.6",
       "tag": "v0.9.6",
       "date": "2026-10-21",

@@ -815,166 +815,272 @@ class _SubscriptionSection extends ConsumerWidget {
         : null;
     final edit = _EditScope.of(context);
     final editing = edit.editing;
-    final chevron = GlyphIcon(
-      expanded ? AppGlyphs.chevronDown : AppGlyphs.chevronForward,
-      size: 19,
-      color: palette.icon,
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final chevron = AnimatedRotation(
+      turns: expanded ? (rtl ? -0.25 : 0.25) : 0,
+      duration: _drawerDuration(context),
+      curve: Curves.easeOutCubic,
+      child: GlyphIcon(AppGlyphs.chevronForward, size: 19, color: palette.icon),
+    );
+    final header = SwipeActions(
+      enabled: !editing && !system.isDesktop,
+      leading: [
+        if (current)
+          SwipeAction(
+            label: appLocalizations.test,
+            color: swipeActionGo,
+            onPressed: () => unawaited(
+              ref
+                  .read(proxiesActionProvider.notifier)
+                  .delayTestPageGroup(nodeGroupName),
+            ),
+          ),
+        SwipeAction(
+          label: appLocalizations.delete,
+          color: groupedDanger,
+          fullSwipe: true,
+          slideOut: true,
+          onPressed: () => ProfileActions(profile).deleteProfile(context, ref),
+        ),
+      ],
+      child: GroupedRow(
+        leading: editing
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: _selectGap,
+                children: [
+                  GroupedSelectMark(
+                    selected: edit.isSelected(_profileKey(profile.id)),
+                  ),
+                  chevron,
+                ],
+              )
+            : chevron,
+        leadingWidth: editing
+            ? groupedLeadingSize * 2 + _selectGap
+            : groupedLeadingSize,
+        title: profile.realLabel,
+        subtitle: _usage(profile.subscriptionInfo),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 12,
+          children: [
+            if (profile.type == ProfileType.url)
+              _RoundAction(
+                glyph: AppGlyphs.refresh,
+                tooltip: appLocalizations.update,
+                busy: isUpdating,
+                onPressed: () => unawaited(
+                  globalState.safeRun(
+                    () => ref
+                        .read(profilesActionProvider.notifier)
+                        .updateProfile(profile, showLoading: true),
+                  ),
+                ),
+              ),
+            if (editing && dragIndex != null)
+              ReorderableDragStartListener(
+                index: dragIndex!,
+                child: GlyphIcon(
+                  AppGlyphs.dragHandle,
+                  size: 19,
+                  color: palette.tertiary,
+                ),
+              )
+            else
+              _RoundAction(
+                glyph: AppGlyphs.info,
+                tooltip: appLocalizations.edit,
+                onPressed: () => BaseNavigator.push(
+                  context,
+                  EditProfileView(profile: profile),
+                ),
+              ),
+          ],
+        ),
+        onTap: editing ? () => edit.toggle(_profileKey(profile.id)) : onToggle,
+      ),
     );
     return GroupedSection(
       children: [
-        SwipeActions(
-          enabled: !editing && !system.isDesktop,
-          leading: [
-            if (current)
-              SwipeAction(
-                label: appLocalizations.test,
-                color: swipeActionGo,
-                onPressed: () => unawaited(
-                  ref
-                      .read(proxiesActionProvider.notifier)
-                      .delayTestPageGroup(nodeGroupName),
-                ),
-              ),
-            SwipeAction(
-              label: appLocalizations.delete,
-              color: groupedDanger,
-              fullSwipe: true,
-              slideOut: true,
-              onPressed: () =>
-                  ProfileActions(profile).deleteProfile(context, ref),
-            ),
-          ],
-          child: GroupedRow(
-            leading: editing
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    spacing: _selectGap,
-                    children: [
-                      GroupedSelectMark(
-                        selected: edit.isSelected(_profileKey(profile.id)),
-                      ),
-                      chevron,
-                    ],
-                  )
-                : chevron,
-            leadingWidth: editing
-                ? groupedLeadingSize * 2 + _selectGap
-                : groupedLeadingSize,
-            title: profile.realLabel,
-            subtitle: _usage(profile.subscriptionInfo),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 12,
-              children: [
-                if (profile.type == ProfileType.url)
-                  _RoundAction(
-                    glyph: AppGlyphs.refresh,
-                    tooltip: appLocalizations.update,
-                    busy: isUpdating,
-                    onPressed: () => unawaited(
-                      globalState.safeRun(
-                        () => ref
-                            .read(profilesActionProvider.notifier)
-                            .updateProfile(profile, showLoading: true),
-                      ),
-                    ),
-                  ),
-                if (editing && dragIndex != null)
-                  ReorderableDragStartListener(
-                    index: dragIndex!,
-                    child: GlyphIcon(
-                      AppGlyphs.dragHandle,
-                      size: 19,
-                      color: palette.tertiary,
-                    ),
-                  )
-                else
-                  _RoundAction(
-                    glyph: AppGlyphs.info,
-                    tooltip: appLocalizations.edit,
-                    onPressed: () => BaseNavigator.push(
-                      context,
-                      EditProfileView(profile: profile),
-                    ),
-                  ),
-              ],
-            ),
-            onTap: editing
-                ? () => edit.toggle(_profileKey(profile.id))
-                : onToggle,
-          ),
-        ),
-        for (final node in nodes ?? const <Proxy>[])
-          _NodeMenuTarget(
-            profile: profile,
-            node: node,
-            current: current,
-            child: _NodeSwipe(
-              profile: profile,
-              node: node,
-              current: current,
-              enabled: !editing,
-              child: GroupedRow(
-                key: ValueKey('${profile.id}.${node.name}'),
-                leading: editing
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        spacing: _selectGap,
-                        children: [
-                          GroupedSelectMark(
-                            selected: edit.isSelected(
-                              _nodeKey(profile.id, node.name),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            header,
+            _NodeDrawer(
+              open: expanded,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final node in nodes ?? const <Proxy>[]) ...[
+                    const GroupedHairline(inset: 0),
+                    _NodeMenuTarget(
+                      profile: profile,
+                      node: node,
+                      current: current,
+                      child: _NodeSwipe(
+                        profile: profile,
+                        node: node,
+                        current: current,
+                        enabled: !editing,
+                        child: GroupedRow(
+                          key: ValueKey('${profile.id}.${node.name}'),
+                          leading: editing
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  spacing: _selectGap,
+                                  children: [
+                                    GroupedSelectMark(
+                                      selected: edit.isSelected(
+                                        _nodeKey(profile.id, node.name),
+                                      ),
+                                    ),
+                                    NodeIcon(
+                                      name: node.name,
+                                      region: node.region,
+                                      address: node.address,
+                                    ),
+                                  ],
+                                )
+                              : NodeIcon(
+                                  name: node.name,
+                                  region: node.region,
+                                  address: node.address,
+                                ),
+                          leadingWidth: editing
+                              ? groupedLeadingSize * 2 + _selectGap
+                              : groupedLeadingSize,
+                          title: node.name,
+                          subtitle: [
+                            node.type,
+                            if (node.network != null) node.network!,
+                          ].map((part) => part.toUpperCase()).join(' / '),
+                          titleWidget: EmojiText(
+                            nodeDisplayName(node.name),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: palette.rowTitle.copyWith(
+                              color: node.name == selected
+                                  ? palette.accent
+                                  : null,
                             ),
                           ),
-                          NodeIcon(
-                            name: node.name,
-                            region: node.region,
-                            address: node.address,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            spacing: 10,
+                            children: [
+                              if (current) _NodeDelay(name: node.name),
+                              if (!editing)
+                                _RoundAction(
+                                  glyph: AppGlyphs.info,
+                                  tooltip: appLocalizations.details(node.name),
+                                  onPressed: () => showNodeDetail(
+                                    context,
+                                    ref,
+                                    profile,
+                                    node,
+                                  ),
+                                ),
+                            ],
                           ),
-                        ],
-                      )
-                    : NodeIcon(
-                        name: node.name,
-                        region: node.region,
-                        address: node.address,
+                          onTap: editing
+                              ? () =>
+                                    edit.toggle(_nodeKey(profile.id, node.name))
+                              : () => _choose(ref, node, current: current),
+                        ),
                       ),
-                leadingWidth: editing
-                    ? groupedLeadingSize * 2 + _selectGap
-                    : groupedLeadingSize,
-                title: node.name,
-                subtitle: [
-                  node.type,
-                  if (node.network != null) node.network!,
-                ].map((part) => part.toUpperCase()).join(' / '),
-                titleWidget: EmojiText(
-                  nodeDisplayName(node.name),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: palette.rowTitle.copyWith(
-                    color: node.name == selected ? palette.accent : null,
-                  ),
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 10,
-                  children: [
-                    if (current) _NodeDelay(name: node.name),
-                    if (!editing)
-                      _RoundAction(
-                        glyph: AppGlyphs.info,
-                        tooltip: appLocalizations.details(node.name),
-                        onPressed: () =>
-                            showNodeDetail(context, ref, profile, node),
-                      ),
+                    ),
                   ],
-                ),
-                onTap: editing
-                    ? () => edit.toggle(_nodeKey(profile.id, node.name))
-                    : () => _choose(ref, node, current: current),
+                ],
               ),
             ),
-          ),
+          ],
+        ),
       ],
+    );
+  }
+}
+
+Duration _drawerDuration(BuildContext context) =>
+    MediaQuery.disableAnimationsOf(context)
+    ? Duration.zero
+    : const Duration(milliseconds: 360);
+
+/// A subscription's nodes, sliding open under its header and closed back into
+/// it, fading as they go. While it closes it keeps showing the nodes it had.
+class _NodeDrawer extends StatefulWidget {
+  const _NodeDrawer({required this.open, required this.child});
+
+  final bool open;
+  final Widget child;
+
+  @override
+  State<_NodeDrawer> createState() => _NodeDrawerState();
+}
+
+class _NodeDrawerState extends State<_NodeDrawer>
+    with SingleTickerProviderStateMixin {
+  late final _controller = AnimationController(
+    vsync: this,
+    value: widget.open ? 1 : 0,
+  );
+  late final _size = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.easeOutCubic,
+    reverseCurve: Curves.easeInOutCubic,
+  );
+  late final _fade = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.15, 1, curve: Curves.easeOut),
+    reverseCurve: const Interval(0.3, 1, curve: Curves.easeIn),
+  );
+
+  /// What shows while the drawer closes, after the section stops building it.
+  Widget? _closing;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final duration = _drawerDuration(context);
+    _controller.duration = duration;
+    _controller.reverseDuration = duration * 0.8;
+  }
+
+  @override
+  void didUpdateWidget(_NodeDrawer old) {
+    super.didUpdateWidget(old);
+    if (widget.open == old.open) return;
+    if (widget.open) {
+      _closing = null;
+      unawaited(_controller.forward());
+    } else {
+      _closing = old.child;
+      unawaited(
+        _controller.reverse().whenComplete(() {
+          if (mounted && !widget.open) setState(() => _closing = null);
+        }),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _size.dispose();
+    _fade.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final child = widget.open ? widget.child : _closing;
+    if (child == null) return const SizedBox.shrink();
+    return ClipRect(
+      child: SizeTransition(
+        sizeFactor: _size,
+        alignment: AlignmentDirectional.topStart,
+        child: FadeTransition(opacity: _fade, child: child),
+      ),
     );
   }
 }

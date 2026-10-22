@@ -396,18 +396,49 @@ void main() {
     tester,
   ) async {
     await pumpHome(tester, profile: _profile(), nodes: _nodes);
+    double drawer() => tester.getSize(find.byType(SizeTransition)).height;
+    final open = drawer();
 
     await tester.tap(find.text('My subscription').last);
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
 
+    // The nodes slide back into the header rather than vanish at once.
+    expect(find.text('SHADOWSOCKS / TCP'), findsOneWidget);
+    expect(drawer(), inExclusiveRange(0, open));
+
+    await tester.pumpAndSettle();
     expect(find.text('SHADOWSOCKS / TCP'), findsNothing);
     expect(find.text('VLESS / WS'), findsNothing);
 
     await tester.tap(find.text('My subscription').last);
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
 
     expect(find.text('SHADOWSOCKS / TCP'), findsOneWidget);
+    expect(drawer(), inExclusiveRange(0, open));
+
+    await tester.pumpAndSettle();
+    expect(drawer(), open);
     expect(find.text('VLESS / WS'), findsOneWidget);
+  });
+
+  testWidgets('the nodes fold at once when motion is reduced', (tester) async {
+    await pumpHome(
+      tester,
+      profile: _profile(),
+      nodes: _nodes,
+      page: const MediaQuery(
+        data: MediaQueryData(disableAnimations: true),
+        child: HomeView(),
+      ),
+    );
+
+    await tester.tap(find.text('My subscription').last);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('SHADOWSOCKS / TCP'), findsNothing);
   });
 
   group('several subscriptions', () {

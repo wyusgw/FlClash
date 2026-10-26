@@ -128,9 +128,24 @@ void main() {
     expect(find.text('05:58:20'), findsOneWidget);
     expect(find.text('—'), findsNothing);
     expect(find.text('2KB'), findsOneWidget);
-    expect(find.text('4MB'), findsOneWidget);
+    expect(find.text('4MB'), findsWidgets);
     expect(find.text('1KB'), findsWidgets);
     expect(find.text('3MB'), findsWidgets);
+  });
+
+  testWidgets('the speed curve shows the rates now and its scale', (
+    tester,
+  ) async {
+    await pump(tester, const StatsView());
+    expect(find.byKey(const ValueKey('speed-curve')), findsOneWidget);
+
+    final traffics = container.read(trafficsProvider.notifier);
+    traffics.addTraffic(const Traffic(up: 1024, down: 512 * 1024));
+    traffics.addTraffic(const Traffic(up: 2048, down: 2 * 1024 * 1024));
+    await tester.pump();
+
+    expect(find.text('2MB/s'), findsNWidgets(2));
+    expect(find.text('2KB/s'), findsOneWidget);
   });
 
   testWidgets('the archive switch writes the setting', (tester) async {

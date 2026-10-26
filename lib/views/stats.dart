@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
@@ -12,8 +13,7 @@ import 'package:material_ui/material_ui.dart';
 
 const _upColor = Color(0xFFE5604D);
 const _downColor = Color(0xFF55B26B);
-const _barHeight = 120.0;
-const _barWidth = 44.0;
+const _curveHeight = 110.0;
 
 String _clock(Duration duration) {
   final hours = duration.inHours;
@@ -46,6 +46,7 @@ class StatsView extends ConsumerWidget {
     final appLocalizations = context.appLocalizations;
     final runTime = ref.watch(runTimeProvider);
     final stats = ref.watch(statsSnapshotProvider);
+    final samples = ref.watch(trafficsProvider.select((state) => state.list));
     final archive = ref.watch(
       appSettingProvider.select((state) => state.archiveStats),
     );
@@ -105,13 +106,8 @@ class StatsView extends ConsumerWidget {
           ),
           const SizedBox(height: groupedSectionGap),
           GroupedBlock(
-            header: appLocalizations.distribution,
-            child: _TrafficBars(
-              bars: [
-                (appLocalizations.direct, stats.direct),
-                (appLocalizations.trafficProxy, stats.proxy),
-              ],
-            ),
+            header: appLocalizations.speedStatistics,
+            child: _SpeedCurve(samples: samples),
           ),
           const SizedBox(height: groupedSectionGap),
           GroupedSection(
@@ -170,60 +166,150 @@ class _TrafficColumn extends StatelessWidget {
   }
 }
 
-/// One bar per kind of traffic, filled in proportion to the largest.
-class _TrafficBars extends StatelessWidget {
-  const _TrafficBars({required this.bars});
+/// The speed over the last samples as two smooth curves, down and up, under
+/// the rates now and the peak.
+class _SpeedCurve extends StatelessWidget {
+  const _SpeedCurve({required this.samples});
 
-  final List<(String, Traffic)> bars;
+  final List<Traffic> samples;
 
   @override
   Widget build(BuildContext context) {
     final palette = GroupedPalette.of(context);
-    final largest = bars
-        .map((bar) => bar.$2.up + bar.$2.down)
-        .fold<num>(0, (a, b) => a > b ? a : b);
-    return Row(
+    final latest = samples.safeLast(const Traffic());
+    final peak = samples.fold<num>(
+      0,
+      (peak, sample) => math.max(peak, math.max(sample.up, sample.down)),
+    );
+    Widget legend(Glyph glyph, Color color, String label) => Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: 4,
       children: [
-        for (final (label, traffic) in bars)
-          Expanded(
-            child: Column(
-              spacing: 6,
-              children: [
-                Text(_volume(traffic), style: palette.sectionLabel),
-                SizedBox(
-                  width: _barWidth,
-                  height: _barHeight,
-                  child: DecoratedBox(
-                    decoration: ShapeDecoration(
-                      color: palette.separator,
-                      shape: AppShape.sm,
-                    ),
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: FractionallySizedBox(
-                        heightFactor: largest <= 0
-                            ? 0
-                            : ((traffic.up + traffic.down) / largest)
-                                  .clamp(0.0, 1.0)
-                                  .toDouble(),
-                        widthFactor: 1,
-                        child: const DecoratedBox(
-                          decoration: ShapeDecoration(
-                            color: _downColor,
-                            shape: AppShape.sm,
-                          ),
-                        ),
-                      ),
-                    ),
+        GlyphIcon(glyph, size: 14, color: color),
+        Text(label, style: palette.rowTitle),
+      ],
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 10,
+      children: [
+        Wrap(
+          spacing: 16,
+          runSpacing: 4,
+          children: [
+            legend(AppGlyphs.arrowDown, _downColor, _rate(latest.down)),
+            legend(AppGlyphs.arrowUp, _upColor, _rate(latest.up)),
+          ],
+        ),
+        SizedBox(
+          height: _curveHeight,
+          width: double.infinity,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  key: const ValueKey('speed-curve'),
+                  painter: _CurvePainter(
+                    samples: samples,
+                    peak: peak,
+                    grid: palette.separator,
                   ),
                 ),
-                Text(label, style: palette.sectionLabel),
-              ],
-            ),
+              ),
+              // The scale: what the top line stands for.
+              Text(_rate(math.max(peak, 1024)), style: palette.sectionLabel),
+            ],
           ),
+        ),
       ],
     );
   }
+}
+
+String _rate(num bytesPerSecond) => '${bytesPerSecond.traffic.show}/s';
+
+class _CurvePainter extends CustomPainter {
+  const _CurvePainter({
+    required this.samples,
+    required this.peak,
+    required this.grid,
+  });
+
+  final List<Traffic> samples;
+  final num peak;
+  final Color grid;
+
+  /// The curve rises no higher than the peak, and no lower a ceiling than 1KB,
+  /// so a quiet link does not draw noise as mountains.
+  num get _ceiling => math.max(peak, 1024);
+
+  Path _line(Size size, num Function(Traffic) pick) {
+    final path = Path();
+    // The newest sample sits at the right edge and older ones to its left,
+    // so a short history fills from the right rather than stretching.
+    final step = size.width / (trafficSampleLength - 1);
+    final first = trafficSampleLength - samples.length;
+    Offset at(int i) => Offset(
+      (first + i) * step,
+      size.height - size.height * (pick(samples[i]) / _ceiling).clamp(0, 1),
+    );
+    path.moveTo(at(0).dx, at(0).dy);
+    for (var i = 1; i < samples.length; i++) {
+      final from = at(i - 1);
+      final to = at(i);
+      final middle = (from.dx + to.dx) / 2;
+      path.cubicTo(middle, from.dy, middle, to.dy, to.dx, to.dy);
+    }
+    return path;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rule = Paint()
+      ..color = grid
+      ..strokeWidth = 1;
+    for (var i = 0; i <= 2; i++) {
+      final y = size.height * i / 2;
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), rule);
+    }
+    if (samples.length < 2) return;
+    for (final (pick, color) in <(num Function(Traffic), Color)>[
+      ((sample) => sample.up, _upColor),
+      ((sample) => sample.down, _downColor),
+    ]) {
+      final line = _line(size, pick);
+      final firstX =
+          (trafficSampleLength - samples.length) *
+          size.width /
+          (trafficSampleLength - 1);
+      final area = Path.from(line)
+        ..lineTo(size.width, size.height)
+        ..lineTo(firstX, size.height)
+        ..close();
+      canvas.drawPath(
+        area,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [color.withValues(alpha: 0.28), color.withValues(alpha: 0)],
+          ).createShader(Offset.zero & size),
+      );
+      canvas.drawPath(
+        line,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..color = color,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_CurvePainter old) =>
+      old.samples != samples || old.peak != peak || old.grid != grid;
 }
 
 /// The runs of the Core kept when archiving was on, newest first.

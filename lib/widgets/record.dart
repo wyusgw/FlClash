@@ -58,9 +58,10 @@ class RecordListItem extends StatelessWidget {
           : Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        hoverColor: palette.hover,
-        highlightColor: palette.hover,
+        hoverColor: Colors.transparent,
+        highlightColor: Colors.transparent,
         splashColor: Colors.transparent,
+        splashFactory: NoSplash.splashFactory,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
           child: Column(
@@ -141,12 +142,23 @@ class RecordLabel extends StatelessWidget {
       ),
     );
     return Material(
-      color: color.withValues(alpha: 0.15),
+      // A neutral label, an info line, is plain text; only the tones that
+      // call for attention are tinted.
+      color: tone == RecordTone.neutral
+          ? Colors.transparent
+          : color.withValues(alpha: 0.15),
       shape: AppShape.full,
       clipBehavior: Clip.antiAlias,
       child: onPressed == null
           ? content
-          : InkWell(onTap: onPressed, child: content),
+          : InkWell(
+              onTap: onPressed,
+              hoverColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              splashColor: Colors.transparent,
+              splashFactory: NoSplash.splashFactory,
+              child: content,
+            ),
     );
   }
 }

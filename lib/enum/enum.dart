@@ -273,7 +273,7 @@ enum CoreStatus { connecting, connected, disconnected }
 
 /// How a node's latency is measured: a TCP connect to its server, or a URL
 /// request through it.
-enum DelayTestMethod { tcp, url }
+enum DelayTestMethod { tcp, icmp, url }
 
 /// How the app shows itself in the menu bar: with a Dock icon while its
 /// window is open, as the menu bar item alone, or not at all.

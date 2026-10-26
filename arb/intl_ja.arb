@@ -299,6 +299,7 @@
   "subscribeDesc": "購読 URL または Xray JSON",
   "urlTestSettings": "URL テスト設定",
   "connectDesc": "プロキシサーバー経由で URL リクエストをテストします。",
+  "icmpDesc": "サーバーに直接 Ping を送ります。Ping に応答しないサーバーもあります。",
   "timeoutDesc": "テストがタイムアウトまでに完了しない場合は中止します。",
   "testUrlDesc": "テストする URL を指定します。",
   "delayTestMethod": "遅延テストの方法",

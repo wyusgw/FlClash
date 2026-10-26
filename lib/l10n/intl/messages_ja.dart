@@ -471,6 +471,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "hours": MessageLookupByLibrary.simpleMessage("時間"),
     "hoursAgo": m13,
+    "icmpDesc": MessageLookupByLibrary.simpleMessage(
+      "サーバーに直接 Ping を送ります。Ping に応答しないサーバーもあります。",
+    ),
     "icon": MessageLookupByLibrary.simpleMessage("アイコン"),
     "iconRecords": MessageLookupByLibrary.simpleMessage("アイコン履歴"),
     "iconStyle": MessageLookupByLibrary.simpleMessage("アイコンスタイル"),

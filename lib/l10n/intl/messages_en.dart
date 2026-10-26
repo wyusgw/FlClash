@@ -542,6 +542,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "hours": MessageLookupByLibrary.simpleMessage("hours"),
     "hoursAgo": m13,
+    "icmpDesc": MessageLookupByLibrary.simpleMessage(
+      "Ping the server directly. Some servers do not answer pings.",
+    ),
     "icon": MessageLookupByLibrary.simpleMessage("Icon"),
     "iconRecords": MessageLookupByLibrary.simpleMessage("Icon records"),
     "iconStyle": MessageLookupByLibrary.simpleMessage("Icon style"),

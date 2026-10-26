@@ -2235,6 +2235,22 @@ abstract final class AppGlyphs {
     GlyphPath('M9.2 9.4 6.4 9.9 3.8 12.6l3.2.4', role: GlyphRole.detail),
     GlyphPath('M14.6 14.8l-.5 2.8-2.7 2.6-.4-3.2', role: GlyphRole.detail),
   ]);
+  static const circleI = Glyph([
+    GlyphCircle(12, 12, 8.8),
+    GlyphPolyline([
+      GlyphVertex(12, 8.6),
+      GlyphVertex(12, 15.4),
+    ], role: GlyphRole.detail),
+    GlyphPolyline([
+      GlyphVertex(10, 8.6),
+      GlyphVertex(14, 8.6),
+    ], role: GlyphRole.detail),
+    GlyphPolyline([
+      GlyphVertex(10, 15.4),
+      GlyphVertex(14, 15.4),
+    ], role: GlyphRole.detail),
+  ]);
+
   static const circleC = Glyph([
     GlyphCircle(12, 12, 8.8),
     GlyphPath('M15.4 9.6A4.2 4.2 0 1 0 15.4 14.4', role: GlyphRole.detail),

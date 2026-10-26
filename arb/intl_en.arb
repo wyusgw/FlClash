@@ -299,6 +299,7 @@
   "subscribeDesc": "Subscription URL or Xray JSON",
   "urlTestSettings": "URL test settings",
   "connectDesc": "Test a URL request through the proxy server.",
+  "icmpDesc": "Ping the server directly. Some servers do not answer pings.",
   "timeoutDesc": "If the test does not finish before the timeout, it is given up.",
   "testUrlDesc": "The URL to test.",
   "delayTestMethod": "Delay test method",

@@ -357,6 +357,40 @@ void main() {
       expect(delays?['HK-02'], -1);
     });
 
+    test(
+      'an ICMP test pings the node host with the configured timeout',
+      () async {
+        when(
+          () => core.icmpPing(any(), timeout: any(named: 'timeout')),
+        ).thenAnswer((_) async => 12);
+        final container = buildContainer();
+        container
+            .read(appSettingProvider.notifier)
+            .value = const AppSettingProps(
+          testUrl: _testUrl,
+          delayTestMethod: DelayTestMethod.icmp,
+          delayTestTimeoutSeconds: 3,
+        );
+
+        await actionOf(container).delayTest(const [
+          Proxy(name: 'HK-01', type: 'ss', address: '[2001:db8::1]:8388'),
+          Proxy(name: 'HK-02', type: 'ss'),
+        ]);
+
+        final delays = container.read(delayDataSourceProvider)[_testUrl];
+        expect(delays?['HK-01'], 12);
+        expect(delays?['HK-02'], -1);
+        verify(
+          () =>
+              core.icmpPing('2001:db8::1', timeout: const Duration(seconds: 3)),
+        ).called(1);
+        verifyNever(
+          () =>
+              core.asyncTestDelay(any(), any(), timeout: any(named: 'timeout')),
+        );
+      },
+    );
+
     test('a URL test hands the configured timeout to the Core', () async {
       when(
         () => core.asyncTestDelay(

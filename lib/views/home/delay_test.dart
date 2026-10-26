@@ -10,11 +10,13 @@ import 'package:material_ui/material_ui.dart';
 /// The glyph that stands for a delay test method on the home page's row.
 Glyph delayMethodGlyph(DelayTestMethod method) => switch (method) {
   DelayTestMethod.tcp => AppGlyphs.circleT,
+  DelayTestMethod.icmp => AppGlyphs.circleI,
   DelayTestMethod.url => AppGlyphs.circleC,
 };
 
 String delayMethodLabel(DelayTestMethod method) => switch (method) {
   DelayTestMethod.tcp => 'TCP',
+  DelayTestMethod.icmp => 'ICMP',
   DelayTestMethod.url => 'CONNECT',
 };
 
@@ -47,9 +49,11 @@ class DelayMethodView extends ConsumerWidget {
                 GroupedRow(
                   key: ValueKey(item),
                   title: delayMethodLabel(item),
-                  subtitle: item == DelayTestMethod.url
-                      ? appLocalizations.connectDesc
-                      : null,
+                  subtitle: switch (item) {
+                    DelayTestMethod.tcp => null,
+                    DelayTestMethod.icmp => appLocalizations.icmpDesc,
+                    DelayTestMethod.url => appLocalizations.connectDesc,
+                  },
                   trailing: item == method
                       ? GlyphIcon(
                           AppGlyphs.check,

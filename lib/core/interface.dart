@@ -33,6 +33,9 @@ mixin CoreInterface {
 
   Future<ProbeResult?> probe(ProbeParams params);
 
+  /// The milliseconds a ping to [host] takes, or -1 when it goes unanswered.
+  Future<int> icmpPing(String host, {Duration? timeout});
+
   Future<OutboundIpResult?> outboundIp(OutboundIpParams params);
 
   Future<List<ServiceCheckItem>> serviceCheck(ServiceCheckParams params);
@@ -246,6 +249,17 @@ abstract class CoreHandlerInterface with CoreInterface {
       timeout: probeGuardDuration(params),
     );
     return data == null ? null : ProbeResult.fromJson(data);
+  }
+
+  @override
+  Future<int> icmpPing(String host, {Duration? timeout}) async {
+    final budget = timeout ?? delayTestTimeoutDuration;
+    return await _invokeMethod<int>(
+          method: CoreMethod.icmpPing,
+          arguments: {'host': host, 'timeout': budget.inMilliseconds},
+          timeout: coreGuardFor(budget.inMilliseconds),
+        ) ??
+        -1;
   }
 
   @override

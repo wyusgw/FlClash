@@ -2320,6 +2320,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Ping the server directly. Some servers do not answer pings.`
+  String get icmpDesc {
+    return Intl.message(
+      'Ping the server directly. Some servers do not answer pings.',
+      name: 'icmpDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `If the test does not finish before the timeout, it is given up.`
   String get timeoutDesc {
     return Intl.message(

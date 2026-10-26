@@ -431,6 +431,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "hours": MessageLookupByLibrary.simpleMessage("小时"),
     "hoursAgo": m13,
+    "icmpDesc": MessageLookupByLibrary.simpleMessage(
+      "直接 Ping 服务器。部分服务器不响应 Ping。",
+    ),
     "icon": MessageLookupByLibrary.simpleMessage("图片"),
     "iconRecords": MessageLookupByLibrary.simpleMessage("图标记录"),
     "iconStyle": MessageLookupByLibrary.simpleMessage("图标样式"),

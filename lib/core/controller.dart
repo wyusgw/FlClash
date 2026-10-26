@@ -147,6 +147,9 @@ class CoreController {
 
   Future<ProbeResult?> probe(ProbeParams params) => _interface.probe(params);
 
+  Future<int> icmpPing(String host, {Duration? timeout}) =>
+      _interface.icmpPing(host, timeout: timeout);
+
   Future<OutboundIpResult?> outboundIp(OutboundIpParams params) =>
       _interface.outboundIp(params);
 

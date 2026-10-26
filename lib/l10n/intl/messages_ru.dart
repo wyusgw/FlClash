@@ -557,6 +557,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "hours": MessageLookupByLibrary.simpleMessage("часов"),
     "hoursAgo": m13,
+    "icmpDesc": MessageLookupByLibrary.simpleMessage(
+      "Пинг сервера напрямую. Некоторые серверы не отвечают на пинг.",
+    ),
     "icon": MessageLookupByLibrary.simpleMessage("Значок"),
     "iconRecords": MessageLookupByLibrary.simpleMessage("История значков"),
     "iconStyle": MessageLookupByLibrary.simpleMessage("Стиль значков"),

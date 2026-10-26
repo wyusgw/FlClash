@@ -43,6 +43,7 @@ class _RecordingCoreHandler extends CoreHandlerInterface {
         'url': 'https://example.com',
         'value': 42,
       },
+      CoreMethod.icmpPing => 7 as T,
       CoreMethod.probe => {
         'status-code': 204,
         'delay': 17,
@@ -113,6 +114,14 @@ void main() {
     expect(route, const RouteSnapshot(coreEpoch: 1));
     expect(handler.calls[CoreMethod.watchRoute], isTrue);
     await handler.asyncTestDelay('https://example.com', '@direct');
+    expect(
+      await handler.icmpPing('192.0.2.1', timeout: const Duration(seconds: 2)),
+      7,
+    );
+    expect(handler.calls[CoreMethod.icmpPing], {
+      'host': '192.0.2.1',
+      'timeout': 2000,
+    });
     await handler.probe(
       const ProbeParams(
         url: 'https://example.com',

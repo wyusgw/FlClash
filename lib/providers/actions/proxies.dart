@@ -331,6 +331,17 @@ class ProxiesAction extends _$ProxiesAction {
           url: target.testUrl,
           value: await tcpConnectDelay(target.address, timeout),
         ),
+        DelayTestMethod.icmp => Delay(
+          name: target.proxyName,
+          url: target.testUrl,
+          value: switch (splitHostPort(target.address)) {
+            (:final host, port: _) => await _core.icmpPing(
+              host,
+              timeout: timeout,
+            ),
+            null => -1,
+          },
+        ),
         DelayTestMethod.url => await _core.getDelay(
           target.testUrl,
           target.proxyName,

@@ -209,6 +209,11 @@ var methodHandlers = map[CoreMethod]methodHandler{
 			response.success(handleProbe(params))
 		})
 	}),
+	icmpPingMethod: withArguments(func(params *IcmpPingParams, response MethodResponse) {
+		safeGo(response, func() {
+			response.success(handleIcmpPing(params))
+		})
+	}),
 	outboundIpMethod: withArguments(func(params *OutboundIpParams, response MethodResponse) {
 		safeGo(response, func() {
 			response.success(handleOutboundIp(params))

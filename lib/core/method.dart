@@ -15,6 +15,7 @@ enum CoreMethod {
   resetTraffic,
   asyncTestDelay,
   probe,
+  icmpPing,
   outboundIp,
   serviceCheck,
   startLog,

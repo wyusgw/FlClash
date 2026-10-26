@@ -78,6 +78,7 @@ const (
 	resetTrafficMethod    CoreMethod = "resetTraffic"
 	asyncTestDelayMethod  CoreMethod = "asyncTestDelay"
 	probeMethod           CoreMethod = "probe"
+	icmpPingMethod        CoreMethod = "icmpPing"
 	outboundIpMethod      CoreMethod = "outboundIp"
 	serviceCheckMethod    CoreMethod = "serviceCheck"
 	getMemoryStatsMethod  CoreMethod = "getMemoryStats"

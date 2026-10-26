@@ -299,6 +299,7 @@
   "subscribeDesc": "訂閱 URL 或 Xray JSON",
   "urlTestSettings": "URL 測試設定",
   "connectDesc": "透過代理伺服器測試 URL 請求。",
+  "icmpDesc": "直接 Ping 伺服器。部分伺服器不回應 Ping。",
   "timeoutDesc": "如果測試在超時前未完成，放棄測試。",
   "testUrlDesc": "指定要測試的 URL。",
   "delayTestMethod": "延遲測試方法",

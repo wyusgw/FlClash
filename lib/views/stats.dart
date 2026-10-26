@@ -277,26 +277,8 @@ class _CurvePainter extends CustomPainter {
       ((sample) => sample.up, _upColor),
       ((sample) => sample.down, _downColor),
     ]) {
-      final line = _line(size, pick);
-      final firstX =
-          (trafficSampleLength - samples.length) *
-          size.width /
-          (trafficSampleLength - 1);
-      final area = Path.from(line)
-        ..lineTo(size.width, size.height)
-        ..lineTo(firstX, size.height)
-        ..close();
       canvas.drawPath(
-        area,
-        Paint()
-          ..shader = LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [color.withValues(alpha: 0.28), color.withValues(alpha: 0)],
-          ).createShader(Offset.zero & size),
-      );
-      canvas.drawPath(
-        line,
+        _line(size, pick),
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2

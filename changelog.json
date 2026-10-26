@@ -2,6 +2,54 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "0.9.8",
+      "tag": "v0.9.8",
+      "date": "2026-10-26",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "c605776",
+              "scope": "logs",
+              "text": "The logs page can clear the logs"
+            },
+            {
+              "id": "d5bc5cc",
+              "scope": "stats",
+              "text": "The statistics page draws the recent speed as a curve"
+            },
+            {
+              "id": "3b97199",
+              "scope": "l10n",
+              "text": "The rule set and subscription texts no longer name Xray"
+            },
+            {
+              "id": "cfaae79",
+              "scope": "delay-test",
+              "text": "A connectivity test by ICMP ping"
+            },
+            {
+              "id": "18628d9",
+              "scope": "theme",
+              "text": "Text scale following the system is no longer too large, and a custom scale moves in 1% steps or can be typed in"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "779a058",
+              "scope": "home",
+              "text": "The icon beside Not connected is grey while the proxy is off"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.9.7",
       "tag": "v0.9.7",
       "date": "2026-10-22",

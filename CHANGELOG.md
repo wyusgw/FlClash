@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.9.8 (2026-10-26)
+
+**Features**
+
+- **logs** The logs page can clear the logs (c605776)
+- **stats** The statistics page draws the recent speed as a curve (d5bc5cc)
+- **l10n** The rule set and subscription texts no longer name Xray (3b97199)
+- **delay-test** A connectivity test by ICMP ping (cfaae79)
+- **theme** Text scale following the system is no longer too large, and a custom scale moves in 1% steps or can be typed in (18628d9)
+
+**Bug Fixes**
+
+- **home** The icon beside Not connected is grey while the proxy is off (779a058)
+
 ## v0.9.7 (2026-10-22)
 
 **Features**

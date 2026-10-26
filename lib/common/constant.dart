@@ -58,8 +58,11 @@ String _randomPipeId() {
   ).join();
 }
 
+/// The scale used when following the system: the system's 100% is the app's
+/// own default size, so the system setting scales from there.
 final defaultTextScaleFactor =
-    WidgetsBinding.instance.platformDispatcher.textScaleFactor;
+    WidgetsBinding.instance.platformDispatcher.textScaleFactor *
+    defaultTextScale;
 
 const defaultDelayTestTimeoutSeconds = 5;
 const minDelayTestTimeoutSeconds = 1;

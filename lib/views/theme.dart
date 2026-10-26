@@ -455,7 +455,7 @@ class _AppearanceColorsViewState extends ConsumerState<AppearanceColorsView> {
 class _TextScaleFactorItem extends ConsumerStatefulWidget {
   const _TextScaleFactorItem();
 
-  static const _step = 0.05;
+  static const _step = 0.01;
 
   @override
   ConsumerState<_TextScaleFactorItem> createState() =>
@@ -464,12 +464,52 @@ class _TextScaleFactorItem extends ConsumerStatefulWidget {
 
 class _TextScaleFactorItemState extends ConsumerState<_TextScaleFactorItem> {
   double? _draft;
+  bool _editing = false;
+  final _controller = TextEditingController();
+  final _focus = FocusNode();
 
   void _update(TextScale Function(TextScale textScale) update) {
     setState(() => _draft = null);
     ref
         .read(themeSettingProvider.notifier)
         .update((state) => state.copyWith(textScale: update(state.textScale)));
+  }
+
+  void _startEditing(double scale) {
+    _controller.text = '${(scale * 100).round()}';
+    _controller.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: _controller.text.length,
+    );
+    setState(() => _editing = true);
+    _focus.requestFocus();
+  }
+
+  /// Takes the typed percentage, kept within the slider's range; a blank
+  /// field leaves the scale as it was.
+  void _commit() {
+    if (!_editing) return;
+    final percent = int.tryParse(_controller.text.trim());
+    setState(() => _editing = false);
+    if (percent == null) return;
+    final min = (minTextScale * 100).round();
+    final max = (maxTextScale * 100).round();
+    _update((state) => state.copyWith(scale: percent.clamp(min, max) / 100));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(() {
+      if (!_focus.hasFocus) _commit();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focus.dispose();
+    super.dispose();
   }
 
   @override
@@ -484,6 +524,10 @@ class _TextScaleFactorItemState extends ConsumerState<_TextScaleFactorItem> {
         .toDouble();
     final scale = _draft ?? (textScale.enable ? textScale.scale : systemScale);
     final percent = '${(scale * 100).round()}%';
+    final valueStyle = palette.rowValue.copyWith(
+      color: palette.label,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
     final divisions =
         ((maxTextScale - minTextScale) / _TextScaleFactorItem._step).round();
     return SliverToBoxAdapter(
@@ -542,22 +586,54 @@ class _TextScaleFactorItemState extends ConsumerState<_TextScaleFactorItem> {
                     ),
                   ),
                 ),
-                DecoratedBox(
-                  decoration: ShapeDecoration(
-                    color: palette.separator,
-                    shape: AppShape.full,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: textScale.enable && !_editing
+                      ? () => _startEditing(scale)
+                      : null,
+                  child: DecoratedBox(
+                    decoration: ShapeDecoration(
+                      color: palette.separator,
+                      shape: AppShape.full,
                     ),
-                    child: Text(
-                      percent,
-                      style: palette.rowValue.copyWith(
-                        color: palette.label,
-                        fontFeatures: const [FontFeature.tabularFigures()],
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
                       ),
+                      child: _editing
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    minWidth: 10,
+                                  ),
+                                  child: IntrinsicWidth(
+                                    child: EditableText(
+                                      controller: _controller,
+                                      focusNode: _focus,
+                                      style: valueStyle,
+                                      cursorColor: palette.accent,
+                                      backgroundCursorColor: palette.separator,
+                                      selectionColor: palette.accent.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                      textAlign: TextAlign.end,
+                                      keyboardType: TextInputType.number,
+                                      textInputAction: TextInputAction.done,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly,
+                                        LengthLimitingTextInputFormatter(3),
+                                      ],
+                                      onSubmitted: (_) => _commit(),
+                                    ),
+                                  ),
+                                ),
+                                Text('%', style: valueStyle),
+                              ],
+                            )
+                          : Text(percent, style: valueStyle),
                     ),
                   ),
                 ),

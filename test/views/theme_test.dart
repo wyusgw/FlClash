@@ -456,6 +456,8 @@ void main() {
 
       expect(readTheme().textScale.enable, isFalse);
       expect(tester.widget<Slider>(find.byType(Slider)).onChanged, isNull);
+      // The system's 100% is the app's default size, not 100%.
+      expect(find.text('88%'), findsOneWidget);
 
       await tester.tap(find.text('Custom'));
       await tester.pumpAndSettle();
@@ -478,6 +480,19 @@ void main() {
       await gesture.up();
       await tester.pumpAndSettle();
       expect(readTheme().textScale.scale, isNot(before));
+    });
+
+    testWidgets('tapping the percentage types an exact value', (tester) async {
+      await pumpThemeView(tester);
+
+      await tester.tap(find.text('88%'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(EditableText), '107');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      expect(readTheme().textScale.scale, 1.07);
+      expect(find.text('107%'), findsOneWidget);
     });
 
     testWidgets('resets a custom scale to 88%', (tester) async {

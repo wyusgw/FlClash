@@ -242,6 +242,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chooseType": MessageLookupByLibrary.simpleMessage("種類を選択"),
     "clearArchive": MessageLookupByLibrary.simpleMessage("アーカイブを消去"),
     "clearData": MessageLookupByLibrary.simpleMessage("データを消去"),
+    "clearLogs": MessageLookupByLibrary.simpleMessage("ログを消去"),
     "clearSearch": MessageLookupByLibrary.simpleMessage("検索をクリア"),
     "clipboard": MessageLookupByLibrary.simpleMessage("クリップボード"),
     "clipboardDesc": m1,

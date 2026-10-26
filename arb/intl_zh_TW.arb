@@ -375,6 +375,7 @@
   "noNetwork": "無網路",
   "ipv6InboundDesc": "允許IPv6入站",
   "exportLogs": "匯出日誌",
+  "clearLogs": "清空日誌",
   "exportSuccess": "匯出成功",
   "iconStyle": "圖示樣式",
   "iconStyleFilled": "色塊",

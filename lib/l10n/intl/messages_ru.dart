@@ -296,6 +296,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chooseType": MessageLookupByLibrary.simpleMessage("Выберите тип"),
     "clearArchive": MessageLookupByLibrary.simpleMessage("Очистить архив"),
     "clearData": MessageLookupByLibrary.simpleMessage("Очистить данные"),
+    "clearLogs": MessageLookupByLibrary.simpleMessage("Очистить логи"),
     "clearSearch": MessageLookupByLibrary.simpleMessage("Очистить поиск"),
     "clipboard": MessageLookupByLibrary.simpleMessage("Буфер обмена"),
     "clipboardDesc": m1,

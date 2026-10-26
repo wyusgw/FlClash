@@ -283,6 +283,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chooseType": MessageLookupByLibrary.simpleMessage("Choose a type"),
     "clearArchive": MessageLookupByLibrary.simpleMessage("Clear archive"),
     "clearData": MessageLookupByLibrary.simpleMessage("Clear data"),
+    "clearLogs": MessageLookupByLibrary.simpleMessage("Clear logs"),
     "clearSearch": MessageLookupByLibrary.simpleMessage("Clear search"),
     "clipboard": MessageLookupByLibrary.simpleMessage("Clipboard"),
     "clipboardDesc": m1,

@@ -133,6 +133,30 @@ void main() {
     expect(hintFinder(), findsNothing);
   });
 
+  testWidgets('Clear logs empties the list and the stored logs, and new ones '
+      'show again', (tester) async {
+    await pumpLogsView(tester);
+    expect(find.byType(SuperListView), findsOneWidget);
+    expect(container.read(logsProvider).length, logCount);
+
+    await tester.tap(find.byTooltip('Clear logs'));
+    await tester.pumpAndSettle();
+
+    expect(container.read(logsProvider).length, 0);
+    expect(find.byType(SuperListView), findsNothing);
+
+    container
+        .read(logsProvider.notifier)
+        .add(
+          const Log(payload: 'after clear', dateTime: '2024-01-01 12:01:00'),
+        );
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+
+    expect(find.text('after clear'), findsOneWidget);
+    expect(find.text('log 5'), findsNothing);
+  });
+
   testWidgets('the search field narrows the list and clears again', (
     tester,
   ) async {

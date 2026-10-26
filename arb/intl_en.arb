@@ -375,6 +375,7 @@
   "noNetwork": "No network",
   "ipv6InboundDesc": "Allow IPv6 inbound",
   "exportLogs": "Export logs",
+  "clearLogs": "Clear logs",
   "exportSuccess": "Export successful",
   "iconStyle": "Icon style",
   "iconStyleFilled": "Filled",

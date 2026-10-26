@@ -375,6 +375,7 @@
   "noNetwork": "ネットワークがありません",
   "ipv6InboundDesc": "IPv6インバウンドを許可します",
   "exportLogs": "ログをエクスポート",
+  "clearLogs": "ログを消去",
   "exportSuccess": "エクスポートが完了しました",
   "iconStyle": "アイコンスタイル",
   "iconStyleFilled": "背景あり",

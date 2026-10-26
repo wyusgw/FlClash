@@ -226,6 +226,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chooseType": MessageLookupByLibrary.simpleMessage("選擇類型"),
     "clearArchive": MessageLookupByLibrary.simpleMessage("清空歸檔"),
     "clearData": MessageLookupByLibrary.simpleMessage("清除資料"),
+    "clearLogs": MessageLookupByLibrary.simpleMessage("清空日誌"),
     "clearSearch": MessageLookupByLibrary.simpleMessage("清除搜尋"),
     "clipboard": MessageLookupByLibrary.simpleMessage("剪貼簿"),
     "clipboardDesc": m1,

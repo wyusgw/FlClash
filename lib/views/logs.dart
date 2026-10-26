@@ -85,6 +85,11 @@ class _LogsViewState extends ConsumerState<LogsView>
     );
   }
 
+  void _handleClear() {
+    ref.read(logsProvider.notifier).clear();
+    _listController.value = _listController.value.copyWith(logs: const []);
+  }
+
   void _addKeyword(String keyword) {
     final keywords = _listController.value.keywords;
     if (keywords.contains(keyword)) {
@@ -117,11 +122,18 @@ class _LogsViewState extends ConsumerState<LogsView>
     return GroupedPage(
       title: appLocalizations.logs,
       onBack: () => Navigator.of(context).maybePop(),
-      trailing: GroupedBarAction(
-        glyph: AppGlyphs.export,
-        tooltip: appLocalizations.exportLogs,
-        onPressed: _handleExport,
-      ),
+      trailingActions: [
+        GroupedBarAction(
+          glyph: AppGlyphs.delete,
+          tooltip: appLocalizations.clearLogs,
+          onPressed: _handleClear,
+        ),
+        GroupedBarAction(
+          glyph: AppGlyphs.export,
+          tooltip: appLocalizations.exportLogs,
+          onPressed: _handleExport,
+        ),
+      ],
       body: ValueListenableBuilder<LogsState>(
         valueListenable: _listController,
         builder: (context, state, _) {

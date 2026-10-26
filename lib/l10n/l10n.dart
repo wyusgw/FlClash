@@ -95,10 +95,10 @@ class AppLocalizations {
     return Intl.message('Add rule set', name: 'addRuleSet', desc: '', args: []);
   }
 
-  /// `Leave the URL empty to start with no rules and add them by hand. A file or a URL takes Xray routing rules: a whole config, its routing object, or the rule list.`
+  /// `Leave the URL empty to start with no rules and add them by hand. A file or a URL takes routing rules: a whole config, its routing object, or the rule list.`
   String get addRuleSetDesc {
     return Intl.message(
-      'Leave the URL empty to start with no rules and add them by hand. A file or a URL takes Xray routing rules: a whole config, its routing object, or the rule list.',
+      'Leave the URL empty to start with no rules and add them by hand. A file or a URL takes routing rules: a whole config, its routing object, or the rule list.',
       name: 'addRuleSetDesc',
       desc: '',
       args: [],
@@ -230,10 +230,10 @@ class AppLocalizations {
     );
   }
 
-  /// `No Xray routing rules found`
+  /// `No routing rules found`
   String get rulesInvalid {
     return Intl.message(
-      'No Xray routing rules found',
+      'No routing rules found',
       name: 'rulesInvalid',
       desc: '',
       args: [],
@@ -2290,10 +2290,10 @@ class AppLocalizations {
     return Intl.message('Subscribe', name: 'subscribe', desc: '', args: []);
   }
 
-  /// `Subscription URL or Xray JSON`
+  /// `Subscription URL or JSON`
   String get subscribeDesc {
     return Intl.message(
-      'Subscription URL or Xray JSON',
+      'Subscription URL or JSON',
       name: 'subscribeDesc',
       desc: '',
       args: [],

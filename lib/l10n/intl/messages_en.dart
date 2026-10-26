@@ -141,7 +141,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "addRule": MessageLookupByLibrary.simpleMessage("Add rule"),
     "addRuleSet": MessageLookupByLibrary.simpleMessage("Add rule set"),
     "addRuleSetDesc": MessageLookupByLibrary.simpleMessage(
-      "Leave the URL empty to start with no rules and add them by hand. A file or a URL takes Xray routing rules: a whole config, its routing object, or the rule list.",
+      "Leave the URL empty to start with no rules and add them by hand. A file or a URL takes routing rules: a whole config, its routing object, or the rule list.",
     ),
     "addServer": MessageLookupByLibrary.simpleMessage("Add Server"),
     "addSsid": MessageLookupByLibrary.simpleMessage("Add SSID"),
@@ -983,7 +983,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Rules apply in rule mode. Traffic no rule matches goes through the proxy.",
     ),
     "rulesInvalid": MessageLookupByLibrary.simpleMessage(
-      "No Xray routing rules found",
+      "No routing rules found",
     ),
     "rulesLegend": MessageLookupByLibrary.simpleMessage(
       "A dot marks the default config; a check marks the one in use.",
@@ -1087,7 +1087,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "submit": MessageLookupByLibrary.simpleMessage("Submit"),
     "subscribe": MessageLookupByLibrary.simpleMessage("Subscribe"),
     "subscribeDesc": MessageLookupByLibrary.simpleMessage(
-      "Subscription URL or Xray JSON",
+      "Subscription URL or JSON",
     ),
     "subscriptionFoldTip": MessageLookupByLibrary.simpleMessage(
       "Tap a subscription to fold or expand its nodes.",

@@ -126,7 +126,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "addRule": MessageLookupByLibrary.simpleMessage("新增規則"),
     "addRuleSet": MessageLookupByLibrary.simpleMessage("新增規則配置"),
     "addRuleSetDesc": MessageLookupByLibrary.simpleMessage(
-      "URL 留空會建立空白規則配置，再手動新增規則。檔案或 URL 接受 Xray 路由規則：完整配置、其中的 routing 物件或規則列表皆可。",
+      "URL 留空會建立空白規則配置，再手動新增規則。檔案或 URL 接受路由規則：完整配置、其中的 routing 物件或規則列表皆可。",
     ),
     "addServer": MessageLookupByLibrary.simpleMessage("新增伺服器"),
     "addSsid": MessageLookupByLibrary.simpleMessage("新增SSID"),
@@ -776,7 +776,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "rulesFooter": MessageLookupByLibrary.simpleMessage(
       "規則只在規則模式下生效，未匹配的流量走代理。",
     ),
-    "rulesInvalid": MessageLookupByLibrary.simpleMessage("沒有找到 Xray 路由規則"),
+    "rulesInvalid": MessageLookupByLibrary.simpleMessage("沒有找到路由規則"),
     "rulesLegend": MessageLookupByLibrary.simpleMessage(
       "圓點代表預設配置，複選標記代表正在使用的配置。",
     ),
@@ -858,7 +858,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "subRule": MessageLookupByLibrary.simpleMessage("子規則"),
     "submit": MessageLookupByLibrary.simpleMessage("提交"),
     "subscribe": MessageLookupByLibrary.simpleMessage("訂閱"),
-    "subscribeDesc": MessageLookupByLibrary.simpleMessage("訂閱 URL 或 Xray JSON"),
+    "subscribeDesc": MessageLookupByLibrary.simpleMessage("訂閱 URL 或 JSON"),
     "subscriptionFoldTip": MessageLookupByLibrary.simpleMessage(
       "點選訂閱可以摺疊和展開子節點。",
     ),

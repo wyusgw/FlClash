@@ -128,7 +128,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "addRule": MessageLookupByLibrary.simpleMessage("ルールを追加"),
     "addRuleSet": MessageLookupByLibrary.simpleMessage("ルールセットを追加"),
     "addRuleSetDesc": MessageLookupByLibrary.simpleMessage(
-      "URL を空にすると空のルールセットを作成し、手動でルールを追加できます。ファイルや URL には Xray のルーティングルール（設定全体、routing オブジェクト、またはルールの配列）を指定します。",
+      "URL を空にすると空のルールセットを作成し、手動でルールを追加できます。ファイルや URL には ルーティングルール（設定全体、routing オブジェクト、またはルールの配列）を指定します。",
     ),
     "addServer": MessageLookupByLibrary.simpleMessage("サーバを追加"),
     "addSsid": MessageLookupByLibrary.simpleMessage("SSIDを追加"),
@@ -848,9 +848,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "rulesFooter": MessageLookupByLibrary.simpleMessage(
       "ルールはルールモードでのみ有効です。どのルールにも一致しない通信はプロキシを経由します。",
     ),
-    "rulesInvalid": MessageLookupByLibrary.simpleMessage(
-      "Xray のルーティングルールが見つかりません",
-    ),
+    "rulesInvalid": MessageLookupByLibrary.simpleMessage("ルーティングルールが見つかりません"),
     "rulesLegend": MessageLookupByLibrary.simpleMessage(
       "ドットはデフォルト設定、チェックは使用中の設定を表します。",
     ),
@@ -940,9 +938,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "subRule": MessageLookupByLibrary.simpleMessage("サブルール"),
     "submit": MessageLookupByLibrary.simpleMessage("送信"),
     "subscribe": MessageLookupByLibrary.simpleMessage("購読"),
-    "subscribeDesc": MessageLookupByLibrary.simpleMessage(
-      "購読 URL または Xray JSON",
-    ),
+    "subscribeDesc": MessageLookupByLibrary.simpleMessage("購読 URL または JSON"),
     "subscriptionFoldTip": MessageLookupByLibrary.simpleMessage(
       "サブスクリプションをタップすると、ノードを折りたたんだり展開したりできます。",
     ),

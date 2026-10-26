@@ -146,7 +146,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "addRule": MessageLookupByLibrary.simpleMessage("Добавить правило"),
     "addRuleSet": MessageLookupByLibrary.simpleMessage("Добавить набор правил"),
     "addRuleSetDesc": MessageLookupByLibrary.simpleMessage(
-      "Оставьте URL пустым, чтобы создать пустой набор и добавлять правила вручную. Файл или URL принимают правила маршрутизации Xray: весь конфиг, объект routing или список правил.",
+      "Оставьте URL пустым, чтобы создать пустой набор и добавлять правила вручную. Файл или URL принимают правила маршрутизации: весь конфиг, объект routing или список правил.",
     ),
     "addServer": MessageLookupByLibrary.simpleMessage("Добавить сервер"),
     "addSsid": MessageLookupByLibrary.simpleMessage("Добавить SSID"),
@@ -1024,7 +1024,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Правила действуют в режиме правил. Трафик, не подошедший ни под одно правило, идёт через прокси.",
     ),
     "rulesInvalid": MessageLookupByLibrary.simpleMessage(
-      "Правила маршрутизации Xray не найдены",
+      "Правила маршрутизации не найдены",
     ),
     "rulesLegend": MessageLookupByLibrary.simpleMessage(
       "Точка отмечает конфиг по умолчанию, галочка — используемый.",
@@ -1142,7 +1142,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "submit": MessageLookupByLibrary.simpleMessage("Отправить"),
     "subscribe": MessageLookupByLibrary.simpleMessage("Подписка"),
     "subscribeDesc": MessageLookupByLibrary.simpleMessage(
-      "URL подписки или Xray JSON",
+      "URL подписки или JSON",
     ),
     "subscriptionFoldTip": MessageLookupByLibrary.simpleMessage(
       "Нажмите на подписку, чтобы свернуть или развернуть её узлы.",

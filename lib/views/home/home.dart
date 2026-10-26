@@ -284,24 +284,10 @@ class _BarTitle extends StatelessWidget {
   }
 }
 
-/// The logo in the bar, in colour while the proxy runs and grey while it does
-/// not; tapping it turns the proxy on or off, as the switch does.
+/// The logo in the bar; tapping it turns the proxy on or off, as the switch
+/// does.
 class _LogoSwitch extends ConsumerWidget {
   const _LogoSwitch();
-
-  static const _grey = <double>[
-    0.2126, 0.7152, 0.0722, 0, 0, //
-    0.2126, 0.7152, 0.0722, 0, 0, //
-    0.2126, 0.7152, 0.0722, 0, 0, //
-    0, 0, 0, 0.55, 0,
-  ];
-
-  static const _identity = <double>[
-    1, 0, 0, 0, 0, //
-    0, 1, 0, 0, 0, //
-    0, 0, 1, 0, 0, //
-    0, 0, 0, 1, 0,
-  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -322,24 +308,51 @@ class _LogoSwitch extends ConsumerWidget {
         splashFactory: NoSplash.splashFactory,
         hoverColor: Colors.transparent,
         highlightColor: Colors.transparent,
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(end: isStart ? 1 : 0),
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
-          builder: (_, colour, child) => ColorFiltered(
-            colorFilter: ColorFilter.matrix([
-              for (var i = 0; i < 20; i++)
-                _grey[i] + (_identity[i] - _grey[i]) * colour,
-            ]),
-            child: child,
-          ),
-          child: Image.asset(
-            'assets/images/icon.png',
-            width: 26,
-            height: 26,
-            filterQuality: FilterQuality.medium,
-          ),
-        ),
+        child: const _StatusLogo(size: 26),
+      ),
+    );
+  }
+}
+
+/// The logo, in colour while the proxy runs and grey while it does not.
+class _StatusLogo extends ConsumerWidget {
+  const _StatusLogo({required this.size});
+
+  final double size;
+
+  static const _grey = <double>[
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0, 0, 0, 0.55, 0,
+  ];
+
+  static const _identity = <double>[
+    1, 0, 0, 0, 0, //
+    0, 1, 0, 0, 0, //
+    0, 0, 1, 0, 0, //
+    0, 0, 0, 1, 0,
+  ];
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isStart = ref.watch(isStartProvider);
+    return TweenAnimationBuilder<double>(
+      tween: Tween(end: isStart ? 1 : 0),
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+      builder: (_, colour, child) => ColorFiltered(
+        colorFilter: ColorFilter.matrix([
+          for (var i = 0; i < 20; i++)
+            _grey[i] + (_identity[i] - _grey[i]) * colour,
+        ]),
+        child: child,
+      ),
+      child: Image.asset(
+        'assets/images/icon.png',
+        width: size,
+        height: size,
+        filterQuality: FilterQuality.medium,
       ),
     );
   }
@@ -472,12 +485,7 @@ class _ControlSection extends ConsumerWidget {
     return GroupedSection(
       children: [
         GroupedRow(
-          leading: Image.asset(
-            'assets/images/icon.png',
-            width: groupedLeadingSize + 1,
-            height: groupedLeadingSize + 1,
-            filterQuality: FilterQuality.medium,
-          ),
+          leading: const _StatusLogo(size: groupedLeadingSize + 1),
           title: isStart
               ? selected.takeFirstValid([
                   firstNode ?? '',
